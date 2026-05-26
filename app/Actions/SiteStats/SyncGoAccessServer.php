@@ -3,12 +3,16 @@
 namespace App\Actions\SiteStats;
 
 use App\Enums\CronjobStatus;
+use App\Exceptions\SSHError;
 use App\Models\CronJob;
 use App\Models\Server;
 use App\Services\LogAnalysis\GoAccess\GoAccess;
 
 class SyncGoAccessServer
 {
+    /**
+     * @throws SSHError
+     */
     public function sync(Server $server): void
     {
         $service = $server->service('log_analysis');
@@ -32,6 +36,13 @@ class SyncGoAccessServer
         $renderer = app(RenderSiteStatsConf::class);
         foreach ($server->sites()->with('server.services')->get() as $site) {
             $site->setRelation('server', $server);
+
+            if (! $site->statsEnabled()) {
+                $ssh->exec('sudo rm -f '.escapeshellarg("{$base}/sites/{$site->id}.conf"), 'goaccess-skip-disabled');
+
+                continue;
+            }
+
             $ssh->write("{$base}/sites/{$site->id}.conf", $renderer->render($site), 'root');
         }
 

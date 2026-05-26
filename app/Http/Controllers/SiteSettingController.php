@@ -8,6 +8,7 @@ use App\Actions\Site\UpdateBasicAuth;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdatePort;
+use App\Actions\Site\UpdateSiteStats;
 use App\Actions\Site\UpdateSourceControl;
 use App\Actions\Site\UpdateStartCommand;
 use App\Actions\Site\UpdateVhost;
@@ -259,6 +260,26 @@ class SiteSettingController extends Controller
         $site->webserver()->updateVHost($site);
 
         return back()->with('success', 'Force SSL disabled successfully.');
+    }
+
+    #[Post('/stats/enable', name: 'site-settings.enable-stats')]
+    public function enableStats(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateSiteStats::class)->enable($site);
+
+        return back()->with('success', 'Statistics enabled for this site.');
+    }
+
+    #[Post('/stats/disable', name: 'site-settings.disable-stats')]
+    public function disableStats(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateSiteStats::class)->disable($site);
+
+        return back()->with('success', 'Statistics disabled and historical data erased.');
     }
 
     /**

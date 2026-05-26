@@ -38,7 +38,10 @@ export function ResyncStats({ service }: { service: Service }) {
           <DialogDescription className="sr-only">Re-sync GoAccess scripts and cron on the server</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 p-4">
-          <p>This re-writes the GoAccess processing scripts and per-site configs on the server and ensures the cron is in place. Run this after a Vito update.</p>
+          <p>
+            This re-writes the GoAccess processing scripts and per-site configs on the server and ensures the cron is in place. Run this after a Vito
+            update.
+          </p>
           {Object.entries(form.errors).map(([key, value]) => (
             <InputError key={key} message={value as string | undefined} />
           ))}

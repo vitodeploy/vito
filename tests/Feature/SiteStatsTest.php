@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Actions\CronJob\SyncCronJobs;
+use App\Actions\Site\UpdateSiteStats;
+use App\Actions\SiteStats\GetSiteStats;
 use App\Actions\SiteStats\RenderSiteStatsConf;
 use App\Actions\SiteStats\SyncGoAccessServer;
 use App\Enums\CronjobStatus;
@@ -18,7 +21,6 @@ use App\Listeners\HandleSiteCreatedStats;
 use App\Listeners\HandleSiteDeletedStats;
 use App\Models\Service;
 use App\Services\LogAnalysis\GoAccess\GoAccess;
-use App\Actions\SiteStats\GetSiteStats;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
@@ -121,6 +123,7 @@ class SiteStatsTest extends TestCase
     {
         SSH::fake($this->sampleReport());
         $this->actingAs($this->user);
+        $this->installGoAccess();
 
         $this->get(route('site-stats.json', ['server' => $this->server, 'site' => $this->site, 'month' => '2026-05']))
             ->assertSuccessful()
@@ -240,6 +243,81 @@ class SiteStatsTest extends TestCase
         Queue::assertPushed(ManageJob::class);
     }
 
+    public function test_stats_enabled_defaults_true(): void
+    {
+        $this->assertTrue($this->site->statsEnabled());
+    }
+
+    public function test_disable_sets_flag_and_dispatches_cleanup_when_installed(): void
+    {
+        Queue::fake();
+        $this->installGoAccess();
+
+        app(UpdateSiteStats::class)->disable($this->site);
+
+        $this->assertFalse($this->site->refresh()->statsEnabled());
+        $this->assertTrue($this->site->type_data['stats_disabled']);
+        Queue::assertPushed(CleanupSiteStatsJob::class);
+    }
+
+    public function test_disable_without_service_does_not_dispatch(): void
+    {
+        Queue::fake();
+
+        app(UpdateSiteStats::class)->disable($this->site);
+
+        $this->assertFalse($this->site->refresh()->statsEnabled());
+        Queue::assertNotPushed(CleanupSiteStatsJob::class);
+    }
+
+    public function test_enable_unsets_flag_and_dispatches_write_when_installed(): void
+    {
+        Queue::fake();
+        $this->installGoAccess();
+        $this->site->jsonUpdate('type_data', 'stats_disabled', true);
+
+        app(UpdateSiteStats::class)->enable($this->site);
+
+        $this->site->refresh();
+        $this->assertTrue($this->site->statsEnabled());
+        $this->assertArrayNotHasKey('stats_disabled', $this->site->type_data ?? []);
+        Queue::assertPushed(WriteSiteStatsConfJob::class);
+    }
+
+    public function test_disable_route_disables_stats(): void
+    {
+        Queue::fake();
+        $this->actingAs($this->user);
+        $this->installGoAccess();
+
+        $this->post(route('site-settings.disable-stats', ['server' => $this->server, 'site' => $this->site]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertFalse($this->site->refresh()->statsEnabled());
+    }
+
+    public function test_json_returns_404_when_stats_disabled(): void
+    {
+        SSH::fake($this->sampleReport());
+        $this->actingAs($this->user);
+        $this->installGoAccess();
+        $this->site->jsonUpdate('type_data', 'stats_disabled', true);
+
+        $this->get(route('site-stats.json', ['server' => $this->server, 'site' => $this->site, 'month' => '2026-05']))
+            ->assertNotFound();
+    }
+
+    public function test_write_conf_job_noop_when_disabled(): void
+    {
+        SSH::fake('');
+        $this->site->jsonUpdate('type_data', 'stats_disabled', true);
+
+        (new WriteSiteStatsConfJob($this->site->refresh()))->handle();
+
+        SSH::assertNotExecutedContains('sites/'.$this->site->id.'.conf');
+        $this->assertFalse($this->site->statsEnabled());
+    }
+
     public function test_hidden_cron_survives_empty_crontab_sync(): void
     {
         SSH::fake(''); // getUserCrontab returns empty for every user
@@ -253,7 +331,7 @@ class SiteStatsTest extends TestCase
             'status' => CronjobStatus::READY,
         ]);
 
-        app(\App\Actions\CronJob\SyncCronJobs::class)->sync($this->server);
+        app(SyncCronJobs::class)->sync($this->server);
 
         $this->assertSame(CronjobStatus::READY, $cron->refresh()->status);
     }

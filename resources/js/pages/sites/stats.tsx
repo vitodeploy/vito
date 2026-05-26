@@ -25,6 +25,7 @@ type Page = {
   server: Server;
   site: Site;
   hasStatsService: boolean;
+  statsEnabled: boolean;
 };
 
 function formatNumber(value: number): string {
@@ -65,13 +66,13 @@ function formatDay(value: string): string {
 
 export default function SiteStats() {
   const page = usePage<Page>();
-  const { server, site, hasStatsService } = page.props;
+  const { server, site, hasStatsService, statsEnabled } = page.props;
 
   return (
     <ServerLayout>
       <Head title={`Stats - ${site.domain} - ${server.name}`} />
       <Container className="max-w-5xl">
-        {hasStatsService ? (
+        {statsEnabled && hasStatsService ? (
           <StatsView server={server} site={site} />
         ) : (
           <>
@@ -81,7 +82,16 @@ export default function SiteStats() {
             <SiteBanners site={site} />
             <Card>
               <CardContent className="text-muted-foreground p-6 text-sm">
-                Install the <span className="text-foreground font-medium">GoAccess</span> service on this server to enable site statistics.
+                {!statsEnabled ? (
+                  <>
+                    Statistics are <span className="text-foreground font-medium">disabled</span> for this site. Enable them from the site's Settings
+                    page.
+                  </>
+                ) : (
+                  <>
+                    Install the <span className="text-foreground font-medium">GoAccess</span> service on this server to enable site statistics.
+                  </>
+                )}
               </CardContent>
             </Card>
           </>
@@ -131,157 +141,155 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
   return (
     <>
       <HeaderContainer>
-          <Heading title="Stats" description="Web statistics for this site" />
-          <div className="flex items-center gap-2">
-            {data && data.months.length > 0 && (
-              <Select value={selectedMonth} onValueChange={setMonth}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Select month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {data.months.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {formatMonth(m)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <Button variant="outline" onClick={refresh} disabled={refreshing} aria-label="Refresh">
-              <RefreshCwIcon className={refreshing ? 'animate-spin' : ''} />
-              <span className="hidden lg:block">Refresh</span>
-            </Button>
-          </div>
-        </HeaderContainer>
+        <Heading title="Stats" description="Web statistics for this site" />
+        <div className="flex items-center gap-2">
+          {data && data.months.length > 0 && (
+            <Select value={selectedMonth} onValueChange={setMonth}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent>
+                {data.months.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {formatMonth(m)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button variant="outline" onClick={refresh} disabled={refreshing} aria-label="Refresh">
+            <RefreshCwIcon className={refreshing ? 'animate-spin' : ''} />
+            <span className="hidden lg:block">Refresh</span>
+          </Button>
+        </div>
+      </HeaderContainer>
 
-        <SiteBanners site={site} />
+      <SiteBanners site={site} />
 
-        {data?.status && data.status.exit_code !== null && data.status.exit_code !== 0 && (
-          <Card className="border-destructive/50">
-            <CardContent className="text-destructive p-4 text-sm">
-              The last statistics run failed{data.status.error ? `: ${data.status.error}` : ''}. Try Refresh, or Re-sync the GoAccess service.
-            </CardContent>
-          </Card>
-        )}
+      {data?.status && data.status.exit_code !== null && data.status.exit_code !== 0 && (
+        <Card className="border-destructive/50">
+          <CardContent className="text-destructive p-4 text-sm">
+            The last statistics run failed{data.status.error ? `: ${data.status.error}` : ''}. Try Refresh, or Re-sync the GoAccess service.
+          </CardContent>
+        </Card>
+      )}
 
-        {isLoading && (
+      {isLoading && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Skeleton className="h-[200px]" />
+          <Skeleton className="h-[200px]" />
+          <Skeleton className="h-[200px]" />
+        </div>
+      )}
+
+      {isError && (
+        <Card>
+          <CardContent className="text-muted-foreground p-6 text-sm">Failed to load site statistics. Try refreshing.</CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !isError && data && data.summary.length === 0 && !detail && (
+        <Card>
+          <CardContent className="text-muted-foreground p-6 text-sm">
+            No statistics yet. Data is collected hourly — use Refresh to generate it now.
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && data && data.summary.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-foreground text-base font-medium">Growth (monthly)</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Skeleton className="h-[200px]" />
-            <Skeleton className="h-[200px]" />
-            <Skeleton className="h-[200px]" />
+            <StatsChart
+              title="Visitors"
+              value={formatNumber(data.summary.reduce((t, m) => t + m.visitors, 0))}
+              color="var(--color-chart-1)"
+              dataKey="visitors"
+              labelKey="month"
+              data={data.summary}
+              formatLabel={formatMonth}
+              formatValue={(v) => formatNumber(Number(v))}
+            />
+            <StatsChart
+              title="Hits"
+              value={formatNumber(data.summary.reduce((t, m) => t + m.hits, 0))}
+              color="var(--color-chart-2)"
+              dataKey="hits"
+              labelKey="month"
+              data={data.summary}
+              formatLabel={formatMonth}
+              formatValue={(v) => formatNumber(Number(v))}
+            />
+            <StatsChart
+              title="Bandwidth"
+              value={formatBytes(data.summary.reduce((t, m) => t + m.bandwidth, 0))}
+              color="var(--color-chart-3)"
+              dataKey="bandwidth"
+              labelKey="month"
+              data={data.summary}
+              formatLabel={formatMonth}
+              formatValue={(v) => formatBytes(Number(v))}
+            />
           </div>
-        )}
+        </div>
+      )}
 
-        {isError && (
-          <Card>
-            <CardContent className="text-muted-foreground p-6 text-sm">Failed to load site statistics. Try refreshing.</CardContent>
-          </Card>
-        )}
-
-        {!isLoading && !isError && data && data.summary.length === 0 && !detail && (
-          <Card>
-            <CardContent className="text-muted-foreground p-6 text-sm">
-              No statistics yet. Data is collected hourly — use Refresh to generate it now.
-            </CardContent>
-          </Card>
-        )}
-
-        {!isLoading && data && data.summary.length > 0 && (
+      {!isLoading && detail && (
+        <>
           <div className="flex flex-col gap-2">
-            <h3 className="text-foreground text-base font-medium">Growth (monthly)</h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-foreground text-base font-medium">{selectedMonth ? formatMonth(selectedMonth) : ''} detail</h3>
+              {detail.generated_at && <span className="text-muted-foreground text-xs">Updated {new Date(detail.generated_at).toLocaleString()}</span>}
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <StatCard title="Visitors" value={formatNumber(detail.totals.visitors)} />
+                <StatCard title="Hits" value={formatNumber(detail.totals.hits)} />
+                <StatCard title="Bandwidth" value={formatBytes(detail.totals.bandwidth)} />
+              </div>
               <StatsChart
-                title="Visitors"
-                value={formatNumber(data.summary.reduce((t, m) => t + m.visitors, 0))}
+                title="Visitors per day"
                 color="var(--color-chart-1)"
                 dataKey="visitors"
-                labelKey="month"
-                data={data.summary}
-                formatLabel={formatMonth}
+                labelKey="date"
+                data={detail.daily}
+                formatLabel={formatDay}
                 formatValue={(v) => formatNumber(Number(v))}
+                height="sm"
               />
               <StatsChart
-                title="Hits"
-                value={formatNumber(data.summary.reduce((t, m) => t + m.hits, 0))}
+                title="Hits per day"
                 color="var(--color-chart-2)"
                 dataKey="hits"
-                labelKey="month"
-                data={data.summary}
-                formatLabel={formatMonth}
+                labelKey="date"
+                data={detail.daily}
+                formatLabel={formatDay}
                 formatValue={(v) => formatNumber(Number(v))}
+                height="sm"
               />
               <StatsChart
-                title="Bandwidth"
-                value={formatBytes(data.summary.reduce((t, m) => t + m.bandwidth, 0))}
+                title="Bandwidth per day"
                 color="var(--color-chart-3)"
                 dataKey="bandwidth"
-                labelKey="month"
-                data={data.summary}
-                formatLabel={formatMonth}
+                labelKey="date"
+                data={detail.daily}
+                formatLabel={formatDay}
                 formatValue={(v) => formatBytes(Number(v))}
+                height="sm"
               />
             </div>
           </div>
-        )}
 
-        {!isLoading && detail && (
-          <>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-foreground text-base font-medium">{selectedMonth ? formatMonth(selectedMonth) : ''} detail</h3>
-                {detail.generated_at && (
-                  <span className="text-muted-foreground text-xs">Updated {new Date(detail.generated_at).toLocaleString()}</span>
-                )}
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <StatCard title="Visitors" value={formatNumber(detail.totals.visitors)} />
-                  <StatCard title="Hits" value={formatNumber(detail.totals.hits)} />
-                  <StatCard title="Bandwidth" value={formatBytes(detail.totals.bandwidth)} />
-                </div>
-                <StatsChart
-                  title="Visitors per day"
-                  color="var(--color-chart-1)"
-                  dataKey="visitors"
-                  labelKey="date"
-                  data={detail.daily}
-                  formatLabel={formatDay}
-                  formatValue={(v) => formatNumber(Number(v))}
-                  height="sm"
-                />
-                <StatsChart
-                  title="Hits per day"
-                  color="var(--color-chart-2)"
-                  dataKey="hits"
-                  labelKey="date"
-                  data={detail.daily}
-                  formatLabel={formatDay}
-                  formatValue={(v) => formatNumber(Number(v))}
-                  height="sm"
-                />
-                <StatsChart
-                  title="Bandwidth per day"
-                  color="var(--color-chart-3)"
-                  dataKey="bandwidth"
-                  labelKey="date"
-                  data={detail.daily}
-                  formatLabel={formatDay}
-                  formatValue={(v) => formatBytes(Number(v))}
-                  height="sm"
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <PanelCard title="Top pages" rows={detail.top_pages} />
+            <PanelCard title="Referrers" rows={detail.referrers} />
+          </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <PanelCard title="Top pages" rows={detail.top_pages} />
-              <PanelCard title="Referrers" rows={detail.referrers} />
-            </div>
+          <StatusCodesCard rows={detail.status_codes} />
 
-            <StatusCodesCard rows={detail.status_codes} />
-
-            <PanelCard title="404 pages" rows={detail.not_found} />
-          </>
-        )}
+          <PanelCard title="404 pages" rows={detail.not_found} />
+        </>
+      )}
     </>
   );
 }

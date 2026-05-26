@@ -25,6 +25,10 @@ class WriteSiteStatsConfJob implements ShouldQueue
 
     public function handle(): void
     {
+        if (! $this->site->statsEnabled()) {
+            return;
+        }
+
         $this->run("server-{$this->site->server_id}-site-stats", function (): void {
             $base = GoAccess::BASE_DIR;
             $ssh = $this->site->server->ssh();

@@ -23,6 +23,7 @@ import VHost from '@/pages/site-settings/components/vhost';
 import VHostPreview from '@/pages/site-settings/components/vhost-preview';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
 import BasicAuth from '@/pages/site-settings/components/basic-auth';
+import StatsToggle from '@/pages/site-settings/components/stats-toggle';
 import WebDirectory from './components/web-directory';
 
 export default function Databases() {
@@ -146,6 +147,19 @@ export default function Databases() {
                       {page.props.site.basic_auth?.enabled ? `Enabled (${page.props.site.basic_auth.users.length})` : 'Disabled'}
                     </Button>
                   </BasicAuth>
+                </div>
+              </>
+            )}
+            {page.props.server.services['log_analysis'] && (
+              <>
+                <Separator />
+                <div className="flex items-center justify-between p-4">
+                  <span>Statistics</span>
+                  <StatsToggle site={page.props.site}>
+                    <Button variant="outline" className="h-6">
+                      {page.props.site.stats_enabled ? 'Enabled' : 'Disabled'}
+                    </Button>
+                  </StatsToggle>
                 </div>
               </>
             )}

@@ -39,6 +39,7 @@ export interface Site {
   has_custom_vhost_template: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
+  stats_enabled: boolean;
   is_proxied_site_type: boolean;
   available_tooling_commands: string[];
   start_command: string | null;

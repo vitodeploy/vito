@@ -14,6 +14,7 @@ class GetSiteStats
 {
     /**
      * @return array{months: array<int, string>, month: string, summary: array<int, array<string, mixed>>, detail: ?array<string, mixed>}
+     *
      * @throws SSHError
      */
     public function get(Site $site, ?string $month = null): array
@@ -56,8 +57,9 @@ class GetSiteStats
     }
 
     /**
-     * @param  ?array<string, mixed> $status
+     * @param  ?array<string, mixed>  $status
      * @return ?array<string, mixed>
+     *
      * @throws SSHError
      */
     private function detail(SSH|SSHFake $ssh, Site $site, string $month, ?array $status): ?array
@@ -151,6 +153,7 @@ class GetSiteStats
 
     /**
      * @return ?array<string, mixed>
+     *
      * @throws SSHError
      */
     private function readJson(SSH|SSHFake $ssh, Site $site, string $file): ?array
@@ -160,6 +163,7 @@ class GetSiteStats
 
     /**
      * @return ?array<string, mixed>
+     *
      * @throws SSHError
      */
     private function readMonth(SSH|SSHFake $ssh, Site $site, string $month): ?array
@@ -175,6 +179,7 @@ class GetSiteStats
 
     /**
      * @return ?array<string, mixed>
+     *
      * @throws SSHError
      */
     private function cat(SSH|SSHFake $ssh, string $path): ?array

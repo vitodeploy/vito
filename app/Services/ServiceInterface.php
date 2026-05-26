@@ -39,6 +39,6 @@ interface ServiceInterface
     public function version(): string;
 
     public function canBeManaged(): bool;
-    
+
     public function manage(string $action): bool;
 }

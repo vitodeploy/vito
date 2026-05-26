@@ -33,7 +33,9 @@ export function StatsChart({ title, value, color, dataKey, labelKey, data, forma
           </div>
         </div>
         {data.length === 0 ? (
-          <div className={cn('text-muted-foreground flex w-full items-center justify-center rounded-b-xl border-t text-sm', heightClass)}>No data</div>
+          <div className={cn('text-muted-foreground flex w-full items-center justify-center rounded-b-xl border-t text-sm', heightClass)}>
+            No data
+          </div>
         ) : (
           <ChartContainer config={chartConfig} className={cn('aspect-auto w-full overflow-hidden rounded-b-xl', heightClass)}>
             <AreaChart accessibilityLayer data={data} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
@@ -55,7 +57,11 @@ export function StatsChart({ title, value, color, dataKey, labelKey, data, forma
               <ChartTooltip
                 cursor={true}
                 content={
-                  <ChartTooltipContent labelFormatter={(v) => (formatLabel ? formatLabel(String(v)) : String(v))} formatter={formatValue} indicator="dot" />
+                  <ChartTooltipContent
+                    labelFormatter={(v) => (formatLabel ? formatLabel(String(v)) : String(v))}
+                    formatter={formatValue}
+                    indicator="dot"
+                  />
                 }
               />
               <Area dataKey={dataKey} type="monotone" fill={`url(#fill-${dataKey})`} stroke={color} />

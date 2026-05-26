@@ -27,6 +27,7 @@ class SiteStatsController extends Controller
 
         return Inertia::render('sites/stats', [
             'hasStatsService' => (bool) $server->service('log_analysis'),
+            'statsEnabled' => $site->statsEnabled(),
         ]);
     }
 
@@ -34,6 +35,8 @@ class SiteStatsController extends Controller
     public function json(Request $request, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
+
+        abort_unless((bool) $server->service('log_analysis') && $site->statsEnabled(), 404);
 
         $month = $request->string('month')->toString();
         $month = preg_match('/^\d{4}-\d{2}$/', $month) === 1 ? $month : null;
@@ -46,7 +49,7 @@ class SiteStatsController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        abort_unless((bool) $server->service('log_analysis'), 404);
+        abort_unless((bool) $server->service('log_analysis') && $site->statsEnabled(), 404);
 
         dispatch(new RefreshSiteStatsJob($site));
 
