@@ -80,6 +80,20 @@
 
 {{/server_blocks}}
 
+{{#has_http_verification}}
+{{#http_verification_domains}}{{address}} {{/http_verification_domains}}{
+    handle_path /.well-known/vito/{{verification_key}}/* {
+        root * /var/lib/vito/verify/{{verification_key}}
+        header Cache-Control "no-store"
+        file_server
+    }
+
+    handle {
+        redir https://{host}{uri} permanent
+    }
+}
+
+{{/has_http_verification}}
 {{#redirect_blocks}}
 {{#domains}}{{address}} {{/domains}}{
     {{#has_tls}}

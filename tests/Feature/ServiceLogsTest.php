@@ -93,16 +93,18 @@ class ServiceLogsTest extends TestCase
         $this->assertSame('/var/log/apache2/'.$this->site->domain.'-error.log', $entries[$key]['display_target']);
     }
 
-    public function test_nginx_does_not_expose_per_site_logs(): void
+    public function test_nginx_exposes_per_site_error_log(): void
     {
         $this->actingAs($this->user);
 
         $response = $this->get(route('logs.services', $this->server));
 
         $catalogue = $response->viewData('page')['props']['catalogue'];
-        $keys = array_column($catalogue, 'key');
+        $entries = collect($catalogue)->keyBy('key');
 
-        $this->assertNotContains('nginx:site:'.$this->site->id.':error', $keys);
+        $key = 'nginx:site:'.$this->site->id.':error';
+        $this->assertTrue($entries->has($key));
+        $this->assertSame('/var/log/nginx/'.$this->site->domain.'-error.log', $entries[$key]['display_target']);
     }
 
     public function test_services_without_has_logs_are_skipped(): void

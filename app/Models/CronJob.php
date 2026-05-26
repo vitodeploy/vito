@@ -84,13 +84,34 @@ class CronJob extends AbstractModel
             ->get();
         /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
-            $data .= $cronJob->frequency.' '.$cronJob->command;
+            $command = $user === 'root' ? $cronJob->command : self::wrapCommand($cronJob->command);
+            $data .= $cronJob->frequency.' '.$command;
             if ($key != count($cronJobs) - 1) {
                 $data .= "\n";
             }
         }
 
         return $data;
+    }
+
+    public static function wrapCommand(string $command): string
+    {
+        return 'bash -lc '.escapeshellarg($command);
+    }
+
+    public static function unwrapCommand(string $command): ?string
+    {
+        $prefix = 'bash -lc ';
+        if (! str_starts_with($command, $prefix)) {
+            return null;
+        }
+
+        $argument = trim(substr($command, strlen($prefix)));
+        if (strlen($argument) < 2 || ! str_starts_with($argument, "'") || ! str_ends_with($argument, "'")) {
+            return null;
+        }
+
+        return str_replace("'\\''", "'", substr($argument, 1, -1));
     }
 
     public function frequencyLabel(): string

@@ -23,7 +23,7 @@ export default function SiteTooling() {
 
   const configs = useConfigs();
   const tools = configs?.tooling ?? [];
-  const { isolated_user, sibling_sites, installed_versions, tool_statuses } = page.props;
+  const { isolated_user, sibling_sites, installed_versions, tool_statuses, required_tooling } = page.props;
 
   useStatusTransitionToasts(tool_statuses, tools);
 
@@ -91,6 +91,7 @@ export default function SiteTooling() {
           tools={tools}
           installedVersions={installed_versions}
           statuses={tool_statuses}
+          requiredTooling={required_tooling}
           siblingCount={sibling_sites.length}
           onSubmit={() => {
             ownSubmitAt.current = Date.now();

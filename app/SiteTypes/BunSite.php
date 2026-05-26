@@ -29,6 +29,11 @@ class BunSite extends AbstractProxiedSiteType
         return ['bun'];
     }
 
+    public static function requiredTooling(): array
+    {
+        return ['bun'];
+    }
+
     /**
      * @return array<int, DynamicField>
      */

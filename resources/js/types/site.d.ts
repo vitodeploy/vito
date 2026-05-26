@@ -40,6 +40,7 @@ export interface Site {
   features: SiteFeature[];
   modern_deployment: boolean;
   is_proxied_site_type: boolean;
+  available_tooling_commands: string[];
   start_command: string | null;
   bootstrap_worker_id: number | null;
   basic_auth: {

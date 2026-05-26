@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card } from '@/components/ui/card';
 import { CircleCheckIcon, CircleIcon, LoaderCircleIcon, SearchIcon, TrashIcon, TriangleAlertIcon } from 'lucide-react';
 import { Site } from '@/types/site';
@@ -16,11 +17,12 @@ type Props = {
   tools: ToolingDescriptor[];
   installedVersions: Record<string, string | null>;
   statuses: Record<string, SiteToolingStatus>;
+  requiredTooling: Record<string, string>;
   siblingCount: number;
   onSubmit?: () => void;
 };
 
-export default function ToolingTable({ site, tools, installedVersions, statuses, siblingCount, onSubmit }: Props) {
+export default function ToolingTable({ site, tools, installedVersions, statuses, requiredTooling, siblingCount, onSubmit }: Props) {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
@@ -68,6 +70,7 @@ export default function ToolingTable({ site, tools, installedVersions, statuses,
                   tool={tool}
                   installedVersion={installedVersions[tool.id] ?? null}
                   status={statuses[tool.id] ?? null}
+                  requiredBy={requiredTooling[tool.id] ?? null}
                   siblingCount={siblingCount}
                   onSubmit={onSubmit}
                 />
@@ -85,6 +88,7 @@ function ToolingRow({
   tool,
   installedVersion,
   status,
+  requiredBy,
   siblingCount,
   onSubmit,
 }: {
@@ -92,6 +96,7 @@ function ToolingRow({
   tool: ToolingDescriptor;
   installedVersion: string | null;
   status: SiteToolingStatus;
+  requiredBy: string | null;
   siblingCount: number;
   onSubmit?: () => void;
 }) {
@@ -112,8 +117,9 @@ function ToolingRow({
   const uninstallFailed = status === 'uninstall_failed';
 
   const installed = installedVersion !== null;
+  const required = requiredBy !== null;
   const primaryDisabled = submitting || busy || selected === '' || selected === installedVersion;
-  const uninstallDisabled = submitting || busy || !installed;
+  const uninstallDisabled = submitting || busy || !installed || required;
 
   const submitInstall = (e: FormEvent) => {
     e.preventDefault();
@@ -189,21 +195,34 @@ function ToolingRow({
           >
             {installing || submittingInstall ? <LoaderCircleIcon className="size-4 animate-spin" /> : 'Install'}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={uninstallDisabled}
-            onClick={() => setConfirmOpen(true)}
-            aria-busy={uninstalling}
-            aria-label={uninstalling ? `Uninstalling ${tool.label}` : `Uninstall ${tool.label}`}
-          >
-            {uninstalling || submittingUninstall ? (
-              <LoaderCircleIcon className="text-destructive size-4 animate-spin" />
-            ) : (
-              <TrashIcon className="text-destructive size-4" />
-            )}
-          </Button>
+          {required ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0}>
+                  <Button type="button" variant="outline" size="icon" disabled aria-label={`Uninstall ${tool.label}`}>
+                    <TrashIcon className="text-destructive size-4" />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Required by {requiredBy} site type</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={uninstallDisabled}
+              onClick={() => setConfirmOpen(true)}
+              aria-busy={uninstalling}
+              aria-label={uninstalling ? `Uninstalling ${tool.label}` : `Uninstall ${tool.label}`}
+            >
+              {uninstalling || submittingUninstall ? (
+                <LoaderCircleIcon className="text-destructive size-4 animate-spin" />
+              ) : (
+                <TrashIcon className="text-destructive size-4" />
+              )}
+            </Button>
+          )}
         </form>
 
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -213,13 +232,11 @@ function ToolingRow({
               <DialogDescription>This will remove {tool.label} from the isolated user.</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 p-4 text-sm">
-              {siblingCount > 0 ? (
+              {siblingCount > 0 && (
                 <p>
                   This isolated user is shared with <strong>{siblingCount}</strong> other site{siblingCount === 1 ? '' : 's'}. Uninstalling will
                   affect them all.
                 </p>
-              ) : (
-                <p>No other sites share this isolated user.</p>
               )}
               <p>Are you sure you want to uninstall {tool.label}?</p>
             </div>

@@ -99,7 +99,7 @@ class SyncCronJobs
 
             // Check if this matches any Vito-managed cronjob (including site-level ones)
             $matchingCronJob = $vitoCronJobs->first(function ($cronJob) use ($frequency, $command) {
-                return $this->normalizeFrequency($cronJob->frequency) === $frequency && $this->normalizeCommand($cronJob->command) === $command;
+                return $this->normalizeFrequency($cronJob->frequency) === $frequency && $this->matchesCommand($cronJob->command, $command);
             });
 
             if ($matchingCronJob) {
@@ -126,7 +126,7 @@ class SyncCronJobs
         // Create new cronjobs for manually created ones (not in Vito)
         foreach ($serverCronJobs as $cronJobData) {
             $isVitoManaged = $vitoCronJobs->contains(function ($cronJob) use ($cronJobData) {
-                return $this->normalizeFrequency($cronJob->frequency) === $cronJobData['frequency'] && $this->normalizeCommand($cronJob->command) === $cronJobData['command'];
+                return $this->normalizeFrequency($cronJob->frequency) === $cronJobData['frequency'] && $this->matchesCommand($cronJob->command, $cronJobData['command']);
             });
 
             if (! $isVitoManaged) {
@@ -152,6 +152,18 @@ class SyncCronJobs
     {
         // Normalize command by ensuring single spaces between parts
         return preg_replace('/\s+/', ' ', trim($command));
+    }
+
+    private function matchesCommand(string $cronJobCommand, string $serverCommand): bool
+    {
+        $normalizedCronJob = $this->normalizeCommand($cronJobCommand);
+        if ($normalizedCronJob === $serverCommand) {
+            return true;
+        }
+
+        $unwrapped = CronJob::unwrapCommand($serverCommand);
+
+        return $unwrapped !== null && $this->normalizeCommand($unwrapped) === $normalizedCronJob;
     }
 
     /**

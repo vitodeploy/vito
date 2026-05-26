@@ -35,6 +35,14 @@ abstract class AbstractSiteType implements SiteType
         return [];
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public static function requiredTooling(): array
+    {
+        return [];
+    }
+
     public static function supportsTooling(): bool
     {
         return false;

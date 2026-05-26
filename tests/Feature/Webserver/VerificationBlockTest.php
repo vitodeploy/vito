@@ -4,8 +4,10 @@ namespace Tests\Feature\Webserver;
 
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Enums\ServiceStatus;
+use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Service;
+use App\Models\Ssl;
 use App\Services\Webserver\Apache;
 use App\Services\Webserver\Caddy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,12 +132,101 @@ class VerificationBlockTest extends TestCase
         $this->assertStringNotContainsString('/.well-known/vito/', $vhost);
     }
 
+    public function test_nginx_force_ssl_redirect_serves_and_exempts_verification_challenge(): void
+    {
+        $ssl = Ssl::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => SslStatus::CREATED,
+            'type' => 'letsencrypt',
+            'domains' => [$this->site->domain],
+        ]);
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+            'ssl_id' => $ssl->id,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => true,
+            'force_ssl' => true,
+            'verification_key' => 'forcedKey55',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->site->webserver()->generateVhost($this->site);
+
+        $this->assertStringContainsString('location ^~ /.well-known/vito/forcedKey55/', $vhost);
+        $this->assertStringContainsString('alias /var/lib/vito/verify/forcedKey55/', $vhost);
+        $this->assertStringContainsString(
+            "location / {\n        return 301 https://\$host\$request_uri;\n    }",
+            $vhost,
+            'The force-SSL port-80 redirect must be scoped to location / so the verification path is served instead of 301-redirected.'
+        );
+    }
+
+    public function test_caddy_serves_verification_over_http_when_using_auto_https(): void
+    {
+        $this->switchToCaddy();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => true,
+            'verification_key' => 'caddyForce42',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->server->webserver()->handler()->generateVhost($this->site);
+
+        $this->assertStringContainsString('http://'.$this->site->domain.' {', $vhost);
+        $this->assertStringContainsString('handle_path /.well-known/vito/caddyForce42/*', $vhost);
+        $this->assertStringContainsString('redir https://{host}{uri} permanent', $vhost);
+    }
+
+    public function test_caddy_omits_http_verification_block_for_http_only_site(): void
+    {
+        $this->switchToCaddy();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => false,
+            'verification_key' => 'caddyPlain1',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->server->webserver()->handler()->generateVhost($this->site);
+
+        $this->assertStringContainsString('handle_path /.well-known/vito/caddyPlain1/*', $vhost);
+        $this->assertStringNotContainsString('redir https://{host}{uri} permanent', $vhost);
+    }
+
     private function switchToApache(): void
     {
         $this->server->services()->where('type', 'webserver')->delete();
         $this->server->services()->create([
             'type' => Apache::type(),
             'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+        $this->server->refresh();
+    }
+
+    private function switchToCaddy(): void
+    {
+        $this->server->services()->where('type', 'webserver')->delete();
+        $this->server->services()->create([
+            'type' => Caddy::type(),
+            'name' => Caddy::id(),
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);

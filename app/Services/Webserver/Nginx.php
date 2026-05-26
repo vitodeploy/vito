@@ -182,7 +182,7 @@ class Nginx extends AbstractWebserver implements HasLogs
             'delete-vhost',
             $site->id
         );
-        $this->service->restart();
+        $this->service->reload();
     }
 
     /**
@@ -283,7 +283,7 @@ class Nginx extends AbstractWebserver implements HasLogs
 
     public function logs(): array
     {
-        return [
+        $logs = [
             new ServiceLog(
                 key: 'nginx:error',
                 serviceLabel: 'NGINX',
@@ -299,5 +299,21 @@ class Nginx extends AbstractWebserver implements HasLogs
                 target: '/var/log/nginx/access.log',
             ),
         ];
+
+        $sites = $this->service->server->relationLoaded('sites')
+            ? $this->service->server->sites->sortBy('id')
+            : $this->service->server->sites()->orderBy('id')->get(['id', 'domain']);
+
+        foreach ($sites as $site) {
+            $logs[] = new ServiceLog(
+                key: 'nginx:site:'.$site->id.':error',
+                serviceLabel: 'NGINX',
+                label: $site->domain.' error log',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/nginx/'.$site->domain.'-error.log',
+            );
+        }
+
+        return $logs;
     }
 }
