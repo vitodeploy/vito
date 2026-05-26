@@ -7,10 +7,14 @@ use Exception;
 
 class RenderSiteStatsConf
 {
-    public function render(Site $site): string
+    /**
+     * @throws Exception
+     */
+    public function render(Site $site, ?string $webserverId = null, ?int $retentionMonths = null): string
     {
         $domain = $this->safeDomain($site);
-        $caddy = $site->webserver()::id() === 'caddy';
+        $caddy = ($webserverId ?? $site->webserver()::id()) === 'caddy';
+        $retention = $retentionMonths ?? (int) ($site->server->service('log_analysis')?->type_data['data_retention'] ?? 12);
 
         $vars = [
             'SITE_ID' => (string) $site->id,
@@ -18,7 +22,7 @@ class RenderSiteStatsConf
             'LOG_FORMAT' => $caddy ? 'CADDY' : 'COMBINED',
             'LIVE_LOG' => $caddy ? "/var/log/caddy/{$domain}-access.log" : "/var/log/nginx/{$domain}-access.log",
             'LOG_GLOB' => $caddy ? "/var/log/caddy/{$domain}-access*.log*" : "/var/log/nginx/{$domain}-access.log*",
-            'RETENTION_MONTHS' => (string) (int) ($site->server->service('log_analysis')?->type_data['data_retention'] ?? 12),
+            'RETENTION_MONTHS' => (string) $retention,
             'SSH_USER' => $site->server->getSshUser(),
         ];
 

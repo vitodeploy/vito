@@ -136,37 +136,56 @@ class GoAccess extends AbstractService
      */
     public function manage(string $action): bool
     {
-        $enabled = ! in_array($action, ['stop', 'disable'], true);
-
-        return $this->toggleCron($enabled);
+        return match ($action) {
+            'start', 'enable' => $this->setCronStatus(CronjobStatus::READY),
+            'stop', 'disable' => $this->setCronStatus(CronjobStatus::DISABLED),
+            default => $this->rebuildCrontab(),
+        };
     }
 
     /**
      * @throws SSHError
      */
-    private function toggleCron(bool $enabled): bool
+    private function setCronStatus(CronjobStatus $status): bool
     {
         $server = $this->service->server;
-
-        $cron = $server->cronJobs()
-            ->where('user', 'root')
-            ->where('hidden', true)
-            ->where('command', self::CRON_COMMAND)
-            ->first();
+        $cron = $this->statsCron();
 
         if (! $cron) {
-            if ($enabled) {
+            if ($status === CronjobStatus::READY) {
                 app(SyncGoAccessServer::class)->sync($server);
             }
 
             return true;
         }
 
-        $cron->status = $enabled ? CronjobStatus::READY : CronjobStatus::DISABLED;
+        $cron->status = $status;
         $cron->save();
 
         $server->cron()->update('root', CronJob::crontab($server, 'root'));
 
         return true;
+    }
+
+    /**
+     * @throws SSHError
+     */
+    private function rebuildCrontab(): bool
+    {
+        if ($this->statsCron()) {
+            $server = $this->service->server;
+            $server->cron()->update('root', CronJob::crontab($server, 'root'));
+        }
+
+        return true;
+    }
+
+    private function statsCron(): ?CronJob
+    {
+        return $this->service->server->cronJobs()
+            ->where('user', 'root')
+            ->where('hidden', true)
+            ->where('command', self::CRON_COMMAND)
+            ->first();
     }
 }

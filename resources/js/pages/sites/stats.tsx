@@ -280,7 +280,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             <PanelCard title="Top pages" rows={detail.top_pages} />
             <PanelCard title="Referrers" rows={detail.referrers} />
           </div>
@@ -308,7 +308,7 @@ function StatCard({ title, value }: { title: string; value: string }) {
 function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }) {
   return (
     <Card className="overflow-hidden">
-      <CardContent className="flex flex-1 flex-col p-0">
+      <CardContent className="p-0">
         <Table className="[&_tr]:hover:bg-transparent">
           <TableHeader>
             <TableRow>
@@ -317,19 +317,24 @@ function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }
               <TableHead className="text-right font-semibold">Visitors</TableHead>
             </TableRow>
           </TableHeader>
-          {rows.length > 0 && (
-            <TableBody>
-              {rows.map((row, index) => (
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-muted-foreground h-32 text-center text-sm">
+                  No data
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((row, index) => (
                 <TableRow key={`${row.name}-${index}`}>
                   <TableCell className="max-w-[280px] truncate">{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{row.visitors.toLocaleString()}</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          )}
+              ))
+            )}
+          </TableBody>
         </Table>
-        {rows.length === 0 && <div className="text-muted-foreground flex flex-1 items-center justify-center py-12 text-sm">No data</div>}
       </CardContent>
     </Card>
   );
@@ -338,7 +343,7 @@ function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }
 function StatusCodesCard({ rows }: { rows: SiteStatsStatusCode[] }) {
   return (
     <Card className="overflow-hidden">
-      <CardContent className="flex flex-1 flex-col p-0">
+      <CardContent className="p-0">
         <Table className="[&_tr]:hover:bg-transparent">
           <TableHeader>
             <TableRow>
@@ -346,18 +351,23 @@ function StatusCodesCard({ rows }: { rows: SiteStatsStatusCode[] }) {
               <TableHead className="text-right font-semibold">Hits</TableHead>
             </TableRow>
           </TableHeader>
-          {rows.length > 0 && (
-            <TableBody>
-              {rows.map((row, index) => (
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2} className="text-muted-foreground h-32 text-center text-sm">
+                  No data
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((row, index) => (
                 <TableRow key={`${row.name}-${index}`}>
                   <TableCell>{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          )}
+              ))
+            )}
+          </TableBody>
         </Table>
-        {rows.length === 0 && <div className="text-muted-foreground flex flex-1 items-center justify-center py-12 text-sm">No data</div>}
       </CardContent>
     </Card>
   );

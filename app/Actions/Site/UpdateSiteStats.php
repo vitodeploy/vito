@@ -16,7 +16,7 @@ class UpdateSiteStats
             dispatch(new CleanupSiteStatsJob($site->server, $site->id));
         }
     }
-    
+
     public function enable(Site $site): void
     {
         $typeData = $site->type_data ?? [];

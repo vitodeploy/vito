@@ -28,7 +28,7 @@ class RefreshSiteStatsJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->site->server_id}-site-stats", function (): void {
+        $this->run("server-{$this->site->server_id}-site-{$this->site->id}-stats", function (): void {
             $base = GoAccess::BASE_DIR;
             $output = $this->site->server->ssh('root')->exec(
                 'bash '.escapeshellarg("{$base}/bin/process.sh").' '.escapeshellarg("{$base}/sites/{$this->site->id}.conf"),

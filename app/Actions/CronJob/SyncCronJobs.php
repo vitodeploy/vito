@@ -34,8 +34,6 @@ class SyncCronJobs
             ->where('user', $user)
             ->get();
 
-        // Hidden infra crons stay in $vitoCronJobs (so they match and are never recreated as
-        // duplicates) but are excluded from the disable sweeps below.
         $serverLevelCronJobs = $vitoCronJobs->where('site_id', null)->where('hidden', false);
 
         if (empty($crontabOutput)) {

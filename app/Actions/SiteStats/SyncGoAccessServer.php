@@ -34,7 +34,11 @@ class SyncGoAccessServer
         ]), 'root');
 
         $renderer = app(RenderSiteStatsConf::class);
-        foreach ($server->sites()->with('server.services')->get() as $site) {
+        $webserver = $server->webserver();
+        $webserverId = $webserver ? $webserver->name : 'nginx';
+        $retention = (int) ($service->type_data['data_retention'] ?? 12);
+
+        foreach ($server->sites as $site) {
             $site->setRelation('server', $server);
 
             if (! $site->statsEnabled()) {
@@ -43,7 +47,7 @@ class SyncGoAccessServer
                 continue;
             }
 
-            $ssh->write("{$base}/sites/{$site->id}.conf", $renderer->render($site), 'root');
+            $ssh->write("{$base}/sites/{$site->id}.conf", $renderer->render($site, $webserverId, $retention), 'root');
         }
 
         $this->ensureCron($server);
