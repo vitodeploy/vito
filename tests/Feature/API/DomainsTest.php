@@ -172,8 +172,12 @@ class DomainsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        // Mock the DNS provider API call
+        // Mock the DNS provider API calls (getDomain + getRecords)
         Http::fake([
+            'api.cloudflare.com/client/v4/zones/test-domain-id/dns_records*' => Http::response([
+                'result' => [],
+                'success' => true,
+            ], 200),
             'api.cloudflare.com/*' => Http::response([
                 'result' => [
                     'id' => 'test-domain-id',
@@ -210,6 +214,52 @@ class DomainsTest extends TestCase
         $this->assertDatabaseHas('domains', [
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+    }
+
+    public function test_create_domain_fails_when_record_sync_fails(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $callCount = 0;
+
+        // First call (getDomain) succeeds, subsequent calls throw
+        Http::fake(function () use (&$callCount) {
+            $callCount++;
+            if ($callCount === 1) {
+                return Http::response([
+                    'result' => [
+                        'id' => 'test-domain-id',
+                        'name' => 'example.com',
+                        'status' => 'active',
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-01T00:00:00Z',
+                    ],
+                    'success' => true,
+                ], 200);
+            }
+
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $domainData = [
+            'dns_provider_id' => $dnsProvider->id,
+            'provider_domain_id' => 'test-domain-id',
+        ];
+
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains", $domainData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors('domain');
+
+        // Domain should not have been persisted due to transaction rollback
+        $this->assertDatabaseMissing('domains', [
             'provider_domain_id' => 'test-domain-id',
         ]);
     }

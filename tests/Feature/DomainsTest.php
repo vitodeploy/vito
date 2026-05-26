@@ -8,6 +8,7 @@ use App\Models\Domain;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -252,8 +253,12 @@ class DomainsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        // Mock the DNS provider API call
+        // Mock the DNS provider API calls (getDomain + getRecords)
         Http::fake([
+            'api.cloudflare.com/client/v4/zones/test-domain-id/dns_records*' => Http::response([
+                'result' => [],
+                'success' => true,
+            ], 200),
             'api.cloudflare.com/*' => Http::response([
                 'result' => [
                     'id' => 'test-domain-id',
@@ -476,7 +481,6 @@ class DomainsTest extends TestCase
                     'formatted_name',
                     'content',
                     'ttl',
-                    'formatted_ttl',
                     'proxied',
                     'domain_id',
                     'created_at',
@@ -1086,6 +1090,93 @@ class DomainsTest extends TestCase
         ]);
     }
 
+    public function test_sync_dns_records_returns_error_when_provider_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $domain = Domain::factory()->create([
+            'user_id' => $this->user->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+
+        $existingRecord = DNSRecord::factory()->create([
+            'domain_id' => $domain->id,
+            'type' => 'A',
+            'name' => 'existing',
+            'content' => '192.168.1.1',
+        ]);
+
+        // Mock the DNS provider API call to throw an exception
+        Http::fake(function () {
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $response = $this->post("/domains/{$domain->id}/records/sync");
+
+        $response->assertRedirect()
+            ->assertSessionHas('error');
+
+        // Existing record should remain intact after a failed sync
+        $this->assertDatabaseHas('dns_records', [
+            'id' => $existingRecord->id,
+            'domain_id' => $domain->id,
+            'name' => 'existing',
+        ]);
+    }
+
+    public function test_add_domain_fails_when_record_sync_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $callCount = 0;
+
+        // First call (getDomain) succeeds, subsequent calls throw
+        Http::fake(function () use (&$callCount) {
+            $callCount++;
+            if ($callCount === 1) {
+                return Http::response([
+                    'result' => [
+                        'id' => 'test-domain-id',
+                        'name' => 'example.com',
+                        'status' => 'active',
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-01T00:00:00Z',
+                    ],
+                    'success' => true,
+                ], 200);
+            }
+
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $domainData = [
+            'dns_provider_id' => $dnsProvider->id,
+            'provider_domain_id' => 'test-domain-id',
+        ];
+
+        $response = $this->post('/domains', $domainData);
+
+        $response->assertRedirect()
+            ->assertSessionHasErrors('domain');
+
+        // Domain should not have been persisted due to transaction rollback
+        $this->assertDatabaseMissing('domains', [
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+    }
+
     public function test_user_cannot_sync_dns_records_for_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
@@ -1106,5 +1197,104 @@ class DomainsTest extends TestCase
         $response = $this->post("/domains/{$otherDomain->id}/records/sync");
 
         $response->assertForbidden();
+    }
+
+    public function test_available_domains_returns_cached_value_when_cache_exists(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $cachedDomains = [
+            ['id' => 'cached-zone-1', 'name' => 'cached.com', 'status' => 'active'],
+        ];
+
+        Cache::put("dns_provider_{$dnsProvider->id}_domains", $cachedDomains, 3600);
+
+        // Should NOT make an API call — Http::fake with no matching routes would throw if called
+        Http::fake([]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/available");
+
+        $response->assertOk();
+        $this->assertEquals($cachedDomains, $response->json());
+    }
+
+    public function test_refresh_domains_skips_cache_and_fetches_from_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $staleDomains = [
+            ['id' => 'stale-zone-1', 'name' => 'stale.com', 'status' => 'active'],
+        ];
+
+        Cache::put("dns_provider_{$dnsProvider->id}_domains", $staleDomains, 3600);
+
+        $freshDomains = [
+            ['id' => 'zone-1', 'name' => 'fresh.com', 'status' => 'active', 'created_on' => '2023-01-01', 'modified_on' => '2023-01-02'],
+            ['id' => 'zone-2', 'name' => 'new.com', 'status' => 'active', 'created_on' => '2023-01-03', 'modified_on' => '2023-01-04'],
+        ];
+
+        Http::fake([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
+                'success' => true,
+                'result' => $freshDomains,
+            ], 200),
+        ]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/refresh");
+
+        $response->assertOk();
+
+        $data = $response->json();
+        $this->assertCount(2, $data);
+        $this->assertEquals('fresh.com', $data[0]['name']);
+        $this->assertEquals('new.com', $data[1]['name']);
+
+        // Cache should now be updated with fresh data
+        $cached = Cache::get("dns_provider_{$dnsProvider->id}_domains");
+        $this->assertCount(2, $cached);
+        $this->assertEquals('fresh.com', $cached[0]['name']);
+    }
+
+    public function test_refresh_domains_updates_cache_for_subsequent_available_calls(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $freshDomains = [
+            ['id' => 'zone-1', 'name' => 'example.com', 'status' => 'active', 'created_on' => '2023-01-01', 'modified_on' => '2023-01-02'],
+        ];
+
+        Http::fake([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
+                'success' => true,
+                'result' => $freshDomains,
+            ], 200),
+        ]);
+
+        // First call: refresh to populate cache
+        $this->get("/domains/{$dnsProvider->id}/refresh")->assertOk();
+
+        // Second call: available should use cache (no API call needed)
+        Http::fake([]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/available");
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json());
+        $this->assertEquals('example.com', $response->json()[0]['name']);
     }
 }

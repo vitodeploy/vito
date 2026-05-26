@@ -6,8 +6,7 @@ use Database\Factories\DomainFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Log;
-use Throwable;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $dns_provider_id
@@ -82,11 +81,14 @@ class Domain extends AbstractModel
         return $this->hasMany(DNSRecord::class);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function syncDnsRecords(): void
     {
-        try {
-            $records = $this->dnsProvider->provider()->getRecords($this->provider_domain_id);
+        $records = $this->dnsProvider->provider()->getRecords($this->provider_domain_id);
 
+        DB::transaction(function () use ($records) {
             DNSRecord::where('domain_id', $this->id)->delete();
 
             foreach ($records as $recordData) {
@@ -97,15 +99,11 @@ class Domain extends AbstractModel
                     'content' => $recordData['content'],
                     'ttl' => $recordData['ttl'] ?? 1,
                     'proxied' => $recordData['proxied'] ?? false,
+                    'priority' => $recordData['priority'] ?? null,
                     'provider_record_id' => $recordData['id'],
                     'metadata' => $recordData,
                 ]);
             }
-        } catch (Throwable $e) {
-            Log::error('Failed to sync DNS records for domain: '.$this->domain, [
-                'error' => $e->getMessage(),
-                'domain_id' => $this->id,
-            ]);
-        }
+        });
     }
 }

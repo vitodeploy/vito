@@ -68,7 +68,7 @@ class DNSRecordTest extends TestCase
                     'formatted_name',
                     'content',
                     'ttl',
-                    'formatted_ttl',
+
                     'proxied',
                     'domain_id',
                     'created_at',
@@ -156,7 +156,7 @@ class DNSRecordTest extends TestCase
                 'formatted_name',
                 'content',
                 'ttl',
-                'formatted_ttl',
+
                 'proxied',
                 'domain_id',
                 'created_at',
@@ -260,7 +260,7 @@ class DNSRecordTest extends TestCase
                 'formatted_name',
                 'content',
                 'ttl',
-                'formatted_ttl',
+
                 'proxied',
                 'domain_id',
                 'created_at',
@@ -750,6 +750,33 @@ class DNSRecordTest extends TestCase
             'name' => 'mail',
             'content' => 'example.com',
         ]);
+    }
+
+    public function test_sync_dns_records_returns_error_when_provider_fails(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $domain = Domain::factory()->create([
+            'user_id' => $this->user->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+
+        // Mock the DNS provider API call to throw an exception
+        Http::fake(function () {
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}/records/sync");
+
+        $response->assertStatus(422);
+        $this->assertStringContainsString('Failed to sync DNS records', $response->json('message'));
     }
 
     public function test_user_cannot_sync_dns_records_for_other_users_domain(): void

@@ -33,6 +33,32 @@ abstract class AbstractDNSProvider implements DNSProvider
     /**
      * @return array<string, mixed>
      */
+    public function editableData(): array
+    {
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array{0: array<string, mixed>, 1: bool}
+     */
+    public function mergeEditData(array $input): array
+    {
+        return [$this->dnsProvider->credentials, false];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, string|array<int, mixed>>
+     */
+    public function editValidationRules(array $input): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function getDomains(): array
     {
         return [];

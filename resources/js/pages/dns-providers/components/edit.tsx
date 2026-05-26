@@ -13,24 +13,26 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DNSProvider } from '@/types/dns-provider';
+import DynamicField from '@/components/ui/dynamic-field';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
   const [open, setOpen] = useState(false);
+  const configs = useConfigs()!;
+  const editFields: DynamicFieldConfig[] = configs.dns_provider.providers[dnsProvider.provider]?.edit_form ?? [];
+
   const form = useForm({
     name: dnsProvider.name,
     global: dnsProvider.global,
   });
-
-  useEffect(() => {
-    form.setData({ name: dnsProvider.name, global: dnsProvider.global });
-  }, [dnsProvider.id, dnsProvider.name, dnsProvider.global]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
       <DialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit {dnsProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit DNS provider</DialogDescription>
@@ -55,6 +57,18 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
               <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
+            {editFields.map((field) => (
+              <DynamicField
+                key={`field-${field.name}`}
+                /*@ts-expect-error dynamic types*/
+                value={form.data[field.name] ?? dnsProvider.editable_data?.[field.name]}
+                /*@ts-expect-error dynamic types*/
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                /*@ts-expect-error dynamic types*/
+                error={form.errors[field.name]}
+              />
+            ))}
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox

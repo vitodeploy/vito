@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Domain\AddDomain;
+use App\Actions\Domain\GetAvailableDomains;
 use App\Actions\Domain\RemoveDomain;
 use App\Http\Resources\DNSRecordResource;
 use App\Http\Resources\DomainResource;
@@ -56,7 +57,17 @@ class DomainController extends Controller
     {
         $this->authorize('view', $dnsProvider);
 
-        $domains = $dnsProvider->provider()->getDomains();
+        $domains = app(GetAvailableDomains::class)->execute($dnsProvider);
+
+        return response()->json($domains);
+    }
+
+    #[Get('/{dnsProvider}/refresh', name: 'domains.refresh')]
+    public function refreshDomains(DNSProvider $dnsProvider): JsonResponse
+    {
+        $this->authorize('view', $dnsProvider);
+
+        $domains = app(GetAvailableDomains::class)->execute($dnsProvider, false);
 
         return response()->json($domains);
     }

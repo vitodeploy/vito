@@ -6,6 +6,7 @@ use App\Models\DNSProvider;
 use App\Models\Domain;
 use App\Models\Project;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -34,18 +35,28 @@ class AddDomain
             ]);
         }
 
-        $domain = new Domain;
-        $domain->dns_provider_id = $dnsProvider->id;
-        $domain->user_id = $user->id;
-        $domain->project_id = $project->id;
-        $domain->domain = $domainData['name'];
-        $domain->provider_domain_id = $domainData['id'];
-        $domain->metadata = $domainData;
-        $domain->save();
+        try {
+            return DB::transaction(function () use ($user, $project, $dnsProvider, $domainData) {
+                $domain = new Domain;
+                $domain->dns_provider_id = $dnsProvider->id;
+                $domain->user_id = $user->id;
+                $domain->project_id = $project->id;
+                $domain->domain = $domainData['name'];
+                $domain->provider_domain_id = $domainData['id'];
+                $domain->metadata = $domainData;
+                $domain->save();
 
-        $domain->syncDnsRecords();
+                $domain->syncDnsRecords();
 
-        return $domain;
+                return $domain;
+            });
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw ValidationException::withMessages([
+                'domain' => [$e->getMessage()],
+            ]);
+        }
     }
 
     private function validate(array $input): void

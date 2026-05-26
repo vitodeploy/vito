@@ -5,7 +5,6 @@ namespace App\Actions\Domain;
 use App\Models\DNSRecord;
 use App\Models\Domain;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -37,6 +36,7 @@ class CreateDNSRecord
         $dnsRecord->content = $input['content'];
         $dnsRecord->ttl = $input['ttl'] ?? 1;
         $dnsRecord->proxied = $input['proxied'] ?? false;
+        $dnsRecord->priority = $input['priority'] ?? null;
         $dnsRecord->provider_record_id = $recordData['id'];
         $dnsRecord->metadata = $recordData;
         $dnsRecord->save();
@@ -46,41 +46,6 @@ class CreateDNSRecord
 
     private function validate(array $input): void
     {
-        $rules = [
-            'type' => [
-                'required',
-                Rule::in([
-                    'A',
-                    'AAAA',
-                    'CNAME',
-                    'TXT',
-                    'MX',
-                    'SRV',
-                    'NS',
-                    'CAA',
-                    'PTR',
-                    'SOA',
-                ]),
-            ],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'content' => [
-                'required',
-                'string',
-            ],
-            'ttl' => [
-                'integer',
-                'min:1',
-                'max:86400',
-            ],
-            'proxied' => [
-                'boolean',
-            ],
-        ];
-
-        Validator::make($input, $rules)->validate();
+        Validator::make($input, DNSRecordRules::rules())->validate();
     }
 }
