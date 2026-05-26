@@ -861,16 +861,16 @@
         },
         {
             "name": "forjedio/inertia-table",
-            "version": "v1.1.3",
+            "version": "v1.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/forjedio/inertia-table.git",
-                "reference": "2ec818edbbc7f06481c122a466550c9ebe098d98"
+                "reference": "e0e190092ee00cd08fbaccbb38f0612f0b58a949"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/forjedio/inertia-table/zipball/2ec818edbbc7f06481c122a466550c9ebe098d98",
-                "reference": "2ec818edbbc7f06481c122a466550c9ebe098d98",
+                "url": "https://api.github.com/repos/forjedio/inertia-table/zipball/e0e190092ee00cd08fbaccbb38f0612f0b58a949",
+                "reference": "e0e190092ee00cd08fbaccbb38f0612f0b58a949",
                 "shasum": ""
             },
             "require": {
@@ -922,9 +922,9 @@
             ],
             "support": {
                 "issues": "https://github.com/forjedio/inertia-table/issues",
-                "source": "https://github.com/forjedio/inertia-table/tree/v1.1.3"
+                "source": "https://github.com/forjedio/inertia-table/tree/v1.1.4"
             },
-            "time": "2026-05-22T21:45:15+00:00"
+            "time": "2026-05-26T13:45:47+00:00"
         },
         {
             "name": "fruitcake/php-cors",
