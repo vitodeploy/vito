@@ -37,4 +37,8 @@ interface ServiceInterface
     public function uninstall(): void;
 
     public function version(): string;
+
+    public function canBeManaged(): bool;
+    
+    public function manage(string $action): bool;
 }

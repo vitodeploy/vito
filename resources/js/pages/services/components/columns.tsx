@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
 import Uninstall from '@/pages/services/components/uninstall';
 import { Action } from '@/pages/services/components/action';
+import { ResyncStats } from '@/pages/services/components/resync-stats';
 import Version from './version';
 import ConfigFile from './config-file';
 import InstallationLog from './installation-log';
@@ -70,6 +71,12 @@ export const columns: ColumnDef<Service>[] = [
               <Action type="reload" service={row.original} />
               <Action type="enable" service={row.original} />
               <Action type="disable" service={row.original} />
+              {row.original.name === 'goaccess' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <ResyncStats service={row.original} />
+                </>
+              )}
               {row.original.config_paths && row.original.config_paths.length > 0 && (
                 <>
                   <DropdownMenuSeparator />

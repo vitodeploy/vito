@@ -7,6 +7,7 @@ use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use App\Services\Firewall\Ufw;
+use App\Services\LogAnalysis\GoAccess\GoAccess;
 use App\Services\Monitoring\RemoteMonitor\RemoteMonitor;
 use App\Services\Monitoring\VitoAgent\VitoAgent;
 use App\Services\NodeJS\NodeJS;
@@ -30,6 +31,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->firewalls();
         $this->processManagers();
         $this->monitoring();
+        $this->logAnalysis();
         $this->php();
         $this->node();
     }
@@ -184,6 +186,15 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(RemoteMonitor::type())
             ->label('RemoteMonitor')
             ->handler(RemoteMonitor::class)
+            ->register();
+    }
+
+    private function logAnalysis(): void
+    {
+        RegisterServiceType::make(GoAccess::id())
+            ->type(GoAccess::type())
+            ->label('GoAccess')
+            ->handler(GoAccess::class)
             ->register();
     }
 

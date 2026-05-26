@@ -34,7 +34,7 @@ class CronJobController extends Controller
         $this->authorize('viewAny', [CronJob::class, $server]);
 
         return Inertia::render('cronjobs/index', [
-            'cronjobs' => CronJobResource::collection($server->cronJobs()->latest()->simplePaginate(config('web.pagination_size'))),
+            'cronjobs' => CronJobResource::collection($server->cronJobs()->where('hidden', false)->latest()->simplePaginate(config('web.pagination_size'))),
             'sites' => $server->sites()->select('id', 'domain')->get(),
         ]);
     }

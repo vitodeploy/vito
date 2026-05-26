@@ -4,6 +4,7 @@ namespace App\Jobs\Site;
 
 use App\DTOs\SocketEventDTO;
 use App\Enums\SiteStatus;
+use App\Events\SiteCreatedEvent;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\RepositoryNotFound;
@@ -44,6 +45,7 @@ class CreateJob implements ShouldQueue
             $this->site->save();
             $this->broadcastSiteUpdate();
             Notifier::send($this->site, new SiteInstallationSucceed($this->site));
+            SiteCreatedEvent::dispatch($this->site);
 
             foreach ($this->site->hostedDomains as $hostedDomain) {
                 dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');

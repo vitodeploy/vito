@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\SiteCreatedEvent;
+use App\Events\SiteDeletedEvent;
 use App\Events\SocketEvent;
 use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SFTP;
 use App\Helpers\SSH;
+use App\Listeners\HandleSiteCreatedStats;
+use App\Listeners\HandleSiteDeletedStats;
 use App\Listeners\SocketEventListener;
 use App\Models\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -39,5 +43,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Event::listen(SocketEvent::class, SocketEventListener::class);
+        Event::listen(SiteCreatedEvent::class, HandleSiteCreatedStats::class);
+        Event::listen(SiteDeletedEvent::class, HandleSiteDeletedStats::class);
     }
 }

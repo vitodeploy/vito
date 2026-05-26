@@ -59,9 +59,9 @@ class Manage
 
     private function validate(Service $service): void
     {
-        if (! $service->handler()->unit()) {
+        if (! $service->handler()->canBeManaged()) {
             throw ValidationException::withMessages([
-                'service' => __('This service does not have a systemd unit configured.'),
+                'service' => __('This service cannot be managed.'),
             ]);
         }
     }

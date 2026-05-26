@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Events\SiteDeletedEvent;
 use App\Exceptions\SSHError;
 use App\Models\Service;
 use App\Models\Site;
@@ -83,6 +84,10 @@ class DeleteSite
      */
     private function deleteRow(Site $site): void
     {
+        $serverId = $site->server_id;
+        $siteId = $site->id;
+        $domain = $site->domain;
+
         try {
             $site->delete();
         } catch (Throwable $e) {
@@ -95,6 +100,8 @@ class DeleteSite
 
             throw $e;
         }
+
+        SiteDeletedEvent::dispatch($serverId, $siteId, $domain);
     }
 
     /**

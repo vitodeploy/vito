@@ -31,7 +31,7 @@ class CronJobController extends Controller
 
         $this->validateRoute($project, $server);
 
-        return CronJobResource::collection($server->cronJobs()->simplePaginate(25));
+        return CronJobResource::collection($server->cronJobs()->where('hidden', false)->simplePaginate(25));
     }
 
     /**

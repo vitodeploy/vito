@@ -428,6 +428,11 @@ class ServicesTest extends TestCase
                 'latest',
             ],
             [
+                'goaccess',
+                'log_analysis',
+                'latest',
+            ],
+            [
                 'redis',
                 'memory_database',
                 'latest',

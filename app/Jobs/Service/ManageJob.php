@@ -27,12 +27,8 @@ class ManageJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->service->server_id}", function () {
-            $status = $this->service->server->systemd()->{$this->action}($this->service->handler()->unit());
-            if (str($status)->contains($this->getExpectedActiveState())) {
-                $this->service->status = $this->successStatus;
-            } else {
-                $this->service->status = ServiceStatus::FAILED;
-            }
+            $succeeded = $this->service->handler()->manage($this->action);
+            $this->service->status = $succeeded ? $this->successStatus : ServiceStatus::FAILED;
             $this->service->save();
             $this->broadcastServiceUpdate();
         });
@@ -55,10 +51,5 @@ class ManageJob implements ShouldQueue
             type: 'service.updated',
             data: new ServiceResource($this->service),
         ));
-    }
-
-    private function getExpectedActiveState(): string
-    {
-        return in_array($this->action, ['stop', 'disable']) ? 'Active: inactive' : 'Active: active';
     }
 }

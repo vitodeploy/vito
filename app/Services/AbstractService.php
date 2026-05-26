@@ -42,4 +42,18 @@ abstract class AbstractService implements ServiceInterface
     {
         return $this->service->version;
     }
+
+    public function canBeManaged(): bool
+    {
+        return (bool) $this->unit();
+    }
+
+    public function manage(string $action): bool
+    {
+        $expectedState = in_array($action, ['stop', 'disable'], true) ? 'Active: inactive' : 'Active: active';
+
+        $status = $this->service->server->systemd()->{$action}($this->unit());
+
+        return str($status)->contains($expectedState);
+    }
 }

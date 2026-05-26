@@ -23,7 +23,8 @@ class CronJobPolicy
     {
         $cronJobServer = $cronjob->server;
 
-        return $this->hasReadAccess($user, $cronJobServer->project) &&
+        return ! $cronjob->hidden &&
+            $this->hasReadAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }
@@ -37,7 +38,8 @@ class CronJobPolicy
     {
         $cronJobServer = $cronjob->server;
 
-        return $this->hasWriteAccess($user, $cronJobServer->project) &&
+        return ! $cronjob->hidden &&
+            $this->hasWriteAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }
@@ -46,7 +48,8 @@ class CronJobPolicy
     {
         $cronJobServer = $cronjob->server;
 
-        return $this->hasWriteAccess($user, $cronJobServer->project) &&
+        return ! $cronjob->hidden &&
+            $this->hasWriteAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }

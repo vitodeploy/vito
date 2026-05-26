@@ -54,7 +54,7 @@ server {
     add_header X-Content-Type-Options "nosniff";
 
     charset utf-8;
-    access_log off;
+    access_log /var/log/nginx/{{primary_domain}}-access.log;
     error_log  /var/log/nginx/{{primary_domain}}-error.log error;
 
     {{#basic_auth_enabled}}

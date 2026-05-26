@@ -152,6 +152,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
                 icon: LogsIcon,
               },
               {
+                title: 'Stats',
+                href: route('site-stats', { server: page.props.server.id, site: site.id }),
+                icon: ChartLineIcon,
+                hidden: !page.props.server.services['log_analysis'],
+              },
+              {
                 title: 'Settings',
                 href: route('site-settings', { server: page.props.server.id, site: site.id }),
                 icon: Settings2Icon,

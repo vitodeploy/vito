@@ -34,8 +34,9 @@ class SyncCronJobs
             ->where('user', $user)
             ->get();
 
-        // Filter only server-level cronjobs (site_id = null) for status updates
-        $serverLevelCronJobs = $vitoCronJobs->where('site_id', null);
+        // Hidden infra crons stay in $vitoCronJobs (so they match and are never recreated as
+        // duplicates) but are excluded from the disable sweeps below.
+        $serverLevelCronJobs = $vitoCronJobs->where('site_id', null)->where('hidden', false);
 
         if (empty($crontabOutput)) {
             // If crontab is empty, mark all server-level Vito cronjobs as disabled
@@ -106,7 +107,7 @@ class SyncCronJobs
                 $foundCronJobs[] = $matchingCronJob->id;
 
                 // Update status based on comment state (only for server-level cronjobs)
-                if ($matchingCronJob->site_id === null) {
+                if ($matchingCronJob->site_id === null && ! $matchingCronJob->hidden) {
                     if ($isCommented && $matchingCronJob->status === CronjobStatus::READY) {
                         $matchingCronJob->update(['status' => CronjobStatus::DISABLED]);
                     } elseif (! $isCommented && $matchingCronJob->status === CronjobStatus::DISABLED) {
