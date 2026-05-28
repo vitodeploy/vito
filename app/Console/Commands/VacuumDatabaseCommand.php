@@ -23,7 +23,7 @@ class VacuumDatabaseCommand extends Command
 
         $database = $connection->getDatabaseName();
 
-        if (! is_string($database) || ! is_file($database)) {
+        if (! is_file($database)) {
             $this->warn('Could not locate the SQLite database file. Skipping.');
 
             return self::SUCCESS;
