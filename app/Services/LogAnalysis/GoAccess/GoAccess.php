@@ -33,6 +33,11 @@ class GoAccess extends AbstractService
         return 'log_analysis';
     }
 
+    /**
+     * GoAccess has no systemd unit — work runs from a cron job (see {@see self::CRON_COMMAND}).
+     * Returning `''` here means the default {@see \App\Services\AbstractService::canBeManaged()}
+     * resolves to false, so {@see self::canBeManaged()} must stay overridden to `true`.
+     */
     public function unit(): string
     {
         return '';
@@ -83,7 +88,7 @@ class GoAccess extends AbstractService
                 'install-goaccess'
             );
 
-        app(SyncGoAccessServer::class)->sync($this->service->server);
+        app(SyncGoAccessServer::class)->sync($this->service->server, $this->service->log);
 
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();

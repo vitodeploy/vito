@@ -84,7 +84,7 @@ class DeleteSite
      */
     private function deleteRow(Site $site): void
     {
-        $serverId = $site->server_id;
+        $server = $site->server;
         $siteId = $site->id;
         $domain = $site->domain;
 
@@ -101,7 +101,7 @@ class DeleteSite
             throw $e;
         }
 
-        SiteDeletedEvent::dispatch($serverId, $siteId, $domain);
+        SiteDeletedEvent::dispatch($server, $siteId, $domain);
     }
 
     /**

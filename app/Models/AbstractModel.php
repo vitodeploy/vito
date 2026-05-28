@@ -24,4 +24,14 @@ abstract class AbstractModel extends Model
             $this->save();
         }
     }
+
+    public function jsonForget(string $field, string $key, bool $save = true): void
+    {
+        $current = $this->{$field} ?? [];
+        unset($current[$key]);
+        $this->{$field} = $current;
+        if ($save) {
+            $this->save();
+        }
+    }
 }

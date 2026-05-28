@@ -21,7 +21,11 @@ class GetSiteStats
     {
         $ssh = $site->server->ssh();
 
-        $status = $this->readJson($ssh, $site, 'status.json');
+        $status = Cache::remember(
+            "site-stats-status:{$site->id}",
+            10,
+            fn (): ?array => $this->readJson($ssh, $site, 'status.json'),
+        );
         $token = (string) ($status['last_run_finished_at'] ?? 'none');
 
         return Cache::remember(
@@ -97,6 +101,10 @@ class GetSiteStats
                 'hits' => (int) ($row['hits']['count'] ?? 0),
                 'bandwidth' => (int) ($row['bytes']['count'] ?? 0),
             ];
+        }
+
+        if (preg_match('/^\d{4}-\d{2}$/', $month) !== 1) {
+            return [];
         }
 
         $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();

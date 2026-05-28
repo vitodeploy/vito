@@ -28,7 +28,7 @@ class CleanupSiteStatsJob implements ShouldQueue
             return;
         }
 
-        $this->run("server-{$this->server->id}-site-stats", function (): void {
+        $this->run("server-{$this->server->id}-site-{$this->siteId}-stats", function (): void {
             $base = GoAccess::BASE_DIR;
             $this->server->ssh()->exec(
                 'sudo rm -rf '.escapeshellarg("{$base}/data/{$this->siteId}").' '.escapeshellarg("{$base}/sites/{$this->siteId}.conf"),

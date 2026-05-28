@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Area, AreaChart, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,16 +13,17 @@ interface Props {
   labelKey: string;
   data: Array<Record<string, string | number>>;
   formatLabel?: (value: string) => string;
-  formatValue?: (value: unknown) => string | number;
-  height?: 'sm' | 'md';
+  valueFormatter?: (value: unknown) => string | number;
+  height?: 'small' | 'medium';
 }
 
-export function StatsChart({ title, value, color, dataKey, labelKey, data, formatLabel, formatValue, height = 'md' }: Props) {
+export function StatsChart({ title, value, color, dataKey, labelKey, data, formatLabel, valueFormatter, height = 'medium' }: Props) {
+  const gradientId = useId();
   const chartConfig = {
     [dataKey]: { label: title, color },
   } satisfies ChartConfig;
 
-  const heightClass = height === 'sm' ? 'h-[120px]' : 'h-[200px]';
+  const heightClass = height === 'small' ? 'h-[100px]' : 'h-[200px]';
 
   return (
     <Card>
@@ -40,7 +42,7 @@ export function StatsChart({ title, value, color, dataKey, labelKey, data, forma
           <ChartContainer config={chartConfig} className={cn('aspect-auto w-full overflow-hidden rounded-b-xl', heightClass)}>
             <AreaChart accessibilityLayer data={data} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id={`fill-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={color} stopOpacity={0.8} />
                   <stop offset="95%" stopColor={color} stopOpacity={0.1} />
                 </linearGradient>
@@ -59,12 +61,12 @@ export function StatsChart({ title, value, color, dataKey, labelKey, data, forma
                 content={
                   <ChartTooltipContent
                     labelFormatter={(v) => (formatLabel ? formatLabel(String(v)) : String(v))}
-                    formatter={formatValue}
+                    formatter={valueFormatter}
                     indicator="dot"
                   />
                 }
               />
-              <Area dataKey={dataKey} type="monotone" fill={`url(#fill-${dataKey})`} stroke={color} />
+              <Area dataKey={dataKey} type="monotone" fill={`url(#${gradientId})`} stroke={color} />
             </AreaChart>
           </ChartContainer>
         )}

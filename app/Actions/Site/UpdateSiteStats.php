@@ -19,10 +19,7 @@ class UpdateSiteStats
 
     public function enable(Site $site): void
     {
-        $typeData = $site->type_data ?? [];
-        unset($typeData['stats_disabled']);
-        $site->type_data = $typeData;
-        $site->save();
+        $site->jsonForget('type_data', 'stats_disabled');
 
         if ($site->server->service('log_analysis')) {
             dispatch(new WriteSiteStatsConfJob($site));

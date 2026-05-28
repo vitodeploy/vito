@@ -188,7 +188,7 @@ class SiteStatsTest extends TestCase
         Queue::fake();
         $this->installGoAccess();
 
-        (new HandleSiteDeletedStats)->handle(new SiteDeletedEvent($this->server->id, $this->site->id, $this->site->domain));
+        (new HandleSiteDeletedStats)->handle(new SiteDeletedEvent($this->server, $this->site->id, $this->site->domain));
 
         Queue::assertPushed(CleanupSiteStatsJob::class);
     }
@@ -322,14 +322,15 @@ class SiteStatsTest extends TestCase
     {
         SSH::fake(''); // getUserCrontab returns empty for every user
 
-        $cron = $this->server->cronJobs()->create([
+        $cron = $this->server->cronJobs()->make([
             'site_id' => null,
             'user' => 'root',
             'command' => GoAccess::CRON_COMMAND,
             'frequency' => GoAccess::CRON_FREQUENCY,
-            'hidden' => true,
             'status' => CronjobStatus::READY,
         ]);
+        $cron->hidden = true;
+        $cron->save();
 
         app(SyncCronJobs::class)->sync($this->server);
 

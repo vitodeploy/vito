@@ -6,6 +6,7 @@ use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
 use App\Models\CronJob;
 use App\Models\Server;
+use App\Models\ServerLog;
 use App\Services\LogAnalysis\GoAccess\GoAccess;
 
 class SyncGoAccessServer
@@ -13,7 +14,7 @@ class SyncGoAccessServer
     /**
      * @throws SSHError
      */
-    public function sync(Server $server): void
+    public function sync(Server $server, ?ServerLog $log = null): void
     {
         $service = $server->service('log_analysis');
         if (! $service) {
@@ -22,6 +23,9 @@ class SyncGoAccessServer
 
         $base = GoAccess::BASE_DIR;
         $ssh = $server->ssh();
+        if ($log) {
+            $ssh->setLog($log);
+        }
 
         $ssh->exec("sudo mkdir -p {$base}/bin {$base}/sites {$base}/data", 'goaccess-mkdir');
 
@@ -35,7 +39,7 @@ class SyncGoAccessServer
 
         $renderer = app(RenderSiteStatsConf::class);
         $webserver = $server->webserver();
-        $webserverId = $webserver ? $webserver->name : 'nginx';
+        $webserverId = $webserver ? $webserver->handler()::id() : 'nginx';
         $retention = (int) ($service->type_data['data_retention'] ?? 12);
 
         foreach ($server->sites as $site) {
@@ -68,14 +72,15 @@ class SyncGoAccessServer
             ->first();
 
         if (! $cron) {
-            $server->cronJobs()->create([
+            $cron = $server->cronJobs()->make([
                 'site_id' => null,
                 'user' => 'root',
                 'command' => GoAccess::CRON_COMMAND,
                 'frequency' => GoAccess::CRON_FREQUENCY,
-                'hidden' => true,
                 'status' => CronjobStatus::READY,
             ]);
+            $cron->hidden = true;
+            $cron->save();
         } elseif ($cron->status !== CronjobStatus::READY) {
             $cron->update(['status' => CronjobStatus::READY]);
         }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Site\ResyncGoAccessJob;
+use App\Actions\SiteStats\ResyncGoAccess;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +23,7 @@ class LogAnalysisController extends Controller
 
         $this->authorize('update', $service);
 
-        dispatch(new ResyncGoAccessJob($server));
+        app(ResyncGoAccess::class)->handle($server);
 
         return back()->with('success', 'Re-syncing site statistics scripts...');
     }

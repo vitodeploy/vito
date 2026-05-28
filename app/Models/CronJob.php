@@ -31,7 +31,6 @@ class CronJob extends AbstractModel
         'command',
         'user',
         'frequency',
-        'hidden',
         'status',
         'name',
     ];

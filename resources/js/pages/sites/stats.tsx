@@ -130,7 +130,10 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
       {},
       {
         preserveScroll: true,
-        onError: () => toast.error('Failed to refresh site statistics'),
+        onError: (errors) => {
+          const first = Object.values(errors)[0];
+          toast.error(typeof first === 'string' && first.length > 0 ? first : 'Failed to refresh site statistics');
+        },
         onFinish: () => setRefreshing(false),
       },
     );
@@ -208,7 +211,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
               labelKey="month"
               data={data.summary}
               formatLabel={formatMonth}
-              formatValue={(v) => formatNumber(Number(v))}
+              valueFormatter={(v) => formatNumber(Number(v))}
             />
             <StatsChart
               title="Hits"
@@ -218,7 +221,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
               labelKey="month"
               data={data.summary}
               formatLabel={formatMonth}
-              formatValue={(v) => formatNumber(Number(v))}
+              valueFormatter={(v) => formatNumber(Number(v))}
             />
             <StatsChart
               title="Bandwidth"
@@ -228,7 +231,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
               labelKey="month"
               data={data.summary}
               formatLabel={formatMonth}
-              formatValue={(v) => formatBytes(Number(v))}
+              valueFormatter={(v) => formatBytes(Number(v))}
             />
           </div>
         </div>
@@ -254,8 +257,8 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
                 labelKey="date"
                 data={detail.daily}
                 formatLabel={formatDay}
-                formatValue={(v) => formatNumber(Number(v))}
-                height="sm"
+                valueFormatter={(v) => formatNumber(Number(v))}
+                height="small"
               />
               <StatsChart
                 title="Hits per day"
@@ -264,8 +267,8 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
                 labelKey="date"
                 data={detail.daily}
                 formatLabel={formatDay}
-                formatValue={(v) => formatNumber(Number(v))}
-                height="sm"
+                valueFormatter={(v) => formatNumber(Number(v))}
+                height="small"
               />
               <StatsChart
                 title="Bandwidth per day"
@@ -274,8 +277,8 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
                 labelKey="date"
                 data={detail.daily}
                 formatLabel={formatDay}
-                formatValue={(v) => formatBytes(Number(v))}
-                height="sm"
+                valueFormatter={(v) => formatBytes(Number(v))}
+                height="small"
               />
             </div>
           </div>
@@ -325,8 +328,8 @@ function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row, index) => (
-                <TableRow key={`${row.name}-${index}`}>
+              rows.map((row) => (
+                <TableRow key={row.name}>
                   <TableCell className="max-w-[280px] truncate">{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{row.visitors.toLocaleString()}</TableCell>
@@ -359,8 +362,8 @@ function StatusCodesCard({ rows }: { rows: SiteStatsStatusCode[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row, index) => (
-                <TableRow key={`${row.name}-${index}`}>
+              rows.map((row) => (
+                <TableRow key={row.name}>
                   <TableCell>{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                 </TableRow>

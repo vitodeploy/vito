@@ -134,7 +134,6 @@ class SyncCronJobs
                     'user' => $user,
                     'command' => $cronJobData['command'],
                     'frequency' => $cronJobData['frequency'],
-                    'hidden' => false,
                     'status' => $cronJobData['commented'] ? CronjobStatus::DISABLED : CronjobStatus::READY,
                 ]);
             }

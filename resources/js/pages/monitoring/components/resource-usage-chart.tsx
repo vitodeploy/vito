@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useId } from 'react';
 import { Area, AreaChart, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function ResourceUsageChart({ title, color, dataKey, label, chartData, link, formatter, single, height, showXAxis, valueFormatter }: Props) {
+  const gradientId = useId();
   const resolvedHeight = height ?? (single ? 'large' : 'small');
   const heightClass = resolvedHeight === 'large' ? 'h-[400px]' : resolvedHeight === 'medium' ? 'h-[200px]' : 'h-[100px]';
   const xAxisVisible = showXAxis ?? single ?? false;
@@ -60,13 +62,13 @@ export function ResourceUsageChart({ title, color, dataKey, label, chartData, li
         </div>
         {validData.length === 0 ? (
           <div className={cn('text-muted-foreground flex aspect-auto w-full items-center justify-center rounded-b-xl border-t text-sm', heightClass)}>
-            No data in selected period
+            No data
           </div>
         ) : (
           <ChartContainer config={chartConfig} className={cn('aspect-auto w-full overflow-hidden rounded-b-xl', heightClass)}>
             <AreaChart accessibilityLayer data={validData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id={`fill-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={color} stopOpacity={0.8} />
                   <stop offset="95%" stopColor={color} stopOpacity={0.1} />
                 </linearGradient>
@@ -106,7 +108,7 @@ export function ResourceUsageChart({ title, color, dataKey, label, chartData, li
                   />
                 }
               />
-              <Area dataKey={dataKey} type="monotone" fill={`url(#fill-${dataKey})`} stroke={color} />
+              <Area dataKey={dataKey} type="monotone" fill={`url(#${gradientId})`} stroke={color} />
             </AreaChart>
           </ChartContainer>
         )}
