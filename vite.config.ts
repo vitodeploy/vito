@@ -22,6 +22,9 @@ export default defineConfig({
   resolve: {
     alias: {
       'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+      react: resolve(__dirname, 'node_modules/react'),
+      'react-dom': resolve(__dirname, 'node_modules/react-dom'),
     },
+    dedupe: ['react', 'react-dom'],
   },
 });
