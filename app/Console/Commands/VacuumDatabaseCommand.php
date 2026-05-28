@@ -29,7 +29,15 @@ class VacuumDatabaseCommand extends Command
             return self::SUCCESS;
         }
 
-        $required = filesize($database) * 2;
+        $databaseSize = filesize($database);
+
+        if ($databaseSize === false) {
+            $this->warn('Could not determine the SQLite database file size. Skipping.');
+
+            return self::SUCCESS;
+        }
+
+        $required = $databaseSize * 2;
         $available = disk_free_space(dirname($database));
 
         if ($available !== false && $available < $required) {
