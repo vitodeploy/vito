@@ -52,7 +52,7 @@ export default function StartCommand({ site, children }: { site: Site; children:
       ...(hasWorker ? { restart: data.apply === 'restart' } : {}),
     }));
     form.patch(route('site-settings.update-start-command', { server: site.server_id, site: site.id }), {
-      onSuccess: () => setOpen(false),
+      onSuccess: () => handleOpenChange(false),
     });
   };
 

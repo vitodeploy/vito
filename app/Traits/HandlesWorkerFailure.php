@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use App\Actions\Site\BroadcastSiteUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\WorkerStatus;
 use App\Events\SocketEvent;
@@ -14,6 +13,11 @@ use Throwable;
 
 trait HandlesWorkerFailure
 {
+    /**
+     * @var list<string>
+     */
+    private static array $benignSupervisorPhrases = ['already started', 'not running'];
+
     protected function markWorkerFailed(Worker $worker, Throwable $e, string $logType): void
     {
         $this->failWorker($worker, $this->extractError($e), $logType, $e->getMessage());
@@ -27,20 +31,25 @@ trait HandlesWorkerFailure
 
         $this->broadcastWorkerUpdate($worker);
 
-        if ($worker->site) {
-            app(BroadcastSiteUpdate::class)->broadcast($worker->site);
+        ServerLog::log($worker->server, $logType, $logMessage);
+    }
+
+    protected function isBenignSupervisorStatus(string $status): bool
+    {
+        foreach (self::$benignSupervisorPhrases as $phrase) {
+            if (str_contains($status, $phrase)) {
+                return true;
+            }
         }
 
-        ServerLog::log($worker->server, $logType, $logMessage);
+        return false;
     }
 
     private function extractError(Throwable $e): ?string
     {
-        if (! $e instanceof SSHError) {
-            return null;
-        }
-
-        $message = $this->supervisorErrorLines($e) ?? trim($e->getMessage());
+        $message = $e instanceof SSHError
+            ? ($this->supervisorErrorLines($e) ?? trim($e->getMessage()))
+            : trim($e->getMessage());
 
         if ($message === '') {
             return null;
@@ -64,8 +73,7 @@ trait HandlesWorkerFailure
         $lines = collect(explode("\n", $content))
             ->map(fn (string $line): string => trim($line))
             ->filter(fn (string $line): bool => str_contains($line, ': ERROR')
-                && ! str_contains($line, 'already started')
-                && ! str_contains($line, 'not running'))
+                && ! $this->isBenignSupervisorStatus($line))
             ->unique()
             ->values();
 

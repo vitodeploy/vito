@@ -242,7 +242,9 @@ class WorkersTest extends TestCase
         $this->assertSame(WorkerStatus::RESTARTING, $worker->status);
         $this->assertNull($worker->error);
 
-        $worker->update(['status' => WorkerStatus::FAILED, 'error' => 'boom']);
+        $worker->status = WorkerStatus::FAILED;
+        $worker->error = 'boom';
+        $worker->save();
 
         app(ManageWorker::class)->start($worker);
 

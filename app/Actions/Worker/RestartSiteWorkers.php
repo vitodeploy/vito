@@ -2,6 +2,7 @@
 
 namespace App\Actions\Worker;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\WorkerStatus;
 use App\Models\Site;
 use App\Models\Worker;
@@ -30,6 +31,7 @@ class RestartSiteWorkers
             $output = $handler->restartMany($workers->pluck('id')->all(), $site->id);
         } catch (Throwable $e) {
             $workers->each(fn (Worker $worker) => $this->markWorkerFailed($worker, $e, self::LOG_TYPE));
+            app(BroadcastSiteUpdate::class)->broadcast($site);
 
             return;
         }
@@ -37,6 +39,8 @@ class RestartSiteWorkers
         $statuses = $this->parseStatuses($output);
 
         $workers->each(fn (Worker $worker) => $this->settle($worker, $statuses[$worker->id] ?? []));
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 
     /**
@@ -112,7 +116,7 @@ class RestartSiteWorkers
         $errors = [];
 
         foreach ($processes as $process => $status) {
-            if (str_starts_with($status, 'ERROR') && ! $this->isBenign($status)) {
+            if (str_starts_with($status, 'ERROR') && ! $this->isBenignSupervisorStatus($status)) {
                 $errors[] = $process.': '.$status;
             }
         }
@@ -126,7 +130,7 @@ class RestartSiteWorkers
     private function allStarted(array $processes): bool
     {
         foreach ($processes as $status) {
-            if ($this->isBenign($status)) {
+            if ($this->isBenignSupervisorStatus($status)) {
                 continue;
             }
 
@@ -136,10 +140,5 @@ class RestartSiteWorkers
         }
 
         return true;
-    }
-
-    private function isBenign(string $status): bool
-    {
-        return str_contains($status, 'already started') || str_contains($status, 'not running');
     }
 }

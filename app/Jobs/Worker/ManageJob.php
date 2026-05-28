@@ -9,9 +9,9 @@ use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
 use App\Traits\HandlesWorkerFailure;
 use App\Traits\UniqueQueue;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Throwable;
 
 class ManageJob implements ShouldQueue
 {
@@ -44,8 +44,12 @@ class ManageJob implements ShouldQueue
         });
     }
 
-    public function failed(Exception $e): void
+    public function failed(Throwable $e): void
     {
         $this->markWorkerFailed($this->worker, $e, "{$this->action}-worker-failed");
+
+        if ($this->worker->site) {
+            app(BroadcastSiteUpdate::class)->broadcast($this->worker->site);
+        }
     }
 }

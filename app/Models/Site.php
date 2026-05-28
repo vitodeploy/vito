@@ -251,7 +251,7 @@ class Site extends AbstractModel
         return $warnings;
     }
 
-    private function bootstrapWorkerId(): ?int
+    public function bootstrapWorkerId(): ?int
     {
         $storedId = $this->type_data['bootstrap_worker_id'] ?? null;
         if (is_int($storedId)) {

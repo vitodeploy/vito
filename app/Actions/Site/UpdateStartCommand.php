@@ -39,7 +39,7 @@ class UpdateStartCommand
         $processManager = $site->server->processManager()->handler();
         $processManager->writeConfig($worker);
 
-        if (($validated['restart'] ?? false) === true) {
+        if ($validated['restart'] ?? false) {
             app(ManageWorker::class)->restart($worker);
 
             return WorkerStartCommandUpdateResult::Restarting;

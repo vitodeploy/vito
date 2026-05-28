@@ -59,7 +59,7 @@ export default function ProxiedAppCard({ site, initialWorker }: { site: Site; in
         <div className="col-start-2 row-start-1 flex min-w-0 items-center justify-between gap-4 border-b p-4 xl:col-start-3 xl:border-b-0">
           <span className="shrink-0 text-sm font-medium">Worker</span>
           <div className="flex items-center gap-1">
-            <ErrorIndicator error={worker?.error ?? null} />
+            <ErrorIndicator error={worker?.error ?? null} label="Worker error" />
             <Badge variant={worker?.status_color ?? 'gray'} className="text-xs">
               {worker?.status ?? 'pending_deploy'}
             </Badge>

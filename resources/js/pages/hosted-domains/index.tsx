@@ -316,7 +316,7 @@ export default function HostedDomains() {
             if (isProcessing) {
               return (
                 <div className="flex items-center justify-end gap-2">
-                  <ErrorIndicator error={hd.error} />
+                  <ErrorIndicator error={hd.error} label={`Domain "${hd.domain}" error`} />
                   <div className="flex h-8 w-8 items-center justify-center">
                     <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
                   </div>
@@ -326,7 +326,7 @@ export default function HostedDomains() {
 
             return (
               <div className="flex items-center justify-end gap-2">
-                <ErrorIndicator error={hd.error} />
+                <ErrorIndicator error={hd.error} label={`Domain "${hd.domain}" error`} />
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">

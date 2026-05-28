@@ -139,7 +139,7 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
         return (
           <div className="flex items-center gap-1.5">
             <Badge variant={row.original.status_color}>{row.original.status}</Badge>
-            <ErrorIndicator error={row.original.error} />
+            <ErrorIndicator error={row.original.error} label={`Worker "${row.original.name}" error`} />
           </div>
         );
       },

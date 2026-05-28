@@ -45,7 +45,6 @@ class Worker extends AbstractModel
         'redirect_stderr',
         'stdout_logfile',
         'status',
-        'error',
         'name',
     ];
 
@@ -139,8 +138,6 @@ class Worker extends AbstractModel
             return false;
         }
 
-        $bootstrapId = $this->site->type_data['bootstrap_worker_id'] ?? null;
-
-        return $bootstrapId !== null && (int) $bootstrapId === $this->id;
+        return $this->site->bootstrapWorkerId() === $this->id;
     }
 }
