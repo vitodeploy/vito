@@ -94,12 +94,14 @@ export default function StartCommand({ site, children }: { site: Site; children:
                   <RadioCard
                     value="config"
                     selected={form.data.apply === 'config'}
+                    onSelect={(value) => form.setData('apply', value as ApplyChoice)}
                     title="Update config only"
                     description="The worker keeps running its current command. The change takes effect on the next restart or deploy."
                   />
                   <RadioCard
                     value="restart"
                     selected={form.data.apply === 'restart'}
+                    onSelect={(value) => form.setData('apply', value as ApplyChoice)}
                     title="Update and restart now"
                     description="Rewrites the config and restarts the worker immediately so the new command takes effect right away."
                   />
@@ -123,9 +125,22 @@ export default function StartCommand({ site, children }: { site: Site; children:
   );
 }
 
-function RadioCard({ value, selected, title, description }: { value: string; selected: boolean; title: string; description: string }) {
+function RadioCard({
+  value,
+  selected,
+  title,
+  description,
+  onSelect,
+}: {
+  value: string;
+  selected: boolean;
+  title: string;
+  description: string;
+  onSelect: (value: string) => void;
+}) {
   return (
     <label
+      onClick={() => onSelect(value)}
       className={cn(
         'hover:bg-accent flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors',
         selected && 'border-primary bg-accent',

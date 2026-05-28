@@ -129,6 +129,8 @@ class RestartSiteWorkers
      */
     private function allStarted(array $processes): bool
     {
+        $started = false;
+
         foreach ($processes as $status) {
             if ($this->isBenignSupervisorStatus($status)) {
                 continue;
@@ -137,8 +139,10 @@ class RestartSiteWorkers
             if ($status !== 'started') {
                 return false;
             }
+
+            $started = true;
         }
 
-        return true;
+        return $started;
     }
 }

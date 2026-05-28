@@ -95,6 +95,25 @@ class RestartSiteWorkersTest extends TestCase
         $this->assertSame('Unable to restart', $worker->error);
     }
 
+    public function test_worker_with_only_benign_statuses_is_not_marked_running(): void
+    {
+        Storage::fake(config('core.logs_disk'));
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (not running)");
+
+        app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+        $worker->refresh();
+        $this->assertSame(WorkerStatus::STOPPED, $worker->status);
+        $this->assertSame('Unable to restart (stopped)', $worker->error);
+    }
+
     public function test_multiprocess_worker_all_started_is_running(): void
     {
         $worker = Worker::factory()->create([
