@@ -40,7 +40,13 @@ class VacuumDatabaseCommand extends Command
         $required = $databaseSize * 2;
         $available = disk_free_space(dirname($database));
 
-        if ($available !== false && $available < $required) {
+        if ($available === false) {
+            $this->warn('Could not determine the available disk space. Skipping.');
+
+            return self::SUCCESS;
+        }
+
+        if ($available < $required) {
             $this->warn(sprintf(
                 'Not enough free disk space to vacuum safely (need ~%s, have %s). Skipping.',
                 $this->formatBytes($required),
