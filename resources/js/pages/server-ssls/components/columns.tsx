@@ -195,9 +195,7 @@ export const columns: ColumnDef<SSL>[] = [
               )}
               {row.original.log && (
                 <>
-                  <View serverLog={row.original.log}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View Log</DropdownMenuItem>
-                  </View>
+                  <View serverLog={row.original.log} label="View Log" />
                   <DropdownMenuSeparator />
                 </>
               )}

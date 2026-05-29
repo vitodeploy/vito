@@ -13,6 +13,7 @@ import { type SocketEventData, useSocketEvents, useSocketListener } from '@/hook
 import { useBootstrapStore } from '@/stores/bootstrap-store';
 import { Button } from '@/components/ui/button';
 import { AlertCircleIcon } from 'lucide-react';
+import DialogHost from '@/components/dialogs/dialog-host';
 
 export default function Layout({
   children,
@@ -101,7 +102,10 @@ export default function Layout({
                   </div>
                 </div>
               ) : bootstrapConfigsLoaded ? (
-                children
+                <>
+                  {children}
+                  <DialogHost />
+                </>
               ) : null}
             </div>
             <Toaster richColors position="bottom-center" />

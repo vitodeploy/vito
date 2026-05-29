@@ -14,43 +14,18 @@ import {
 } from '@/components/ui/dialog';
 import { ReactNode, useState } from 'react';
 import DateTime from '@/components/date-time';
-import LogOutput from '@/components/log-output';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useForm } from '@inertiajs/react';
 import FormSuccessful from '@/components/form-successful';
-import { useLogContent } from '@/hooks/use-log-content';
+import { useDialog } from '@/hooks/use-dialog';
 
-export function View({ serverLog, children }: { serverLog: ServerLog; children?: ReactNode }) {
-  const [open, setOpen] = useState(false);
-
-  const { content, isLoading, error } = useLogContent({
-    serverId: serverLog.server_id,
-    logId: serverLog.id,
-    enabled: open,
-  });
+export function View({ serverLog, label = 'View' }: { serverLog: ServerLog; label?: string }) {
+  const dialog = useDialog();
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children ? children : <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View</DropdownMenuItem>}</DialogTrigger>
-      <DialogContent className="sm:max-w-5xl">
-        <DialogHeader>
-          <DialogTitle>View Log</DialogTitle>
-          <DialogDescription className="sr-only">This is all content of the log</DialogDescription>
-        </DialogHeader>
-        <LogOutput>
-          <>
-            {isLoading && 'Loading...'}
-            {error && <div className="text-red-500">Error: {error}</div>}
-            {content && !error && content}
-          </>
-        </LogOutput>
-        <DialogFooter>
-          <Download serverLog={serverLog}>
-            <Button variant="outline">Download</Button>
-          </Download>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem onSelect={() => dialog.logViewer.open({ serverId: serverLog.server_id, logId: serverLog.id, title: label })}>
+      {label}
+    </DropdownMenuItem>
   );
 }
 
