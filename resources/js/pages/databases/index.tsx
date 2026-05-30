@@ -12,7 +12,7 @@ import Delete from '@/pages/databases/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import SyncDatabases from '@/pages/databases/components/sync-databases';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 type Page = {

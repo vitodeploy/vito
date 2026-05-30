@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from 'react';
-import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from 'inertia-table-react';
+import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from '@forjedio/inertia-table-react';
 import { Link, router } from '@inertiajs/react';
 import { SOCKET_EVENT, type SocketEventData } from '@/stores/socket-store';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

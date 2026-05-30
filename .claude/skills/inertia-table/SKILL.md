@@ -88,8 +88,8 @@ Multiple tables on one page → give each an identifier so URL params don't coll
 ### 4. Render in React (`resources/js/pages/...`)
 
 ```tsx
-import { InertiaTable } from 'inertia-table-react';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import { InertiaTable } from '@forjedio/inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { Link } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
@@ -175,7 +175,7 @@ ComponentColumn::create('health', 'Health', 'ServerHealthBadge')
 
 ```tsx
 // resources/js/app.tsx (or a dedicated bootstrap)
-import { registerCellComponent } from 'inertia-table-react';
+import { registerCellComponent } from '@forjedio/inertia-table-react';
 import { ServerHealthBadge } from '@/components/server-health-badge';
 registerCellComponent('ServerHealthBadge', ServerHealthBadge);
 ```

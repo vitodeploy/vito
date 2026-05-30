@@ -10,7 +10,7 @@ import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BookOpenIcon, MoreVerticalIcon, RocketIcon } from 'lucide-react';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 type Page = {

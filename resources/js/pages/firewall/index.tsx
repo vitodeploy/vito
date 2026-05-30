@@ -11,7 +11,7 @@ import { VitoTable } from '@/components/vito-table';
 import RuleForm from '@/pages/firewall/components/form';
 import Delete from '@/pages/firewall/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 export default function Firewall() {

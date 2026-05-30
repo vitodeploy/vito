@@ -10,7 +10,7 @@ import { BookOpenIcon, MoreVerticalIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Edit from '@/pages/server-providers/components/edit';
 import Delete from '@/pages/server-providers/components/delete';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 type Page = {

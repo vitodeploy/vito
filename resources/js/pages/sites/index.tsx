@@ -10,7 +10,7 @@ import { BookOpenIcon, EyeIcon, PlusIcon, TriangleAlertIcon } from 'lucide-react
 import { VitoTable } from '@/components/vito-table';
 import CreateSite from '@/pages/sites/components/create-site';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 
 type Page = {
   server?: Server;

@@ -13,7 +13,7 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "aws/aws-sdk-php": "^3.158",
-    "forjedio/inertia-table": "^1.0",
+    "forjedio/inertia-table": "^1.2",
     "inertiajs/inertia-laravel": "^3.0",
     "laravel/fortify": "^1.17",
     "laravel/framework": "^13.0",

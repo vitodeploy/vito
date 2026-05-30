@@ -1,4 +1,4 @@
-import { registerIcons } from 'inertia-table-react';
+import { registerIcons } from '@forjedio/inertia-table-react';
 import { CrownIcon, CopyIcon, SignpostIcon, DatabaseIcon } from 'lucide-react';
 
 registerIcons({

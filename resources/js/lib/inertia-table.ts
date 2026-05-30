@@ -1,4 +1,4 @@
-import type { Row } from 'inertia-table-react';
+import type { Row } from '@forjedio/inertia-table-react';
 
 export function asRow<T>(row: Row, requiredKeys: ReadonlyArray<keyof T & string>): T {
   for (const key of requiredKeys) {

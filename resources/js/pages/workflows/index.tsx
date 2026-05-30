@@ -11,7 +11,7 @@ import CreateWorkflow from './components/create-workflow';
 import Run from '@/pages/workflows/components/run';
 import DeleteWorkflow from '@/pages/workflows/components/delete-workflow';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 export default function Workflows() {

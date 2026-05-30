@@ -9,7 +9,7 @@ import AddSshKey from '@/pages/ssh-keys/components/add-ssh-key';
 import Delete from '@/pages/ssh-keys/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 type Page = {

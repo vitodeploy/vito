@@ -6,7 +6,7 @@ import { VitoTable } from '@/components/vito-table';
 import { BreadcrumbItem } from '@/types';
 import Layout from '@/layouts/app/layout';
 import { Workflow } from '@/types/workflow';
-import type { InertiaTableData, Row } from 'inertia-table-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 
 export default function Workflows() {

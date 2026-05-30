@@ -26,6 +26,7 @@
         "typescript-eslint": "^8.23.0"
     },
     "dependencies": {
+        "@forjedio/inertia-table-react": "^1.2.0",
         "@headlessui/react": "^2.2.0",
         "@hookform/resolvers": "^5.0.1",
         "@inertiajs/react": "^3.0.0",
@@ -66,7 +67,6 @@
         "concurrently": "^9.0.1",
         "date-fns": "^3.6.0",
         "globals": "^15.14.0",
-        "inertia-table-react": "file:vendor/forjedio/inertia-table/react",
         "laravel-vite-plugin": "^3.0",
         "lucide-react": "^0.475.0",
         "moment": "^2.30.1",

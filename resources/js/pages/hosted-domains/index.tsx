@@ -40,7 +40,7 @@ import { HostedDomain } from '@/types/hosted-domain';
 import CreateHostedDomain from '@/pages/hosted-domains/components/create-hosted-domain';
 import EditHostedDomain from '@/pages/hosted-domains/components/edit-hosted-domain';
 import FormSuccessful from '@/components/form-successful';
-import type { InertiaTableData, CellRenderProps, Row } from 'inertia-table-react';
+import type { InertiaTableData, CellRenderProps, Row } from '@forjedio/inertia-table-react';
 
 function DeleteHostedDomain({ hostedDomain }: { hostedDomain: HostedDomain }) {
   const [open, setOpen] = useState(false);
