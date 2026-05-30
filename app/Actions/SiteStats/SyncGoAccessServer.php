@@ -27,7 +27,13 @@ class SyncGoAccessServer
             $ssh->setLog($log);
         }
 
-        $ssh->exec("sudo mkdir -p {$base}/bin {$base}/sites {$base}/data", 'goaccess-mkdir');
+        $ssh->exec(
+            'sudo mkdir -p '
+            .escapeshellarg("{$base}/bin").' '
+            .escapeshellarg("{$base}/sites").' '
+            .escapeshellarg("{$base}/data"),
+            'goaccess-mkdir'
+        );
 
         $ssh->write("{$base}/bin/run.sh", view('ssh.services.log_analysis.goaccess.bin.run', [
             'baseDir' => $base,
@@ -81,7 +87,7 @@ class SyncGoAccessServer
             ]);
             $cron->hidden = true;
             $cron->save();
-        } elseif ($cron->status !== CronjobStatus::READY) {
+        } elseif (! in_array($cron->status, [CronjobStatus::READY, CronjobStatus::DISABLED], true)) {
             $cron->update(['status' => CronjobStatus::READY]);
         }
 

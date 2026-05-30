@@ -27,8 +27,7 @@ export function SiteSwitch() {
   }, [page.props.site?.id, page.props.server?.id]);
 
   useEffect(() => {
-    const currentStoredSite = siteHelper.getStoredSite();
-    if (currentStoredSite && page.props.site && currentStoredSite.id !== page.props.site.id) {
+    if (page.props.site) {
       siteHelper.storeSite(page.props.site);
     }
   }, [page.props.site]);

@@ -53,11 +53,22 @@ class GetSiteStats
                         'last_success_at' => $status['last_success_at'] ?? null,
                         'last_run_finished_at' => $status['last_run_finished_at'] ?? null,
                         'exit_code' => $status['exit_code'] ?? null,
-                        'error' => $status['error'] ?? null,
+                        'error' => $this->sanitizeError($status['error'] ?? null),
                     ] : null,
                 ];
             }
         );
+    }
+
+    private function sanitizeError(mixed $error): ?string
+    {
+        if (! is_string($error) || $error === '') {
+            return null;
+        }
+
+        $clean = trim((string) preg_replace('/[[:cntrl:]]+/', ' ', $error));
+
+        return $clean === '' ? null : mb_substr($clean, 0, 200);
     }
 
     /**

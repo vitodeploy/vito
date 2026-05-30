@@ -35,7 +35,7 @@ class GoAccess extends AbstractService
 
     /**
      * GoAccess has no systemd unit — work runs from a cron job (see {@see self::CRON_COMMAND}).
-     * Returning `''` here means the default {@see \App\Services\AbstractService::canBeManaged()}
+     * Returning `''` here means the default {@see AbstractService::canBeManaged()}
      * resolves to false, so {@see self::canBeManaged()} must stay overridden to `true`.
      */
     public function unit(): string

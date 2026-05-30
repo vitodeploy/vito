@@ -209,6 +209,26 @@ class SiteStatsTest extends TestCase
         ]);
     }
 
+    public function test_resync_preserves_disabled_hidden_cron(): void
+    {
+        SSH::fake('');
+        $this->installGoAccess();
+
+        $cron = $this->server->cronJobs()->make([
+            'site_id' => null,
+            'user' => 'root',
+            'command' => GoAccess::CRON_COMMAND,
+            'frequency' => GoAccess::CRON_FREQUENCY,
+            'status' => CronjobStatus::DISABLED,
+        ]);
+        $cron->hidden = true;
+        $cron->save();
+
+        app(SyncGoAccessServer::class)->sync($this->server);
+
+        $this->assertSame(CronjobStatus::DISABLED, $cron->refresh()->status);
+    }
+
     public function test_goaccess_can_be_managed(): void
     {
         $service = $this->installGoAccess();
