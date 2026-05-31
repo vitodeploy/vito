@@ -42,7 +42,11 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
                 {plugin.errors.length > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button type="button" onClick={() => dialog.pluginLogs.open({ name: plugin.name ?? plugin.folder, errors: plugin.errors })}>
+                      <button
+                        type="button"
+                        aria-label={`View error logs for ${plugin.name ?? plugin.folder}`}
+                        onClick={() => dialog.pluginLogs.open({ name: plugin.name ?? plugin.folder, errors: plugin.errors })}
+                      >
                         <TriangleAlert className="text-destructive cursor-pointer" />
                       </button>
                     </TooltipTrigger>

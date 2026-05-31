@@ -27,10 +27,12 @@ const SSL_METHOD_OPTIONS: { value: string; label: string }[] = [
 
 export default function CreateHostedDomain({ open, onOpenChange, site }: { open: boolean; onOpenChange: (open: boolean) => void; site: Site }) {
   const { ssl_enabled } = site;
+  const allowedSslMethods = site.webserver_allowed_ssl_methods;
+  const sslMethodOptions = allowedSslMethods ? SSL_METHOD_OPTIONS.filter((option) => allowedSslMethods.includes(option.value)) : SSL_METHOD_OPTIONS;
   const form = useForm<CreateForm>({
     domain: '',
     type: 'alias',
-    ssl_method: ssl_enabled ? 'letsencrypt' : 'none',
+    ssl_method: ssl_enabled ? site.webserver_default_ssl_method : 'none',
     ssl_id: '',
   });
 
@@ -100,7 +102,7 @@ export default function CreateHostedDomain({ open, onOpenChange, site }: { open:
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SSL_METHOD_OPTIONS.map((option) => (
+                  {sslMethodOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
