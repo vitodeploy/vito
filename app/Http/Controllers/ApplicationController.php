@@ -12,7 +12,6 @@ use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Helpers\EnvParser;
-use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
 use App\Http\Resources\WorkerResource;
@@ -21,6 +20,7 @@ use App\Models\DeploymentScript;
 use App\Models\Server;
 use App\Models\Site;
 use App\SiteTypes\AbstractProxiedSiteType;
+use App\Tables\DeploymentTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,7 +52,7 @@ class ApplicationController extends Controller
         $bootstrapWorker = $type instanceof AbstractProxiedSiteType ? $type->bootstrapWorker() : null;
 
         return Inertia::render('application/index', [
-            'deployments' => DeploymentResource::collection($site->deployments()->latest()->simplePaginate(config('web.pagination_size'))),
+            'deployments' => DeploymentTable::make($site->deployments())->paginate(),
             'deploymentScript' => new DeploymentScriptResource($deploymentScript),
             'buildScript' => $buildScript ? new DeploymentScriptResource($buildScript) : null,
             'preFlightScript' => $preFlightScript ? new DeploymentScriptResource($preFlightScript) : null,

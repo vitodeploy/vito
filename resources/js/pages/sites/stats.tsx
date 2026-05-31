@@ -328,8 +328,8 @@ function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
-                <TableRow key={row.name}>
+              rows.map((row, index) => (
+                <TableRow key={`${row.name}-${index}`}>
                   <TableCell className="max-w-[280px] truncate">{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{row.visitors.toLocaleString()}</TableCell>
@@ -362,8 +362,8 @@ function StatusCodesCard({ rows }: { rows: SiteStatsStatusCode[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
-                <TableRow key={row.name}>
+              rows.map((row, index) => (
+                <TableRow key={`${row.name}-${index}`}>
                   <TableCell>{row.name}</TableCell>
                   <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
                 </TableRow>

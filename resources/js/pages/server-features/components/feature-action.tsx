@@ -1,15 +1,6 @@
 import { Server, ServerFeatureAction } from '@/types/server';
-import { FormEvent, ReactNode, useState } from 'react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { FormEvent } from 'react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
@@ -20,19 +11,20 @@ type FieldValue = string | number | boolean | string[] | null | undefined;
 import { LoaderCircleIcon } from 'lucide-react';
 
 export default function FeatureAction({
+  open,
+  onOpenChange,
   server,
   featureId,
   actionId,
   action,
-  children,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   server: Server;
   featureId: string;
   actionId: string;
   action: ServerFeatureAction;
-  children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
   const form = useForm<Record<string, FieldValue>>({});
 
   const submit = (e: FormEvent) => {
@@ -44,18 +36,14 @@ export default function FeatureAction({
         action: actionId,
       }),
       {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
-        },
+        onSuccess: () => onOpenChange(false),
       },
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{action.label}</DialogTitle>
           <DialogDescription className="sr-only">action {action.label}</DialogDescription>

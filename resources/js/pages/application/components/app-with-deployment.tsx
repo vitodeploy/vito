@@ -6,54 +6,57 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, MoreHorizontalIcon, RocketIcon } from 'lucide-react';
-import { PaginatedData } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { BookOpenIcon, MoreHorizontalIcon, MoreVerticalIcon, RocketIcon } from 'lucide-react';
 import { Deployment } from '@/types/deployment';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import DeploymentScript from '@/pages/application/components/deployment-script';
 import Env from '@/pages/application/components/env';
 import Deploy from '@/pages/application/components/deploy';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/application/components/deployment-columns';
+import { VitoTable } from '@/components/vito-table';
+import { Download, View } from '@/pages/server-logs/components/columns';
 import AutoDeployment from '@/pages/application/components/auto-deployment';
 import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
-import { useRealtime, useRealtimeRecord, useSocketListener } from '@/hooks/use-socket-events';
-import { useCallback } from 'react';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
+import type { CellRenderProps, InertiaTableData, Row } from '@forjedio/inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
+import { useDialog } from '@/hooks/use-dialog';
 
 import SiteBanners from '@/components/site-banners';
 import ProxiedAppCard from '@/pages/application/components/proxied-app-card';
 import { Worker } from '@/types/worker';
 
+const commitCell = ({ row }: CellRenderProps) => {
+  const commit = (row.commit_data ?? {}) as Deployment['commit_data'];
+  return commit.message ? (
+    <a href={commit.url} target="_blank" className="text-primary inline-flex truncate font-mono">
+      <span className="block max-w-[200px] overflow-x-hidden overflow-ellipsis">{commit.message}</span>
+    </a>
+  ) : (
+    <span className="text-muted-foreground">No message</span>
+  );
+};
+
+const releaseCell = ({ row }: CellRenderProps) => (
+  <div className="inline-flex items-center gap-2">
+    {(row.release as string | null) ?? ''}
+    {(row.active as boolean) && <Badge variant="default">active</Badge>}
+  </div>
+);
+
 export default function AppWithDeployment() {
   const page = usePage<{
     server: Server;
     site: Site;
-    deployments: PaginatedData<Deployment>;
+    deployments: InertiaTableData;
     deploymentScript: DeploymentScriptType;
     buildScript?: DeploymentScriptType;
     preFlightScript?: DeploymentScriptType;
     worker: Worker | null;
   }>();
+  const dialog = useDialog();
 
   const site = useRealtimeRecord<Site>(page.props.site, 'site')!;
-  const [deployments, setDeployments] = useRealtime<Deployment>(page.props.deployments, 'deployment');
-
-  // When a deployment becomes active, deactivate all others
-  useSocketListener(
-    useCallback(
-      (event) => {
-        if (event.type !== 'deployment.updated') return;
-        const updated = event.data as unknown as Deployment;
-        if (!updated?.active) return;
-
-        setDeployments((prev) => ({
-          ...prev,
-          data: prev.data.map((item) => (item.id === updated.id ? item : { ...item, active: false })),
-        }));
-      },
-      [setDeployments],
-    ),
-  );
 
   return (
     <ServerLayout>
@@ -128,7 +131,74 @@ export default function AppWithDeployment() {
           </>
         )}
 
-        <DataTable columns={columns} paginatedData={deployments} />
+        <VitoTable
+          tableData={page.props.deployments}
+          cellRenderers={{ commit: commitCell, release: releaseCell }}
+          actions={(row: Row) => {
+            const deployment = asRow<Deployment>(row, ['id', 'site_id', 'server_id']);
+            return (
+              <div className="flex items-center justify-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVerticalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {deployment.log && (
+                      <>
+                        <View serverLog={deployment.log} />
+                        <Download serverLog={deployment.log}>
+                          <DropdownMenuItem>Download</DropdownMenuItem>
+                        </Download>
+                      </>
+                    )}
+                    {!deployment.active && deployment.release && deployment.status === 'finished' && (
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() =>
+                          dialog.confirm.open({
+                            title: 'Rollback',
+                            description: `Are you sure you want to rollback your site to version [${deployment.release}]?`,
+                            confirmLabel: 'Rollback',
+                            method: 'post',
+                            url: route('application.rollback', {
+                              server: deployment.server_id,
+                              site: deployment.site_id,
+                              deployment: deployment.id,
+                            }),
+                          })
+                        }
+                      >
+                        Rollback
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() =>
+                        dialog.confirm.open({
+                          title: `Delete release [${deployment.release || deployment.id}]`,
+                          description: `Are you sure you want to delete release ${deployment.release || deployment.id}? This will delete the release files from the server. This action cannot be undone.`,
+                          variant: 'destructive',
+                          confirmLabel: 'Delete',
+                          method: 'delete',
+                          url: route('application.deployments.destroy', {
+                            server: deployment.server_id,
+                            site: deployment.site_id,
+                            deployment: deployment.id,
+                          }),
+                        })
+                      }
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          }}
+        />
       </Container>
     </ServerLayout>
   );

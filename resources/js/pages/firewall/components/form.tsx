@@ -1,12 +1,4 @@
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';

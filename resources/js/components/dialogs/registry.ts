@@ -25,6 +25,8 @@ import ScriptForm from '@/pages/scripts/components/form';
 import EditCommand from '@/pages/commands/components/edit-command';
 import EditBackup from '@/pages/backups/components/edit-backup';
 import RestoreBackup from '@/pages/backups/components/restore-backup';
+import SiteFeatureAction from '@/pages/site-features/components/feature-action';
+import ServerFeatureAction from '@/pages/server-features/components/feature-action';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -67,6 +69,8 @@ export const dialogs = {
   commandEdit: EditCommand,
   backupEdit: EditBackup,
   backupRestore: RestoreBackup,
+  siteFeatureAction: SiteFeatureAction,
+  serverFeatureAction: ServerFeatureAction,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

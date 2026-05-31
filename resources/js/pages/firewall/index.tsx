@@ -59,7 +59,9 @@ export default function Firewall() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => dialog.firewallForm.open({ serverId: firewallRule.server_id, firewallRule })}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => dialog.firewallForm.open({ serverId: firewallRule.server_id, firewallRule })}>
+                      Edit
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <Delete firewallRule={firewallRule} />
                   </DropdownMenuContent>
