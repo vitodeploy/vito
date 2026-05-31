@@ -29,7 +29,7 @@ export default function LogViewerDialog({ open, onOpenChange, serverId, logId, t
           </>
         </LogOutput>
         <DialogFooter>
-          <a href={route('logs.download', { server: serverId, log: logId })} target="_blank">
+          <a href={route('logs.download', { server: serverId, log: logId })} target="_blank" rel="noopener noreferrer">
             <Button variant="outline">Download</Button>
           </a>
         </DialogFooter>

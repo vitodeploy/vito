@@ -66,8 +66,8 @@ export default function ConfirmationDialog({
         </DialogHeader>
         <div className="space-y-2 p-4">
           {description && <p>{description}</p>}
-          {errors.map((error, index) => (
-            <InputError key={index} message={error} />
+          {errors.map((error) => (
+            <InputError key={error} message={error} />
           ))}
         </div>
         <DialogFooter>

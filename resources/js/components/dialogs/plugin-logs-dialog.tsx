@@ -51,8 +51,20 @@ export default function PluginLogsDialog({ open, onOpenChange, name, errors }: P
               {errors.map((error, index) => (
                 <Card key={index} className="overflow-hidden">
                   <CardRow
-                    className={cn('hover:bg-accent/50 cursor-pointer transition-colors', expandedItems.has(index) && 'border-b')}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={expandedItems.has(index)}
+                    className={cn(
+                      'hover:bg-accent/50 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                      expandedItems.has(index) && 'border-b',
+                    )}
                     onClick={() => toggleExpanded(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleExpanded(index);
+                      }
+                    }}
                   >
                     <div className="flex flex-1 items-start gap-3">
                       <div className="mt-0.5">

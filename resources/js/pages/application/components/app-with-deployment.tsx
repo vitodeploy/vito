@@ -28,12 +28,18 @@ import { Worker } from '@/types/worker';
 
 const commitCell = ({ row }: CellRenderProps) => {
   const commit = (row.commit_data ?? {}) as Deployment['commit_data'];
-  return commit.message ? (
-    <a href={commit.url} target="_blank" className="text-primary inline-flex truncate font-mono">
+  if (!commit.message) {
+    return <span className="text-muted-foreground">No message</span>;
+  }
+  const href = commit.url && /^https?:\/\//.test(commit.url) ? commit.url : undefined;
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary inline-flex truncate font-mono">
       <span className="block max-w-[200px] overflow-x-hidden overflow-ellipsis">{commit.message}</span>
     </a>
   ) : (
-    <span className="text-muted-foreground">No message</span>
+    <span className="inline-flex truncate font-mono">
+      <span className="block max-w-[200px] overflow-x-hidden overflow-ellipsis">{commit.message}</span>
+    </span>
   );
 };
 

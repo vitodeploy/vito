@@ -45,7 +45,7 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
       variant="destructive"
       onSelect={() =>
         dialog.confirm.open({
-          title: 'Delete cronJob',
+          title: 'Delete cron job',
           description: 'Are you sure you want to delete this cron job? This action cannot be undone.',
           variant: 'destructive',
           confirmLabel: 'Delete',

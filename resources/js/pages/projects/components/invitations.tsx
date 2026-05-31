@@ -32,7 +32,7 @@ function Actions({ invitation }: { invitation: ProjectUser }) {
             variant="destructive"
             onSelect={() =>
               dialog.confirm.open({
-                title: `Delete ${invitation.project_name}`,
+                title: `Reject invitation to ${invitation.project_name}`,
                 description: 'Are you sure you want to reject joining this project?',
                 variant: 'destructive',
                 confirmLabel: 'Reject',
