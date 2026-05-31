@@ -8,17 +8,20 @@ import { Button } from '@/components/ui/button';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import Container from '@/components/container';
 import { VitoTable } from '@/components/vito-table';
-import RuleForm from '@/pages/firewall/components/form';
 import Delete from '@/pages/firewall/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
+import type { CellRenderProps, InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
+import { useDialog } from '@/hooks/use-dialog';
+
+const uppercaseCell = ({ value }: CellRenderProps) => <span className="uppercase">{value == null || value === '' ? '-' : String(value)}</span>;
 
 export default function Firewall() {
   const page = usePage<{
     server: Server;
     rules: InertiaTableData;
   }>();
+  const dialog = useDialog();
 
   return (
     <ServerLayout>
@@ -34,17 +37,16 @@ export default function Firewall() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <RuleForm serverId={page.props.server.id}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Create</span>
-              </Button>
-            </RuleForm>
+            <Button onClick={() => dialog.firewallForm.open({ serverId: page.props.server.id })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Create</span>
+            </Button>
           </div>
         </HeaderContainer>
 
         <VitoTable
           tableData={page.props.rules}
+          cellRenderers={{ type: uppercaseCell, protocol: uppercaseCell }}
           actions={(row: Row) => {
             const firewallRule = asRow<FirewallRule>(row, ['id', 'name', 'server_id']);
             return (
@@ -57,9 +59,7 @@ export default function Firewall() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <RuleForm serverId={firewallRule.server_id} firewallRule={firewallRule}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-                    </RuleForm>
+                    <DropdownMenuItem onSelect={() => dialog.firewallForm.open({ serverId: firewallRule.server_id, firewallRule })}>Edit</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <Delete firewallRule={firewallRule} />
                   </DropdownMenuContent>

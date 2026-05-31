@@ -1,22 +1,10 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
+import { MoreVerticalIcon } from 'lucide-react';
 import type { ServerLog } from '@/types/server-log';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import DateTime from '@/components/date-time';
+import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useForm } from '@inertiajs/react';
-import FormSuccessful from '@/components/form-successful';
 import { useDialog } from '@/hooks/use-dialog';
 
 export function View({ serverLog, label = 'View' }: { serverLog: ServerLog; label?: string }) {
@@ -38,87 +26,44 @@ export function Download({ serverLog, children }: { serverLog: ServerLog; childr
 }
 
 function Clear({ serverLog }: { serverLog: ServerLog }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.post(route('logs.clear', { server: serverLog.server_id, log: serverLog.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Clear</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Clear {serverLog.name}</DialogTitle>
-          <DialogDescription className="sr-only">Clear log contents</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            Are you sure you want to clear the contents of <strong>{serverLog.name}</strong>?
-          </p>
-          <p className="text-muted-foreground text-sm">This will remove all content from the log file but keep the file itself.</p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Clear
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `Clear ${serverLog.name}`,
+          description: `Are you sure you want to clear the contents of ${serverLog.name}? This will remove all content from the log file but keep the file itself.`,
+          confirmLabel: 'Clear',
+          method: 'post',
+          url: route('logs.clear', { server: serverLog.server_id, log: serverLog.id }),
+        })
+      }
+    >
+      Clear
+    </DropdownMenuItem>
   );
 }
 
 function Delete({ serverLog }: { serverLog: ServerLog }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('logs.destroy', { server: serverLog.server_id, log: serverLog.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete {serverLog.name}</DialogTitle>
-          <DialogDescription className="sr-only">Delete log</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            Are you sure you want to delete <strong>{serverLog.name}</strong>?
-          </p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `Delete ${serverLog.name}`,
+          description: `Are you sure you want to delete ${serverLog.name}?`,
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('logs.destroy', { server: serverLog.server_id, log: serverLog.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 

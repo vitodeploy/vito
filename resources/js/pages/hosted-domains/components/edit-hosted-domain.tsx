@@ -1,14 +1,5 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { FormEvent } from 'react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -35,9 +26,16 @@ const SSL_METHOD_OPTIONS: { value: string; label: string }[] = [
   { value: 'custom', label: 'Custom Certificate' },
 ];
 
-export default function EditHostedDomain({ hostedDomain, children }: { hostedDomain: HostedDomain; children: ReactNode }) {
+export default function EditHostedDomain({
+  open,
+  onOpenChange,
+  hostedDomain,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  hostedDomain: HostedDomain;
+}) {
   const { site } = usePage<{ site: Site }>().props;
-  const [open, setOpen] = useState(false);
   const isPrimary = hostedDomain.type === 'primary';
 
   const allowedMethods = site.webserver_allowed_ssl_methods;
@@ -50,7 +48,7 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
     ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
   });
 
-  const { matchingSsls, loadingSsls, sslStale, handleSslMethodChange, reset } = useSslMatching({
+  const { matchingSsls, loadingSsls, sslStale, handleSslMethodChange } = useSslMatching({
     serverId: hostedDomain.server_id,
     siteId: hostedDomain.site_id,
     domain: form.data.domain,
@@ -72,32 +70,14 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
         hostedDomain: hostedDomain.id,
       }),
       {
-        onSuccess: () => {
-          setOpen(false);
-        },
+        onSuccess: () => onOpenChange(false),
       },
     );
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(value) => {
-        setOpen(value);
-        if (!value) {
-          form.setData({
-            domain: hostedDomain.domain,
-            type: hostedDomain.type,
-            ssl_method: hostedDomain.ssl_method,
-            ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
-          });
-          form.clearErrors();
-          reset(hostedDomain.domain);
-        }
-      }}
-    >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Domain</DialogTitle>
           <DialogDescription className="sr-only">Edit hosted domain</DialogDescription>

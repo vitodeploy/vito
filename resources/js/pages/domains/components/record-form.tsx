@@ -1,17 +1,8 @@
 import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useState, useEffect } from 'react';
+import { FormEventHandler, useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -27,15 +18,13 @@ import FormSuccessful from '@/components/form-successful';
 const PREDEFINED_TTLS = [1, 300, 600, 1800, 3600, 7200, 14400, 28800, 43200, 86400];
 
 interface RecordFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   domain: Domain;
   record?: DNSRecord;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  children: ReactNode;
 }
 
-export default function RecordForm({ domain, record, defaultOpen, onOpenChange, children }: RecordFormProps) {
-  const [open, setOpen] = useState(defaultOpen || false);
+export default function RecordForm({ open, onOpenChange, domain, record }: RecordFormProps) {
   const configs = useConfigs()!;
 
   const providerKey = domain.dns_provider?.provider;
@@ -44,19 +33,6 @@ export default function RecordForm({ domain, record, defaultOpen, onOpenChange, 
 
   const isManualTtl = record ? !PREDEFINED_TTLS.includes(record.ttl) : false;
   const [manualTtl, setManualTtl] = useState(isManualTtl);
-
-  useEffect(() => {
-    if (defaultOpen) {
-      setOpen(defaultOpen);
-    }
-  }, [setOpen, defaultOpen]);
-
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open);
-    if (onOpenChange) {
-      onOpenChange(open);
-    }
-  };
 
   const form = useForm({
     type: record?.type || 'A',
@@ -90,16 +66,11 @@ export default function RecordForm({ domain, record, defaultOpen, onOpenChange, 
 
     if (record) {
       form.patch(route('dns-records.update', [record.domain_id, record.id]), {
-        onSuccess: () => {
-          setOpen(false);
-        },
+        onSuccess: () => onOpenChange(false),
       });
     } else {
       form.post(route('dns-records.store', domain.id), {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
-        },
+        onSuccess: () => onOpenChange(false),
       });
     }
   };
@@ -146,9 +117,8 @@ export default function RecordForm({ domain, record, defaultOpen, onOpenChange, 
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{record ? 'Edit DNS Record' : 'Create DNS Record'}</DialogTitle>
           <DialogDescription className="sr-only">{record ? 'Edit DNS record' : `Create a new DNS record for ${domain.domain}`}</DialogDescription>

@@ -6,9 +6,10 @@ import { dialogs, type DialogControlProps } from './registry';
 
 export default function DialogHost() {
   const active = useDialogStore((s) => s.active);
+  const instanceId = useDialogStore((s) => s.instanceId);
 
   useEffect(() => {
-    return router.on('start', () => useDialogStore.getState().close());
+    return router.on('navigate', () => useDialogStore.getState().close());
   }, []);
 
   if (!active) {
@@ -22,11 +23,6 @@ export default function DialogHost() {
   }
 
   return (
-    <Component
-      key={active.key}
-      open
-      onOpenChange={(o: boolean) => !o && useDialogStore.getState().close()}
-      {...active.props}
-    />
+    <Component key={`${active.key}:${instanceId}`} open onOpenChange={(o: boolean) => !o && useDialogStore.getState().close()} {...active.props} />
   );
 }

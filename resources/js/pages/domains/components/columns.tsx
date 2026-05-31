@@ -2,66 +2,31 @@ import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
 import { Domain } from '@/types/domain';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { router, useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
-import { useState } from 'react';
-import InputError from '@/components/ui/input-error';
+import { router } from '@inertiajs/react';
+import { MoreVerticalIcon } from 'lucide-react';
+import { useDialog } from '@/hooks/use-dialog';
 
 function Remove({ domain }: { domain: Domain }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm<{ domain?: string }>({});
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('domains.destroy', domain.id), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Remove
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Remove {domain.domain}</DialogTitle>
-          <DialogDescription className="sr-only">Remove domain from Vito</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            Are you sure you want to remove <strong>{domain.domain}</strong> from Vito?
-          </p>
-          <p className="text-muted-foreground text-sm">This will only remove the domain from Vito, not from your DNS provider.</p>
-          <InputError message={form.errors.domain} />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Remove
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `Remove ${domain.domain}`,
+          description: `Are you sure you want to remove ${domain.domain} from Vito? This will only remove the domain from Vito, not from your DNS provider.`,
+          variant: 'destructive',
+          confirmLabel: 'Remove',
+          method: 'delete',
+          url: route('domains.destroy', domain.id),
+        })
+      }
+    >
+      Remove
+    </DropdownMenuItem>
   );
 }
 

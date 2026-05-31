@@ -6,9 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
@@ -20,8 +19,17 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Checkbox } from '@/components/ui/checkbox';
 import { FirewallRule } from '@/types/firewall';
 
-export default function RuleForm({ serverId, firewallRule, children }: { serverId: number; firewallRule?: FirewallRule; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+export default function RuleForm({
+  open,
+  onOpenChange,
+  serverId,
+  firewallRule,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  serverId: number;
+  firewallRule?: FirewallRule;
+}) {
   const form = useForm<{
     name: string;
     type: string;
@@ -44,25 +52,18 @@ export default function RuleForm({ serverId, firewallRule, children }: { serverI
     e.preventDefault();
     if (firewallRule) {
       form.put(route('firewall.update', { server: serverId, firewallRule: firewallRule.id }), {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
-        },
+        onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
     form.post(route('firewall.store', { server: serverId }), {
-      onSuccess: () => {
-        setOpen(false);
-        form.reset();
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{firewallRule ? 'Edit' : 'Create'} firewall rule</DialogTitle>
           <DialogDescription className="sr-only">{firewallRule ? 'Edit' : 'Create new'} firewall rule</DialogDescription>

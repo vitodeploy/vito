@@ -1,59 +1,24 @@
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import { LoaderCircleIcon } from 'lucide-react';
-import { Plugin } from '@/types/plugin';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Plugin } from '@/types/plugin';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function EnablePlugin({ plugin }: { plugin: Plugin }) {
-  const [open, setOpen] = useState(false);
-
-  const form = useForm({
-    id: plugin.id,
-  });
-
-  const submit = () => {
-    form.patch(route('plugins.enable'), {
-      onSuccess: () => {
-        form.reset();
-        setOpen(false);
-      },
-    });
-  };
+  const dialog = useDialog();
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Enable</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Enable plugin</DialogTitle>
-          <DialogDescription className="sr-only">Enable plugin {plugin.name}</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to enable the plugin <strong>{plugin.name}</strong>?
-        </p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="default" onClick={submit} disabled={form.processing}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Enable
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      onSelect={() =>
+        dialog.confirm.open({
+          title: 'Enable plugin',
+          description: `Are you sure you want to enable the plugin ${plugin.name}?`,
+          confirmLabel: 'Enable',
+          method: 'patch',
+          url: route('plugins.enable'),
+          data: { id: plugin.id },
+        })
+      }
+    >
+      Enable
+    </DropdownMenuItem>
   );
 }

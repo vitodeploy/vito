@@ -1,68 +1,35 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { MoreVerticalIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import DateTime from '@/components/date-time';
 import { SSL } from '@/types/ssl';
 import moment from 'moment';
 import { View } from '@/pages/server-logs/components/columns';
-import { useForm } from '@inertiajs/react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import FormSuccessful from '@/components/form-successful';
-import InputError from '@/components/ui/input-error';
 import ActivateServerSsl from '@/pages/server-ssls/components/activate-server-ssl';
+import { useDialog } from '@/hooks/use-dialog';
 
 function Delete({ ssl }: { ssl: SSL }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm<{ ssl?: string }>({});
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('server-ssls.destroy', { server: ssl.server_id, ssl: ssl.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete SSL</DialogTitle>
-          <DialogDescription className="sr-only">Delete SSL</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>Are you sure you want to delete this certificate?</p>
-          <InputError message={form.errors.ssl} />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: 'Delete SSL',
+          description: 'Are you sure you want to delete this certificate?',
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('server-ssls.destroy', { server: ssl.server_id, ssl: ssl.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -185,11 +152,7 @@ export const columns: ColumnDef<SSL>[] = [
                   >
                     Download CSR
                   </DropdownMenuItem>
-                  {row.original.type === 'csr' && (
-                    <ActivateServerSsl ssl={row.original}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Activate</DropdownMenuItem>
-                    </ActivateServerSsl>
-                  )}
+                  {row.original.type === 'csr' && <ActivateServerSsl ssl={row.original} />}
                   <DropdownMenuSeparator />
                 </>
               )}

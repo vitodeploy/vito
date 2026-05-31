@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,9 @@ import InputError from '@/components/ui/input-error';
 import { Input } from '@/components/ui/input';
 import { Backup } from '@/types/backup';
 import { useConfigs } from '@/stores/bootstrap-store';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export default function EditBackup({ backup, children }: { backup: Backup; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+export default function EditBackup({ open, onOpenChange, backup }: { open: boolean; onOpenChange: (open: boolean) => void; backup: Backup }) {
   const configs = useConfigs()!;
 
   const form = useForm<{
@@ -37,16 +27,13 @@ export default function EditBackup({ backup, children }: { backup: Backup; child
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.patch(route('backups.update', { server: backup.server_id, backup: backup.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit backup</DialogTitle>
           <DialogDescription className="sr-only">Edit backup</DialogDescription>

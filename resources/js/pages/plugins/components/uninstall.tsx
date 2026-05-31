@@ -1,63 +1,27 @@
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import { LoaderCircleIcon } from 'lucide-react';
-import { Plugin } from '@/types/plugin';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Plugin } from '@/types/plugin';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function Uninstall({ plugin }: { plugin: Plugin }) {
-  const [open, setOpen] = useState(false);
-
-  const form = useForm({
-    id: plugin.id,
-  });
-
-  const submit = () => {
-    form.delete(route('plugins.uninstall'), {
-      onSuccess: () => {
-        form.reset();
-        setOpen(false);
-      },
-    });
-  };
+  const dialog = useDialog();
+  const label = plugin.is_installed ? 'Uninstall' : 'Remove';
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          {plugin.is_installed ? 'Uninstall' : 'Remove'}
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{plugin.is_installed ? 'Uninstall' : 'Remove'} Plugin</DialogTitle>
-          <DialogDescription className="sr-only">
-            {plugin.is_installed ? 'Uninstall' : 'Remove'} plugin {plugin.name ?? plugin.folder}
-          </DialogDescription>
-        </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to {plugin.is_installed ? 'uninstall' : 'remove'} the plugin <strong>{plugin.name ?? plugin.folder}</strong>?
-        </p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" onClick={submit} disabled={form.processing}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            {plugin.is_installed ? 'Uninstall' : 'Remove'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `${label} Plugin`,
+          description: `Are you sure you want to ${label.toLowerCase()} the plugin ${plugin.name ?? plugin.folder}?`,
+          variant: 'destructive',
+          confirmLabel: label,
+          method: 'delete',
+          url: route('plugins.uninstall'),
+          data: { id: plugin.id },
+        })
+      }
+    >
+      {label}
+    </DropdownMenuItem>
   );
 }

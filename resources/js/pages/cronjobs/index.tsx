@@ -11,9 +11,9 @@ import Container from '@/components/container';
 import { DataTable } from '@/components/data-table';
 import { CronJob } from '@/types/cronjob';
 import { columns } from '@/pages/cronjobs/components/columns';
-import CronJobForm from '@/pages/cronjobs/components/form';
 import SyncCronJobs from '@/pages/cronjobs/components/sync-cronjobs';
 import { Site } from '@/types/site';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function CronJobIndex() {
   const page = usePage<{
@@ -22,6 +22,7 @@ export default function CronJobIndex() {
     site?: Site;
     sites?: Array<{ id: number; domain: string }>;
   }>();
+  const dialog = useDialog();
 
   return (
     <ServerLayout>
@@ -41,12 +42,10 @@ export default function CronJobIndex() {
               </Button>
             </a>
             <SyncCronJobs server={page.props.server} />
-            <CronJobForm serverId={page.props.server.id} site={page.props.site}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Create</span>
-              </Button>
-            </CronJobForm>
+            <Button onClick={() => dialog.cronjobForm.open({ serverId: page.props.server.id, site: page.props.site })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Create</span>
+            </Button>
           </div>
         </HeaderContainer>
 

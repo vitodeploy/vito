@@ -1,5 +1,5 @@
-import { FormEvent, ReactNode, useState } from 'react';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { FormEvent, useEffect } from 'react';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,9 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { Script } from '@/types/script';
 import { useInputFocus } from '@/stores/useInputFocus';
 
-export default function ScriptForm({ script, children }: { script?: Script; children: ReactNode }) {
+export default function ScriptForm({ open, onOpenChange, script }: { open: boolean; onOpenChange: (open: boolean) => void; script?: Script }) {
   const { getActualAppearance } = useAppearance();
   const setFocused = useInputFocus((state) => state.setFocused);
-
-  const [open, setOpen] = useState(false);
 
   const form = useForm<{
     name: string;
@@ -27,35 +25,30 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
     content: script?.content ?? '',
   });
 
-  const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen);
-    setFocused(isOpen);
-  };
+  useEffect(() => {
+    setFocused(open);
+    return () => setFocused(false);
+  }, [open, setFocused]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (script) {
       form.put(route('scripts.update', { script: script.id }), {
-        onSuccess: () => {
-          handleOpenChange(false);
-        },
+        onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
     form.post(route('scripts'), {
-      onSuccess: () => {
-        handleOpenChange(false);
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
 
   registerBashLanguage(useMonaco());
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-5xl">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="sm:max-w-5xl" onCloseAutoFocus={(e) => e.preventDefault()}>
         <SheetHeader>
           <SheetTitle>{script ? 'Edit' : 'Create'} script</SheetTitle>
           <SheetDescription className="sr-only">{script ? 'Edit' : 'Create'} script</SheetDescription>

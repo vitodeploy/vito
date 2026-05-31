@@ -1,132 +1,43 @@
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm, usePage } from '@inertiajs/react';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
-import { useState } from 'react';
+import { MoreVerticalIcon } from 'lucide-react';
 import { DatabaseUser } from '@/types/database-user';
-import { Database } from '@/types/database';
-import { Form, FormField, FormFields } from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
-import InputError from '@/components/ui/input-error';
-import { MultiSelect } from '@/components/multi-select';
 import { Badge } from '@/components/ui/badge';
-import EditDatabaseUser from './edit-database-user';
+import { useDialog } from '@/hooks/use-dialog';
 
 function Link({ databaseUser }: { databaseUser: DatabaseUser }) {
-  const [open, setOpen] = useState(false);
-  const page = usePage<{
-    databases: Database[];
-  }>();
-  const form = useForm<{
-    databases: string[];
-  }>({
-    databases: databaseUser.databases,
-  });
+  const dialog = useDialog();
 
-  const databases = page.props.databases.map((database) => ({
-    value: database.name,
-    label: database.name,
-  }));
+  return <DropdownMenuItem onSelect={() => dialog.databaseUserLink.open({ databaseUser })}>Link</DropdownMenuItem>;
+}
 
-  const submit = () => {
-    form.put(route('database-users.link', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
+function Edit({ databaseUser }: { databaseUser: DatabaseUser }) {
+  const dialog = useDialog();
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Link</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Link database user [{databaseUser.username}]</DialogTitle>
-          <DialogDescription className="sr-only">Link database user</DialogDescription>
-        </DialogHeader>
-        <Form id="link-database-user" onSubmit={submit} className="p-4">
-          <FormFields>
-            <FormField>
-              <Label htmlFor="databases">Databases</Label>
-              <MultiSelect
-                options={databases}
-                onValueChange={(value) => form.setData('databases', value)}
-                defaultValue={form.data.databases}
-                placeholder="Select database"
-                maxCount={5}
-              />
-              <InputError className="mt-2" message={form.errors.databases} />
-            </FormField>
-          </FormFields>
-        </Form>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  return <DropdownMenuItem onSelect={() => dialog.databaseUserEdit.open({ databaseUser })}>Edit</DropdownMenuItem>;
 }
 
 function Delete({ databaseUser }: { databaseUser: DatabaseUser }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('database-users.destroy', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete database user [{databaseUser.username}]</DialogTitle>
-          <DialogDescription className="sr-only">Delete database user</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to delete database user <strong>{databaseUser.username}</strong>? This action cannot be undone.
-        </p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `Delete database user [${databaseUser.username}]`,
+          description: `Are you sure you want to delete database user ${databaseUser.username}? This action cannot be undone.`,
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('database-users.destroy', { server: databaseUser.server_id, databaseUser: databaseUser.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -196,9 +107,7 @@ export const columns: ColumnDef<DatabaseUser>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <EditDatabaseUser databaseUser={row.original}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-              </EditDatabaseUser>
+              <Edit databaseUser={row.original} />
               <Link databaseUser={row.original} />
               <DropdownMenuSeparator />
               <Delete databaseUser={row.original} />

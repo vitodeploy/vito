@@ -22,9 +22,9 @@ class FirewallRuleTable extends Table
     {
         return [
             TextColumn::make('name', 'Name')->sortable(),
-            TextColumn::make('type', 'Type')->uppercase()->sortable(),
+            TextColumn::make('type', 'Type')->sortable(),
             TextColumn::make('source', 'Source')->fallback('any')->sortable(),
-            TextColumn::make('protocol', 'Protocol')->uppercase()->sortable(),
+            TextColumn::make('protocol', 'Protocol')->sortable(),
             TextColumn::make('port', 'Port')->sortable(),
             EnumColumn::make('status', 'Status')->sortable(),
             Column::data('id'),

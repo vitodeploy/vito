@@ -4,34 +4,30 @@ import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { FormEvent } from 'react';
-import { DatabaseUser } from '@/types/database-user';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { StorageProvider } from '@/types/storage-provider';
 
-export default function EditDatabaseUser({
+export default function StorageProviderEditDialog({
   open,
   onOpenChange,
-  databaseUser,
+  storageProvider,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  databaseUser: DatabaseUser;
+  storageProvider: StorageProvider;
 }) {
-  const form = useForm<{
-    password: string;
-    databases: string[];
-    remove_databases: string[];
-  }>({
-    password: '',
-    databases: databaseUser.databases || [],
-    remove_databases: [],
+  const form = useForm({
+    name: storageProvider.name,
+    global: storageProvider.global,
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('database-users.update', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
+    form.patch(route('storage-providers.update', storageProvider.id), {
       onSuccess: () => onOpenChange(false),
     });
   };
@@ -40,15 +36,27 @@ export default function EditDatabaseUser({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Edit database user [{databaseUser.username}]</DialogTitle>
-          <DialogDescription className="sr-only">Edit database user</DialogDescription>
+          <DialogTitle>Edit {storageProvider.name}</DialogTitle>
+          <DialogDescription className="sr-only">Edit storage provider</DialogDescription>
         </DialogHeader>
-        <Form id="edit-database-user-form" onSubmit={submit} className="p-4">
+        <Form id="edit-storage-provider-form" className="p-4" onSubmit={submit}>
           <FormFields>
             <FormField>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
-              <InputError message={form.errors.password} />
+              <Label htmlFor="name">Name</Label>
+              <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <InputError message={form.errors.name} />
+            </FormField>
+            <FormField>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="global"
+                  name="global"
+                  checked={form.data.global}
+                  onCheckedChange={(checked) => form.setData('global', Boolean(checked))}
+                />
+                <Label htmlFor="global">Is global (accessible in all projects)</Label>
+              </div>
+              <InputError message={form.errors.global} />
             </FormField>
           </FormFields>
         </Form>
@@ -56,7 +64,7 @@ export default function EditDatabaseUser({
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-database-user-form" type="submit" disabled={form.processing}>
+          <Button form="edit-storage-provider-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

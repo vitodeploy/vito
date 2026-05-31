@@ -1,16 +1,16 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
-import { FormEvent } from 'react';
 import { DatabaseUser } from '@/types/database-user';
-import InputError from '@/components/ui/input-error';
+import { Database } from '@/types/database';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
+import { MultiSelect } from '@/components/multi-select';
 
-export default function EditDatabaseUser({
+export default function LinkDatabaseUserDialog({
   open,
   onOpenChange,
   databaseUser,
@@ -19,19 +19,22 @@ export default function EditDatabaseUser({
   onOpenChange: (open: boolean) => void;
   databaseUser: DatabaseUser;
 }) {
+  const page = usePage<{
+    databases: Database[];
+  }>();
   const form = useForm<{
-    password: string;
     databases: string[];
-    remove_databases: string[];
   }>({
-    password: '',
-    databases: databaseUser.databases || [],
-    remove_databases: [],
+    databases: databaseUser.databases,
   });
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    form.put(route('database-users.update', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
+  const databases = page.props.databases.map((database) => ({
+    value: database.name,
+    label: database.name,
+  }));
+
+  const submit = () => {
+    form.put(route('database-users.link', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
       onSuccess: () => onOpenChange(false),
     });
   };
@@ -40,15 +43,21 @@ export default function EditDatabaseUser({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Edit database user [{databaseUser.username}]</DialogTitle>
-          <DialogDescription className="sr-only">Edit database user</DialogDescription>
+          <DialogTitle>Link database user [{databaseUser.username}]</DialogTitle>
+          <DialogDescription className="sr-only">Link database user</DialogDescription>
         </DialogHeader>
-        <Form id="edit-database-user-form" onSubmit={submit} className="p-4">
+        <Form id="link-database-user" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
-              <InputError message={form.errors.password} />
+              <Label htmlFor="databases">Databases</Label>
+              <MultiSelect
+                options={databases}
+                onValueChange={(value) => form.setData('databases', value)}
+                defaultValue={form.data.databases}
+                placeholder="Select database"
+                maxCount={5}
+              />
+              <InputError className="mt-2" message={form.errors.databases} />
             </FormField>
           </FormFields>
         </Form>
@@ -56,7 +65,7 @@ export default function EditDatabaseUser({
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-database-user-form" type="submit" disabled={form.processing}>
+          <Button disabled={form.processing} onClick={submit}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

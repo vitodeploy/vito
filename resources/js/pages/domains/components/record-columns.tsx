@@ -3,26 +3,18 @@ import DateTime from '@/components/date-time';
 import { DNSRecord } from '@/types/dns-record';
 import { Domain } from '@/types/domain';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, LockIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
-import { useState } from 'react';
-import InputError from '@/components/ui/input-error';
+import { LockIcon, MoreVerticalIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useClipboard } from '@/hooks/use-clipboard';
-import RecordForm from './record-form';
+import { useDialog } from '@/hooks/use-dialog';
+
+function Edit({ domain, record }: { domain: Domain; record: DNSRecord }) {
+  const dialog = useDialog();
+
+  return <DropdownMenuItem onSelect={() => dialog.dnsRecordForm.open({ domain, record })}>Edit</DropdownMenuItem>;
+}
 
 function CopyableText({ text }: { text: string | null | undefined }) {
   const { copied, copy } = useClipboard();
@@ -39,57 +31,24 @@ function CopyableText({ text }: { text: string | null | undefined }) {
 }
 
 function Delete({ record }: { record: DNSRecord }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm<{ record?: string }>({});
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('dns-records.destroy', [record.domain_id, record.id]), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete DNS Record</DialogTitle>
-          <DialogDescription className="sr-only">Delete DNS record</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>Are you sure you want to delete this DNS record?</p>
-          <div className="bg-muted rounded-md p-3">
-            <div className="font-mono text-sm">
-              <div>
-                <strong>Type:</strong> {record.type}
-              </div>
-              <div>
-                <strong>Name:</strong> {record.name}
-              </div>
-              <div>
-                <strong>Content:</strong> {record.content}
-              </div>
-            </div>
-          </div>
-          <InputError message={form.errors.record} />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: 'Delete DNS Record',
+          description: `Are you sure you want to delete this DNS record? Type: ${record.type}, Name: ${record.name}, Content: ${record.content}`,
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('dns-records.destroy', [record.domain_id, record.id]),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -190,11 +149,7 @@ export function getColumns(providerConfig?: ProviderConfig, domain?: Domain): Co
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {domain && (
-                <RecordForm domain={domain} record={row.original}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-                </RecordForm>
-              )}
+              {domain && <Edit domain={domain} record={row.original} />}
               <DropdownMenuSeparator />
               <Delete record={row.original} />
             </DropdownMenuContent>

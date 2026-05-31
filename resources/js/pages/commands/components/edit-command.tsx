@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -7,21 +7,10 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/ui/input-error';
 import { Input } from '@/components/ui/input';
 import { Command } from '@/types/command';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
-export default function EditCommand({ command, children }: { command: Command; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-
+export default function EditCommand({ open, onOpenChange, command }: { open: boolean; onOpenChange: (open: boolean) => void; command: Command }) {
   const form = useForm<{
     name: string;
     command: string;
@@ -33,16 +22,13 @@ export default function EditCommand({ command, children }: { command: Command; c
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.put(route('commands.update', { server: command.server_id, site: command.site_id, command: command.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit command</DialogTitle>
           <DialogDescription className="sr-only">Create a new command</DialogDescription>

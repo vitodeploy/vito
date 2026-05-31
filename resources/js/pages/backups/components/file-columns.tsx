@@ -1,70 +1,39 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import { useForm } from '@inertiajs/react';
+import { MoreVerticalIcon } from 'lucide-react';
 import { BackupFile } from '@/types/backup-file';
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import RestoreBackup from '@/pages/backups/components/restore-backup';
 import CopyableBadge from '@/components/copyable-badge';
+import { useDialog } from '@/hooks/use-dialog';
+import { Backup } from '@/types/backup';
 
-function Delete({ file, onDeleted }: { file: BackupFile; onDeleted?: (file: BackupFile) => void }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+function Restore({ backup, file }: { backup: Backup; file: BackupFile }) {
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(
-      route('backup-files.destroy', {
-        server: file.server_id,
-        backup: file.backup_id,
-        backupFile: file.id,
-      }),
-      {
-        onSuccess: () => {
-          setOpen(false);
-          if (onDeleted) {
-            onDeleted(file);
-          }
-        },
-      },
-    );
-  };
+  return <DropdownMenuItem onSelect={() => dialog.backupRestore.open({ backup, file })}>Restore</DropdownMenuItem>;
+}
+
+function Delete({ file }: { file: BackupFile }) {
+  const dialog = useDialog();
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete backup file</DialogTitle>
-          <DialogDescription className="sr-only">Delete backup file</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">Are you sure you want to this backup file?</p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: 'Delete backup file',
+          description: 'Are you sure you want to delete this backup file?',
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('backup-files.destroy', { server: file.server_id, backup: file.backup_id, backupFile: file.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -120,9 +89,7 @@ export const columns: ColumnDef<BackupFile>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <RestoreBackup backup={row.original.backup} file={row.original}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restore</DropdownMenuItem>
-              </RestoreBackup>
+              <Restore backup={row.original.backup} file={row.original} />
               <Delete file={row.original} />
             </DropdownMenuContent>
           </DropdownMenu>

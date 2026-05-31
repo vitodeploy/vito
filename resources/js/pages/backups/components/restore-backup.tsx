@@ -1,17 +1,8 @@
 import { Backup } from '@/types/backup';
 import { BackupFile } from '@/types/backup-file';
 import { useForm } from '@inertiajs/react';
-import { FormEvent, ReactNode, useState } from 'react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { FormEvent } from 'react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
@@ -21,18 +12,16 @@ import InputError from '@/components/ui/input-error';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 
 export default function RestoreBackup({
+  open,
+  onOpenChange,
   backup,
   file,
-  onBackupRestored,
-  children,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   backup: Backup;
   file: BackupFile;
-  onBackupRestored?: () => void;
-  children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
-
   const form = useForm({
     database: '',
     path: '',
@@ -49,20 +38,14 @@ export default function RestoreBackup({
         backupFile: file.id,
       }),
       {
-        onSuccess: () => {
-          setOpen(false);
-          if (onBackupRestored) {
-            onBackupRestored();
-          }
-        },
+        onSuccess: () => onOpenChange(false),
       },
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Restore backup</DialogTitle>
           <DialogDescription className="sr-only">Restore backup</DialogDescription>

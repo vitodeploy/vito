@@ -20,7 +20,7 @@ export function useDialog(): DialogAccessor {
   return useMemo(() => {
     const accessor = {} as DialogAccessor;
     (Object.keys(dialogs) as Array<keyof DialogRegistry>).forEach((key) => {
-      accessor[key] = entryFor(key) as DialogAccessor[typeof key];
+      (accessor as Record<string, unknown>)[key] = entryFor(key);
     });
     return accessor;
   }, []);

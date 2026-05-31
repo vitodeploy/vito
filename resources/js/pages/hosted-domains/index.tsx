@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import ServerLayout from '@/layouts/server/layout';
 import SiteBanners from '@/components/site-banners';
 import { Head, usePage } from '@inertiajs/react';
@@ -11,16 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   BookOpenIcon,
   EllipsisVerticalIcon,
   LoaderCircleIcon,
@@ -32,121 +21,13 @@ import {
   ShieldCheckIcon,
   ShieldOffIcon,
 } from 'lucide-react';
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { VitoTable } from '@/components/vito-table';
 import ErrorIndicator from '@/components/error-indicator';
 import { Site } from '@/types/site';
 import { HostedDomain } from '@/types/hosted-domain';
-import CreateHostedDomain from '@/pages/hosted-domains/components/create-hosted-domain';
-import EditHostedDomain from '@/pages/hosted-domains/components/edit-hosted-domain';
-import FormSuccessful from '@/components/form-successful';
+import { useDialog } from '@/hooks/use-dialog';
 import type { InertiaTableData, CellRenderProps, Row } from '@forjedio/inertia-table-react';
-
-function DeleteHostedDomain({ hostedDomain }: { hostedDomain: HostedDomain }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.delete(
-      route('hosted-domains.destroy', {
-        server: hostedDomain.server_id,
-        site: hostedDomain.site_id,
-        hostedDomain: hostedDomain.id,
-      }),
-      {
-        onSuccess: () => {
-          setOpen(false);
-        },
-      },
-    );
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Domain</DialogTitle>
-          <DialogDescription className="sr-only">Delete domain</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            Are you sure you want to delete <strong>{hostedDomain.domain}</strong>?
-          </p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomain }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.post(
-      route('hosted-domains.force-activate', {
-        server: hostedDomain.server_id,
-        site: hostedDomain.site_id,
-        hostedDomain: hostedDomain.id,
-      }),
-      {
-        onSuccess: () => {
-          setOpen(false);
-        },
-      },
-    );
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Force Validate</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Force Validate Domain</DialogTitle>
-          <DialogDescription className="sr-only">Force validate domain</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            The domain <strong>{hostedDomain.domain}</strong> is currently pending because we could not confirm that it resolves to this server. No
-            configuration changes have been made yet.
-          </p>
-          <p>
-            If you force validate this domain, the server configuration will be updated regardless. However, this may impact your ability to generate
-            an SSL certificate if the domain does not actually point to this server.
-          </p>
-          <p>Are you sure you want to continue?</p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Force Validate
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function CertificateCell({ row }: { row: HostedDomain }) {
   const ssl = row.ssl as { id: number; type: string; domains: string[]; expires_at: string } | null;
@@ -215,6 +96,7 @@ export default function HostedDomains() {
     hostedDomains: InertiaTableData;
     hasSiteSsl: boolean;
   }>();
+  const dialog = useDialog();
 
   const sslLocked = !page.props.site.can_configure_ssl;
 
@@ -292,12 +174,10 @@ export default function HostedDomains() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <CreateHostedDomain site={page.props.site}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Add Domain</span>
-              </Button>
-            </CreateHostedDomain>
+            <Button onClick={() => dialog.createHostedDomain.open({ site: page.props.site })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Add Domain</span>
+            </Button>
           </div>
         </HeaderContainer>
 
@@ -335,9 +215,7 @@ export default function HostedDomains() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <EditHostedDomain hostedDomain={hd}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-                    </EditHostedDomain>
+                    <DropdownMenuItem onSelect={() => dialog.editHostedDomain.open({ hostedDomain: hd })}>Edit</DropdownMenuItem>
                     {hd.status === 'pending' && (
                       <>
                         <DropdownMenuSeparator />
@@ -354,7 +232,20 @@ export default function HostedDomains() {
                         >
                           Validate
                         </DropdownMenuItem>
-                        <ForceActivateHostedDomain hostedDomain={hd} />
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            dialog.confirm.open({
+                              title: 'Force Validate Domain',
+                              description: `The domain ${hd.domain} is currently pending because we could not confirm that it resolves to this server. If you force validate this domain, the server configuration will be updated regardless. This may impact your ability to generate an SSL certificate if the domain does not actually point to this server. Are you sure you want to continue?`,
+                              variant: 'destructive',
+                              confirmLabel: 'Force Validate',
+                              method: 'post',
+                              url: route('hosted-domains.force-activate', { server: hd.server_id, site: hd.site_id, hostedDomain: hd.id }),
+                            })
+                          }
+                        >
+                          Force Validate
+                        </DropdownMenuItem>
                       </>
                     )}
                     {!isPrimary && (hd.status === 'active' || hd.status === 'pending') && (
@@ -396,7 +287,21 @@ export default function HostedDomains() {
                     {!isPrimary && (
                       <>
                         <DropdownMenuSeparator />
-                        <DeleteHostedDomain hostedDomain={hd} />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() =>
+                            dialog.confirm.open({
+                              title: 'Delete Domain',
+                              description: `Are you sure you want to delete ${hd.domain}?`,
+                              variant: 'destructive',
+                              confirmLabel: 'Delete',
+                              method: 'delete',
+                              url: route('hosted-domains.destroy', { server: hd.server_id, site: hd.site_id, hostedDomain: hd.id }),
+                            })
+                          }
+                        >
+                          Delete
+                        </DropdownMenuItem>
                       </>
                     )}
                   </DropdownMenuContent>

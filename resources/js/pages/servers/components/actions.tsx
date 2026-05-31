@@ -2,9 +2,8 @@ import { Server } from '@/types/server';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import RebootServer from '@/pages/servers/components/reboot-server';
 import { useForm } from '@inertiajs/react';
-import UpdateServer from '@/pages/servers/components/update-server';
+import { useDialog } from '@/hooks/use-dialog';
 
 function CheckForUpdates({ server }: { server: Server }) {
   const form = useForm();
@@ -49,6 +48,8 @@ function CheckConnection({ server }: { server: Server }) {
 }
 
 export default function ServerActions({ server }: { server: Server }) {
+  const dialog = useDialog();
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -59,15 +60,35 @@ export default function ServerActions({ server }: { server: Server }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <CheckConnection server={server} />
-        <RebootServer server={server}>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restart</DropdownMenuItem>
-        </RebootServer>
+        <DropdownMenuItem
+          onSelect={() =>
+            dialog.confirm.open({
+              title: `Restart ${server.name}?`,
+              description:
+                'Are you sure you want to restart this server? Sites and services hosted on this server will be unavailable while it restarts. Connections in flight will be dropped.',
+              confirmLabel: 'Restart',
+              method: 'post',
+              url: route('servers.reboot', server.id),
+            })
+          }
+        >
+          Restart
+        </DropdownMenuItem>
         <CheckForUpdates server={server} />
-        <UpdateServer server={server}>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled={server.updates == 0}>
-            Update
-          </DropdownMenuItem>
-        </UpdateServer>
+        <DropdownMenuItem
+          disabled={server.updates == 0}
+          onSelect={() =>
+            dialog.confirm.open({
+              title: `Update ${server.name}?`,
+              description: `Apply ${server.updates} pending OS package ${server.updates === 1 ? 'update' : 'updates'} to this server? The upgrade can take several minutes and may briefly restart affected services. A server restart may be required afterwards.`,
+              confirmLabel: 'Update',
+              method: 'post',
+              url: route('servers.update', server.id),
+            })
+          }
+        >
+          Update
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

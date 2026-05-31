@@ -7,15 +7,28 @@ export type ActiveDialog = {
 
 type DialogStore = {
   active: ActiveDialog | null;
+  instanceId: number;
   open: <K extends keyof DialogRegistry>(key: K, props: ConsumerProps<DialogRegistry[K]>) => void;
   close: () => void;
 };
 
-export const useDialogStore = create<DialogStore>((set) => ({
+let triggerElement: HTMLElement | null = null;
+
+export const useDialogStore = create<DialogStore>((set, get) => ({
   active: null,
-  open: (key, props) =>
-    // TS cannot narrow the mapped-type union from correlated generics —
-    // `key` and `props` come from the same call so the cast is safe.
-    set({ active: { key, props } as ActiveDialog }),
-  close: () => set({ active: null }),
+  instanceId: 0,
+  open: (key, props) => {
+    triggerElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    set({ active: { key, props } as ActiveDialog, instanceId: get().instanceId + 1 });
+  },
+  close: () => {
+    const trigger = triggerElement;
+    triggerElement = null;
+    set({ active: null });
+    requestAnimationFrame(() => {
+      if (trigger?.isConnected) {
+        trigger.focus();
+      }
+    });
+  },
 }));

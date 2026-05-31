@@ -1,65 +1,40 @@
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Link, useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
-import { useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { MoreVerticalIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
-import EditBackup from '@/pages/backups/components/edit-backup';
 import CopyableBadge from '@/components/copyable-badge';
+import { useDialog } from '@/hooks/use-dialog';
+
+function Edit({ backup }: { backup: Backup }) {
+  const dialog = useDialog();
+
+  return <DropdownMenuItem onSelect={() => dialog.backupEdit.open({ backup })}>Edit</DropdownMenuItem>;
+}
 
 function Delete({ backup }: { backup: Backup }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+  const dialog = useDialog();
+  const target = backup.type === 'database' ? backup.database?.name : backup.path;
 
-  const submit = () => {
-    form.delete(route('backups.destroy', { server: backup.server_id, backup: backup.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete backup [{backup.type === 'database' ? backup.database?.name : backup.path}]</DialogTitle>
-          <DialogDescription className="sr-only">Delete backup</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to delete this backup: <strong>{backup.type === 'database' ? backup.database?.name : backup.path}</strong>? All backup
-          files will be deleted and this action cannot be undone.
-        </p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `Delete backup [${target}]`,
+          description: `Are you sure you want to delete this backup: ${target}? All backup files will be deleted and this action cannot be undone.`,
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('backups.destroy', { server: backup.server_id, backup: backup.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -131,9 +106,7 @@ export const columns: ColumnDef<Backup>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <EditBackup backup={row.original}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-              </EditBackup>
+              <Edit backup={row.original} />
               <Link href={route('backup-files', { server: row.original.server_id, backup: row.original.id })}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
               </Link>

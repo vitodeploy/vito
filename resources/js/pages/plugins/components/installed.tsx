@@ -6,9 +6,10 @@ import { Pip } from '@/components/ui/pip';
 import PluginDropdown from '@/pages/plugins/components/plugin-dropdown';
 import { TriangleAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import ViewLogs from './view-logs';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
+  const dialog = useDialog();
   const installedPlugins = plugins.filter((plugin) => plugin.is_installed);
   return (
     <div>
@@ -40,10 +41,10 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
               <div className="flex flex-row items-center gap-4">
                 {plugin.errors.length > 0 && (
                   <Tooltip>
-                    <TooltipTrigger>
-                      <ViewLogs plugin={plugin}>
+                    <TooltipTrigger asChild>
+                      <button type="button" onClick={() => dialog.pluginLogs.open({ name: plugin.name ?? plugin.folder, errors: plugin.errors })}>
                         <TriangleAlert className="text-destructive cursor-pointer" />
-                      </ViewLogs>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>This plugin has errors</TooltipContent>
                   </Tooltip>

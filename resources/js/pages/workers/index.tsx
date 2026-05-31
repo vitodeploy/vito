@@ -11,9 +11,9 @@ import Container from '@/components/container';
 import { DataTable } from '@/components/data-table';
 import { Worker } from '@/types/worker';
 import { columns } from '@/pages/workers/components/columns';
-import WorkerForm from '@/pages/workers/components/form';
 import { Site } from '@/types/site';
 import { useRealtime } from '@/hooks/use-socket-events';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function WorkerIndex() {
   const page = usePage<{
@@ -22,6 +22,7 @@ export default function WorkerIndex() {
     site?: Site;
     sites?: Array<{ id: number; domain: string }>;
   }>();
+  const dialog = useDialog();
 
   const [workers] = useRealtime<Worker>(page.props.workers, 'worker');
 
@@ -42,12 +43,10 @@ export default function WorkerIndex() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <WorkerForm serverId={page.props.server.id} site={page.props.site}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Create</span>
-              </Button>
-            </WorkerForm>
+            <Button onClick={() => dialog.workerForm.open({ serverId: page.props.server.id, site: page.props.site })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Create</span>
+            </Button>
           </div>
         </HeaderContainer>
 

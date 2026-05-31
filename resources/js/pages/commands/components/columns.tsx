@@ -1,61 +1,38 @@
 import { ColumnDef } from '@tanstack/react-table';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Link, useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, MoreVerticalIcon, PlayIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
-import { useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { MoreVerticalIcon, PlayIcon } from 'lucide-react';
 import { Command } from '@/types/command';
-import EditCommand from '@/pages/commands/components/edit-command';
 import CopyableBadge from '@/components/copyable-badge';
 import Execute from '@/pages/commands/components/execute';
+import { useDialog } from '@/hooks/use-dialog';
+
+function Edit({ command }: { command: Command }) {
+  const dialog = useDialog();
+
+  return <DropdownMenuItem onSelect={() => dialog.commandEdit.open({ command })}>Edit</DropdownMenuItem>;
+}
 
 function Delete({ command }: { command: Command }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
+  const dialog = useDialog();
 
-  const submit = () => {
-    form.delete(route('commands.destroy', { server: command.server_id, site: command.site_id, command: command.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          Delete
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete command</DialogTitle>
-          <DialogDescription className="sr-only">Delete command</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">Are you sure you want to this command?</p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={() =>
+        dialog.confirm.open({
+          title: 'Delete command',
+          description: 'Are you sure you want to delete this command?',
+          variant: 'destructive',
+          confirmLabel: 'Delete',
+          method: 'delete',
+          url: route('commands.destroy', { server: command.server_id, site: command.site_id, command: command.id }),
+        })
+      }
+    >
+      Delete
+    </DropdownMenuItem>
   );
 }
 
@@ -95,9 +72,7 @@ export const columns: ColumnDef<Command>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <EditCommand command={row.original}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-              </EditCommand>
+              <Edit command={row.original} />
               <Link
                 href={route('commands.show', {
                   server: row.original.server_id,

@@ -1,14 +1,5 @@
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import React, { FormEvent, ReactNode, useMemo, useState } from 'react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useMemo, FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm, usePage } from '@inertiajs/react';
@@ -24,19 +15,20 @@ import { Site } from '@/types/site';
 import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function CronJobForm({
+  open,
+  onOpenChange,
   serverId,
   site,
   cronJob,
-  children,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   serverId: number;
   site?: Site;
   cronJob?: CronJob;
-  children: ReactNode;
 }) {
   const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }>; ssh_users?: string[] }>();
   const configs = useConfigs()!;
-  const [open, setOpen] = useState(false);
 
   const sshUsers = useMemo(() => {
     const base = site ? (page.props.ssh_users ?? []) : page.props.server.ssh_users;
@@ -68,10 +60,7 @@ export default function CronJobForm({
       const routeParams = site ? { server: serverId, site: site.id, cronJob: cronJob.id } : { server: serverId, cronJob: cronJob.id };
 
       form.put(route(routeName, routeParams), {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
-        },
+        onSuccess: () => onOpenChange(false),
       });
       return;
     }
@@ -80,23 +69,18 @@ export default function CronJobForm({
     const routeParams = site ? { server: serverId, site: site.id } : { server: serverId };
 
     form.post(route(routeName, routeParams), {
-      onSuccess: () => {
-        setOpen(false);
-        form.reset();
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{cronJob ? 'Edit' : 'Create'} cron job</DialogTitle>
           <DialogDescription className="sr-only">{cronJob ? 'Edit' : 'Create new'} cron job</DialogDescription>
         </DialogHeader>
         <Form id="cronjob-form" onSubmit={submit} className="p-4">
           <FormFields>
-            {/* Name */}
             <FormField>
               <Label htmlFor="name">Name</Label>
               <Input
@@ -109,14 +93,12 @@ export default function CronJobForm({
               <InputError message={form.errors.name} />
             </FormField>
 
-            {/* Command */}
             <FormField>
               <Label htmlFor="command">Command</Label>
               <Input type="text" id="command" value={form.data.command} onChange={(e) => form.setData('command', e.target.value)} />
               <InputError message={form.errors.command} />
             </FormField>
 
-            {/*site selection - only show if we have sites data and not in site context*/}
             {page.props.sites && !site && (
               <FormField>
                 <Label htmlFor="site_id">Belongs to</Label>
@@ -139,7 +121,6 @@ export default function CronJobForm({
               </FormField>
             )}
 
-            {/*frequency*/}
             <FormField>
               <Label htmlFor="frequency">Frequency</Label>
               <Select value={form.data.frequency} onValueChange={(value) => form.setData('frequency', value)}>
@@ -159,7 +140,6 @@ export default function CronJobForm({
               <InputError message={form.errors.frequency} />
             </FormField>
 
-            {/*custom frequency*/}
             {form.data.frequency === 'custom' && (
               <FormField>
                 <Label htmlFor="custom_frequency">Custom frequency (crontab)</Label>
@@ -174,7 +154,6 @@ export default function CronJobForm({
               </FormField>
             )}
 
-            {/*user*/}
             <FormField>
               <Label htmlFor="user">User</Label>
               <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>

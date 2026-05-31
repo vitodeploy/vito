@@ -8,10 +8,10 @@ import { DNSRecord } from '@/types/dns-record';
 import { Domain } from '@/types/domain';
 import { PlusIcon } from 'lucide-react';
 import Layout from '@/layouts/app/layout';
-import RecordForm from './components/record-form';
 import { getColumns } from './components/record-columns';
 import SyncRecords from './components/sync-records';
 import { useConfigs } from '@/stores/bootstrap-store';
+import { useDialog } from '@/hooks/use-dialog';
 
 type Page = {
   domain: Domain;
@@ -21,6 +21,7 @@ type Page = {
 export default function DomainShow() {
   const page = usePage<Page>();
   const configs = useConfigs()!;
+  const dialog = useDialog();
 
   const domain = page.props.domain;
   const providerKey = domain.dns_provider?.provider;
@@ -35,12 +36,10 @@ export default function DomainShow() {
           <Heading title={`DNS Records for ${page.props.domain.domain}`} description="Manage DNS records for this domain" />
           <div className="flex items-center gap-2">
             <SyncRecords domain={page.props.domain} />
-            <RecordForm domain={page.props.domain}>
-              <Button>
-                <PlusIcon />
-                Add Record
-              </Button>
-            </RecordForm>
+            <Button onClick={() => dialog.dnsRecordForm.open({ domain: page.props.domain })}>
+              <PlusIcon />
+              Add Record
+            </Button>
           </div>
         </div>
         <DataTable columns={columns} data={page.props.records} />
