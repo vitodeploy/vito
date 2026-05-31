@@ -208,7 +208,7 @@ class GetSiteStats
             return null;
         }
 
-        $decoded = json_decode($out, true);
+        $decoded = json_decode($out, true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
 
         return is_array($decoded) ? $decoded : null;
     }

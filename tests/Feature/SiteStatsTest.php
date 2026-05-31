@@ -22,6 +22,7 @@ use App\Listeners\HandleSiteDeletedStats;
 use App\Models\Service;
 use App\Services\LogAnalysis\GoAccess\GoAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -129,6 +130,20 @@ class SiteStatsTest extends TestCase
             ->assertSuccessful()
             ->assertJsonPath('detail.totals.visitors', 200)
             ->assertJsonPath('detail.top_pages.0.name', '/home');
+    }
+
+    public function test_get_site_stats_tolerates_invalid_utf8_in_report(): void
+    {
+        Cache::flush();
+        $report = str_replace('/home', "/home\x80\x81", $this->sampleReport());
+        $this->assertFalse(mb_check_encoding($report, 'UTF-8'));
+        SSH::fake($report);
+
+        $stats = app(GetSiteStats::class)->get($this->site, '2026-05');
+
+        $this->assertNotNull($stats['detail']);
+        $this->assertSame(1000, $stats['detail']['totals']['hits']);
+        $this->assertStringStartsWith('/home', $stats['detail']['top_pages'][0]['name']);
     }
 
     public function test_refresh_requires_service(): void
