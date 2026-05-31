@@ -15,6 +15,8 @@ class GoAccess extends AbstractService
 {
     public const BASE_DIR = '/var/lib/goaccess';
 
+    public const CRON_NAME = 'Site statistics';
+
     public const CRON_COMMAND = 'bash /var/lib/goaccess/bin/run.sh';
 
     public const CRON_FREQUENCY = '0 * * * *';
@@ -101,7 +103,6 @@ class GoAccess extends AbstractService
     {
         $cron = $this->service->server->cronJobs()
             ->where('user', 'root')
-            ->where('hidden', true)
             ->where('command', self::CRON_COMMAND)
             ->first();
         if ($cron) {
@@ -189,7 +190,6 @@ class GoAccess extends AbstractService
     {
         return $this->service->server->cronJobs()
             ->where('user', 'root')
-            ->where('hidden', true)
             ->where('command', self::CRON_COMMAND)
             ->first();
     }

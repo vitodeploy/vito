@@ -193,7 +193,7 @@ class SiteStatsTest extends TestCase
         Queue::assertPushed(CleanupSiteStatsJob::class);
     }
 
-    public function test_sync_creates_hidden_root_cron(): void
+    public function test_sync_creates_named_root_cron(): void
     {
         SSH::fake('');
         $this->installGoAccess();
@@ -203,26 +203,26 @@ class SiteStatsTest extends TestCase
         $this->assertDatabaseHas('cron_jobs', [
             'server_id' => $this->server->id,
             'user' => 'root',
-            'hidden' => true,
+            'hidden' => false,
+            'name' => GoAccess::CRON_NAME,
             'command' => GoAccess::CRON_COMMAND,
             'status' => CronjobStatus::READY->value,
         ]);
     }
 
-    public function test_resync_preserves_disabled_hidden_cron(): void
+    public function test_resync_preserves_disabled_cron(): void
     {
         SSH::fake('');
         $this->installGoAccess();
 
-        $cron = $this->server->cronJobs()->make([
+        $cron = $this->server->cronJobs()->create([
             'site_id' => null,
+            'name' => GoAccess::CRON_NAME,
             'user' => 'root',
             'command' => GoAccess::CRON_COMMAND,
             'frequency' => GoAccess::CRON_FREQUENCY,
             'status' => CronjobStatus::DISABLED,
         ]);
-        $cron->hidden = true;
-        $cron->save();
 
         app(SyncGoAccessServer::class)->sync($this->server);
 
@@ -242,7 +242,7 @@ class SiteStatsTest extends TestCase
         $service = $this->installGoAccess();
         app(SyncGoAccessServer::class)->sync($this->server);
 
-        $cron = $this->server->cronJobs()->where('hidden', true)->where('command', GoAccess::CRON_COMMAND)->firstOrFail();
+        $cron = $this->server->cronJobs()->where('command', GoAccess::CRON_COMMAND)->firstOrFail();
 
         $service->handler()->manage('stop');
         $this->assertSame(CronjobStatus::DISABLED, $cron->refresh()->status);
@@ -338,22 +338,21 @@ class SiteStatsTest extends TestCase
         $this->assertFalse($this->site->statsEnabled());
     }
 
-    public function test_hidden_cron_survives_empty_crontab_sync(): void
+    public function test_stats_cron_is_subject_to_crontab_sync(): void
     {
         SSH::fake(''); // getUserCrontab returns empty for every user
 
-        $cron = $this->server->cronJobs()->make([
+        $cron = $this->server->cronJobs()->create([
             'site_id' => null,
+            'name' => GoAccess::CRON_NAME,
             'user' => 'root',
             'command' => GoAccess::CRON_COMMAND,
             'frequency' => GoAccess::CRON_FREQUENCY,
             'status' => CronjobStatus::READY,
         ]);
-        $cron->hidden = true;
-        $cron->save();
 
         app(SyncCronJobs::class)->sync($this->server);
 
-        $this->assertSame(CronjobStatus::READY, $cron->refresh()->status);
+        $this->assertSame(CronjobStatus::DISABLED, $cron->refresh()->status);
     }
 }

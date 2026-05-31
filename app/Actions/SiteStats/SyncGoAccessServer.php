@@ -73,20 +73,18 @@ class SyncGoAccessServer
     {
         $cron = $server->cronJobs()
             ->where('user', 'root')
-            ->where('hidden', true)
             ->where('command', GoAccess::CRON_COMMAND)
             ->first();
 
         if (! $cron) {
-            $cron = $server->cronJobs()->make([
+            $cron = $server->cronJobs()->create([
                 'site_id' => null,
+                'name' => GoAccess::CRON_NAME,
                 'user' => 'root',
                 'command' => GoAccess::CRON_COMMAND,
                 'frequency' => GoAccess::CRON_FREQUENCY,
                 'status' => CronjobStatus::READY,
             ]);
-            $cron->hidden = true;
-            $cron->save();
         } elseif (! in_array($cron->status, [CronjobStatus::READY, CronjobStatus::DISABLED], true)) {
             $cron->update(['status' => CronjobStatus::READY]);
         }
