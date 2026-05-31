@@ -17,7 +17,7 @@ function Edit({ backup }: { backup: Backup }) {
 
 function Delete({ backup }: { backup: Backup }) {
   const dialog = useDialog();
-  const target = backup.type === 'database' ? backup.database?.name : backup.path;
+  const target = (backup.type === 'database' ? backup.database?.name : backup.path) ?? `#${backup.id}`;
 
   return (
     <DropdownMenuItem

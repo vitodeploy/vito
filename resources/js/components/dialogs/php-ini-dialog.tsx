@@ -59,7 +59,7 @@ export default function PhpIniDialog({
           type: type,
         }),
       );
-      if (response.data?.ini) {
+      if (typeof response.data?.ini === 'string') {
         form.setData('ini', response.data.ini);
       }
       return response.data;
@@ -82,7 +82,7 @@ export default function PhpIniDialog({
           {query.isSuccess ? (
             <Editor
               defaultLanguage="ini"
-              value={query.data.ini}
+              value={form.data.ini}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
               onChange={(value) => form.setData('ini', value ?? '')}

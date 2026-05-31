@@ -29,10 +29,11 @@ export default function CreateHostedDomain({ open, onOpenChange, site }: { open:
   const { ssl_enabled } = site;
   const allowedSslMethods = site.webserver_allowed_ssl_methods;
   const sslMethodOptions = allowedSslMethods ? SSL_METHOD_OPTIONS.filter((option) => allowedSslMethods.includes(option.value)) : SSL_METHOD_OPTIONS;
+  const defaultSslMethod = !ssl_enabled && sslMethodOptions.some((option) => option.value === 'none') ? 'none' : site.webserver_default_ssl_method;
   const form = useForm<CreateForm>({
     domain: '',
     type: 'alias',
-    ssl_method: ssl_enabled ? site.webserver_default_ssl_method : 'none',
+    ssl_method: defaultSslMethod,
     ssl_id: '',
   });
 

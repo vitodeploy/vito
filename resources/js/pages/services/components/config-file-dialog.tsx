@@ -55,7 +55,7 @@ export default function ServiceConfigFileDialog({
           config_name: configPath.name,
         }),
       );
-      if (response.data?.content) {
+      if (typeof response.data?.content === 'string') {
         form.setData('content', response.data.content);
       }
       return response.data;
@@ -78,7 +78,7 @@ export default function ServiceConfigFileDialog({
           {query.isSuccess ? (
             <Editor
               defaultLanguage="ini"
-              value={query.data.content}
+              value={form.data.content}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
               onChange={(value) => form.setData('content', value ?? '')}

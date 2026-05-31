@@ -11,7 +11,7 @@ export default function Disable({ plugin }: { plugin: Plugin }) {
       onSelect={() =>
         dialog.confirm.open({
           title: 'Disable plugin',
-          description: `Are you sure you want to disable the plugin ${plugin.name}?`,
+          description: `Are you sure you want to disable the plugin ${plugin.name ?? plugin.folder}?`,
           variant: 'destructive',
           confirmLabel: 'Disable',
           method: 'patch',
