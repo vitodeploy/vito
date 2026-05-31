@@ -23,10 +23,11 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
   },
   close: () => {
     const trigger = triggerElement;
+    const generation = get().instanceId;
     triggerElement = null;
     set({ active: null });
     requestAnimationFrame(() => {
-      if (trigger?.isConnected) {
+      if (get().instanceId === generation && trigger?.isConnected) {
         trigger.focus();
       }
     });

@@ -66,6 +66,7 @@ export default function ServerActions({ server }: { server: Server }) {
               title: `Restart ${server.name}?`,
               description:
                 'Are you sure you want to restart this server? Sites and services hosted on this server will be unavailable while it restarts. Connections in flight will be dropped.',
+              variant: 'destructive',
               confirmLabel: 'Restart',
               method: 'post',
               url: route('servers.reboot', server.id),
@@ -81,6 +82,7 @@ export default function ServerActions({ server }: { server: Server }) {
             dialog.confirm.open({
               title: `Update ${server.name}?`,
               description: `Apply ${server.updates} pending OS package ${server.updates === 1 ? 'update' : 'updates'} to this server? The upgrade can take several minutes and may briefly restart affected services. A server restart may be required afterwards.`,
+              variant: 'destructive',
               confirmLabel: 'Update',
               method: 'post',
               url: route('servers.update', server.id),

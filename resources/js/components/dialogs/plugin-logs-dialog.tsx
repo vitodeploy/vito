@@ -15,19 +15,21 @@ type PluginLogsDialogProps = {
 };
 
 export default function PluginLogsDialog({ open, onOpenChange, name, errors }: PluginLogsDialogProps) {
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  const toggleExpanded = (index: number) => {
+  const toggleExpanded = (key: string) => {
     setExpandedItems((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
+      if (newSet.has(key)) {
+        newSet.delete(key);
       } else {
-        newSet.add(index);
+        newSet.add(key);
       }
       return newSet;
     });
   };
+
+  const rowKey = (error: PluginError) => `${error.occurred_at}-${error.file}-${error.line}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,65 +50,68 @@ export default function PluginLogsDialog({ open, onOpenChange, name, errors }: P
             </div>
           ) : (
             <div className="space-y-3">
-              {errors.map((error, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardRow
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={expandedItems.has(index)}
-                    className={cn(
-                      'hover:bg-accent/50 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
-                      expandedItems.has(index) && 'border-b',
+              {errors.map((error) => {
+                const k = rowKey(error);
+                return (
+                  <Card key={k} className="overflow-hidden">
+                    <CardRow
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={expandedItems.has(k)}
+                      className={cn(
+                        'hover:bg-accent/50 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                        expandedItems.has(k) && 'border-b',
+                      )}
+                      onClick={() => toggleExpanded(k)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggleExpanded(k);
+                        }
+                      }}
+                    >
+                      <div className="flex flex-1 items-start gap-3">
+                        <div className="mt-0.5">
+                          {expandedItems.has(k) ? (
+                            <ChevronDownIcon className="text-muted-foreground h-4 w-4" />
+                          ) : (
+                            <ChevronRightIcon className="text-muted-foreground h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-destructive overflow-wrap-anywhere text-sm font-medium break-words">{error.error_message}</p>
+                          <div className="mt-4 flex flex-wrap items-start gap-4">
+                            <div className="text-muted-foreground flex min-w-0 items-start gap-1.5 text-xs">
+                              <TimerIcon className="h-3 w-3 flex-shrink-0" />
+                              <span className="font-mono break-all">
+                                <DateTime date={error.occurred_at} />
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-start gap-4">
+                            <div className="text-muted-foreground flex min-w-0 items-start gap-1.5 text-xs">
+                              <FileCodeIcon className="h-3 w-3 flex-shrink-0" />
+                              <span className="font-mono break-all">
+                                {error.file.substring(error.file.indexOf('/app'))}:{error.line}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardRow>
+                    {expandedItems.has(k) && (
+                      <CardContent className="bg-muted/30 p-4">
+                        <div className="space-y-2">
+                          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Stack Trace</p>
+                          <pre className="bg-background overflow-x-auto rounded-md p-3 font-mono text-xs break-all whitespace-pre-wrap">
+                            {error.stack_trace}
+                          </pre>
+                        </div>
+                      </CardContent>
                     )}
-                    onClick={() => toggleExpanded(index)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggleExpanded(index);
-                      }
-                    }}
-                  >
-                    <div className="flex flex-1 items-start gap-3">
-                      <div className="mt-0.5">
-                        {expandedItems.has(index) ? (
-                          <ChevronDownIcon className="text-muted-foreground h-4 w-4" />
-                        ) : (
-                          <ChevronRightIcon className="text-muted-foreground h-4 w-4" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-destructive overflow-wrap-anywhere text-sm font-medium break-words">{error.error_message}</p>
-                        <div className="mt-4 flex flex-wrap items-start gap-4">
-                          <div className="text-muted-foreground flex min-w-0 items-start gap-1.5 text-xs">
-                            <TimerIcon className="h-3 w-3 flex-shrink-0" />
-                            <span className="font-mono break-all">
-                              <DateTime date={error.occurred_at} />
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-start gap-4">
-                          <div className="text-muted-foreground flex min-w-0 items-start gap-1.5 text-xs">
-                            <FileCodeIcon className="h-3 w-3 flex-shrink-0" />
-                            <span className="font-mono break-all">
-                              {error.file.substring(error.file.indexOf('/app'))}:{error.line}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardRow>
-                  {expandedItems.has(index) && (
-                    <CardContent className="bg-muted/30 p-4">
-                      <div className="space-y-2">
-                        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Stack Trace</p>
-                        <pre className="bg-background overflow-x-auto rounded-md p-3 font-mono text-xs break-all whitespace-pre-wrap">
-                          {error.stack_trace}
-                        </pre>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

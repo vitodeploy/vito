@@ -27,7 +27,7 @@ export default function PhpExtensionsDialog({
     extension: '',
     version: service.version,
   });
-  const [, php] = Object.entries(configs.service.services).filter(([key]) => key === 'php')[0] || null;
+  const [, php] = Object.entries(configs.service.services).filter(([key]) => key === 'php')[0] ?? [];
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
