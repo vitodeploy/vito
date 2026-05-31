@@ -1,5 +1,6 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { FormEvent } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
@@ -33,7 +34,8 @@ export default function LinkDatabaseUserDialog({
     label: database.name,
   }));
 
-  const submit = () => {
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
     form.put(route('database-users.link', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
       onSuccess: () => onOpenChange(false),
     });
@@ -65,7 +67,7 @@ export default function LinkDatabaseUserDialog({
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button disabled={form.processing} onClick={submit}>
+          <Button form="link-database-user" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

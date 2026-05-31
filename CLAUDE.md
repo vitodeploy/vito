@@ -67,6 +67,7 @@ Vito has a specific architecture. Match these patterns exactly:
 
 - Inertia pages in `resources/js/pages/`. React components in `resources/js/components/`. Functional components + hooks.
 - Forms: use the `useForm` helper, follow existing patterns. Navigation: `<Link>` or `router.visit()` — never raw `<a>` for internal routes.
+- **Dialogs**: all modals/sheets use the centralized registry (`resources/js/components/dialogs/registry.ts`) opened via `useDialog()` — `dialog.<key>.open(props)`, or `dialog.confirm.open({...})` for simple confirms. Never nest `<Dialog>`/`<DialogTrigger>` inside a `DropdownMenuItem`. **Read the "Dialogs" section of `.github/instructions/frontend.instructions.md` before adding or changing any dialog.**
 - Tailwind v4: `@import "tailwindcss"`, `@theme` for config, **`gap-*` over margins** for sibling spacing.
 - Use Shadcn components and semantic tokens (`text-foreground`, `bg-background`, `text-muted-foreground`). Avoid hard-coded colors and custom CSS.
 - **React hooks**: include ALL dependencies in `useEffect` / `useMemo` / `useCallback` arrays. Return cleanup for timers/subscriptions. Stale closures from missing deps are a recurring bug here.

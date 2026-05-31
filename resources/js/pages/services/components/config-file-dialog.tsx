@@ -35,6 +35,7 @@ export default function ServiceConfigFileDialog({
 
   useEffect(() => {
     setFocused(open);
+    return () => setFocused(false);
   }, [open, setFocused]);
 
   const submit = (e: FormEvent) => {
