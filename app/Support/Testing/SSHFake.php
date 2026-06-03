@@ -23,7 +23,7 @@ class SSHFake extends SSH
 
     protected string $uploadedRemotePath;
 
-    protected string $uploadedContent;
+    protected string $uploadedContent = '';
 
     public function __construct(protected ?string $output = null) {}
 

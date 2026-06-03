@@ -37,16 +37,15 @@ class ServerNetworkController extends Controller
         ]);
     }
 
+    /**
+     * @throws SSHError
+     */
     #[Post('/refresh', name: 'servers.network.refresh')]
     public function refresh(Server $server): RedirectResponse
     {
         $this->authorize('create', [ServerIpAddress::class, $server]);
 
-        try {
-            app(RefreshServerIps::class)->handle($server);
-        } catch (SSHError) {
-            return back()->with('error', 'Failed to read IP addresses from the server.');
-        }
+        app(RefreshServerIps::class)->handle($server);
 
         return back()->with('success', 'IP addresses refreshed.');
     }

@@ -291,6 +291,40 @@ class ServerNetworkTest extends TestCase
         ]);
     }
 
+    public function test_refresh_resyncs_managed_row_fields_but_not_status(): void
+    {
+        $address = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '203.0.113.77',
+            'interface' => 'old0',
+            'prefix_length' => 24,
+            'status' => IpAddressStatus::CONFIGURING,
+            'is_managed' => true,
+        ]);
+
+        SSH::fake(json_encode([
+            [
+                'ifname' => 'eth0',
+                'addr_info' => [
+                    ['family' => 'inet', 'local' => '203.0.113.77', 'prefixlen' => 32, 'scope' => 'global'],
+                ],
+            ],
+        ]) ?: '');
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.network.refresh', ['server' => $this->server]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('server_ip_addresses', [
+            'id' => $address->id,
+            'interface' => 'eth0',
+            'prefix_length' => 32,
+            'is_managed' => true,
+            'status' => IpAddressStatus::CONFIGURING,
+        ]);
+    }
+
     public function test_refresh_marks_vito_managed_ips_from_marker(): void
     {
         $output = (json_encode([

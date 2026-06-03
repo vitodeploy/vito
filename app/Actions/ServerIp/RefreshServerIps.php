@@ -144,7 +144,11 @@ class RefreshServerIps
                 if ($row instanceof ServerIpAddress) {
                     if ($row->is_managed) {
                         $row->interface = $entry['interface'];
+                        $row->prefix_length = $entry['prefix_length'];
+                        $row->family = IpAddressFamily::from($entry['family']);
+                        $row->type = ServerIpAddress::classifyType($entry['ip']);
                         $row->is_primary = $isPrimary;
+                        $row->is_dynamic = $entry['dynamic'];
                         $row->save();
 
                         continue;
