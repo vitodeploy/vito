@@ -59,6 +59,7 @@ use Throwable;
  * @property Collection<int, Database> $databases
  * @property Collection<int, DatabaseUser> $databaseUsers
  * @property Collection<int, FirewallRule> $firewallRules
+ * @property Collection<int, ServerIpAddress> $ipAddresses
  * @property Collection<int, CronJob> $cronJobs
  * @property Collection<int, Worker> $queues
  * @property Collection<int, Backup> $backups
@@ -261,6 +262,14 @@ class Server extends AbstractModel
     public function firewallRules(): HasMany
     {
         return $this->hasMany(FirewallRule::class);
+    }
+
+    /**
+     * @return HasMany<ServerIpAddress, covariant $this>
+     */
+    public function ipAddresses(): HasMany
+    {
+        return $this->hasMany(ServerIpAddress::class);
     }
 
     /**

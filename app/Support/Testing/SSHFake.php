@@ -159,4 +159,9 @@ class SSHFake extends SSH
     {
         return $this->uploadedLocalPath;
     }
+
+    public function getUploadedContent(): string
+    {
+        return $this->uploadedContent;
+    }
 }

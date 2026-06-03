@@ -17,6 +17,7 @@ import {
   LockIcon,
   LogsIcon,
   MousePointerClickIcon,
+  NetworkIcon,
   RocketIcon,
   Settings2Icon,
   SignpostIcon,
@@ -179,6 +180,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       icon: FlameIcon,
       isDisabled: isMenuDisabled,
       hidden: !page.props.server.services['firewall'],
+    },
+    {
+      title: 'Network',
+      href: route('servers.network', { server: page.props.server.id }),
+      icon: NetworkIcon,
+      isDisabled: isMenuDisabled,
     },
     {
       title: 'CronJobs',

@@ -20,6 +20,7 @@ import ServiceConfigFileDialog from '@/pages/services/components/config-file-dia
 import CreateHostedDomain from '@/pages/hosted-domains/components/create-hosted-domain';
 import EditHostedDomain from '@/pages/hosted-domains/components/edit-hosted-domain';
 import FirewallRuleForm from '@/pages/firewall/components/form';
+import ServerIpForm from '@/pages/server-network/components/form';
 import RecordForm from '@/pages/domains/components/record-form';
 import ScriptForm from '@/pages/scripts/components/form';
 import EditCommand from '@/pages/commands/components/edit-command';
@@ -64,6 +65,7 @@ export const dialogs = {
   createHostedDomain: CreateHostedDomain,
   editHostedDomain: EditHostedDomain,
   firewallForm: FirewallRuleForm,
+  serverIpForm: ServerIpForm,
   dnsRecordForm: RecordForm,
   scriptForm: ScriptForm,
   commandEdit: EditCommand,

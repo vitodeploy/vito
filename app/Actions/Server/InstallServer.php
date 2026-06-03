@@ -10,6 +10,7 @@ use App\Exceptions\SSHConnectionError;
 use App\Exceptions\SSHError;
 use App\Facades\Notifier;
 use App\Http\Resources\ServerResource;
+use App\Jobs\ServerIp\RefreshServerIpsJob;
 use App\Models\Server;
 use App\Notifications\ServerInstallationSucceed;
 use App\ServerProviders\Custom;
@@ -44,6 +45,7 @@ class InstallServer
         $this->server->update([
             'status' => ServerStatus::READY,
         ]);
+        dispatch(new RefreshServerIpsJob($this->server))->onQueue('ssh');
         Notifier::send($this->server, new ServerInstallationSucceed($this->server));
     }
 
