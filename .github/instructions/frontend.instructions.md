@@ -77,6 +77,8 @@ export default function FirewallRuleForm({
 ```
 Then register it once in `registry.ts` (`firewallForm: FirewallRuleForm`). The consumer immediately gets `dialog.firewallForm.open(props)` with typed props.
 
+**Where the dialog component file lives:** a dialog belongs to the module it serves — author it in that module's `components/` folder (e.g. the SSL activation dialog is `pages/server-ssls/components/activate-dialog.tsx`, the PHP ini dialog is `pages/php/components/ini-dialog.tsx`), and import it into `registry.ts` via its `@/pages/...` path. The folder already namespaces the file, so keep the filename short (`activate-dialog`, not `activate-server-ssl-dialog`). Only genuinely cross-cutting, generic dialogs (`confirmation-dialog`, `log-viewer-dialog`) and the registry infrastructure itself (`registry.ts`, `dialog-host.tsx`) live under `resources/js/components/dialogs/`.
+
 **Rules & gotchas:**
 - **Form submit buttons** use `form="<form-id>" type="submit"` and the `onSubmit` handler calls `e.preventDefault()`. Do not wire submit via the button's `onClick` (a bare `onClick={submit}` with no `preventDefault` lets Enter fire a native form submission alongside the Inertia request).
 - **Always call `onOpenChange(false)` in `onSuccess`** to close after a successful request.
