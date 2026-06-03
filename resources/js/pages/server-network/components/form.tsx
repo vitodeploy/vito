@@ -78,7 +78,7 @@ export default function ServerIpForm({
 
             <FormField>
               <div className="flex items-center gap-3">
-                <Checkbox id="add_range" checked={addRange} onClick={() => setAddRange(!addRange)} />
+                <Checkbox id="add_range" checked={addRange} onCheckedChange={(checked) => setAddRange(checked === true)} />
                 <Label htmlFor="add_range">Add range</Label>
               </div>
               <p className="text-muted-foreground text-xs">Add every address between the first and last (inclusive) as its own row.</p>
@@ -115,7 +115,7 @@ export default function ServerIpForm({
 
             <FormField>
               <div className="flex items-center gap-3">
-                <Checkbox id="custom_mask" checked={customMask} onClick={() => setCustomMask(!customMask)} />
+                <Checkbox id="custom_mask" checked={customMask} onCheckedChange={(checked) => setCustomMask(checked === true)} />
                 <Label htmlFor="custom_mask">Set a custom subnet mask</Label>
               </div>
               <p className="text-muted-foreground text-xs">

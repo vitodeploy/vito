@@ -16,6 +16,12 @@ class RefreshServerIps
     private const MANAGED_SENTINEL = '===VITO-MANAGED===';
 
     /**
+     * Read the server's configured addresses and reconcile the catalogue.
+     *
+     * An empty result is treated as a no-op (the existing catalogue is kept)
+     * rather than a reconcile, so a transient empty or garbled SSH read can
+     * never wipe the previously discovered rows.
+     *
      * @throws SSHError
      * @throws Throwable
      */

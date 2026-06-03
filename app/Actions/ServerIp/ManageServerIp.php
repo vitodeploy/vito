@@ -27,29 +27,33 @@ class ManageServerIp
     {
         $this->validate($server, $input);
 
-        $created = false;
-        foreach ($this->expandIps($input) as $ip) {
-            if ($server->ipAddresses()->where('ip', $ip)->exists()) {
-                continue;
+        $created = DB::transaction(function () use ($server, $input): bool {
+            $created = false;
+            foreach ($this->expandIps($input) as $ip) {
+                if ($server->ipAddresses()->where('ip', $ip)->exists()) {
+                    continue;
+                }
+
+                $family = ServerIpAddress::familyFor($ip);
+
+                $address = new ServerIpAddress([
+                    'ip' => $ip,
+                    'prefix_length' => $this->prefixLength($input, $family),
+                    'family' => $family,
+                    'interface' => $input['interface'],
+                ]);
+                $address->server_id = $server->id;
+                $address->type = ServerIpAddress::classifyType($ip);
+                $address->status = IpAddressStatus::CONFIGURING;
+                $address->is_managed = true;
+                $address->is_primary = false;
+                $address->save();
+
+                $created = true;
             }
 
-            $family = ServerIpAddress::familyFor($ip);
-
-            $address = new ServerIpAddress([
-                'ip' => $ip,
-                'prefix_length' => $this->prefixLength($input, $family),
-                'family' => $family,
-                'interface' => $input['interface'],
-            ]);
-            $address->server_id = $server->id;
-            $address->type = ServerIpAddress::classifyType($ip);
-            $address->status = IpAddressStatus::CONFIGURING;
-            $address->is_managed = true;
-            $address->is_primary = false;
-            $address->save();
-
-            $created = true;
-        }
+            return $created;
+        });
 
         if ($created) {
             $this->queueApply($server);

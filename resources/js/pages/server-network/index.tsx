@@ -62,7 +62,7 @@ export default function ServerNetwork() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <Button variant="outline" size="icon" disabled={refreshing} onClick={refresh}>
+            <Button variant="outline" size="icon" aria-label="Refresh" disabled={refreshing} onClick={refresh}>
               <RefreshCwIcon className={refreshing ? 'animate-spin' : undefined} />
             </Button>
             <Button onClick={() => dialog.serverIpForm.open({ serverId: page.props.server.id, interfaces: page.props.interfaces })}>
