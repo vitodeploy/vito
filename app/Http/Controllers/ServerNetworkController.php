@@ -56,7 +56,7 @@ class ServerNetworkController extends Controller
     {
         $this->authorize('create', [ServerIpAddress::class, $server]);
 
-        app(ManageServerIp::class)->create($server, $request->all());
+        app(ManageServerIp::class)->create($server, $request->only(['ip', 'ip_last', 'interface', 'prefix_length']));
 
         return back()->with('info', 'IP address is being configured.');
     }

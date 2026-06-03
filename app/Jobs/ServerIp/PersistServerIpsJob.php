@@ -42,6 +42,7 @@ class PersistServerIpsJob implements ShouldQueue
                     self::NETPLAN_PATH,
                     view('ssh.network.netplan', [
                         'interfaces' => $this->buildInterfaces($managed),
+                        'managedIps' => $managed->pluck('ip')->values()->all(),
                     ])->render(),
                     'root'
                 );

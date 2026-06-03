@@ -1,12 +1,12 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Server } from '@/types/server';
 import { ServerIpAddress } from '@/types/server-ip';
 import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Container from '@/components/container';
 import { VitoTable } from '@/components/vito-table';
 import Delete from '@/pages/server-network/components/delete';
@@ -16,6 +16,8 @@ import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 import { useDialog } from '@/hooks/use-dialog';
 
+const autoRefreshedServers = new Set<number>();
+
 export default function ServerNetwork() {
   const page = usePage<{
     server: Server;
@@ -24,6 +26,27 @@ export default function ServerNetwork() {
   }>();
   const dialog = useDialog();
   const [refreshing, setRefreshing] = useState(false);
+  const serverId = page.props.server.id;
+
+  const refresh = useCallback(() => {
+    router.post(
+      route('servers.network.refresh', { server: serverId }),
+      {},
+      {
+        preserveScroll: true,
+        onStart: () => setRefreshing(true),
+        onFinish: () => setRefreshing(false),
+      },
+    );
+  }, [serverId]);
+
+  const isEmpty = page.props.ipAddresses.data.length === 0;
+  useEffect(() => {
+    if (isEmpty && !autoRefreshedServers.has(serverId)) {
+      autoRefreshedServers.add(serverId);
+      refresh();
+    }
+  }, [isEmpty, serverId, refresh]);
 
   return (
     <ServerLayout>
@@ -33,23 +56,14 @@ export default function ServerNetwork() {
         <HeaderContainer>
           <Heading title="Network" description="Here you can manage the IP addresses configured on the server" />
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              disabled={refreshing}
-              onClick={() =>
-                router.post(
-                  route('servers.network.refresh', { server: page.props.server.id }),
-                  {},
-                  {
-                    preserveScroll: true,
-                    onStart: () => setRefreshing(true),
-                    onFinish: () => setRefreshing(false),
-                  },
-                )
-              }
-            >
+            <a href="https://vitodeploy.com/docs/servers/networking" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
+            <Button variant="outline" size="icon" disabled={refreshing} onClick={refresh}>
               <RefreshCwIcon className={refreshing ? 'animate-spin' : undefined} />
-              <span className="hidden lg:block">Refresh</span>
             </Button>
             <Button onClick={() => dialog.serverIpForm.open({ serverId: page.props.server.id, interfaces: page.props.interfaces })}>
               <PlusIcon />

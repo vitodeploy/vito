@@ -29,7 +29,7 @@ class ServerNetworkTest extends TestCase
 
     public function test_add_ip_address(): void
     {
-        SSH::fake();
+        SSH::fake('[]');
 
         $this->actingAs($this->user);
 
@@ -52,7 +52,7 @@ class ServerNetworkTest extends TestCase
 
     public function test_add_ipv4_without_prefix_defaults_to_32(): void
     {
-        SSH::fake();
+        SSH::fake('[]');
 
         $this->actingAs($this->user);
 
@@ -69,7 +69,7 @@ class ServerNetworkTest extends TestCase
 
     public function test_add_ipv6_without_prefix_defaults_to_64(): void
     {
-        SSH::fake();
+        SSH::fake('[]');
 
         $this->actingAs($this->user);
 
@@ -112,6 +112,53 @@ class ServerNetworkTest extends TestCase
         $this->assertStringNotContainsString('203.0.113.10', $content);
     }
 
+    public function test_add_ip_range_creates_a_row_per_address(): void
+    {
+        SSH::fake('[]');
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.network.ips.store', ['server' => $this->server]), [
+            'ip' => '203.0.113.10',
+            'ip_last' => '203.0.113.13',
+            'interface' => 'eth0',
+        ])->assertSessionDoesntHaveErrors();
+
+        foreach (['203.0.113.10', '203.0.113.11', '203.0.113.12', '203.0.113.13'] as $ip) {
+            $this->assertDatabaseHas('server_ip_addresses', [
+                'server_id' => $this->server->id,
+                'ip' => $ip,
+                'is_managed' => true,
+            ]);
+        }
+    }
+
+    public function test_add_ip_range_rejects_first_after_last(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->from(route('servers.network', $this->server))
+            ->post(route('servers.network.ips.store', ['server' => $this->server]), [
+                'ip' => '203.0.113.20',
+                'ip_last' => '203.0.113.10',
+                'interface' => 'eth0',
+            ])
+            ->assertSessionHasErrors(['ip_last']);
+    }
+
+    public function test_add_ip_range_rejects_oversized_range(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->from(route('servers.network', $this->server))
+            ->post(route('servers.network.ips.store', ['server' => $this->server]), [
+                'ip' => '10.0.0.0',
+                'ip_last' => '10.0.5.0',
+                'interface' => 'eth0',
+            ])
+            ->assertSessionHasErrors(['ip_last']);
+    }
+
     public function test_add_ip_address_rejects_invalid_ip(): void
     {
         $this->actingAs($this->user);
@@ -140,7 +187,7 @@ class ServerNetworkTest extends TestCase
 
     public function test_delete_managed_ip_address(): void
     {
-        SSH::fake();
+        SSH::fake('[]');
 
         $this->actingAs($this->user);
 
@@ -241,6 +288,38 @@ class ServerNetworkTest extends TestCase
         $this->assertDatabaseMissing('server_ip_addresses', [
             'server_id' => $this->server->id,
             'ip' => 'fe80::1',
+        ]);
+    }
+
+    public function test_refresh_marks_vito_managed_ips_from_marker(): void
+    {
+        $output = (json_encode([
+            [
+                'ifname' => 'eth0',
+                'addr_info' => [
+                    ['family' => 'inet', 'local' => '203.0.113.50', 'prefixlen' => 32, 'scope' => 'global'],
+                    ['family' => 'inet', 'local' => '203.0.113.99', 'prefixlen' => 32, 'scope' => 'global'],
+                ],
+            ],
+        ]) ?: '')."\n===VITO-MANAGED===\n# vito-managed: 203.0.113.50\n";
+
+        SSH::fake($output);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.network.refresh', ['server' => $this->server]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('server_ip_addresses', [
+            'server_id' => $this->server->id,
+            'ip' => '203.0.113.50',
+            'is_managed' => true,
+        ]);
+
+        $this->assertDatabaseHas('server_ip_addresses', [
+            'server_id' => $this->server->id,
+            'ip' => '203.0.113.99',
+            'is_managed' => false,
         ]);
     }
 

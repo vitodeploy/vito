@@ -28,16 +28,10 @@ class ServerIpAddress extends AbstractModel
     use HasFactory;
 
     protected $fillable = [
-        'server_id',
         'ip',
         'prefix_length',
         'family',
         'interface',
-        'type',
-        'status',
-        'is_managed',
-        'is_primary',
-        'is_dynamic',
     ];
 
     protected $casts = [
@@ -61,6 +55,10 @@ class ServerIpAddress extends AbstractModel
 
     public static function classifyType(string $ip): IpAddressType
     {
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return IpAddressType::UNKNOWN;
+        }
+
         $isPublic = filter_var(
             $ip,
             FILTER_VALIDATE_IP,

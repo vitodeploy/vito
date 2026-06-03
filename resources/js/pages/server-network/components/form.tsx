@@ -22,19 +22,26 @@ export default function ServerIpForm({
   interfaces?: string[];
 }) {
   const [customMask, setCustomMask] = useState(false);
+  const [addRange, setAddRange] = useState(false);
   const form = useForm<{
     ip: string;
+    ip_last: string;
     prefix_length: string;
     interface: string;
   }>({
     ip: '',
+    ip_last: '',
     prefix_length: '',
     interface: interfaces.includes('eth0') ? 'eth0' : (interfaces[0] ?? 'eth0'),
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.transform((data) => ({ ...data, prefix_length: customMask ? data.prefix_length : '' }));
+    form.transform((data) => ({
+      ...data,
+      prefix_length: customMask ? data.prefix_length : '',
+      ip_last: addRange ? data.ip_last : '',
+    }));
     form.post(route('servers.network.ips.store', { server: serverId }), {
       onSuccess: () => onOpenChange(false),
     });
@@ -50,9 +57,31 @@ export default function ServerIpForm({
         <Form id="server-ip-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
-              <Label htmlFor="ip">IP Address</Label>
+              <Label htmlFor="ip">{addRange ? 'IP Address (First)' : 'IP Address'}</Label>
               <Input type="text" id="ip" placeholder="e.g. 203.0.113.10" value={form.data.ip} onChange={(e) => form.setData('ip', e.target.value)} />
               <InputError message={form.errors.ip} />
+            </FormField>
+
+            {addRange && (
+              <FormField>
+                <Label htmlFor="ip_last">IP Address (Last)</Label>
+                <Input
+                  type="text"
+                  id="ip_last"
+                  placeholder="e.g. 203.0.113.20"
+                  value={form.data.ip_last}
+                  onChange={(e) => form.setData('ip_last', e.target.value)}
+                />
+                <InputError message={form.errors.ip_last} />
+              </FormField>
+            )}
+
+            <FormField>
+              <div className="flex items-center gap-3">
+                <Checkbox id="add_range" checked={addRange} onClick={() => setAddRange(!addRange)} />
+                <Label htmlFor="add_range">Add range</Label>
+              </div>
+              <p className="text-muted-foreground text-xs">Add every address between the first and last (inclusive) as its own row.</p>
             </FormField>
 
             <FormField>
@@ -85,7 +114,7 @@ export default function ServerIpForm({
             </FormField>
 
             <FormField>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <Checkbox id="custom_mask" checked={customMask} onClick={() => setCustomMask(!customMask)} />
                 <Label htmlFor="custom_mask">Set a custom subnet mask</Label>
               </div>

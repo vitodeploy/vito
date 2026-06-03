@@ -1,3 +1,6 @@
+@if (! empty($managedIps))
+# vito-managed: {!! implode(',', $managedIps) !!}
+@endif
 network:
   version: 2
   ethernets:

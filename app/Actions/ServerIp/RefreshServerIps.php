@@ -2,7 +2,9 @@
 
 namespace App\Actions\ServerIp;
 
+use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
+use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
@@ -11,32 +13,74 @@ use Throwable;
 
 class RefreshServerIps
 {
+    private const MANAGED_SENTINEL = '===VITO-MANAGED===';
+
     /**
      * @throws SSHError
+     * @throws Throwable
      */
     public function handle(Server $server): void
     {
         $output = $server->ssh()->exec(
-            view('ssh.network.list-ips'),
-            'list-ips'
+            view('ssh.network.list-network-addresses'),
+            'list-network-addresses'
         );
 
-        $discovered = $this->parse($output);
+        [$addressOutput, $managedOutput] = $this->split($output);
+
+        $discovered = $this->parse($addressOutput);
 
         if ($discovered === []) {
             return;
         }
 
-        $this->reconcile($server, $discovered);
+        $this->reconcile($server, $discovered, $this->parseManaged($managedOutput));
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function split(string $output): array
+    {
+        $position = strpos($output, self::MANAGED_SENTINEL);
+
+        if ($position === false) {
+            return [$output, ''];
+        }
+
+        return [
+            substr($output, 0, $position),
+            substr($output, $position + strlen(self::MANAGED_SENTINEL)),
+        ];
+    }
+
+    /**
+     * Addresses Vito previously added are recorded in a `# vito-managed:` marker
+     * inside its netplan file so they keep their managed status on rediscovery.
+     *
+     * @return array<int, string>
+     */
+    private function parseManaged(string $output): array
+    {
+        if (preg_match('/#\s*vito-managed:\s*(.+)/', $output, $matches) !== 1) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $matches[1]))));
     }
 
     /**
      * @return array<int, array{ip: string, prefix_length: int, family: string, interface: string, dynamic: bool}>
+     *
+     * @throws SSHCommandError
      */
     private function parse(string $output): array
     {
-        /** @var array<int, array<string, mixed>> $interfaces */
-        $interfaces = json_decode($output, true) ?: [];
+        $interfaces = json_decode(trim($output), true);
+
+        if (! is_array($interfaces)) {
+            throw new SSHCommandError(message: 'Unexpected output while reading server IP addresses.');
+        }
 
         $discovered = [];
         foreach ($interfaces as $interface) {
@@ -50,13 +94,16 @@ class RefreshServerIps
                 $local = $address['local'] ?? null;
                 $scope = $address['scope'] ?? null;
 
-                if (! in_array($family, ['inet', 'inet6'], true) || ! is_string($local) || $scope !== 'global') {
+                if (! in_array($family, ['inet', 'inet6'], true)
+                    || ! is_string($local)
+                    || filter_var($local, FILTER_VALIDATE_IP) === false
+                    || $scope !== 'global') {
                     continue;
                 }
 
                 $discovered[] = [
                     'ip' => $local,
-                    'prefix_length' => (int) ($address['prefixlen'] ?? 32),
+                    'prefix_length' => max(1, min(128, (int) ($address['prefixlen'] ?? 32))),
                     'family' => $family,
                     'interface' => $name,
                     'dynamic' => (bool) ($address['dynamic'] ?? false),
@@ -68,12 +115,14 @@ class RefreshServerIps
     }
 
     /**
-     * @param array<int, array{ip: string, prefix_length: int, family: string, interface: string, dynamic: bool}> $discovered
+     * @param  array<int, array{ip: string, prefix_length: int, family: string, interface: string, dynamic: bool}>  $discovered
+     * @param  array<int, string>  $managedIps
+     *
      * @throws Throwable
      */
-    private function reconcile(Server $server, array $discovered): void
+    private function reconcile(Server $server, array $discovered, array $managedIps): void
     {
-        DB::transaction(function () use ($server, $discovered): void {
+        DB::transaction(function () use ($server, $discovered, $managedIps): void {
             $primaryIps = array_filter([$server->ip, $server->local_ip]);
             $existing = $server->ipAddresses()->get()->keyBy('ip');
             $seen = [];
@@ -81,44 +130,46 @@ class RefreshServerIps
             foreach ($discovered as $entry) {
                 $seen[] = $entry['ip'];
                 $isPrimary = in_array($entry['ip'], $primaryIps, true);
+                $isManaged = in_array($entry['ip'], $managedIps, true);
 
                 /** @var ?ServerIpAddress $row */
                 $row = $existing->get($entry['ip']);
 
                 if ($row instanceof ServerIpAddress) {
                     if ($row->is_managed) {
-                        $row->update([
-                            'interface' => $entry['interface'],
-                            'is_primary' => $isPrimary,
-                        ]);
+                        $row->interface = $entry['interface'];
+                        $row->is_primary = $isPrimary;
+                        $row->save();
 
                         continue;
                     }
 
-                    $row->update([
-                        'interface' => $entry['interface'],
-                        'prefix_length' => $entry['prefix_length'],
-                        'family' => $entry['family'],
-                        'type' => ServerIpAddress::classifyType($entry['ip']),
-                        'status' => IpAddressStatus::CONFIGURED,
-                        'is_primary' => $isPrimary,
-                        'is_dynamic' => $entry['dynamic'],
-                    ]);
+                    $row->interface = $entry['interface'];
+                    $row->prefix_length = $entry['prefix_length'];
+                    $row->family = IpAddressFamily::from($entry['family']);
+                    $row->type = ServerIpAddress::classifyType($entry['ip']);
+                    $row->status = IpAddressStatus::CONFIGURED;
+                    $row->is_primary = $isPrimary;
+                    $row->is_dynamic = $entry['dynamic'];
+                    $row->is_managed = $isManaged;
+                    $row->save();
 
                     continue;
                 }
 
-                $server->ipAddresses()->create([
+                $row = new ServerIpAddress([
                     'ip' => $entry['ip'],
                     'prefix_length' => $entry['prefix_length'],
-                    'family' => $entry['family'],
+                    'family' => IpAddressFamily::from($entry['family']),
                     'interface' => $entry['interface'],
-                    'type' => ServerIpAddress::classifyType($entry['ip']),
-                    'status' => IpAddressStatus::CONFIGURED,
-                    'is_managed' => false,
-                    'is_primary' => $isPrimary,
-                    'is_dynamic' => $entry['dynamic'],
                 ]);
+                $row->server_id = $server->id;
+                $row->type = ServerIpAddress::classifyType($entry['ip']);
+                $row->status = IpAddressStatus::CONFIGURED;
+                $row->is_managed = $isManaged;
+                $row->is_primary = $isPrimary;
+                $row->is_dynamic = $entry['dynamic'];
+                $row->save();
             }
 
             $server->ipAddresses()

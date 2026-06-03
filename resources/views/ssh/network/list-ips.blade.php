@@ -1,1 +1,0 @@
-ip -j addr show

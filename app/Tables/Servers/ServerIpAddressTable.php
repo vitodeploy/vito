@@ -15,7 +15,7 @@ class ServerIpAddressTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->orderByDesc('is_primary')->orderBy('id');
+        $this->query->orderByDesc('is_primary')->orderBy('ip');
     }
 
     protected function columns(): array

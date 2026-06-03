@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
+use App\Models\Server;
 use App\Models\ServerIpAddress;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +19,7 @@ class ServerIpAddressFactory extends Factory
     public function definition(): array
     {
         return [
-            'server_id' => 1,
+            'server_id' => Server::factory(),
             'ip' => $this->faker->ipv4(),
             'prefix_length' => 32,
             'family' => IpAddressFamily::V4,
@@ -27,6 +28,7 @@ class ServerIpAddressFactory extends Factory
             'status' => IpAddressStatus::CONFIGURED,
             'is_managed' => true,
             'is_primary' => false,
+            'is_dynamic' => false,
         ];
     }
 }

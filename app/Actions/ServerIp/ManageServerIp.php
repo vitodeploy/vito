@@ -2,9 +2,11 @@
 
 namespace App\Actions\ServerIp;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
+use App\Events\SocketEvent;
 use App\Jobs\ServerIp\PersistServerIpsJob;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
@@ -16,34 +18,48 @@ use Illuminate\Validation\ValidationException;
 
 class ManageServerIp
 {
+    private const MAX_RANGE = 256;
+
     /**
      * @param  array<string, mixed>  $input
      */
-    public function create(Server $server, array $input): ServerIpAddress
+    public function create(Server $server, array $input): void
     {
         $this->validate($server, $input);
 
-        $ip = (string) $input['ip'];
-        $family = ServerIpAddress::familyFor($ip);
+        $created = false;
+        foreach ($this->expandIps($input) as $ip) {
+            if ($server->ipAddresses()->where('ip', $ip)->exists()) {
+                continue;
+            }
 
-        $address = new ServerIpAddress([
-            'ip' => $ip,
-            'prefix_length' => $this->prefixLength($input, $family),
-            'family' => $family,
-            'interface' => $input['interface'],
-            'type' => ServerIpAddress::classifyType($ip),
-            'status' => IpAddressStatus::CONFIGURING,
-            'is_managed' => true,
-            'is_primary' => false,
-        ]);
-        $address->server_id = $server->id;
-        $address->save();
+            $family = ServerIpAddress::familyFor($ip);
 
-        $this->queueApply($server);
+            $address = new ServerIpAddress([
+                'ip' => $ip,
+                'prefix_length' => $this->prefixLength($input, $family),
+                'family' => $family,
+                'interface' => $input['interface'],
+            ]);
+            $address->server_id = $server->id;
+            $address->type = ServerIpAddress::classifyType($ip);
+            $address->status = IpAddressStatus::CONFIGURING;
+            $address->is_managed = true;
+            $address->is_primary = false;
+            $address->save();
 
-        return $address;
+            $created = true;
+        }
+
+        if ($created) {
+            $this->queueApply($server);
+        }
     }
 
+    /**
+     * Sets the address as the server's primary. The server must be saved before
+     * the bulk is_primary update so the latter reads the new ip/local_ip.
+     */
     public function setPrimary(ServerIpAddress $address): void
     {
         $server = $address->server;
@@ -60,6 +76,12 @@ class ManageServerIp
             $server->ipAddresses()->update(['is_primary' => false]);
             $server->ipAddresses()->whereIn('ip', $primaryIps)->update(['is_primary' => true]);
         });
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $server->project_id,
+            type: 'server-ip.updated',
+            data: ['server_id' => $server->id],
+        ));
     }
 
     public function delete(ServerIpAddress $address): void
@@ -81,12 +103,10 @@ class ManageServerIp
      */
     private function validate(Server $server, array $input): void
     {
-        Validator::make($input, [
-            'ip' => [
-                'required',
-                'ip',
-                Rule::unique('server_ip_addresses', 'ip')->where('server_id', $server->id),
-            ],
+        $isRange = $this->isRange($input);
+
+        $rules = [
+            'ip' => ['required', 'ip'],
             'interface' => [
                 'required',
                 'string',
@@ -105,7 +125,118 @@ class ManageServerIp
                     }
                 },
             ],
-        ])->validate();
+        ];
+
+        if ($isRange) {
+            $rules['ip_last'] = ['required', 'ip', $this->rangeRule($input)];
+        } else {
+            $rules['ip'][] = Rule::unique('server_ip_addresses', 'ip')->where('server_id', $server->id);
+        }
+
+        Validator::make($input, $rules)->validate();
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function rangeRule(array $input): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) use ($input): void {
+            $first = $input['ip'] ?? null;
+            if (! is_string($first) || ! is_string($value)) {
+                return;
+            }
+
+            $start = @inet_pton($first);
+            $end = @inet_pton($value);
+            if ($start === false || $end === false) {
+                return;
+            }
+
+            if (strlen($start) !== strlen($end)) {
+                $fail(__('The first and last address must be the same IP version.'));
+
+                return;
+            }
+
+            if (strcmp($start, $end) > 0) {
+                $fail(__('The first address must not be greater than the last address.'));
+
+                return;
+            }
+
+            if ($this->rangeCount($start, $end) > self::MAX_RANGE) {
+                $fail(__('The range is too large; at most :max addresses can be added at once.', ['max' => self::MAX_RANGE]));
+            }
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<int, string>
+     */
+    private function expandIps(array $input): array
+    {
+        $first = (string) $input['ip'];
+
+        if (! $this->isRange($input)) {
+            return [$first];
+        }
+
+        $current = (string) inet_pton($first);
+        $end = (string) inet_pton((string) $input['ip_last']);
+
+        $ips = [];
+        while (true) {
+            $address = inet_ntop($current);
+            if ($address !== false) {
+                $ips[] = $address;
+            }
+            if ($current === $end) {
+                break;
+            }
+            $current = $this->incrementBinary($current);
+        }
+
+        return $ips;
+    }
+
+    private function rangeCount(string $start, string $end): int
+    {
+        $count = 1;
+        $current = $start;
+        while ($current !== $end) {
+            $current = $this->incrementBinary($current);
+            $count++;
+            if ($count > self::MAX_RANGE) {
+                break;
+            }
+        }
+
+        return $count;
+    }
+
+    private function incrementBinary(string $binary): string
+    {
+        for ($i = strlen($binary) - 1; $i >= 0; $i--) {
+            $byte = ord($binary[$i]);
+            if ($byte < 255) {
+                $binary[$i] = chr($byte + 1);
+
+                return $binary;
+            }
+            $binary[$i] = chr(0);
+        }
+
+        return $binary;
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function isRange(array $input): bool
+    {
+        return isset($input['ip_last']) && is_string($input['ip_last']) && $input['ip_last'] !== '';
     }
 
     /**
