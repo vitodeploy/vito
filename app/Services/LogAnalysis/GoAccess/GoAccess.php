@@ -21,7 +21,7 @@ class GoAccess extends AbstractService
 
     public const CRON_FREQUENCY = '0 * * * *';
 
-    public const SCRIPT_VERSION = 1;
+    public const SCRIPT_VERSION = 2;
 
     public const CONF_VERSION = 1;
 

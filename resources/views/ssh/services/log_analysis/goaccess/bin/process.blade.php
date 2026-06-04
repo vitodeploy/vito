@@ -61,8 +61,19 @@ process_month() {
         fi
     else
         # Normal path: direct-file incremental (GoAccess tracks inode/offset).
+        # Feed only uncompressed logs — GoAccess reads rotated *.gz files as
+        # binary and aborts the run. Compressed rotations were already ingested
+        # by earlier runs, and the boundary window above re-reads them via
+        # `zcat -f` when crossing months.
+        local files=() f
         # shellcheck disable=SC2086
-        goaccess $LOG_GLOB --log-format="$LOG_FORMAT" --persist --restore --db-path="$db" -o "$out" --date-spec=date --no-progress
+        for f in $LOG_GLOB; do
+            [ -e "$f" ] || continue
+            case "$f" in *.gz) continue ;; esac
+            files+=("$f")
+        done
+        [ "${#files[@]}" -gt 0 ] || return 0
+        goaccess "${files[@]}" --log-format="$LOG_FORMAT" --persist --restore --db-path="$db" -o "$out" --date-spec=date --no-progress
     fi
 }
 
