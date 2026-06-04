@@ -3,8 +3,8 @@
 namespace App\Actions\Server\Security;
 
 use App\Models\Server;
-use Cron\CronExpression;
 use Closure;
+use Cron\CronExpression;
 use Illuminate\Support\Facades\Validator;
 
 class ManageAutoUpdate

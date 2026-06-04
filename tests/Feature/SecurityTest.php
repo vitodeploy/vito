@@ -6,6 +6,7 @@ use App\Enums\SecurityControlStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Jobs\Server\UpdateJob;
+use App\Models\Server;
 use App\Services\Fail2ban\Fail2ban;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -156,10 +157,10 @@ class SecurityTest extends TestCase
 
         $firewallCheck = fn () => collect($this->server->refresh()->securityScore()['checks'])->firstWhere('key', 'firewall')['passed'];
 
-        $this->server->firewall()->update(['status' => \App\Enums\ServiceStatus::INSTALLING]);
+        $this->server->firewall()->update(['status' => ServiceStatus::INSTALLING]);
         $this->assertFalse($firewallCheck());
 
-        $this->server->firewall()->update(['status' => \App\Enums\ServiceStatus::READY]);
+        $this->server->firewall()->update(['status' => ServiceStatus::READY]);
         $this->assertTrue($firewallCheck());
     }
 
@@ -295,7 +296,7 @@ class SecurityTest extends TestCase
 
         $this->server->update(['status' => 'ready', 'auto_update' => true, 'auto_update_schedule' => '0 3 * * *']);
 
-        $notDue = \App\Models\Server::factory()->create([
+        $notDue = Server::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => $this->user->current_project_id,
             'status' => 'ready',
@@ -316,7 +317,7 @@ class SecurityTest extends TestCase
         $property = $reflection->getProperty('server');
         $property->setAccessible(true);
 
-        /** @var \App\Models\Server $server */
+        /** @var Server $server */
         $server = $property->getValue($job);
 
         return $server->id;

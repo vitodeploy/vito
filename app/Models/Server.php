@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\Server\CheckConnection;
 use App\Enums\OperatingSystem;
+use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
@@ -11,6 +12,7 @@ use App\Facades\SSH;
 use App\ServerFeatures\ActionInterface;
 use App\SSH\OS\Cron;
 use App\SSH\OS\OS;
+use App\SSH\OS\Security;
 use App\SSH\OS\Systemd;
 use App\Support\Testing\SSHFake;
 use Carbon\Carbon;
@@ -567,9 +569,9 @@ class Server extends AbstractModel
         return new Cron($this);
     }
 
-    public function security(): \App\SSH\OS\Security
+    public function security(): Security
     {
-        return new \App\SSH\OS\Security($this);
+        return new Security($this);
     }
 
     /**
@@ -585,12 +587,12 @@ class Server extends AbstractModel
             'password_authentication' => [
                 'enabled' => $security['password_authentication']['enabled'] ?? true,
                 'detected' => $security['password_authentication']['detected'] ?? null,
-                'status' => $security['password_authentication']['status'] ?? \App\Enums\SecurityControlStatus::DISABLED->value,
+                'status' => $security['password_authentication']['status'] ?? SecurityControlStatus::DISABLED->value,
             ],
             'root_login' => [
                 'enabled' => $security['root_login']['enabled'] ?? true,
                 'detected' => $security['root_login']['detected'] ?? null,
-                'status' => $security['root_login']['status'] ?? \App\Enums\SecurityControlStatus::DISABLED->value,
+                'status' => $security['root_login']['status'] ?? SecurityControlStatus::DISABLED->value,
             ],
         ];
     }
@@ -603,7 +605,7 @@ class Server extends AbstractModel
         $state = $this->securityState();
         $fail2ban = $this->fail2ban();
         $firewall = $this->firewall();
-        $ready = \App\Enums\SecurityControlStatus::READY->value;
+        $ready = SecurityControlStatus::READY->value;
 
         $checks = [
             ['key' => 'auto_update', 'label' => 'Automatic updates enabled', 'passed' => (bool) $this->auto_update],
