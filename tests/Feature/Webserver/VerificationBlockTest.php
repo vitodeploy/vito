@@ -8,6 +8,7 @@ use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Service;
 use App\Models\Ssl;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Caddy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -91,6 +92,46 @@ class VerificationBlockTest extends TestCase
         $this->assertStringContainsString('root * /var/lib/vito/verify/caddyKey99', $vhost);
     }
 
+    public function test_apache_renders_verification_block_when_key_present(): void
+    {
+        $this->switchToApache();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->verification_key = 'apacheKey77';
+        $this->site->save();
+
+        /** @var Service $webserver */
+        $webserver = $this->server->webserver();
+        $vhost = $webserver->handler()->generateVhost($this->site);
+
+        $this->assertStringContainsString('Alias "/.well-known/vito/apacheKey77" "/var/lib/vito/verify/apacheKey77"', $vhost);
+        $this->assertStringContainsString('<Location "/.well-known/vito/apacheKey77/">', $vhost);
+        $this->assertStringContainsString('Header always set Cache-Control "no-store"', $vhost);
+    }
+
+    public function test_apache_omits_verification_block_when_key_missing(): void
+    {
+        $this->switchToApache();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->verification_key = null;
+        $this->site->vhost_template = null;
+        $this->site->vhost_generation_enabled = false;
+        $this->site->save();
+
+        $vhost = $this->server->webserver()->handler()->configGenerator()->generate($this->site);
+
+        $this->assertStringNotContainsString('/.well-known/vito/', $vhost);
+    }
+
     public function test_nginx_force_ssl_redirect_serves_and_exempts_verification_challenge(): void
     {
         $ssl = Ssl::factory()->create([
@@ -166,6 +207,18 @@ class VerificationBlockTest extends TestCase
 
         $this->assertStringContainsString('handle_path /.well-known/vito/caddyPlain1/*', $vhost);
         $this->assertStringNotContainsString('redir https://{host}{uri} permanent', $vhost);
+    }
+
+    private function switchToApache(): void
+    {
+        $this->server->services()->where('type', 'webserver')->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+        $this->server->refresh();
     }
 
     private function switchToCaddy(): void

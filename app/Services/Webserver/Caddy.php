@@ -3,6 +3,7 @@
 namespace App\Services\Webserver;
 
 use App\Actions\Site\EnsureSiteVerificationKey;
+use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\DTOs\ServiceLog;
 use App\Enums\SslMethod;
@@ -43,14 +44,14 @@ class Caddy extends AbstractWebserver implements HasLogs
         return SslMethod::LETSENCRYPT;
     }
 
-    public static function type(): string
-    {
-        return 'webserver';
-    }
-
     public function unit(): string
     {
         return 'caddy';
+    }
+
+    public function basicAuthDir(): ?string
+    {
+        return null;
     }
 
     /**
@@ -131,11 +132,16 @@ class Caddy extends AbstractWebserver implements HasLogs
         );
     }
 
+    public function configGenerator(): AbstractGenerateConfig
+    {
+        return app(GenerateCaddyConfig::class);
+    }
+
     public function generateVhost(Site $site, ?string $template = null): string
     {
         app(EnsureSiteVerificationKey::class)->ensure($site);
 
-        return app(GenerateCaddyConfig::class)->generate($site, $template);
+        return $this->configGenerator()->generate($site, $template);
     }
 
     /**

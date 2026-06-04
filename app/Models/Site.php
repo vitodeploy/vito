@@ -798,9 +798,15 @@ class Site extends AbstractModel
         return preg_replace('#/current$#', '', $this->path);
     }
 
-    public function htpasswdPath(): string
+    public function htpasswdPath(): ?string
     {
-        return '/etc/nginx/auth/site-'.$this->id.'.htpasswd';
+        if (! $this->server->webserver()) {
+            return null;
+        }
+
+        $dir = $this->webserver()->basicAuthDir();
+
+        return $dir ? $dir.'/site-'.$this->id.'.htpasswd' : null;
     }
 
     public function getDeployKeyName(): string

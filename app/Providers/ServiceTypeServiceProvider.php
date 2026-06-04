@@ -15,6 +15,7 @@ use App\Services\PHP\PHP;
 use App\Services\ProcessManager\Supervisor;
 use App\Services\Redis\Redis;
 use App\Services\Valkey\Valkey;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Support\ServiceProvider;
@@ -57,6 +58,20 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('Caddy (beta)')
             ->handler(Caddy::class)
             ->data(['creates_site_ssls' => false])
+            ->register();
+
+        RegisterServiceType::make(Apache::id())
+            ->type(Apache::type())
+            ->label('Apache (beta)')
+            ->handler(Apache::class)
+            ->data(['creates_site_ssls' => true])
+            ->configPaths([
+                [
+                    'name' => 'apache2.conf',
+                    'path' => '/etc/apache2/apache2.conf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
     }
 

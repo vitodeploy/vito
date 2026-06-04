@@ -16,8 +16,6 @@ use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateVhostTemplate;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Actions\Site\WorkerStartCommandUpdateResult;
-use App\Actions\Webserver\GenerateCaddyConfig;
-use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Server;
@@ -171,10 +169,8 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        $generator = $this->getVhostGenerator($site);
-
         return response()->json([
-            'template' => $site->vhost_template ?? $generator->defaultTemplate(),
+            'template' => $site->vhost_template ?? $site->webserver()->configGenerator()->defaultTemplate(),
         ]);
     }
 
@@ -221,13 +217,6 @@ class SiteSettingController extends Controller
         app(UpdateVhostGeneration::class)->update($site, $request->input());
 
         return back()->with('success', 'VHost generation setting updated successfully.');
-    }
-
-    private function getVhostGenerator(Site $site): GenerateNginxConfig|GenerateCaddyConfig
-    {
-        return $site->webserver()::id() === 'caddy'
-            ? app(GenerateCaddyConfig::class)
-            : app(GenerateNginxConfig::class);
     }
 
     #[Post('/force-ssl/enable', name: 'site-settings.enable-force-ssl')]

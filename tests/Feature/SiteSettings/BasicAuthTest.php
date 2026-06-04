@@ -8,6 +8,7 @@ use App\Http\Resources\SiteResource;
 use App\Models\HostedDomain;
 use App\Models\Site;
 use App\Models\User;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -141,6 +142,30 @@ class BasicAuthTest extends TestCase
                 ['username' => 'newbie', 'password' => ''],
             ],
         ])->assertSessionHasErrors();
+    }
+
+    public function test_apache_server_writes_htpasswd_file(): void
+    {
+        $this->server->webserver()?->update([
+            'name' => Apache::id(),
+        ]);
+
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-basic-auth', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'enabled' => true,
+            'users' => [
+                ['username' => 'alice', 'password' => 'secret123'],
+            ],
+        ])
+            ->assertRedirect()
+            ->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('/etc/apache2/auth/site-'.$this->site->id.'.htpasswd');
     }
 
     public function test_caddy_server_does_not_write_htpasswd_file(): void

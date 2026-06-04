@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\Services\Webserver\Apache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -44,6 +46,51 @@ class ServiceLogsTest extends TestCase
         $this->assertContains('redis:journal', $keys);
         $this->assertContains('system:sshd', $keys);
         $this->assertContains('php:8.2:user:vito', $keys);
+    }
+
+    public function test_apache_exposes_error_log_only(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->server->webserver()->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $response = $this->get(route('logs.services', $this->server->refresh()));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $entries = collect($catalogue)->keyBy('key');
+
+        $this->assertTrue($entries->has('apache:error'));
+        $this->assertSame('/var/log/apache2/error.log', $entries['apache:error']['display_target']);
+        $this->assertFalse($entries->has('apache:access'));
+        $this->assertFalse($entries->has('nginx:error'));
+    }
+
+    public function test_apache_exposes_per_site_error_log(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->server->webserver()->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $response = $this->get(route('logs.services', $this->server->refresh()));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $entries = collect($catalogue)->keyBy('key');
+
+        $key = 'apache:site:'.$this->site->id.':error';
+        $this->assertTrue($entries->has($key));
+        $this->assertSame('/var/log/apache2/'.$this->site->domain.'-error.log', $entries[$key]['display_target']);
     }
 
     public function test_nginx_exposes_per_site_error_log(): void

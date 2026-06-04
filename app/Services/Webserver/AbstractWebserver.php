@@ -9,6 +9,11 @@ use Closure;
 
 abstract class AbstractWebserver extends AbstractService implements Webserver
 {
+    public static function type(): string
+    {
+        return 'webserver';
+    }
+
     public function creationRules(array $input): array
     {
         return [

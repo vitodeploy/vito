@@ -4,7 +4,7 @@ namespace App\Services\Webserver;
 
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\AbstractGenerateConfig;
-use App\Actions\Webserver\GenerateNginxConfig;
+use App\Actions\Webserver\GenerateApacheConfig;
 use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
@@ -13,21 +13,21 @@ use App\Models\Ssl;
 use App\Services\HasLogs;
 use Throwable;
 
-class Nginx extends AbstractWebserver implements HasLogs
+class Apache extends AbstractWebserver implements HasLogs
 {
     public static function id(): string
     {
-        return 'nginx';
+        return 'apache';
     }
 
     public function unit(): string
     {
-        return 'nginx';
+        return 'apache2';
     }
 
     public function basicAuthDir(): ?string
     {
-        return '/etc/nginx/auth';
+        return '/etc/apache2/auth';
     }
 
     /**
@@ -38,26 +38,15 @@ class Nginx extends AbstractWebserver implements HasLogs
         $this->service->server->ssh()
             ->setLog($this->service->log)
             ->exec(
-                view('ssh.services.webserver.nginx.install-nginx'),
-                'install-nginx'
+                view('ssh.services.webserver.apache.install-apache', [
+                    'user' => $this->service->server->getSshUser(),
+                ]),
+                'install-apache'
             );
-
-        $this->service->server->ssh()->write(
-            '/etc/nginx/nginx.conf',
-            view('ssh.services.webserver.nginx.nginx', [
-                'user' => $this->service->server->getSshUser(),
-            ]),
-            'root'
-        );
-
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.create-default-ssl'),
-            'create-default-ssl'
-        );
 
         $this->deploySplash();
 
-        $this->service->server->systemd()->restart('nginx');
+        $this->service->server->systemd()->restart($this->unit());
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
@@ -68,8 +57,8 @@ class Nginx extends AbstractWebserver implements HasLogs
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.uninstall-nginx'),
-            'uninstall-nginx'
+            view('ssh.services.webserver.apache.uninstall-apache'),
+            'uninstall-apache'
         );
         event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
@@ -77,7 +66,7 @@ class Nginx extends AbstractWebserver implements HasLogs
 
     public function configGenerator(): AbstractGenerateConfig
     {
-        return app(GenerateNginxConfig::class);
+        return app(GenerateApacheConfig::class);
     }
 
     public function generateVhost(Site $site, ?string $template = null): string
@@ -92,12 +81,10 @@ class Nginx extends AbstractWebserver implements HasLogs
      */
     public function createVHost(Site $site): void
     {
-        // We need to get the isolated user first, if the site is isolated
-        // otherwise, use the default ssh user
         $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(
-            view('ssh.services.webserver.nginx.create-path', [
+            view('ssh.services.webserver.apache.create-path', [
                 'path' => $site->path,
             ]),
             'create-path',
@@ -105,15 +92,14 @@ class Nginx extends AbstractWebserver implements HasLogs
         );
 
         $this->service->server->ssh()->write(
-            '/etc/nginx/sites-available/'.$site->domain,
+            '/etc/apache2/sites-available/'.$site->domain.'.conf',
             $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.create-vhost', [
+            view('ssh.services.webserver.apache.create-vhost', [
                 'domain' => $site->domain,
-                'vhost' => $this->generateVhost($site),
             ]),
             'create-vhost',
             $site->id
@@ -134,18 +120,18 @@ class Nginx extends AbstractWebserver implements HasLogs
         }
 
         $this->service->server->ssh()->write(
-            '/etc/nginx/sites-available/'.$site->domain,
+            '/etc/apache2/sites-available/'.$site->domain.'.conf',
             $vhost,
             'root'
         );
 
         if ($restart) {
-            $this->service->server->systemd()->restart('nginx');
+            $this->service->server->systemd()->restart($this->unit());
 
             return;
         }
 
-        $this->service->server->systemd()->reload('nginx');
+        $this->service->server->systemd()->reload($this->unit());
     }
 
     /**
@@ -154,7 +140,7 @@ class Nginx extends AbstractWebserver implements HasLogs
     public function getVHost(Site $site): string
     {
         return $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.get-vhost', [
+            view('ssh.services.webserver.apache.get-vhost', [
                 'domain' => $site->domain,
             ]),
         );
@@ -175,7 +161,7 @@ class Nginx extends AbstractWebserver implements HasLogs
             );
         }
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.delete-site', [
+            view('ssh.services.webserver.apache.delete-site', [
                 'domain' => $site->domain,
                 'path' => $site->basePath(),
             ]),
@@ -194,16 +180,17 @@ class Nginx extends AbstractWebserver implements HasLogs
         foreach ($ssl->getDomains() as $domain) {
             $domains .= ' -d '.$domain;
         }
-        $command = view('ssh.services.webserver.nginx.create-letsencrypt-ssl', [
+        $command = view('ssh.services.webserver.apache.create-letsencrypt-ssl', [
             'email' => $ssl->email,
             'name' => $ssl->id,
             'domains' => $domains,
+            'webroot' => $ssl->site->getWebDirectoryPath(),
         ]);
         if ($ssl->type == 'custom') {
             $ssl->certificate_path = '/etc/ssl/'.$ssl->id.'/cert.pem';
             $ssl->pk_path = '/etc/ssl/'.$ssl->id.'/privkey.pem';
             $ssl->save();
-            $command = view('ssh.services.webserver.nginx.create-custom-ssl', [
+            $command = view('ssh.services.webserver.apache.create-custom-ssl', [
                 'path' => dirname($ssl->certificate_path),
                 'certificate' => $ssl->certificate,
                 'pk' => $ssl->pk,
@@ -245,8 +232,8 @@ class Nginx extends AbstractWebserver implements HasLogs
         $ssh = $this->service->server->ssh();
 
         $ssh->exec(
-            'sudo rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default /etc/nginx/conf.d/default.conf',
-            'remove-os-default-site'
+            'sudo a2dissite 000-default default-ssl 2>/dev/null || true',
+            'disable-os-default-site'
         );
 
         $ssh->exec(
@@ -261,13 +248,13 @@ class Nginx extends AbstractWebserver implements HasLogs
         );
 
         $ssh->write(
-            '/etc/nginx/sites-available/000-default',
-            view('ssh.services.webserver.nginx.default-vhost'),
+            '/etc/apache2/sites-available/000-vito-default.conf',
+            view('ssh.services.webserver.apache.default-vhost'),
             'root'
         );
 
         $ssh->exec(
-            'sudo ln -sf /etc/nginx/sites-available/000-default /etc/nginx/sites-enabled/000-default',
+            'sudo a2ensite 000-vito-default.conf',
             'enable-default-vhost'
         );
     }
@@ -275,28 +262,21 @@ class Nginx extends AbstractWebserver implements HasLogs
     public function version(): string
     {
         $version = $this->service->server->ssh()->exec(
-            'nginx -v 2>&1 | awk -F/ \'{print $2}\';'
+            'apachectl -v 2>&1 | grep -oE \'Apache/[0-9]+\.[0-9]+\.[0-9]+\' | cut -d/ -f2'
         );
 
-        return str(trim($version))->before(' ');
+        return trim($version);
     }
 
     public function logs(): array
     {
         $logs = [
             new ServiceLog(
-                key: 'nginx:error',
-                serviceLabel: 'NGINX',
+                key: 'apache:error',
+                serviceLabel: 'Apache',
                 label: 'Error log',
                 source: ServiceLog::SOURCE_FILE,
-                target: '/var/log/nginx/error.log',
-            ),
-            new ServiceLog(
-                key: 'nginx:access',
-                serviceLabel: 'NGINX',
-                label: 'Access log',
-                source: ServiceLog::SOURCE_FILE,
-                target: '/var/log/nginx/access.log',
+                target: '/var/log/apache2/error.log',
             ),
         ];
 
@@ -306,11 +286,11 @@ class Nginx extends AbstractWebserver implements HasLogs
 
         foreach ($sites as $site) {
             $logs[] = new ServiceLog(
-                key: 'nginx:site:'.$site->id.':error',
-                serviceLabel: 'NGINX',
+                key: 'apache:site:'.$site->id.':error',
+                serviceLabel: 'Apache',
                 label: $site->domain.' error log',
                 source: ServiceLog::SOURCE_FILE,
-                target: '/var/log/nginx/'.$site->domain.'-error.log',
+                target: '/var/log/apache2/'.$site->domain.'-error.log',
             );
         }
 
