@@ -6,6 +6,7 @@ use App\Plugins\RegisterServiceType;
 use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
+use App\Services\Fail2ban\Fail2ban;
 use App\Services\Firewall\Ufw;
 use App\Services\LogAnalysis\GoAccess\GoAccess;
 use App\Services\Monitoring\RemoteMonitor\RemoteMonitor;
@@ -29,6 +30,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->databases();
         $this->memoryDatabases();
         $this->firewalls();
+        $this->fail2ban();
         $this->processManagers();
         $this->monitoring();
         $this->logAnalysis();
@@ -155,6 +157,16 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Ufw::type())
             ->label('UFW')
             ->handler(Ufw::class)
+            ->register();
+    }
+
+    private function fail2ban(): void
+    {
+        RegisterServiceType::make(Fail2ban::id())
+            ->type(Fail2ban::type())
+            ->label('Fail2ban')
+            ->handler(Fail2ban::class)
+            ->versions(['latest'])
             ->register();
     }
 

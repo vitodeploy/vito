@@ -60,6 +60,11 @@ properties:
   auto_update:
     type: boolean
     example: true
+  auto_update_schedule:
+    type: string
+    nullable: true
+    description: 'Cron expression for Vito-driven automatic updates (interpreted in the app timezone).'
+    example: '0 2 * * *'
   progress:
     type: integer
     minimum: 0

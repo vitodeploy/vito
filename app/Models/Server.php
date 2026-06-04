@@ -48,6 +48,7 @@ use Throwable;
  * @property string $public_key
  * @property ServerStatus $status
  * @property bool $auto_update
+ * @property ?string $auto_update_schedule
  * @property int|float $progress
  * @property ?string $progress_step
  * @property Project $project
@@ -88,6 +89,7 @@ class Server extends AbstractModel
         'public_key',
         'status',
         'auto_update',
+        'auto_update_schedule',
         'progress',
         'progress_step',
         'updates',
@@ -350,6 +352,20 @@ class Server extends AbstractModel
         return array_values(array_unique($users));
     }
 
+    /**
+     * @return array<string>
+     */
+    public function sshLoginUsers(): array
+    {
+        $users = $this->getSshUsers();
+
+        if (($this->feature_data['security']['root_login']['enabled'] ?? true) === false) {
+            $users = array_values(array_filter($users, fn (string $user): bool => $user !== 'root'));
+        }
+
+        return $users;
+    }
+
     public function service(string $type, mixed $version = null): ?Service
     {
         /** @var ?Service $service */
@@ -461,6 +477,11 @@ class Server extends AbstractModel
         return $this->service('firewall', $version);
     }
 
+    public function fail2ban(): ?Service
+    {
+        return $this->defaultService('fail2ban');
+    }
+
     public function processManager(?string $version = null): ?Service
     {
         if ($version === null || $version === '' || $version === '0') {
@@ -544,6 +565,65 @@ class Server extends AbstractModel
     public function cron(): Cron
     {
         return new Cron($this);
+    }
+
+    public function security(): \App\SSH\OS\Security
+    {
+        return new \App\SSH\OS\Security($this);
+    }
+
+    /**
+     * Normalised security-hardening state stored in feature_data['security'].
+     *
+     * @return array{password_authentication: array{enabled: bool, detected: ?bool, status: string}, root_login: array{enabled: bool, detected: ?bool, status: string}}
+     */
+    public function securityState(): array
+    {
+        $security = $this->feature_data['security'] ?? [];
+
+        return [
+            'password_authentication' => [
+                'enabled' => $security['password_authentication']['enabled'] ?? true,
+                'detected' => $security['password_authentication']['detected'] ?? null,
+                'status' => $security['password_authentication']['status'] ?? \App\Enums\SecurityControlStatus::DISABLED->value,
+            ],
+            'root_login' => [
+                'enabled' => $security['root_login']['enabled'] ?? true,
+                'detected' => $security['root_login']['detected'] ?? null,
+                'status' => $security['root_login']['status'] ?? \App\Enums\SecurityControlStatus::DISABLED->value,
+            ],
+        ];
+    }
+
+    /**
+     * @return array{score: int, passed: int, total: int, checks: array<int, array{key: string, label: string, passed: bool}>}
+     */
+    public function securityScore(): array
+    {
+        $state = $this->securityState();
+        $fail2ban = $this->fail2ban();
+        $firewall = $this->firewall();
+        $ready = \App\Enums\SecurityControlStatus::READY->value;
+
+        $checks = [
+            ['key' => 'auto_update', 'label' => 'Automatic updates enabled', 'passed' => (bool) $this->auto_update],
+            ['key' => 'firewall', 'label' => 'Firewall installed', 'passed' => $firewall instanceof Service && $firewall->status === ServiceStatus::READY],
+            ['key' => 'fail2ban', 'label' => 'Fail2ban installed', 'passed' => $fail2ban instanceof Service && $fail2ban->status === ServiceStatus::READY],
+            ['key' => 'password_auth', 'label' => 'Password authentication disabled', 'passed' => $state['password_authentication']['enabled'] === false && $state['password_authentication']['status'] === $ready],
+        ];
+
+        if ($this->getSshUser() !== 'root') {
+            $checks[] = ['key' => 'root_login', 'label' => 'Root SSH login disabled', 'passed' => $state['root_login']['enabled'] === false && $state['root_login']['status'] === $ready];
+        }
+
+        $passed = count(array_filter($checks, fn (array $check): bool => $check['passed']));
+
+        return [
+            'score' => (int) round($passed / count($checks) * 100),
+            'passed' => $passed,
+            'total' => count($checks),
+            'checks' => $checks,
+        ];
     }
 
     /**

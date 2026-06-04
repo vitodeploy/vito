@@ -37,7 +37,7 @@ class ConsoleController extends Controller
         $this->validate($request, [
             'user' => [
                 'required',
-                Rule::in($server->getSshUsers()),
+                Rule::in($server->sshLoginUsers()),
             ],
         ]);
 

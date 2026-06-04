@@ -187,8 +187,18 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                     const isActive = item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href);
 
                     if (item.children && item.children.length > 0) {
+                      const groupActive =
+                        isActive ||
+                        item.children.some((childItem) =>
+                          childItem.hidden
+                            ? false
+                            : childItem.onlyActivePath
+                              ? window.location.href === childItem.onlyActivePath
+                              : window.location.href.startsWith(childItem.href),
+                        );
+
                       return (
-                        <Collapsible key={`${item.title}-${item.href}`} defaultOpen={isActive} className="group/collapsible">
+                        <Collapsible key={`${item.title}-${item.href}`} defaultOpen={groupActive} className="group/collapsible">
                           <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
                               <SidebarMenuButton disabled={item.isDisabled || false} hidden={item.hidden}>

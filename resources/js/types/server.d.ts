@@ -23,6 +23,7 @@ export interface Server {
   public_key: string;
   status: string;
   auto_update: boolean;
+  auto_update_schedule?: string;
   progress?: string;
   progress_step?: string;
   updates: number;
