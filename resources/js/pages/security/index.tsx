@@ -14,7 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/ui/input-error';
 import { useDialog } from '@/hooks/use-dialog';
 import { useSocketListener } from '@/hooks/use-socket-events';
-import { InfoIcon, LoaderCircleIcon, RefreshCwIcon } from 'lucide-react';
+import { InfoIcon, LoaderCircleIcon, RefreshCwIcon, TriangleAlertIcon } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
@@ -363,6 +364,14 @@ export default function Security() {
           <Separator className="my-2" />
 
           <Heading title="Actions" description="Apply, reconfigure, or undo each hardening measure." />
+
+          <Alert>
+            <TriangleAlertIcon className="text-warning!" />
+            <AlertDescription>
+              These settings change how your server is accessed and secured. Make sure you can reach your provider's recovery console before
+              applying them, so you can roll back if anything goes wrong.
+            </AlertDescription>
+          </Alert>
 
           <AutoUpdateCard
             key={`${page.props.autoUpdate.enabled}-${page.props.autoUpdate.schedule ?? ''}`}
