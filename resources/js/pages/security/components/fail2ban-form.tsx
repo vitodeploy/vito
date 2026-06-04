@@ -63,7 +63,13 @@ export default function Fail2banForm({
 
             <FormField>
               <Label htmlFor="findtime">Find time</Label>
-              <Input type="text" id="findtime" placeholder="10m" value={form.data.findtime} onChange={(e) => form.setData('findtime', e.target.value)} />
+              <Input
+                type="text"
+                id="findtime"
+                placeholder="10m"
+                value={form.data.findtime}
+                onChange={(e) => form.setData('findtime', e.target.value)}
+              />
               <p className="text-muted-foreground text-xs">Window in which failures are counted (e.g. 10m, 1h).</p>
               <InputError message={form.errors.findtime} />
             </FormField>

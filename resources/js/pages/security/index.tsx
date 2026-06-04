@@ -25,15 +25,7 @@ function serviceStatusLabel(status: string): string {
   return status === 'ready' ? 'active' : status;
 }
 
-function ControlBadge({
-  status,
-  color,
-  secure,
-}: {
-  status: string;
-  color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
-  secure: boolean;
-}) {
+function ControlBadge({ status, color, secure }: { status: string; color: 'gray' | 'success' | 'info' | 'warning' | 'danger'; secure: boolean }) {
   if (status === 'disabled') {
     return null;
   }
@@ -81,7 +73,9 @@ function AutoUpdateCard({ server, autoUpdate }: { server: number; autoUpdate: Au
             }}
           />
           <InputError message={form.errors.schedule} />
-          <p className="text-muted-foreground text-xs">Disabling automatic updates stops future runs only; it does not undo updates already applied.</p>
+          <p className="text-muted-foreground text-xs">
+            Disabling automatic updates stops future runs only; it does not undo updates already applied.
+          </p>
         </CardContent>
       )}
       <CardFooter className="justify-end">
@@ -169,12 +163,7 @@ function RootLoginCard({ server, rootLogin }: { server: number; rootLogin: RootL
                 : 'Vito currently connects to this server as root; switch to a non-root SSH user before disabling root login.'}
             </CardDescription>
           </div>
-          <Switch
-            checked={secure}
-            disabled={updating || !rootLogin.manageable}
-            onCheckedChange={toggle}
-            aria-label="Disable root SSH login"
-          />
+          <Switch checked={secure} disabled={updating || !rootLogin.manageable} onCheckedChange={toggle} aria-label="Disable root SSH login" />
         </div>
       </CardHeader>
     </Card>

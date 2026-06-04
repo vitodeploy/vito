@@ -32,4 +32,3 @@ export interface RootLoginState {
   status_color: SecurityStatusColor;
   manageable: boolean;
 }
-
