@@ -21,13 +21,13 @@ class ManageRootLogin
             'enabled' => ['required', 'boolean'],
         ])->validate();
 
-        if ($server->getSshUser() === 'root') {
+        $enabled = (bool) $input['enabled'];
+
+        if (! $enabled && $server->getSshUser() === 'root') {
             throw ValidationException::withMessages([
                 'enabled' => 'Vito connects to this server as root. Switch to a non-root SSH user before disabling root login.',
             ]);
         }
-
-        $enabled = (bool) $input['enabled'];
 
         $server->refresh();
         $security = $server->feature_data['security'] ?? [];

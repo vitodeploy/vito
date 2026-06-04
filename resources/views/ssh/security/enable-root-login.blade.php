@@ -10,4 +10,10 @@ if ! sudo sshd -t; then
     exit 1
 fi
 
+EFFECTIVE=$(sudo sshd -T 2>/dev/null | awk '/^permitrootlogin /{print $2; exit}')
+if [ "$EFFECTIVE" = "no" ]; then
+    echo "VITO_SSH_ERROR: root login is still disabled (effective: ${EFFECTIVE:-unknown})"
+    exit 1
+fi
+
 sudo systemctl reload ssh

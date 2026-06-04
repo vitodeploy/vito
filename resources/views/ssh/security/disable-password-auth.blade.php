@@ -21,4 +21,10 @@ if [ "$EFFECTIVE" != "no" ]; then
     exit 1
 fi
 
+KBD_EFFECTIVE=$(sudo sshd -T 2>/dev/null | awk '/^kbdinteractiveauthentication /{print $2; exit}')
+if [ "$KBD_EFFECTIVE" != "no" ]; then
+    echo "VITO_SSH_ERROR: keyboard-interactive authentication is still enabled (effective: ${KBD_EFFECTIVE:-unknown})"
+    exit 1
+fi
+
 sudo systemctl reload ssh

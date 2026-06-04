@@ -11,6 +11,9 @@ class Security
     public function __construct(protected Server $server) {}
 
     /**
+     * Whether sshd currently permits password authentication (anything other than `no`).
+     * An unknown/empty result is treated as enabled (fail-closed for the score).
+     *
      * @throws SSHError
      */
     public function passwordAuthEnabled(): bool
@@ -20,7 +23,7 @@ class Security
             'password-auth-status'
         );
 
-        return str($result)->after('VITO_PASSWORD_AUTH:')->trim()->startsWith('yes');
+        return ! str($result)->after('VITO_PASSWORD_AUTH:')->trim()->startsWith('no');
     }
 
     /**

@@ -22,7 +22,7 @@ class ApplyRootLoginJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function (): void {
-            if ($this->server->getSshUser() === 'root') {
+            if (! $this->enabled && $this->server->getSshUser() === 'root') {
                 $this->writeState(['status' => SecurityControlStatus::FAILED->value]);
                 ServerLog::log($this->server, 'disable-root-login-failed', 'Refusing to disable root login while Vito connects as root.');
                 $this->broadcast();

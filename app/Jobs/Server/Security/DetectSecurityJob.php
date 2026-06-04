@@ -18,7 +18,10 @@ class DetectSecurityJob implements ShouldQueue
 
     public int $timeout = 90;
 
-    public function __construct(protected Server $server) {}
+    public function __construct(protected Server $server)
+    {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {

@@ -10,4 +10,10 @@ if ! sudo sshd -t; then
     exit 1
 fi
 
+EFFECTIVE=$(sudo sshd -T 2>/dev/null | awk '/^passwordauthentication /{print $2; exit}')
+if [ "$EFFECTIVE" != "yes" ]; then
+    echo "VITO_SSH_ERROR: password authentication is still disabled (effective: ${EFFECTIVE:-unknown})"
+    exit 1
+fi
+
 sudo systemctl reload ssh

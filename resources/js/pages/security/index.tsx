@@ -331,7 +331,7 @@ export default function Security() {
         const isObject = !!data && typeof data === 'object' && !Array.isArray(data);
         if (event.type === 'security.updated' && isObject && (data as { server_id?: number }).server_id === serverId) {
           router.reload({ only: ['passwordAuth', 'rootLogin', 'autoUpdate', 'fail2ban', 'firewall', 'score'] });
-        } else if (event.type?.startsWith('service.')) {
+        } else if (event.type?.startsWith('service.') && isObject && (data as { server_id?: number }).server_id === serverId) {
           router.reload({ only: ['fail2ban', 'firewall', 'score'] });
         }
       },

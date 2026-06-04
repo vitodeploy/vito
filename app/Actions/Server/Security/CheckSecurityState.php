@@ -9,6 +9,6 @@ class CheckSecurityState
 {
     public function check(Server $server): void
     {
-        DetectSecurityJob::dispatchSync($server);
+        DetectSecurityJob::dispatch($server);
     }
 }
