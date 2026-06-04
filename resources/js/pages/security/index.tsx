@@ -366,7 +366,7 @@ export default function Security() {
           <Heading title="Actions" description="Apply, reconfigure, or undo each hardening measure." />
 
           <Alert>
-            <TriangleAlertIcon className="text-warning!" />
+            <TriangleAlertIcon className="text-warning" />
             <AlertDescription>
               These settings change how your server is accessed and secured. Make sure you can reach your provider's recovery console before
               applying them, so you can roll back if anything goes wrong.
