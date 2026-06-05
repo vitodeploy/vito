@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Facades\SSH;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
@@ -44,6 +45,27 @@ class ServiceLogsTest extends TestCase
         $this->assertContains('redis:journal', $keys);
         $this->assertContains('system:sshd', $keys);
         $this->assertContains('php:8.2:user:vito', $keys);
+    }
+
+    public function test_skips_services_without_a_registered_handler(): void
+    {
+        $this->actingAs($this->user);
+
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => 'vpn',
+            'name' => 'wireguard',
+        ]);
+
+        $response = $this->get(route('logs.services', $this->server));
+
+        $response->assertSuccessful();
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $keys = array_column($catalogue, 'key');
+
+        $this->assertContains('nginx:error', $keys);
+        $this->assertEmpty(array_filter($keys, fn (string $key): bool => str_starts_with($key, 'wireguard')));
     }
 
     public function test_nginx_exposes_per_site_error_log(): void

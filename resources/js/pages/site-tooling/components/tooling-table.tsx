@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Card } from '@/components/ui/card';
 import { CircleCheckIcon, CircleIcon, LoaderCircleIcon, SearchIcon, TrashIcon, TriangleAlertIcon } from 'lucide-react';
 import { Site } from '@/types/site';
 import { ToolingDescriptor } from '@/types';
@@ -45,7 +44,7 @@ export default function ToolingTable({ site, tools, installedVersions, statuses,
         />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      <div className="relative overflow-hidden rounded-md border shadow-xs">
         <Table>
           <TableHeader>
             <TableRow>
@@ -78,7 +77,7 @@ export default function ToolingTable({ site, tools, installedVersions, statuses,
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
     </div>
   );
 }

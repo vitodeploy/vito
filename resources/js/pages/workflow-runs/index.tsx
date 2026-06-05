@@ -2,6 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
+import { BreadcrumbHeader } from '@/components/breadcrumb-header';
 import { VitoTable } from '@/components/vito-table';
 import { BreadcrumbItem } from '@/types';
 import Layout from '@/layouts/app/layout';
@@ -27,13 +28,14 @@ export default function Workflows() {
   ];
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <Layout>
       <Head title={`History of ${page.props.workflow.name}`} />
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title={`History of ${page.props.workflow.name}`} description="Here you can see a list of executions" />
-          <div className="flex items-center gap-2"></div>
+          <BreadcrumbHeader breadcrumbs={breadcrumbs}>
+            <Heading title={`History of ${page.props.workflow.name}`} description="Here you can see a list of executions" />
+          </BreadcrumbHeader>
         </HeaderContainer>
 
         <VitoTable

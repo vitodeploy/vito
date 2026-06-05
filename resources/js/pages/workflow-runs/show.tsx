@@ -1,5 +1,7 @@
 import Container from '@/components/container';
+import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
+import { BreadcrumbHeader } from '@/components/breadcrumb-header';
 import Layout from '@/layouts/app/layout';
 import { Head, usePage } from '@inertiajs/react';
 import Logs from './components/logs';
@@ -37,7 +39,7 @@ export default function Show() {
       href: route('workflows'),
     },
     {
-      title: `History [${page.props.workflow.name}]`,
+      title: `History of ${page.props.workflow.name}`,
       href: route('workflow-runs', { workflow: page.props.workflow.id }),
     },
     {
@@ -47,13 +49,15 @@ export default function Show() {
   ];
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <Layout>
       <Head title={`Workflow [${page.props.workflow.name}]`} />
       <Container className="max-w-5xl">
-        <div className="flex items-start justify-between">
-          <Heading title={`Workflow [${page.props.workflow.name}]`} description="Here you can see the result of your workflow's execution" />
+        <HeaderContainer>
+          <BreadcrumbHeader breadcrumbs={breadcrumbs}>
+            <Heading title={`Workflow [${page.props.workflow.name}]`} description="Here you can see the result of your workflow's execution" />
+          </BreadcrumbHeader>
           <Badge variant={workflowRun.status_color}>{workflowRun.status}</Badge>
-        </div>
+        </HeaderContainer>
 
         <Logs workflowRun={workflowRun} />
       </Container>

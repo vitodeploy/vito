@@ -75,6 +75,11 @@ class Service extends AbstractModel
         return $this->belongsTo(ServerLog::class, 'log_id');
     }
 
+    public function hasHandler(): bool
+    {
+        return (bool) config("service.services.{$this->name}.handler");
+    }
+
     public function handler(): ServiceInterface|Webserver|PHP|Firewall|Database|ProcessManager
     {
         $name = $this->name;

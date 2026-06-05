@@ -1,6 +1,6 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppHeader } from '@/components/app-header';
-import { type BreadcrumbItem, NavItem, SharedData } from '@/types';
+import { NavItem, SharedData } from '@/types';
 import { type PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { usePage } from '@inertiajs/react';
@@ -8,7 +8,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { type SocketEventData, useSocketEvents, useSocketListener } from '@/hooks/use-socket-events';
 import { useBootstrapStore } from '@/stores/bootstrap-store';
 import { Button } from '@/components/ui/button';
@@ -19,9 +18,7 @@ export default function Layout({
   children,
   secondNavItems,
   secondNavTitle,
-  breadcrumbs,
 }: PropsWithChildren<{
-  breadcrumbs?: BreadcrumbItem[];
   secondNavItems?: NavItem[];
   secondNavTitle?: string;
 }>) {
@@ -80,13 +77,6 @@ export default function Layout({
           <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
           <SidebarInset>
             <AppHeader socketStatus={socketStatus} socketReconnect={socketReconnect} />
-            {breadcrumbs && breadcrumbs.length > 1 && (
-              <div className="border-sidebar-border/70 flex w-full border-b">
-                <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500">
-                  <Breadcrumbs breadcrumbs={breadcrumbs} />
-                </div>
-              </div>
-            )}
             <div className="flex flex-1 flex-col">
               {showBootstrapError ? (
                 <div className="flex flex-1 items-center justify-center p-6">

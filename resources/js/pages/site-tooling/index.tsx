@@ -9,7 +9,8 @@ import { Server } from '@/types/server';
 import { Site } from '@/types/site';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { TriangleAlertIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BookOpenIcon, TriangleAlertIcon } from 'lucide-react';
 import { useConfigs } from '@/stores/bootstrap-store';
 import { SiteToolingProps, SiteToolingStatus } from '@/types/site-tooling';
 import ToolingTable from '@/pages/site-tooling/components/tooling-table';
@@ -62,6 +63,12 @@ export default function SiteTooling() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Tooling" description={`Manage developer tooling installed for isolated user ${isolated_user}.`} />
+          <a href="https://vitodeploy.com/docs/sites/tooling" target="_blank">
+            <Button variant="outline">
+              <BookOpenIcon />
+              <span className="hidden lg:block">Docs</span>
+            </Button>
+          </a>
         </HeaderContainer>
 
         <SiteBanners site={site} />

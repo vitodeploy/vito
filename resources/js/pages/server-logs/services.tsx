@@ -277,7 +277,7 @@ function LogViewer({
 
   if (showCentered || (hasSelection && error)) {
     return (
-      <div className="bg-accent/30 text-accent-foreground flex h-[60vh] min-h-[400px] w-full items-center justify-center">
+      <div className="bg-background flex h-[60vh] min-h-[400px] w-full items-center justify-center">
         {!hasSelection && <span className="text-muted-foreground text-sm">Pick a log from the dropdown above to view its contents.</span>}
         {hasSelection && isLoading && (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -294,7 +294,7 @@ function LogViewer({
   }
 
   return (
-    <ScrollArea className="bg-accent/30 text-accent-foreground h-[60vh] min-h-[400px] w-full">
+    <ScrollArea className="bg-background h-[60vh] min-h-[400px] w-full">
       <div className="p-4 font-mono text-sm whitespace-pre-wrap">{content}</div>
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />

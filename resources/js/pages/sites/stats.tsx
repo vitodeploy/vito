@@ -1,7 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { RefreshCwIcon } from 'lucide-react';
+import { BookOpenIcon, RefreshCwIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
 
@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable } from '@/components/data-table';
+import { ColumnDef } from '@tanstack/react-table';
 import { useSiteStats } from '@/pages/sites/components/use-site-stats';
 import { StatsChart } from '@/pages/sites/components/stats-chart';
 import { SiteStatsPanelRow, SiteStatsStatusCode } from '@/types/site-stats';
@@ -78,6 +79,7 @@ export default function SiteStats() {
           <>
             <HeaderContainer>
               <Heading title="Stats" description="Web statistics for this site" />
+              <DocsButton />
             </HeaderContainer>
             <SiteBanners site={site} />
             <Card>
@@ -164,6 +166,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
             <RefreshCwIcon className={refreshing ? 'animate-spin' : ''} />
             <span className="hidden lg:block">Refresh</span>
           </Button>
+          <DocsButton />
         </div>
       </HeaderContainer>
 
@@ -297,6 +300,17 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
   );
 }
 
+function DocsButton() {
+  return (
+    <a href="https://vitodeploy.com/docs/sites/stats" target="_blank">
+      <Button variant="outline">
+        <BookOpenIcon />
+        <span className="hidden lg:block">Docs</span>
+      </Button>
+    </a>
+  );
+}
+
 function StatCard({ title, value }: { title: string; value: string }) {
   return (
     <Card>
@@ -309,69 +323,39 @@ function StatCard({ title, value }: { title: string; value: string }) {
 }
 
 function PanelCard({ title, rows }: { title: string; rows: SiteStatsPanelRow[] }) {
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <Table className="[&_tr]:hover:bg-transparent">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="font-semibold">{title}</TableHead>
-              <TableHead className="text-right font-semibold">Hits</TableHead>
-              <TableHead className="text-right font-semibold">Visitors</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-muted-foreground h-32 text-center text-sm">
-                  No data
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((row, index) => (
-                <TableRow key={`${row.name}-${index}`}>
-                  <TableCell className="max-w-[280px] truncate">{row.name}</TableCell>
-                  <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.visitors.toLocaleString()}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
+  const columns: ColumnDef<SiteStatsPanelRow>[] = [
+    {
+      accessorKey: 'name',
+      header: title,
+      cell: ({ row }) => <div className="max-w-[280px] truncate">{row.original.name}</div>,
+    },
+    {
+      accessorKey: 'hits',
+      header: () => <div className="text-right">Hits</div>,
+      cell: ({ row }) => <div className="text-right">{row.original.hits.toLocaleString()}</div>,
+    },
+    {
+      accessorKey: 'visitors',
+      header: () => <div className="text-right">Visitors</div>,
+      cell: ({ row }) => <div className="text-right">{row.original.visitors.toLocaleString()}</div>,
+    },
+  ];
+
+  return <DataTable columns={columns} data={rows} />;
 }
 
 function StatusCodesCard({ rows }: { rows: SiteStatsStatusCode[] }) {
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <Table className="[&_tr]:hover:bg-transparent">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="font-semibold">Status code</TableHead>
-              <TableHead className="text-right font-semibold">Hits</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={2} className="text-muted-foreground h-32 text-center text-sm">
-                  No data
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((row, index) => (
-                <TableRow key={`${row.name}-${index}`}>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell className="text-right">{row.hits.toLocaleString()}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
+  const columns: ColumnDef<SiteStatsStatusCode>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Status code',
+    },
+    {
+      accessorKey: 'hits',
+      header: () => <div className="text-right">Hits</div>,
+      cell: ({ row }) => <div className="text-right">{row.original.hits.toLocaleString()}</div>,
+    },
+  ];
+
+  return <DataTable columns={columns} data={rows} />;
 }

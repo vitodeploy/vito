@@ -118,7 +118,6 @@ class CronJobController extends Controller
             'cronjobs' => CronJobResource::collection(
                 $site->cronJobs()->latest()->simplePaginate(config('web.pagination_size'))
             ),
-            'site' => $site,
             'sites' => $server->sites()->select('id', 'domain')->get(),
             'ssh_users' => $site->getSshUsers(),
         ]);

@@ -26,6 +26,7 @@ class ConsoleController extends Controller
 
         return Inertia::render('servers/console', [
             'server' => ServerResource::make($server),
+            'ssh_users' => $server->sshLoginUsers(),
         ]);
     }
 

@@ -12,7 +12,7 @@ import '@xterm/xterm/css/xterm.css';
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
 export default function Console() {
-  const { server, csrf_token } = usePage<{ server: Server; csrf_token: string }>().props;
+  const { server, ssh_users, csrf_token } = usePage<{ server: Server; ssh_users: string[]; csrf_token: string }>().props;
   const [user, setUser] = useState(server.ssh_user);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
 
@@ -228,7 +228,7 @@ export default function Console() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {server.ssh_users.map((sshUser) => (
+              {ssh_users.map((sshUser) => (
                 <SelectItem key={sshUser} value={sshUser}>
                   {sshUser}
                 </SelectItem>

@@ -22,7 +22,7 @@ class ServerResource extends JsonResource
             'provider_id' => $this->provider_id,
             'name' => $this->name,
             'ssh_user' => $this->ssh_user,
-            'ssh_users' => $this->sshLoginUsers(),
+            'ssh_users' => $this->getSshUsers(),
             'ip' => $this->ip,
             'local_ip' => $this->local_ip,
             'port' => $this->port,

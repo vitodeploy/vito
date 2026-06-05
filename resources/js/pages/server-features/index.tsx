@@ -29,14 +29,14 @@ export default function ServerFeatures() {
           <Heading title="Features" description="Your server has some features enabled by Vito or other plugins" />
         </HeaderContainer>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-2">
             <div className="space-y-2">
               <CardTitle>Server features</CardTitle>
               <CardDescription>Here you can see the list of features and their actions</CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             {Object.entries(page.props.features).length > 0 ? (
               Object.entries(page.props.features).map(([key, feature], index) => (
                 <div key={`feature-${key}`}>
