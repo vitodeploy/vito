@@ -59,9 +59,7 @@ export default function OfficialPlugins() {
                     <Install url={repo.html_url} />
                   </div>
                 </CardRow>
-                {!(page.items[page.items.length - 1].id === repo.id && page === query.data.pages[query.data.pages.length - 1]) && (
-                  <Separator className="my-2" />
-                )}
+                {!(page.items[page.items.length - 1].id === repo.id && page === query.data.pages[query.data.pages.length - 1]) && <Separator />}
               </Fragment>
             )),
           )}

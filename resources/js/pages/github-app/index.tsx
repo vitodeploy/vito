@@ -3,7 +3,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardRow } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardRow, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -87,32 +87,35 @@ export default function GithubAppIndex() {
         {!githubApp ? <CreateAppCard manifest={manifest} manualSetup={manualSetup} /> : <ConfiguredCard app={githubApp} installPath={installPath} />}
 
         {githubApp && (
-          <Card>
-            <CardContent>
-              <div className="p-4">
-                <h3 className="text-sm font-medium">Connected installations</h3>
-                <p className="text-muted-foreground text-sm">Organizations that have installed this GitHub App.</p>
-              </div>
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>Connected installations</CardTitle>
+              <CardDescription>Organizations that have installed this GitHub App.</CardDescription>
+            </CardHeader>
+            <CardContent className="bg-background">
               {installations.length === 0 ? (
                 <div className="text-muted-foreground p-4 text-sm">No installations yet. Install the app on a GitHub organization to begin.</div>
               ) : (
-                installations.map((sc) => (
-                  <CardRow key={sc.id}>
-                    <div className="flex items-center gap-3">
-                      <GithubIcon className="h-4 w-4" />
-                      <span className="font-medium">{sc.github_app?.account_login || sc.name}</span>
-                      <Badge variant="outline">{sc.github_app?.account_type || 'Account'}</Badge>
-                      {sc.global ? <Badge variant="success">global</Badge> : <Badge variant="danger">project</Badge>}
-                    </div>
-                    {sc.github_app?.html_url && (
-                      <a href={sc.github_app.html_url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm">
-                          <ExternalLinkIcon />
-                          Manage on GitHub
-                        </Button>
-                      </a>
-                    )}
-                  </CardRow>
+                installations.map((sc, index) => (
+                  <div key={sc.id}>
+                    <CardRow>
+                      <div className="flex items-center gap-3">
+                        <GithubIcon className="h-4 w-4" />
+                        <span className="font-medium">{sc.github_app?.account_login || sc.name}</span>
+                        <Badge variant="outline">{sc.github_app?.account_type || 'Account'}</Badge>
+                        {sc.global ? <Badge variant="success">global</Badge> : <Badge variant="danger">project</Badge>}
+                      </div>
+                      {sc.github_app?.html_url && (
+                        <a href={sc.github_app.html_url} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm">
+                            <ExternalLinkIcon />
+                            Manage on GitHub
+                          </Button>
+                        </a>
+                      )}
+                    </CardRow>
+                    {index < installations.length - 1 && <Separator />}
+                  </div>
                 ))
               )}
             </CardContent>
@@ -363,25 +366,22 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
 
 function ConfiguredCard({ app, installPath }: { app: GithubAppData; installPath: string | null }) {
   return (
-    <Card>
-      <CardContent>
-        <CardRow>
-          <div>
-            <div className="font-medium">{app.name}</div>
-            <div className="text-muted-foreground text-xs">App ID {app.app_id}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            {app.html_url && (
-              <a href={app.html_url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm">
-                  <ExternalLinkIcon />
-                  Open on GitHub
-                </Button>
-              </a>
-            )}
-          </div>
-        </CardRow>
-        <Separator />
+    <Card className="overflow-hidden">
+      <CardHeader className="flex-row items-center justify-between gap-2">
+        <div className="space-y-1.5">
+          <CardTitle>{app.name}</CardTitle>
+          <CardDescription>App ID {app.app_id}</CardDescription>
+        </div>
+        {app.html_url && (
+          <a href={app.html_url} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm">
+              <ExternalLinkIcon />
+              Open on GitHub
+            </Button>
+          </a>
+        )}
+      </CardHeader>
+      <CardContent className="bg-background">
         <CardRow>
           <span>Install on a GitHub organization</span>
           {installPath && (

@@ -368,8 +368,8 @@ export default function Security() {
           <Alert>
             <TriangleAlertIcon className="text-warning" />
             <AlertDescription>
-              These settings change how your server is accessed and secured. Make sure you can reach your provider's recovery console before
-              applying them, so you can roll back if anything goes wrong.
+              These settings change how your server is accessed and secured. Make sure you can reach your provider's recovery console before applying
+              them, so you can roll back if anything goes wrong.
             </AlertDescription>
           </Alert>
 

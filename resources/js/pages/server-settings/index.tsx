@@ -67,7 +67,7 @@ export default function Databases() {
           </div>
         </HeaderContainer>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-2">
             <div className="space-y-2">
               <CardTitle>Server details</CardTitle>
@@ -93,7 +93,7 @@ export default function Databases() {
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             <div className="flex items-center justify-between p-4">
               <span>ID</span>
               <span className="text-muted-foreground">{page.props.server.id}</span>
@@ -211,12 +211,12 @@ export default function Databases() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Transfer server</CardTitle>
             <CardDescription>Here you can transfer server to another project</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             <div className="space-y-2 p-4">
               <p>This action will transfer the server to another project. All associated data will remain intact.</p>
 
@@ -227,12 +227,12 @@ export default function Databases() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/50">
+        <Card className="border-destructive/50 overflow-hidden">
           <CardHeader>
             <CardTitle>Delete server</CardTitle>
             <CardDescription>Here you can delete the server.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             <div className="space-y-2 p-4">
               <p>please note that this action is irreversible and will delete all data associated with the server.</p>
 

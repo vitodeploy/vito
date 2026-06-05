@@ -52,14 +52,14 @@ export default function Databases() {
 
         <SiteBanners site={page.props.site} />
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-2">
             <div className="space-y-2">
               <CardTitle>Site details</CardTitle>
               <CardDescription>Update site details</CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             <div className="flex items-center justify-between p-4">
               <span>ID</span>
               <span className="text-muted-foreground">{page.props.site.id}</span>
@@ -205,12 +205,12 @@ export default function Databases() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/50">
+        <Card className="border-destructive/50 overflow-hidden">
           <CardHeader>
             <CardTitle>Delete site</CardTitle>
             <CardDescription>Here you can delete the site.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-background">
             <div className="space-y-2 p-4">
               <p>please note that this action is irreversible and will delete all data associated with the site.</p>
 

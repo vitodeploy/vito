@@ -46,34 +46,34 @@ export default function Plugins() {
             <TabsTrigger value="official">Available</TabsTrigger>
           </TabsList>
           <TabsContent value="installed">
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>Installed plugins</CardTitle>
                 <CardDescription>All the currently installed plugins</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="bg-background">
                 <InstalledPlugins plugins={page.props.plugins} />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="discovered">
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>Discovered plugins</CardTitle>
                 <CardDescription>These plugins are present on the system, but have not been installed</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="bg-background">
                 <DiscoveredPlugins plugins={page.props.plugins} />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="official">
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>Available plugins</CardTitle>
                 <CardDescription>These plugins are developed and maintained by VitoDeploy's team</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="bg-background">
                 <OfficialPlugins />
               </CardContent>
             </Card>
