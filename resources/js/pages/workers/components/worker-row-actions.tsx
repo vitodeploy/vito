@@ -33,7 +33,5 @@ export function WorkerLogs({ worker }: { worker: Worker }) {
 export function WorkerEnvironment({ worker }: { worker: Worker }) {
   const dialog = useDialog();
 
-  return (
-    <DropdownMenuItem onSelect={() => dialog.workerEnv.open({ serverId: worker.server_id, workerId: worker.id })}>Environment</DropdownMenuItem>
-  );
+  return <DropdownMenuItem onSelect={() => dialog.workerEnv.open({ serverId: worker.server_id, workerId: worker.id })}>Environment</DropdownMenuItem>;
 }

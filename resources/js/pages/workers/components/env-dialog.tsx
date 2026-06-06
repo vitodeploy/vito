@@ -197,12 +197,7 @@ export default function WorkerEnvDialog({
             {workerMode ? (
               <FormField>
                 <Label id={groupLabelId}>How should we apply this change?</Label>
-                <RadioGroup
-                  value={apply}
-                  onValueChange={(value) => setApply(value as ApplyChoice)}
-                  aria-labelledby={groupLabelId}
-                  className="gap-2"
-                >
+                <RadioGroup value={apply} onValueChange={(value) => setApply(value as ApplyChoice)} aria-labelledby={groupLabelId} className="gap-2">
                   <RadioCard
                     value="config"
                     selected={apply === 'config'}
