@@ -21,7 +21,7 @@ reviews:
   path_instructions:
     - path: "**/*.php"
       instructions: |
-        PHP 8.4 / Laravel 12 codebase. Enforce:
+        PHP 8.4 / Laravel 13 codebase. Enforce:
         - Curly braces on all control structures, constructor property promotion, explicit return types on every method.
         - PHPDoc blocks for documentation; no inline `//` comments inside function/method bodies (migrations are the exception). Use array shapes in PHPDoc where appropriate. `@return` and `@throws` annotations must reflect reality — misleading annotations hide bugs.
         - Prefer `Model::query()` over the `DB::` facade. Eager load relationships to prevent N+1 queries.
@@ -99,7 +99,7 @@ reviews:
 
     - path: "tests/**"
       instructions: |
-        - PHPUnit 11 only. `RefreshDatabase` trait, factories, `assertDatabaseHas()` for DB assertions.
+        - PHPUnit 12 only. `RefreshDatabase` trait, factories, `assertDatabaseHas()` for DB assertions.
         - `TestCase` provides `$this->user`, `$this->server`, `$this->site` pre-configured.
         - Use `SSH::fake()` for SSH and `Http::fake()` for HTTP — never real connections.
         - Don't over-test trivial logic that PHP handles natively. Flag removed tests.
