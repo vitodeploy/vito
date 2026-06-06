@@ -11,7 +11,7 @@ export default function Logs({ server, site }: { server: Server; site?: Site }) 
   const [currentPage, setCurrentPage] = useState(1);
 
   const query = useQuery({
-    queryKey: ['serverLogs', currentPage],
+    queryKey: ['serverLogs', server.id, site?.id, currentPage],
     queryFn: async () => {
       return (
         await axios.get(route('logs.json', { server: server.id, site: site?.id }), {

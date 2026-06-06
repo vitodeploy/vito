@@ -19,7 +19,7 @@ export default function PHP() {
     installedVersions: PaginatedData<Service>;
   }>();
 
-  const [installedVersions] = useRealtime<Service>(page.props.installedVersions, 'service');
+  const [installedVersions] = useRealtime<Service>(page.props.installedVersions, 'service', { server_id: page.props.server.id, type: 'php' });
 
   return (
     <ServerLayout>

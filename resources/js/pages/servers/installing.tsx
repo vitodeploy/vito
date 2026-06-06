@@ -14,7 +14,7 @@ export default function InstallingServer() {
     logs: PaginatedData<ServerLog>;
   }>();
 
-  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
+  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log', { server_id: page.props.server.id });
 
   return (
     <Container className="max-w-5xl">

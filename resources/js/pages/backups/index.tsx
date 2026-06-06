@@ -20,7 +20,7 @@ type Page = {
 
 export default function Backups() {
   const page = usePage<Page>();
-  const [backups] = useRealtime<Backup>(page.props.backups, 'backup');
+  const [backups] = useRealtime<Backup>(page.props.backups, 'backup', { server_id: page.props.server.id });
 
   return (
     <ServerLayout>

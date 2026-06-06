@@ -23,7 +23,7 @@ type Page = {
 
 export default function Show() {
   const page = usePage<Page>();
-  const [executions] = useRealtime<CommandExecution>(page.props.executions, 'command-execution');
+  const [executions] = useRealtime<CommandExecution>(page.props.executions, 'command-execution', { command_id: page.props.command.id });
 
   const breadcrumbs: BreadcrumbItem[] = [
     {

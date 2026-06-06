@@ -18,7 +18,7 @@ type Page = {
 
 export default function Show() {
   const page = usePage<Page>();
-  const [executions] = useRealtime<ScriptExecution>(page.props.executions, 'script-execution');
+  const [executions] = useRealtime<ScriptExecution>(page.props.executions, 'script-execution', { script_id: page.props.script.id });
 
   const breadcrumbs: BreadcrumbItem[] = [
     {

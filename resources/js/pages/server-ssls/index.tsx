@@ -21,7 +21,7 @@ export default function ServerSsls() {
     domains: Domain[];
   }>();
 
-  const [ssls] = useRealtime<SSL>(page.props.ssls, 'ssl');
+  const [ssls] = useRealtime<SSL>(page.props.ssls, 'ssl', { server_id: page.props.server.id, site_id: null });
 
   return (
     <ServerLayout>

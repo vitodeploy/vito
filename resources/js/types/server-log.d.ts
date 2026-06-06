@@ -1,7 +1,7 @@
 export interface ServerLog {
   id: number;
   server_id: number;
-  site_id?: number;
+  site_id: number | null;
   type: string;
   name: string;
   disk: string;

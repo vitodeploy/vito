@@ -95,16 +95,22 @@ export function useRealtimeRecord<T extends { id: number }>(initial: T | null | 
 /**
  * Manages paginated Inertia data with realtime socket updates.
  *
- * Listens for socket events matching `{eventPrefix}.updated` (replace row),
- * and `{eventPrefix}.deleted` (remove row) automatically.
+ * Listens for socket events matching `{eventPrefix}.created` (prepend row),
+ * `{eventPrefix}.updated` (replace row), and `{eventPrefix}.deleted` (remove row) automatically.
+ *
+ * Socket events are broadcast project-wide, so pass a `scope` of field/value pairs
+ * (e.g. `{ server_id: server.id }`) that created records must match before trigger refreshes
  *
  * Returns the live data and setter for custom handling.
  */
 export function useRealtime<T extends { id: number }>(
   initialData: PaginatedData<T>,
   eventPrefix: string,
+  scope?: Partial<T>,
 ): [PaginatedData<T>, Dispatch<SetStateAction<PaginatedData<T>>>] {
   const [data, setData] = useState<PaginatedData<T>>(initialData);
+  const scopeRef = useRef(scope);
+  scopeRef.current = scope;
 
   useEffect(() => {
     setData(initialData);
@@ -122,6 +128,9 @@ export function useRealtime<T extends { id: number }>(
 
         switch (action) {
           case 'created':
+            if (!Object.entries(scopeRef.current ?? {}).every(([key, value]) => (eventData as Record<string, unknown>)[key] === value)) {
+              break;
+            }
             setData((prev) => ({
               ...prev,
               data: [eventData as unknown as T, ...prev.data],

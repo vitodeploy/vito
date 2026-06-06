@@ -19,7 +19,7 @@ export default function WorkerIndex() {
     services: PaginatedData<Service>;
   }>();
 
-  const [services] = useRealtime<Service>(page.props.services, 'service');
+  const [services] = useRealtime<Service>(page.props.services, 'service', { server_id: page.props.server.id });
 
   return (
     <ServerLayout>

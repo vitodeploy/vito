@@ -22,7 +22,7 @@ export default function Redirects() {
     redirects: PaginatedData<Redirect>;
   }>();
 
-  const [redirects] = useRealtime<Redirect>(page.props.redirects, 'redirect');
+  const [redirects] = useRealtime<Redirect>(page.props.redirects, 'redirect', { site_id: page.props.site.id });
 
   return (
     <ServerLayout>

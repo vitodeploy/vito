@@ -24,7 +24,11 @@ export default function WorkerIndex() {
   }>();
   const dialog = useDialog();
 
-  const [workers] = useRealtime<Worker>(page.props.workers, 'worker');
+  const [workers] = useRealtime<Worker>(
+    page.props.workers,
+    'worker',
+    page.props.site ? { site_id: page.props.site.id } : { server_id: page.props.server.id },
+  );
 
   return (
     <ServerLayout>

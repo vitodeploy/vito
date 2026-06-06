@@ -18,10 +18,13 @@ export default function ServerLogs() {
     title: string;
     server: Server;
     logs: PaginatedData<ServerLog>;
-    remote: boolean;
+    remote?: boolean;
   }>();
 
-  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
+  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log', {
+    server_id: page.props.server.id,
+    is_remote: !!page.props.remote,
+  });
 
   return (
     <ServerLayout>

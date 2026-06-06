@@ -21,7 +21,7 @@ type Page = {
 
 export default function Files() {
   const page = usePage<Page>();
-  const [files] = useRealtime<BackupFile>(page.props.files, 'backup-file');
+  const [files] = useRealtime<BackupFile>(page.props.files, 'backup-file', { backup_id: page.props.backup.id });
 
   const runBackupForm = useForm();
   const runBackup = () => {
