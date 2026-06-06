@@ -58,6 +58,8 @@ su - "vito" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
 
 # upgrade
 apt clean
+# Remove any stale ondrej/php source from a previous run (re-added later only if supported).
+rm -f /etc/apt/sources.list.d/*ondrej*php* 2>/dev/null || true
 apt update
 apt upgrade -y
 apt autoremove -y
@@ -106,16 +108,33 @@ curl -fsSL https://deb.nodesource.com/setup_${V_NODE_VERSION} | sudo -E bash -
 apt install -y nodejs
 
 # php
-export V_PHP_VERSION="8.4"
-add-apt-repository ppa:ondrej/php -y
-apt update
-apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
+. /etc/os-release
+export V_DISTRO_CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME}}"
+
+# Prefer the ondrej/php PPA (consistent PHP 8.4 across releases). Brand-new Ubuntu
+# releases may not be published there yet, so fall back to the distribution's own PHP
+# (e.g. Ubuntu 26.04 ships PHP 8.5, which Vito also supports).
+if curl -fsSL "https://ppa.launchpadcontent.net/ondrej/php/ubuntu/dists/${V_DISTRO_CODENAME}/Release" -o /dev/null; then
+  export V_PHP_VERSION="8.4"
+  add-apt-repository ppa:ondrej/php -y
+  apt update
+else
+  echo "ondrej/php has no packages for '${V_DISTRO_CODENAME}'; using the distribution's PHP."
+  apt update
+  export V_PHP_VERSION=$(apt-cache search --names-only '^php[0-9]+\.[0-9]+-fpm$' | grep -oE '^php[0-9]+\.[0-9]+-fpm' | grep -oE '[0-9]+\.[0-9]+' | sort -V | tail -n 1)
+fi
+
+if [[ -z "${V_PHP_VERSION}" ]]; then
+  echo "Error: could not determine a PHP version to install for '${V_DISTRO_CODENAME}'." && exit 1
+fi
+
+echo "Installing PHP ${V_PHP_VERSION}..."
+apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
 if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
   echo 'Error installing PHP' && exit 1
 fi
 service php${V_PHP_VERSION}-fpm enable
 service php${V_PHP_VERSION}-fpm start
-apt install -y php${V_PHP_VERSION}-ssh2
 service php${V_PHP_VERSION}-fpm restart
 sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
