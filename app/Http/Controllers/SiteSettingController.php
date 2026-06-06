@@ -152,7 +152,7 @@ class SiteSettingController extends Controller
 
         return response()->json([
             'variables' => EnvParser::maskSecrets(
-                $type->bootstrapWorker()?->environment ?? $site->worker_environment ?? []
+                $type->bootstrapWorker()->environment ?? $site->worker_environment ?? []
             ),
         ]);
     }
