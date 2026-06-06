@@ -132,7 +132,9 @@ export default function AppWithDeployment() {
 
         {site.is_proxied_site_type && (
           <>
-            <ProxiedAppCard site={site} initialWorker={page.props.worker} />
+            <div className="pb-3">
+              <ProxiedAppCard site={site} initialWorker={page.props.worker} />
+            </div>
             <Heading title="Deployments" description="History of past deployments. The active release is what's currently serving traffic." />
           </>
         )}
