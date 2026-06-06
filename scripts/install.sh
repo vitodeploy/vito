@@ -121,7 +121,8 @@ if curl -fsSL "https://ppa.launchpadcontent.net/ondrej/php/ubuntu/dists/${V_DIST
 else
   echo "ondrej/php has no packages for '${V_DISTRO_CODENAME}'; using the distribution's PHP."
   apt update
-  export V_PHP_VERSION=$(apt-cache search --names-only '^php[0-9]+\.[0-9]+-fpm$' | grep -oE '^php[0-9]+\.[0-9]+-fpm' | grep -oE '[0-9]+\.[0-9]+' | sort -V | tail -n 1)
+  V_PHP_VERSION=$(apt-cache search --names-only '^php[0-9]+\.[0-9]+-fpm$' | grep -oE '^php[0-9]+\.[0-9]+-fpm' | grep -oE '[0-9]+\.[0-9]+' | sort -V | tail -n 1)
+  export V_PHP_VERSION
 fi
 
 if [[ -z "${V_PHP_VERSION}" ]]; then
@@ -133,7 +134,7 @@ apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-m
 if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
   echo 'Error installing PHP' && exit 1
 fi
-service php${V_PHP_VERSION}-fpm enable
+systemctl enable php${V_PHP_VERSION}-fpm
 service php${V_PHP_VERSION}-fpm start
 service php${V_PHP_VERSION}-fpm restart
 sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
