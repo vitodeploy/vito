@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Site;
+use App\Services\ProcessManager\Supervisor;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -52,10 +53,10 @@ class AbstractProxiedSiteTypeTest extends TestCase
             'autoRestart' => 'true',
             'numprocs' => '1',
             'logFile' => '/home/testuser/.logs/workers/1.log',
-            'environment' => [
+            'environment' => Supervisor::formatEnvironment([
                 'PATH' => '/home/testuser/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin',
                 'NODE_ENV' => 'production',
-            ],
+            ]),
         ])->render();
 
         $this->assertStringContainsString('[program:1]', $rendered);
@@ -74,11 +75,29 @@ class AbstractProxiedSiteTypeTest extends TestCase
             'autoRestart' => 'true',
             'numprocs' => '1',
             'logFile' => '/home/testuser/.logs/workers/1.log',
-            'environment' => null,
+            'environment' => Supervisor::formatEnvironment([]),
         ])->render();
 
         $this->assertStringContainsString('[program:1]', $rendered);
         $this->assertStringContainsString('command=php artisan queue:work', $rendered);
         $this->assertStringNotContainsString('environment=', $rendered);
+    }
+
+    public function test_format_environment_escapes_unsafe_values(): void
+    {
+        $formatted = Supervisor::formatEnvironment([
+            'PERCENT' => 'a%b',
+            'QUOTED' => 'a"b',
+            'MULTILINE' => "a\r\nb",
+            '1INVALID' => 'dropped',
+            'NODE_ENV' => 'production',
+        ]);
+
+        $this->assertSame('PERCENT="a%%b",QUOTED="ab",MULTILINE="ab",NODE_ENV="production"', $formatted);
+    }
+
+    public function test_format_environment_returns_empty_string_for_empty_map(): void
+    {
+        $this->assertSame('', Supervisor::formatEnvironment([]));
     }
 }

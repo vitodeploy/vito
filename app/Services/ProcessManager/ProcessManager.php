@@ -26,5 +26,10 @@ interface ProcessManager extends ServiceInterface
 
     public function restartAll(?int $siteId = null): void;
 
+    /**
+     * @return array<int, array<string, array{state: string, description: string}>>
+     */
+    public function statuses(): array;
+
     public function getLogs(string $user, string $logPath): string;
 }

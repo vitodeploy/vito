@@ -14,18 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useInputFocus } from '@/stores/useInputFocus';
 import { EnvVariable } from '@/types/env';
 import EnvVariableRow from './env-variable-row';
-
-function generateUniqueKey(existingKeys: string[]): string {
-  let counter = 1;
-  let newKey = 'NEW_VARIABLE';
-
-  while (existingKeys.includes(newKey)) {
-    newKey = `NEW_VARIABLE_${counter}`;
-    counter++;
-  }
-
-  return newKey;
-}
+import { generateUniqueKey } from '@/lib/env';
 
 export default function Env({ site, children }: { site: Site; children: ReactNode }) {
   const setFocused = useInputFocus((state) => state.setFocused);

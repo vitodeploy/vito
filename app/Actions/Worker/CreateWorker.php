@@ -37,7 +37,9 @@ class CreateWorker
             'auto_start' => $input['auto_start'] ? 1 : 0,
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
-            'environment' => $input['environment'] ?? null,
+            'environment' => isset($input['environment'])
+                ? UpdateWorkerEnvironment::processVariables($input['environment'], null)
+                : null,
             'status' => WorkerStatus::CREATING,
         ]);
         $worker->save();
@@ -83,6 +85,13 @@ class CreateWorker
                 'numeric',
                 'min:1',
             ],
+            'environment' => [
+                'sometimes',
+                'nullable',
+                'array',
+                'max:100',
+            ],
+            ...UpdateWorkerEnvironment::nestedRules('environment'),
         ];
 
         // Add site_id validation if provided in input

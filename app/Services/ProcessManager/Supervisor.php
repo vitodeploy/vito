@@ -3,6 +3,7 @@
 namespace App\Services\ProcessManager;
 
 use App\DTOs\ServiceLog;
+use App\Enums\WorkerStatus;
 use App\Exceptions\SSHError;
 use App\Models\Worker;
 use App\Services\HasLogs;
@@ -54,6 +55,21 @@ class Supervisor extends AbstractProcessManager implements HasLogs
     }
 
     /**
+     * @param  array<string, string>  $environment
+     */
+    public static function formatEnvironment(array $environment): string
+    {
+        return collect($environment)
+            ->filter(fn (string $value, string $key): bool => preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $key) === 1)
+            ->map(function (string $value, string $key): string {
+                $sanitized = str_replace(["\r", "\n", '"'], '', $value);
+
+                return $key.'="'.str_replace('%', '%%', $sanitized).'"';
+            })
+            ->implode(',');
+    }
+
+    /**
      * @throws SSHError
      */
     public function writeConfig(Worker $worker): void
@@ -69,7 +85,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
                 'autoRestart' => var_export($worker->auto_restart, true),
                 'numprocs' => (string) $worker->numprocs,
                 'logFile' => $worker->getLogFile(),
-                'environment' => $worker->effectiveEnvironment(),
+                'environment' => self::formatEnvironment($worker->effectiveEnvironment()),
             ]),
             'root'
         );
@@ -178,6 +194,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         if ($siteId !== null) {
             $ids = $this->service->server->workers()
                 ->where('site_id', $siteId)
+                ->whereNotIn('status', [WorkerStatus::CREATING, WorkerStatus::DELETING])
                 ->pluck('id')
                 ->all();
 
@@ -192,6 +209,42 @@ class Supervisor extends AbstractProcessManager implements HasLogs
             view('ssh.services.process-manager.supervisor.restart-all-workers'),
             'restart-all-workers'
         );
+    }
+
+    /**
+     * @return array<int, array<string, array{state: string, description: string}>>
+     *
+     * @throws Throwable
+     */
+    public function statuses(): array
+    {
+        $output = $this->service->server->ssh()->exec(
+            view('ssh.services.process-manager.supervisor.worker-statuses'),
+            'worker-statuses'
+        );
+
+        $statuses = [];
+
+        foreach (explode("\n", $output) as $line) {
+            $parts = preg_split('/\s+/', trim($line), 3) ?: [];
+
+            if (count($parts) < 2) {
+                continue;
+            }
+
+            $group = explode(':', $parts[0], 2)[0];
+
+            if (! ctype_digit($group)) {
+                continue;
+            }
+
+            $statuses[(int) $group][$parts[0]] = [
+                'state' => strtoupper($parts[1]),
+                'description' => $parts[2] ?? '',
+            ];
+        }
+
+        return $statuses;
     }
 
     /**

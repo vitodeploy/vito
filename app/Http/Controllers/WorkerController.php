@@ -7,6 +7,11 @@ use App\Actions\Worker\DeleteWorker;
 use App\Actions\Worker\EditWorker;
 use App\Actions\Worker\GetWorkerLogs;
 use App\Actions\Worker\ManageWorker;
+use App\Actions\Worker\RestartAllWorkers;
+use App\Actions\Worker\SyncWorkerStatuses;
+use App\Actions\Worker\UpdateWorkerEnvironment;
+use App\Actions\Worker\WorkerEnvironmentUpdateResult;
+use App\Helpers\EnvParser;
 use App\Http\Resources\WorkerResource;
 use App\Models\Server;
 use App\Models\Site;
@@ -19,9 +24,11 @@ use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
+use Spatie\RouteAttributes\Attributes\WhereNumber;
 
 #[Prefix('servers/{server}')]
 #[Middleware(['auth', 'has-project'])]
@@ -59,7 +66,34 @@ class WorkerController extends Controller
         ]);
     }
 
+    #[Post('/workers/resync/{site?}', name: 'workers.resync')]
+    #[WhereNumber('site')]
+    public function resync(Server $server, ?Site $site = null): RedirectResponse
+    {
+        $this->authorize('manage', [Worker::class, $server, $site]);
+
+        $count = app(SyncWorkerStatuses::class)->sync($server, $site);
+
+        return back()
+            ->with('success', $count === 0
+                ? 'Worker statuses are already up to date.'
+                : "Updated statuses of {$count} worker(s).");
+    }
+
+    #[Post('/workers/restart-all/{site?}', name: 'workers.restart-all')]
+    #[WhereNumber('site')]
+    public function restartAll(Server $server, ?Site $site = null): RedirectResponse
+    {
+        $this->authorize('manage', [Worker::class, $server, $site]);
+
+        app(RestartAllWorkers::class)->restart($server, $site);
+
+        return back()
+            ->with('info', 'Workers are being restarted.');
+    }
+
     #[Post('/workers/{site?}', name: 'workers.store')]
+    #[WhereNumber('site')]
     public function store(Request $request, Server $server, ?Site $site = null): RedirectResponse
     {
         $this->authorize('create', [Worker::class, $server, $site]);
@@ -112,6 +146,35 @@ class WorkerController extends Controller
 
         return back()
             ->with('info', 'Worker is being restarted.');
+    }
+
+    #[Get('/workers/{worker}/env', name: 'workers.env')]
+    public function env(Server $server, Worker $worker): JsonResponse
+    {
+        $this->authorize('view', [$worker, $server]);
+
+        return response()->json([
+            'variables' => EnvParser::maskSecrets($worker->environment ?? []),
+        ]);
+    }
+
+    #[Patch('/workers/{worker}/env', name: 'workers.update-env')]
+    public function updateEnv(Request $request, Server $server, Worker $worker): RedirectResponse
+    {
+        $this->authorize('update', [$worker, $server]);
+
+        $result = app(UpdateWorkerEnvironment::class)->update($worker, $request->input());
+
+        return match ($result) {
+            WorkerEnvironmentUpdateResult::PendingRestart => back()->with(
+                'warning',
+                'Environment updated. The worker is still running with the previous variables — restart it or deploy to apply.',
+            ),
+            default => back()->with(
+                'info',
+                'Environment updated. The worker is restarting to apply the change.',
+            ),
+        };
     }
 
     #[Get('/workers/{worker}/logs', name: 'workers.logs')]

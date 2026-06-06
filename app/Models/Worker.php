@@ -19,7 +19,7 @@ use Throwable;
  * @property bool $auto_start
  * @property bool $auto_restart
  * @property int $numprocs
- * @property ?array<string, string> $environment
+ * @property ?array<int, array{key: string, value: string, is_secret: bool}> $environment
  * @property int $redirect_stderr
  * @property string $stdout_logfile
  * @property WorkerStatus $status
@@ -54,7 +54,7 @@ class Worker extends AbstractModel
         'auto_start' => 'boolean',
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
-        'environment' => 'array',
+        'environment' => 'encrypted:array',
         'redirect_stderr' => 'boolean',
         'status' => WorkerStatus::class,
     ];
@@ -121,9 +121,23 @@ class Worker extends AbstractModel
     /**
      * @return array<string, string>
      */
+    public function environmentMap(): array
+    {
+        $map = [];
+
+        foreach ($this->environment ?? [] as $variable) {
+            $map[$variable['key']] = $variable['value'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array<string, string>
+     */
     public function effectiveEnvironment(): array
     {
-        $base = $this->environment ?? [];
+        $base = $this->environmentMap();
 
         if ($this->site_id && $this->site) {
             return array_merge($base, SiteShellEnvironment::collect($this->site));

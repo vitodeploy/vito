@@ -9,6 +9,7 @@ use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdatePort;
 use App\Actions\Site\UpdateSiteStats;
+use App\Actions\Site\UpdateSiteWorkerEnvironment;
 use App\Actions\Site\UpdateSourceControl;
 use App\Actions\Site\UpdateStartCommand;
 use App\Actions\Site\UpdateVhost;
@@ -18,10 +19,13 @@ use App\Actions\Site\UpdateWebDirectory;
 use App\Actions\Site\WorkerStartCommandUpdateResult;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
+use App\Actions\Worker\WorkerEnvironmentUpdateResult;
 use App\Exceptions\SSHError;
+use App\Helpers\EnvParser;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Server;
 use App\Models\Site;
+use App\SiteTypes\AbstractProxiedSiteType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -132,6 +136,53 @@ class SiteSettingController extends Controller
             WorkerStartCommandUpdateResult::Restarting => back()->with(
                 'info',
                 'Start command updated. The worker is restarting to apply the change.',
+            ),
+        };
+    }
+
+    #[Get('/worker-env', name: 'site-settings.worker-env')]
+    public function workerEnv(Server $server, Site $site): JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $type = $site->type();
+        if (! $type instanceof AbstractProxiedSiteType) {
+            abort(404);
+        }
+
+        return response()->json([
+            'variables' => EnvParser::maskSecrets(
+                $type->bootstrapWorker()?->environment ?? $site->worker_environment ?? []
+            ),
+        ]);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/worker-env', name: 'site-settings.update-worker-env')]
+    public function updateWorkerEnv(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        if (! $site->type() instanceof AbstractProxiedSiteType) {
+            abort(404);
+        }
+
+        $result = app(UpdateSiteWorkerEnvironment::class)->update($site, $request->input());
+
+        return match ($result) {
+            WorkerEnvironmentUpdateResult::PreFirstDeploy => back()->with(
+                'info',
+                'Environment saved. It will be applied when the application worker is created on the first deploy.',
+            ),
+            WorkerEnvironmentUpdateResult::PendingRestart => back()->with(
+                'warning',
+                'Environment updated. The worker is still running with the previous variables — restart it or deploy to apply.',
+            ),
+            WorkerEnvironmentUpdateResult::Restarting => back()->with(
+                'info',
+                'Environment updated. The worker is restarting to apply the change.',
             ),
         };
     }

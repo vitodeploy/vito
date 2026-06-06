@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
 import CopyableBadge from '@/components/copyable-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { WorkerAction, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
+import { WorkerAction, WorkerEnvironment, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
 import ErrorIndicator from '@/components/error-indicator';
 import { useDialog } from '@/hooks/use-dialog';
 
@@ -71,6 +71,7 @@ function Actions({ worker }: { worker: Worker }) {
           <WorkerAction type="stop" worker={worker} />
           <WorkerAction type="restart" worker={worker} />
           <WorkerLogs worker={worker} />
+          <WorkerEnvironment worker={worker} />
           <DropdownMenuSeparator />
           {locked ? <BootstrapLockedItem label="Delete" destructive /> : <Delete worker={worker} />}
         </DropdownMenuContent>

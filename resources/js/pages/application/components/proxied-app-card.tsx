@@ -3,17 +3,19 @@ import { router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreVerticalIcon } from 'lucide-react';
 import Port from '@/pages/site-settings/components/port';
 import StartCommand from '@/pages/site-settings/components/start-command';
-import { WorkerAction, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
+import { WorkerAction, WorkerEnvironment, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
 import ErrorIndicator from '@/components/error-indicator';
 import { useRealtimeRecord, useSocketListener, type SocketEventData } from '@/hooks/use-socket-events';
+import { useDialog } from '@/hooks/use-dialog';
 import { Site } from '@/types/site';
 import { Worker } from '@/types/worker';
 
 export default function ProxiedAppCard({ site, initialWorker }: { site: Site; initialWorker: Worker | null }) {
+  const dialog = useDialog();
   const worker = useRealtimeRecord<Worker>(initialWorker, 'worker');
 
   useSocketListener(
@@ -63,22 +65,29 @@ export default function ProxiedAppCard({ site, initialWorker }: { site: Site; in
             <Badge variant={worker?.status_color ?? 'gray'} className="text-xs">
               {worker?.status ?? 'pending_deploy'}
             </Badge>
-            {worker && (
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-6 w-6 p-0">
-                    <span className="sr-only">Open worker menu</span>
-                    <MoreVerticalIcon className="size-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <WorkerAction type="start" worker={worker} />
-                  <WorkerAction type="stop" worker={worker} />
-                  <WorkerAction type="restart" worker={worker} />
-                  <WorkerLogs worker={worker} />
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-6 w-6 p-0">
+                  <span className="sr-only">Open worker menu</span>
+                  <MoreVerticalIcon className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {worker ? (
+                  <>
+                    <WorkerAction type="start" worker={worker} />
+                    <WorkerAction type="stop" worker={worker} />
+                    <WorkerAction type="restart" worker={worker} />
+                    <WorkerLogs worker={worker} />
+                    <WorkerEnvironment worker={worker} />
+                  </>
+                ) : (
+                  <DropdownMenuItem onSelect={() => dialog.workerEnv.open({ serverId: site.server_id, siteId: site.id })}>
+                    Environment
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardContent>

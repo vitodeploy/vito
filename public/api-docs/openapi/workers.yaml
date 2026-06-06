@@ -135,6 +135,33 @@ paths:
                   description: Number of processes
                   default: 1
                   example: 1
+                environment:
+                  type: array
+                  nullable: true
+                  maxItems: 100
+                  description: Environment variables passed to the worker process. Not returned in responses.
+                  items:
+                    type: object
+                    required:
+                      - key
+                      - value
+                      - is_secret
+                    properties:
+                      key:
+                        type: string
+                        maxLength: 255
+                        pattern: '^[A-Za-z_][A-Za-z0-9_]*$'
+                        description: Variable name. Must be unique within the list.
+                        example: 'APP_ENV'
+                      value:
+                        type: string
+                        maxLength: 10000
+                        description: Variable value. Must not contain control characters, newlines, or double quotes.
+                        example: 'production'
+                      is_secret:
+                        type: boolean
+                        description: Whether the value should be masked in the UI
+                        example: false
             example:
               name: 'queue-worker'
               command: 'php artisan queue:work'
@@ -174,6 +201,104 @@ paths:
             application/json:
               schema:
                 $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/workers/resync:
+    post:
+      summary: Resync worker statuses
+      description: Fetch the live process statuses from the process manager and update the workers in Vito. Append /{site} to scope the resync to one site's workers.
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Worker statuses synced
+          content:
+            application/json:
+              example:
+                synced: 3
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/workers/restart-all:
+    post:
+      summary: Restart all workers
+      description: Restart all workers on the server and resync their statuses afterwards. Append /{site} to scope the restart to one site's workers.
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '202':
+          description: Workers are being restarted
+          content:
+            application/json:
+              example:
+                message: 'Workers are being restarted.'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/servers/{server}/workers/{worker}:
     get:

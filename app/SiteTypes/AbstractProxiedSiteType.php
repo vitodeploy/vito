@@ -137,6 +137,7 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
                 'auto_start' => true,
                 'auto_restart' => true,
                 'numprocs' => 1,
+                'environment' => $this->site->worker_environment ?: null,
             ],
             $this->site,
         );

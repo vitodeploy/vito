@@ -35,7 +35,14 @@ class WorkerFactory extends Factory
     public function withEnvironment(array $environment): static
     {
         return $this->state(fn (array $attributes) => [
-            'environment' => $environment,
+            'environment' => collect($environment)
+                ->map(fn (string $value, string $key): array => [
+                    'key' => $key,
+                    'value' => $value,
+                    'is_secret' => false,
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 }

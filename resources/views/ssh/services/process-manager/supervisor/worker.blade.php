@@ -8,8 +8,9 @@ autostart={{ $autoStart }}
 autorestart={{ $autoRestart }}
 user={{ $user }}
 numprocs={{ $numprocs }}
+{{-- $environment must be the output of Supervisor::formatEnvironment() --}}
 @if (!empty($environment))
-environment={!! collect($environment)->map(fn ($value, $key) => $key.'="'.$value.'"')->implode(',') !!}
+environment={!! $environment !!}
 @endif
 redirect_stderr=true
 stdout_logfile={{ $logFile }}

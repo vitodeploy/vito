@@ -11,6 +11,7 @@ use App\Models\Site;
 use App\Models\Worker;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -157,6 +158,88 @@ class SiteSettingsProxiedSiteTest extends TestCase
 
         $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
         $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
+    }
+
+    public function test_worker_env_pre_deploy_returns_masked_site_variables(): void
+    {
+        $this->proxiedSite->worker_environment = [
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+        ];
+        $this->proxiedSite->save();
+
+        $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]))
+            ->assertOk()
+            ->assertJson([
+                'variables' => [
+                    ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+                    ['key' => 'API_KEY', 'value' => '', 'is_secret' => true],
+                ],
+            ]);
+    }
+
+    public function test_update_worker_env_pre_deploy_stores_encrypted_on_site(): void
+    {
+        $fake = SSH::fake();
+
+        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+            'variables' => [
+                ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+            ],
+        ])->assertRedirect()
+            ->assertSessionHas('info');
+
+        $this->proxiedSite->refresh();
+        $this->assertEquals([
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ], $this->proxiedSite->worker_environment);
+
+        $raw = (string) DB::table('sites')->where('id', $this->proxiedSite->id)->value('worker_environment');
+        $this->assertStringNotContainsString('production', $raw);
+
+        $fake->assertNotExecutedContains('supervisor');
+    }
+
+    public function test_update_worker_env_with_existing_worker_delegates_to_worker(): void
+    {
+        $fake = SSH::fake();
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->proxiedSite->id,
+            'user' => 'isolated-foo',
+            'name' => 'app',
+            'command' => 'npm start',
+            'status' => WorkerStatus::RUNNING,
+        ]);
+        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+            'variables' => [
+                ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+            ],
+            'restart' => true,
+        ])->assertRedirect()
+            ->assertSessionHas('info');
+
+        $worker->refresh();
+        $this->assertEquals([
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ], $worker->environment);
+        $this->assertNull($this->proxiedSite->refresh()->worker_environment);
+
+        $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+        $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
+    }
+
+    public function test_worker_env_endpoints_404_for_non_proxied_site(): void
+    {
+        $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->site]))
+            ->assertNotFound();
+
+        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->site]), [
+            'variables' => [],
+        ])->assertNotFound();
     }
 
     public function test_needs_first_deploy_warning_present_until_finished_deployment(): void

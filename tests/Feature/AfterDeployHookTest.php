@@ -55,6 +55,32 @@ class AfterDeployHookTest extends TestCase
         $this->assertSame($worker->id, $this->proxiedSite->type_data['bootstrap_worker_id']);
     }
 
+    public function test_after_deploy_copies_site_worker_environment_to_worker(): void
+    {
+        SSH::fake();
+
+        $this->proxiedSite->worker_environment = [
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+        ];
+        $this->proxiedSite->save();
+
+        $type = $this->proxiedSite->type();
+        $type->afterDeploy(Deployment::factory()->create([
+            'site_id' => $this->proxiedSite->id,
+            'status' => DeploymentStatus::DEPLOYING,
+        ]));
+
+        $worker = $this->proxiedSite->workers()->where('name', 'app')->first();
+        $this->assertNotNull($worker);
+        $this->assertEquals([
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+        ], $worker->environment);
+        $this->assertSame('production', $worker->effectiveEnvironment()['NODE_ENV']);
+        $this->assertSame('secret-value', $worker->effectiveEnvironment()['API_KEY']);
+    }
+
     public function test_after_deploy_is_idempotent_when_worker_already_recorded(): void
     {
         SSH::fake();

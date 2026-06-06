@@ -4,6 +4,7 @@ import ConfirmationDialog from './confirmation-dialog';
 import StorageProviderEditDialog from '@/pages/storage-providers/components/edit-dialog';
 import PluginLogsDialog from '@/pages/plugins/components/logs-dialog';
 import WorkerLogsDialog from '@/pages/workers/components/logs-dialog';
+import WorkerEnvDialog from '@/pages/workers/components/env-dialog';
 import CronJobForm from '@/pages/cronjobs/components/form';
 import WorkerForm from '@/pages/workers/components/form';
 import ActivateServerSslDialog from '@/pages/server-ssls/components/activate-dialog';
@@ -50,6 +51,7 @@ export const dialogs = {
   storageProviderEdit: StorageProviderEditDialog,
   pluginLogs: PluginLogsDialog,
   workerLogs: WorkerLogsDialog,
+  workerEnv: WorkerEnvDialog,
   cronjobForm: CronJobForm,
   workerForm: WorkerForm,
   activateServerSsl: ActivateServerSslDialog,
