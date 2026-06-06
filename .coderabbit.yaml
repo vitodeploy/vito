@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+language: en-GB
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+  finishing_touches:
+    docstrings:
+      enabled: false
+  path_filters:
+    - "!public/build/**"
+    - "!vendor/**"
+    - "!node_modules/**"
+    - "!composer.lock"
+    - "!package-lock.json"
+  path_instructions:
+    - path: "**/*.php"
+      instructions: |
+        PHP 8.4 / Laravel 12 codebase. Enforce:
+        - Curly braces on all control structures, constructor property promotion, explicit return types on every method.
+        - PHPDoc blocks for documentation; no inline `//` comments inside function/method bodies (migrations are the exception). Use array shapes in PHPDoc where appropriate. `@return` and `@throws` annotations must reflect reality — misleading annotations hide bugs.
+        - Prefer `Model::query()` over the `DB::` facade. Eager load relationships to prevent N+1 queries.
+        - `config()` only — never `env()` outside config files.
+        - All business logic lives in Action classes under `app/Actions/`; controllers must be thin (receive request → call Action → return response).
+        - Validation happens inside Actions via `Validator::make()` — no FormRequest classes, no controller validation. Invalid input must return 422 (validation exception), never 400.
+        - Authorization via Policies in `app/Policies/` using the `HasRolePolicies` trait (`hasReadAccess()`, `hasWriteAccess()`, `hasOwnerAccess()`) — flag any inline permission checks.
+        - Let provider/service errors bubble up — flag silently-swallowed exceptions.
+        - Wrap multi-step mutations in `DB::transaction()`, especially delete-then-recreate flows.
+        - Null-check nullable relationships — `nullOnDelete()` foreign keys can be null at runtime.
+
+    - path: "app/Models/**"
+      instructions: |
+        - Models must extend `App\Models\AbstractModel`, never `Illuminate\Database\Eloquent\Model` directly.
+        - Cast enum properties to their enum class; use `'encrypted:json'` cast for credentials/secrets.
+        - Use PHPDoc `@property` annotations for attributes and relationship collections.
+
+    - path: "app/Enums/**"
+      instructions: |
+        Enums must implement `App\Contracts\VitoEnum` — requires `getColor(): string` (UI color like 'success', 'danger', 'warning', 'gray') and `getText(): string` (typically `$this->value`).
+
+    - path: "app/Http/Controllers/**"
+      instructions: |
+        - Routes defined via Spatie route attributes (`#[Get]`, `#[Post]`, `#[Prefix]`, `#[Middleware]`) and every route must be named, e.g. `#[Get('/', name: 'servers.index')]`.
+        - Call `$this->authorize()` for policy checks. Every endpoint must be protected by appropriate middleware AND a Policy.
+        - Return `Inertia::render()` for web, `JsonResource` for API. No business logic or validation in controllers.
+
+    - path: "app/Http/Resources/**"
+      instructions: |
+        - Explicitly whitelist fields — never `parent::toArray()` or raw model attributes.
+        - Always call `->getText()` / `->getColor()` on enum properties — never return raw enum values.
+        - Never expose internal filesystem paths (CSR/private key paths, etc.) or secrets.
+
+    - path: "app/Actions/**"
+      instructions: |
+        - Method names match the operation: `create()`, `update()`, `handle()`, `run()`, `install()`, etc.
+        - Validate input via `Validator::make()`; extract to a private `validate()` method when rules are complex. Validation rules must match the actual data contract (conditional rules where a field only applies in some cases).
+        - Keep Actions focused — compose multiple Actions rather than building monoliths.
+        - Any Action that mutates DB/runtime state reflected in `GetBootstrap::configs()` must call `GetBootstrap::forgetVersion()` after the mutation, otherwise clients keep stale cached data forever.
+
+    - path: "app/Jobs/**"
+      instructions: |
+        - Jobs implement `ShouldQueue` with BOTH `Queueable` and `UniqueQueue` traits.
+        - Wrap work in `$this->run($key, callable)` (UniqueQueue cache-lock pattern).
+        - Implement `failed(Exception $e)` for status updates.
+        - Prefer queued jobs with retry/backoff over long-running jobs that poll or sleep.
+
+    - path: "database/migrations/**"
+      instructions: |
+        - Schema changes and data transforms only. Never dispatch jobs, run SSH commands, make HTTP calls, or broadcast events from migrations.
+        - Related schema changes for one feature belong in a single migration file.
+        - Inline comments are allowed in migrations.
+
+    - path: "resources/js/**/*.{ts,tsx}"
+      instructions: |
+        React 19 + Inertia v2 + TypeScript frontend. Enforce:
+        - Functional components and hooks. Pages in `resources/js/pages/`, shared components in `resources/js/components/`.
+        - Forms use Inertia's `useForm` helper. Navigation uses `<Link>` or `router.visit()` — never raw `<a>` for internal routes.
+        - Dialogs/modals/sheets use the centralized registry (`resources/js/components/dialogs/registry.ts`) opened via `useDialog()` — `dialog.<key>.open(props)`, or `dialog.confirm.open({...})` for simple confirms. Flag hand-rolled local `open` state with `<DialogTrigger>`, and never a `<Dialog>`/`<DialogTrigger>` nested inside a `DropdownMenuItem` (leaves the dropdown stuck open). Registered dialog components take `open`/`onOpenChange` control props, render `<Dialog>` directly with no `DialogTrigger`, suppress close-autofocus via `onCloseAutoFocus={(e) => e.preventDefault()}`, and call `onOpenChange(false)` in `onSuccess`. Submit buttons use `form="<form-id>" type="submit"` with `e.preventDefault()` in `onSubmit` — not `onClick`.
+        - Dialog props must come from server-authorised sources (Inertia props, API resources) — never URL params or user-controlled input.
+        - Shared catalogue data (provider lists, site types, etc.) comes from `useConfigs()` / `usePublicKeyText()` in `@/stores/bootstrap-store` — NOT `page.props.configs` (does not exist). Keep the `Configs` interface in `resources/js/types/index.d.ts` in sync with backend `GetBootstrap::configs()`.
+        - Hooks: include ALL dependencies in `useEffect`/`useMemo`/`useCallback` arrays (stale closures are a recurring bug). Return cleanup functions for timers/subscriptions, and for effects that push state outward based on `open` in dialogs (unmount happens while open===true).
+        - Dynamic forms: render backend `DynamicField`/`DynamicForm` DTOs by `field.type`; don't hardcode provider-specific fields or force-cast values to string.
+        - Accessibility: `<button>` for clickable elements, not `<span onClick>`; ARIA attributes when semantic HTML isn't enough.
+        - Keep `resources/js/types/*.d.ts` in sync with backend API Resources. Enum status fields arrive as `{ status: string, status_color: string }`.
+        - Handle promise rejections from browser APIs (e.g. `navigator.clipboard.writeText`) and show error feedback.
+
+    - path: "resources/**/*.css"
+      instructions: |
+        Tailwind v4: `@import "tailwindcss"` and `@theme` for configuration. Prefer `gap-*` utilities over margins for sibling spacing. Use Shadcn semantic tokens (`text-foreground`, `bg-background`, `text-muted-foreground`) — avoid hard-coded colors and custom CSS.
+
+    - path: "resources/views/ssh/**"
+      instructions: |
+        SSH scripts are Blade templates executed on remote servers. Validate/sanitize any user input that lands in a command. When running as a different user, `cd`/`sudo` must run as the target user, not the login user.
+
+    - path: "tests/**"
+      instructions: |
+        - PHPUnit 11 only. `RefreshDatabase` trait, factories, `assertDatabaseHas()` for DB assertions.
+        - `TestCase` provides `$this->user`, `$this->server`, `$this->site` pre-configured.
+        - Use `SSH::fake()` for SSH and `Http::fake()` for HTTP — never real connections.
+        - Don't over-test trivial logic that PHP handles natively. Flag removed tests.
+
+    - path: "public/api-docs/openapi/**"
+      instructions: |
+        Keep OpenAPI schemas in sync with API Resources and backend enums. Don't document fields the API intentionally omits from responses.
+
+    - path: "{app,routes}/**/*.php"
+      instructions: |
+        Security review focus:
+        - All SSH must go through `app/Helpers/SSH.php` / the `SSH` facade — flag any `exec()`, `shell_exec()`, `system()`, `passthru()`, or `Symfony\Component\Process\Process` usage.
+        - Never log secrets, tokens, or credentials at any log level — redact or hash if debugging.
+        - When editing provider credentials, merge updates server-side — never round-trip existing secrets through the frontend.
+        - API keys are project-scoped — enforce the project boundary in queries and policies.
+        - No test-only routes or UI actions in production — env-gate or remove.
+        - Broadcasting uses `SocketEvent::dispatch()` with a `SocketEventDTO` (`projectId`, `type`, `data` typically an API Resource).
+
+chat:
+  auto_reply: true
