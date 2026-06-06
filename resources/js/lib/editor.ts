@@ -201,9 +201,17 @@ export function registerBashLanguage(monaco: monacoType): void {
         [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
         [/\$[a-zA-Z_]\w*/, 'variable'],
         [/\$\{[^}]+}/, 'variable'],
-        [/\b(if|then|else|fi|for|while|in|do|done|case|esac|function|select|until|elif|time)\b/, 'keyword'],
-        [/\b(echo|read|cd|pwd|exit|kill|exec|eval|set|unset|export|source|trap|shift|alias|type|ulimit)\b/, 'type.identifier'],
-        [/\b\d+\b/, 'number'],
+        [
+          /[a-zA-Z_]\w*/,
+          {
+            cases: {
+              '@keywords': 'keyword',
+              '@builtins': 'type.identifier',
+              '@default': '',
+            },
+          },
+        ],
+        [/\d+/, 'number'],
         [/==|=~|!=|<=|>=|<<|>>|[<>;&|]/, 'operator'],
       ],
       string_double: [

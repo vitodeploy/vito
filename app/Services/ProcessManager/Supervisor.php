@@ -170,12 +170,27 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         );
     }
 
+    /**
+     * @throws Throwable
+     */
     public function restartAll(?int $siteId = null): void
     {
+        if ($siteId !== null) {
+            $ids = $this->service->server->workers()
+                ->where('site_id', $siteId)
+                ->pluck('id')
+                ->all();
+
+            if ($ids !== []) {
+                $this->restartMany($ids, $siteId);
+            }
+
+            return;
+        }
+
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.restart-all-workers'),
-            'restart-all-workers',
-            $siteId
+            'restart-all-workers'
         );
     }
 

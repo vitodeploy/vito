@@ -9,6 +9,7 @@ use App\Jobs\Worker\ManageJob;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
+use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
@@ -671,6 +672,55 @@ class WorkersTest extends TestCase
             'id' => $worker->id,
             'status' => WorkerStatus::RUNNING,
         ]);
+    }
+
+    public function test_restart_all_with_site_id_restarts_only_site_workers(): void
+    {
+        SSH::fake();
+
+        $siteWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+        ]);
+        $serverWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var ProcessManager $handler */
+        $handler = $this->server->processManager()->handler();
+        $handler->restartAll($this->site->id);
+
+        SSH::assertExecutedContains("supervisorctl update {$siteWorker->id};");
+        SSH::assertExecutedContains("restart {$siteWorker->id}:*");
+        SSH::assertNotExecutedContains("restart {$serverWorker->id}:*");
+        SSH::assertNotExecutedContains('supervisorctl restart all');
+    }
+
+    public function test_restart_all_without_site_id_updates_config_and_restarts_all(): void
+    {
+        SSH::fake();
+
+        /** @var ProcessManager $handler */
+        $handler = $this->server->processManager()->handler();
+        $handler->restartAll();
+
+        SSH::assertExecutedContains('supervisorctl update');
+        SSH::assertExecutedContains('supervisorctl restart all');
+    }
+
+    public function test_restart_all_with_site_id_without_workers_executes_nothing(): void
+    {
+        SSH::fake();
+
+        Worker::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var ProcessManager $handler */
+        $handler = $this->server->processManager()->handler();
+        $handler->restartAll($this->site->id);
+
+        SSH::assertNotExecutedContains('supervisorctl');
     }
 
     public function test_worker_resource_marks_site_bootstrap(): void

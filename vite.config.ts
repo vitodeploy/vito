@@ -22,6 +22,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+      'decimal.js-light': resolve(__dirname, 'node_modules/decimal.js-light/decimal.mjs'),
     },
   },
 });
