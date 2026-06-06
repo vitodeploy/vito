@@ -114,7 +114,7 @@ export default function WorkerEnvDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (choiceMissing) {
+    if (choiceMissing || !query.isSuccess) {
       return;
     }
     form.transform(() => ({
@@ -231,7 +231,7 @@ export default function WorkerEnvDialog({
             <SheetClose asChild>
               <Button variant="outline">Cancel</Button>
             </SheetClose>
-            <Button form="worker-env-form" type="submit" disabled={form.processing || query.isLoading || hasDuplicates || choiceMissing}>
+            <Button form="worker-env-form" type="submit" disabled={form.processing || !query.isSuccess || hasDuplicates || choiceMissing}>
               {form.processing && <LoaderCircleIcon className="animate-spin" />}
               Save
             </Button>

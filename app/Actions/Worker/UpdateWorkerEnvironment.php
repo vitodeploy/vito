@@ -7,6 +7,7 @@ use App\Helpers\EnvParser;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class UpdateWorkerEnvironment
 {
@@ -14,6 +15,7 @@ class UpdateWorkerEnvironment
      * @param  array<string, mixed>  $input
      *
      * @throws SSHError
+     * @throws ValidationException
      */
     public function update(Worker $worker, array $input): WorkerEnvironmentUpdateResult
     {
