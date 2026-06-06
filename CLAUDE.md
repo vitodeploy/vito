@@ -11,7 +11,7 @@
 
 ## Stack
 
-Laravel 12 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 11
+Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 12
 
 ## Laravel Boost MCP Tools
 
