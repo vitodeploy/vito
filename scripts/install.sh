@@ -56,21 +56,16 @@ chown -R vito:vito /home/vito
 chsh -s /bin/bash "vito"
 su - "vito" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
 
-# upgrade
 apt clean
-# Remove any stale ondrej/php source from a previous run (re-added later only if supported).
 rm -f /etc/apt/sources.list.d/*ondrej*php* 2>/dev/null || true
 apt update
 apt upgrade -y
 apt autoremove -y
 
-# requirements
 apt install -y software-properties-common curl zip unzip git gcc
 
-# certbot
 apt install certbot python3-certbot-nginx -y
 
-# nginx
 export V_NGINX_CONFIG="
     user vito;
     worker_processes auto;
@@ -87,7 +82,7 @@ export V_NGINX_CONFIG="
         types_hash_max_size 2048;
         include /etc/nginx/mime.types;
         default_type application/octet-stream;
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_prefer_server_ciphers on;
         access_log /var/log/nginx/access.log;
         error_log /var/log/nginx/error.log;
@@ -102,18 +97,13 @@ if ! echo "${V_NGINX_CONFIG}" | tee /etc/nginx/nginx.conf; then
 fi
 service nginx start
 
-# nodejs
 export V_NODE_VERSION="20.x"
 curl -fsSL https://deb.nodesource.com/setup_${V_NODE_VERSION} | sudo -E bash -
 apt install -y nodejs
 
-# php
 . /etc/os-release
 export V_DISTRO_CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME}}"
 
-# Prefer the ondrej/php PPA (consistent PHP 8.4 across releases). Brand-new Ubuntu
-# releases may not be published there yet, so fall back to the distribution's own PHP
-# (e.g. Ubuntu 26.04 ships PHP 8.5, which Vito also supports).
 if curl -fsSL "https://ppa.launchpadcontent.net/ondrej/php/ubuntu/dists/${V_DISTRO_CODENAME}/Release" -o /dev/null; then
   export V_PHP_VERSION="8.4"
   add-apt-repository ppa:ondrej/php -y
@@ -141,16 +131,13 @@ sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/fpm/ph
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 
-# composer
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
-# redis
 apt install redis-server -y
 service redis enable
 service redis start
 
-# setup website
 export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeploy/vito.git"
 export V_VHOST_CONFIG="
@@ -242,13 +229,10 @@ ssh-keygen -y -f /home/vito/vito/storage/ssh-private.pem > /home/vito/vito/stora
 chown -R vito:vito /home/vito/vito/storage/ssh-private.pem
 chown -R vito:vito /home/vito/vito/storage/ssh-public.key
 
-# optimize
 php artisan optimize
 
-# cleanup
 chown -R vito:vito /home/vito
 
-# setup supervisor
 export V_WORKER_CONFIG="
 [program:worker]
 process_name=%(program_name)s_%(process_num)02d
@@ -268,7 +252,6 @@ mkdir -p /home/vito/.logs/workers
 touch /home/vito/.logs/workers/worker.log
 echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 
-# websocket server
 export V_WEBSOCKET_CONFIG="
 [program:websocket]
 process_name=%(program_name)s
@@ -284,14 +267,11 @@ echo "${V_WEBSOCKET_CONFIG}" | tee /etc/supervisor/conf.d/websocket.conf
 supervisorctl reread
 supervisorctl update
 
-# start worker
 supervisorctl start worker:*
 supervisorctl start websocket
 
-# setup cronjobs
 echo "* * * * * cd /home/vito/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u vito crontab -
 
-# print info
 echo "🎉 Congratulations!"
 echo "✅ You can access Vito at: ${VITO_APP_URL}"
 echo "✅ SSH User: vito"
