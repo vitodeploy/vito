@@ -77,6 +77,11 @@ class GithubAppTest extends TestCase
             'app_id' => 12345,
             'app_slug' => 'vito-test',
         ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://api.github.com/app-manifests/test-code/conversions'
+                && $request->body() === '';
+        });
     }
 
     public function test_manifest_callback_rejects_missing_code(): void

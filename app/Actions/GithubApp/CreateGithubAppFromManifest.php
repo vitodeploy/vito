@@ -5,6 +5,7 @@ namespace App\Actions\GithubApp;
 use App\Actions\Bootstrap\GetBootstrap;
 use App\Models\GithubApp;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class CreateGithubAppFromManifest
@@ -20,12 +21,21 @@ class CreateGithubAppFromManifest
         $response = Http::withHeaders([
             'Accept' => 'application/vnd.github+json',
             'X-GitHub-Api-Version' => '2022-11-28',
-        ])->post("https://api.github.com/app-manifests/{$code}/conversions");
+            'User-Agent' => 'Vito',
+        ])->send('POST', "https://api.github.com/app-manifests/{$code}/conversions");
 
         if (! $response->successful()) {
+            Log::error('GitHub App manifest conversion failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            $message = (string) ($response->json('message') ?? '');
+
             throw ValidationException::withMessages([
-                'github_app' => __('Failed to convert manifest (HTTP :status).', [
+                'github_app' => __('Failed to convert manifest (HTTP :status):status_message.', [
                     'status' => $response->status(),
+                    'status_message' => $message !== '' ? ' '.$message : '',
                 ]),
             ]);
         }
