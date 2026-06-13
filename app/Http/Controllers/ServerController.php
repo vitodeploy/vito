@@ -125,7 +125,13 @@ class ServerController extends Controller
 
         $server->refresh();
 
-        return back()->with('info', "Available updates: {$server->updates} (+{$server->kernel_updates} kernel)");
+        $message = "Available updates: {$server->updates}";
+
+        if ($server->kernel_updates > 0) {
+            $message .= " (plus {$server->kernel_updates} kernel)";
+        }
+
+        return back()->with('info', $message);
     }
 
     #[Post('/{server}/update', name: 'servers.update')]
