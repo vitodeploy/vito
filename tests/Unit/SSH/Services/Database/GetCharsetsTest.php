@@ -108,6 +108,35 @@ class GetCharsetsTest extends TestCase
                 static::$mysqlCharsets,
             ],
             [
+                'mariadb',
+                '11.4',
+                <<<'EOD'
+                Collation	Charset	Id	Default	Compiled	Sortlen
+                big5_chinese_ci	big5	1	Yes	Yes	1
+                big5_bin	big5	84		Yes	1
+                utf8mb4_general_ci	utf8mb4	45		Yes	1
+                utf8mb4_bin	utf8mb4	46		Yes	1
+                uca1400_ai_ci	NULL	NULL	NULL	Yes	8
+                uca1400_ai_cs	NULL	NULL	NULL	Yes	8
+                EOD,
+                [
+                    'big5' => [
+                        'default' => 'big5_chinese_ci',
+                        'list' => [
+                            'big5_chinese_ci',
+                            'big5_bin',
+                        ],
+                    ],
+                    'utf8mb4' => [
+                        'default' => null,
+                        'list' => [
+                            'utf8mb4_general_ci',
+                            'utf8mb4_bin',
+                        ],
+                    ],
+                ],
+            ],
+            [
                 'postgresql',
                 '16',
                 <<<'EOD'

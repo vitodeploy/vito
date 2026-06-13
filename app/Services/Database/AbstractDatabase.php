@@ -269,34 +269,27 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $charsets = $this->tableToArray($data);
 
         $results = [];
-        $charsetCollations = [];
 
-        foreach ($charsets as $key => $charset) {
-            if (empty($charsetCollations[$charset[1]])) {
-                $charsetCollations[$charset[1]] = [];
-            }
+        foreach ($charsets as $charset) {
+            $collation = $charset[0];
+            $charsetName = $charset[1];
 
-            $charsetCollations[$charset[1]][] = $charset[0];
-
-            if ($charset[3] === 'Yes') {
-                $results[$charset[1]] = [
-                    'default' => $charset[0],
-                    'list' => [],
-                ];
-
+            if (empty($charsetName) || $charsetName === 'NULL') {
                 continue;
             }
 
-            if ($key == count($charsets) - 1) {
-                $results[$charset[1]] = [
+            if (! isset($results[$charsetName])) {
+                $results[$charsetName] = [
                     'default' => null,
                     'list' => [],
                 ];
             }
-        }
 
-        foreach (array_keys($results) as $charset) {
-            $results[$charset]['list'] = $charsetCollations[$charset];
+            $results[$charsetName]['list'][] = $collation;
+
+            if (($charset[3] ?? null) === 'Yes') {
+                $results[$charsetName]['default'] = $collation;
+            }
         }
 
         ksort($results);
