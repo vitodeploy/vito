@@ -18,6 +18,8 @@ class WebSocketServer
 {
     protected const MAX_HANDSHAKE_BUFFER = 8192;
 
+    protected const MAX_HTTP_BODY = 1048576;
+
     protected const PING_INTERVAL = 30;
 
     protected ServerNegotiator $negotiator;
@@ -70,11 +72,19 @@ class WebSocketServer
         $conn->on('data', function (string $data) use ($conn, $connId, &$httpBuffer): void {
             if (! isset($this->connections[$connId])) {
                 $httpBuffer .= $data;
-                if (strlen($httpBuffer) > self::MAX_HANDSHAKE_BUFFER) {
+
+                $headersComplete = str_contains($httpBuffer, "\r\n\r\n");
+                $limit = $headersComplete ? self::MAX_HTTP_BODY : self::MAX_HANDSHAKE_BUFFER;
+                if (strlen($httpBuffer) > $limit) {
                     $conn->close();
 
                     return;
                 }
+
+                if (! $headersComplete) {
+                    return;
+                }
+
                 $this->handleHandshake($conn, $connId, $httpBuffer);
 
                 return;
@@ -118,6 +128,21 @@ class WebSocketServer
 
             // Handle plain HTTP requests (non-WebSocket)
             if (! $psrRequest->hasHeader('Upgrade')) {
+                $contentLength = (int) $psrRequest->getHeaderLine('Content-Length');
+
+                if ($contentLength > self::MAX_HTTP_BODY) {
+                    $conn->end("HTTP/1.1 413 Payload Too Large\r\nConnection: close\r\n\r\n");
+
+                    return;
+                }
+
+                // Wait for the full request body before dispatching; TCP may
+                // deliver headers and body in separate segments.
+                $bodyOffset = strpos($httpBuffer, "\r\n\r\n") + 4;
+                if (strlen($httpBuffer) - $bodyOffset < $contentLength) {
+                    return;
+                }
+
                 $this->handleHttpRequest($conn, $psrRequest);
 
                 return;
