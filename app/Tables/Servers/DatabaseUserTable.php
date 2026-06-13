@@ -29,7 +29,7 @@ class DatabaseUserTable extends Table
 
     protected function columns(): array
     {
-        return array_values(array_filter([
+        return [
             TextColumn::make('username', 'Username')->sortable(),
             $this->showHost
                 ? TextColumn::make('host', 'Host')->sortable()
@@ -41,6 +41,6 @@ class DatabaseUserTable extends Table
             Column::data('id'),
             Column::data('server_id'),
             ActionsColumn::make(),
-        ]));
+        ];
     }
 }

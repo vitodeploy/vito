@@ -111,8 +111,8 @@ class UpdateDatabaseUser
             return null;
         }
 
-        $service = $databaseUser->server->database();
-        if (! $service instanceof Service || ! $service->handler()->usesHost()) {
+        $handler = $databaseUser->server->database()?->handler();
+        if (! $handler instanceof Database || ! $handler->usesHost()) {
             return null;
         }
 
