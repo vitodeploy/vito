@@ -160,6 +160,7 @@ export default function CreateDatabase({
             <FormField>
               <Label htmlFor="collation">Collation</Label>
               <Combobox
+                id="collation"
                 items={collations.map((collation) => ({ value: collation, label: collation }))}
                 value={form.data.collation}
                 onValueChange={(value) => form.setData('collation', value)}

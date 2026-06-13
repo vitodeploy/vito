@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export function Combobox({
   items,
   value,
+  id,
   searchText = 'Search items...',
   noneFoundText = 'No items found.',
   placeholder = '',
@@ -16,6 +17,7 @@ export function Combobox({
 }: {
   items: { value: string; label: string }[];
   value: string;
+  id?: string;
   searchText?: string;
   noneFoundText?: string;
   placeholder?: string;
@@ -27,7 +29,7 @@ export function Combobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="flex-1 justify-between">
+        <Button id={id} variant="outline" role="combobox" aria-expanded={open} className="flex-1 justify-between">
           <span className={selectedLabel ? '' : 'text-muted-foreground'}>{selectedLabel || placeholder}</span>
           <ChevronsUpDown className="opacity-50" />
         </Button>
