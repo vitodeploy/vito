@@ -136,8 +136,6 @@ class WebSocketServer
                     return;
                 }
 
-                // Wait for the full request body before dispatching; TCP may
-                // deliver headers and body in separate segments.
                 $bodyOffset = strpos($httpBuffer, "\r\n\r\n") + 4;
                 if (strlen($httpBuffer) - $bodyOffset < $contentLength) {
                     return;
