@@ -1,4 +1,10 @@
 if ! sudo -u postgres psql -v ON_ERROR_STOP=1 <<'EOSQL'
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_collation WHERE collname = '{{ $collation }}') THEN
+        RAISE EXCEPTION 'collation "%" does not exist', '{{ $collation }}';
+    END IF;
+END $$;
 SELECT format(
     'CREATE DATABASE %I WITH ENCODING %L TEMPLATE template0 %s',
     '{{ $name }}',

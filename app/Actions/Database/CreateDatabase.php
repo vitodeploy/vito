@@ -72,7 +72,7 @@ class CreateDatabase
             'collation' => [
                 'required',
                 'string',
-                'regex:/^[A-Za-z0-9._-]+$/',
+                'regex:/^[A-Za-z0-9._@-]+$/',
             ],
             'username' => [
                 'nullable',
