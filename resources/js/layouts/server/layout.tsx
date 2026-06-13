@@ -33,6 +33,7 @@ import { usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import PHPIcon from '@/icons/php';
 import siteHelper from '@/lib/site-helper';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
 
 export default function ServerLayout({ children }: { children: ReactNode }) {
   const page = usePage<{
@@ -40,7 +41,8 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
     site?: Site;
   }>();
 
-  const isMenuDisabled = page.props.server.status !== 'ready';
+  const server = useRealtimeRecord<Server>(page.props.server, 'server')!;
+  const isMenuDisabled = server.status !== 'ready';
   const storedSite = siteHelper.getStoredSite();
   const site = page.props.site || (storedSite?.server_id === page.props.server.id ? storedSite : null) || null;
 

@@ -14,6 +14,7 @@ class RebootServer
             $server->os()->reboot();
             $server->status = ServerStatus::DISCONNECTED;
             $server->save();
+            app(BroadcastServerUpdate::class)->broadcast($server);
         } catch (Throwable) {
             $server = $server->checkConnection();
         }

@@ -21,6 +21,7 @@ class CheckConnection
             if (in_array($status, [ServerStatus::DISCONNECTED, ServerStatus::UPDATING])) {
                 $server->status = ServerStatus::READY;
                 $server->save();
+                app(BroadcastServerUpdate::class)->broadcast($server);
                 if ($status === ServerStatus::DISCONNECTED) {
                     Notifier::send($server, new ServerConnected($server));
                 }
@@ -34,6 +35,7 @@ class CheckConnection
             if ($status !== ServerStatus::DISCONNECTED) {
                 $server->status = ServerStatus::DISCONNECTED;
                 $server->save();
+                app(BroadcastServerUpdate::class)->broadcast($server);
                 Notifier::send($server, new ServerDisconnected($server));
             }
         }
