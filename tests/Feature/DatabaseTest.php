@@ -199,6 +199,37 @@ class DatabaseTest extends TestCase
         $this->assertStringContainsString('en-US-x-icu', $rendered);
     }
 
+    public function test_sync_postgresql_preserves_icu_collation(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        Database::factory()->create([
+            'server_id' => $this->server,
+            'name' => 'pg_database',
+            'charset' => 'UTF8',
+            'collation' => 'af-NA-x-icu',
+            'status' => DatabaseStatus::READY,
+        ]);
+
+        SSH::fake(<<<'EOD'
+         database_name | charset | collation
+        ---------------+---------+-------------
+         pg_database   | UTF8    | af-NA-x-icu
+        (1 row)
+        EOD);
+
+        $this->patch(route('databases.sync', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('databases', [
+            'server_id' => $this->server->id,
+            'name' => 'pg_database',
+            'collation' => 'af-NA-x-icu',
+        ]);
+    }
+
     private function usePostgresql(): void
     {
         $this->server->services()->where('type', Mysql::type())->delete();
