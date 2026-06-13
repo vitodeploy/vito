@@ -101,7 +101,7 @@ class Hetzner extends AbstractProvider
                         $price = $this->planMonthlyPrice($type, $region);
 
                         if ($price !== null) {
-                            $label .= ' ($'.number_format($price, 2).'/mo)';
+                            $label .= ' ('.number_format($price, 2).'/mo)';
                         }
                     }
 

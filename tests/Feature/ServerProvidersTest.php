@@ -329,10 +329,54 @@ class ServerProvidersTest extends TestCase
 
         $this->assertSame(['cpx22', 'ccx13', 'cax11'], array_keys($plans));
         $this->assertTrue($plans['ccx13']['available']);
-        $this->assertStringContainsString('($18.49/mo)', $plans['ccx13']['label']);
+        $this->assertStringContainsString('(18.49/mo)', $plans['ccx13']['label']);
         $this->assertFalse($plans['cax11']['available']);
         $this->assertStringNotContainsString('/mo', $plans['cax11']['label']);
         $this->assertArrayNotHasKey('cpx12', $plans);
+    }
+
+    public function test_digital_ocean_plans_show_every_size_and_grey_unavailable(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            '*' => Http::response([
+                'sizes' => [
+                    [
+                        'slug' => 's-1vcpu-1gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 1024, 'disk' => 25,
+                        'price_monthly' => 6, 'available' => true, 'regions' => ['lon1', 'nyc1'],
+                    ],
+                    [
+                        'slug' => 's-2vcpu-4gb', 'description' => 'Basic', 'vcpus' => 2, 'memory' => 4096, 'disk' => 80,
+                        'price_monthly' => 24, 'available' => true, 'regions' => ['lon1'],
+                    ],
+                    [
+                        'slug' => 's-1vcpu-512mb-10gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 512, 'disk' => 10,
+                        'price_monthly' => 4, 'available' => true, 'regions' => ['nyc1'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => DigitalOcean::id(),
+            'credentials' => ['token' => 'token'],
+        ]);
+
+        $plans = $this->get(route('server-providers.plans', [
+            'serverProvider' => $serverProvider->id,
+            'region' => 'lon1',
+        ]))
+            ->assertSuccessful()
+            ->json();
+
+        $this->assertSame(['s-1vcpu-1gb', 's-2vcpu-4gb', 's-1vcpu-512mb-10gb'], array_keys($plans));
+        $this->assertTrue($plans['s-1vcpu-1gb']['available']);
+        $this->assertStringContainsString('(6.00/mo)', $plans['s-1vcpu-1gb']['label']);
+        $this->assertFalse($plans['s-1vcpu-512mb-10gb']['available']);
+        $this->assertStringNotContainsString('/mo', $plans['s-1vcpu-512mb-10gb']['label']);
     }
 
     /**

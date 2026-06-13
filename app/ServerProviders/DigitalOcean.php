@@ -68,6 +68,9 @@ class DigitalOcean extends AbstractProvider
         return true;
     }
 
+    /**
+     * @return array<string, array{label: string, available: bool}>
+     */
     public function plans(?string $region): array
     {
         try {
@@ -76,18 +79,38 @@ class DigitalOcean extends AbstractProvider
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, regions: array<string>}> $sizes */
+            Log::debug('DigitalOcean sizes response', ['region' => $region, 'response' => $plans]);
+
+            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available: bool}> $sizes */
             $sizes = $plans['sizes'] ?? [];
 
             return collect($sizes)
-                ->filter(fn (array $size): bool => in_array($region, $size['regions']))
-                ->mapWithKeys(fn (array $value): array => [
-                    $value['slug'] => __('server_providers.plan', [
-                        'name' => $value['description'],
-                        'cpu' => $value['vcpus'],
-                        'memory' => $value['memory'],
-                        'disk' => $value['disk'],
-                    ]),
+                ->map(function (array $size) use ($region): array {
+                    $available = ($size['available'] ?? false) && in_array($region, $size['regions'], true);
+
+                    $label = __('server_providers.plan', [
+                        'name' => $size['description'],
+                        'cpu' => $size['vcpus'],
+                        'memory' => $size['memory'],
+                        'disk' => $size['disk'],
+                    ]);
+
+                    if ($available) {
+                        $label .= ' ('.number_format((float) $size['price_monthly'], 2).'/mo)';
+                    }
+
+                    return [
+                        'slug' => $size['slug'],
+                        'label' => $label,
+                        'available' => $available,
+                    ];
+                })
+                ->sortByDesc('available')
+                ->mapWithKeys(fn (array $plan): array => [
+                    $plan['slug'] => [
+                        'label' => $plan['label'],
+                        'available' => $plan['available'],
+                    ],
                 ])
                 ->toArray();
         } catch (Exception) {
@@ -102,6 +125,8 @@ class DigitalOcean extends AbstractProvider
             $regions = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/regions', ['per_page' => 200])
                 ->json();
+
+            Log::debug('DigitalOcean regions response', ['response' => $regions]);
 
             $regionsList = $regions['regions'] ?? []; // Ensure it's always an array
 
