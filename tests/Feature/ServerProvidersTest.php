@@ -423,6 +423,61 @@ class ServerProvidersTest extends TestCase
         $this->assertStringNotContainsString('/mo', $plans['vc2-1c-0.5gb']['label']);
     }
 
+    public function test_linode_plans_grey_classes_unsupported_by_region(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'api.linode.com/v4/linode/types*' => Http::response([
+                'data' => [
+                    [
+                        'id' => 'g6-standard-1', 'label' => 'Linode 2GB', 'class' => 'standard',
+                        'vcpus' => 1, 'memory' => 2048, 'disk' => 50000,
+                        'price' => ['monthly' => 12.0, 'hourly' => 0.018], 'region_prices' => [],
+                    ],
+                    [
+                        'id' => 'g1-gpu-rtx6000-1', 'label' => 'RTX6000 GPU', 'class' => 'gpu',
+                        'vcpus' => 8, 'memory' => 32768, 'disk' => 655360,
+                        'price' => ['monthly' => 1000.0, 'hourly' => 1.5], 'region_prices' => [],
+                    ],
+                    [
+                        'id' => 'g7-premium-2', 'label' => 'Premium 4GB', 'class' => 'premium',
+                        'vcpus' => 2, 'memory' => 4096, 'disk' => 81920,
+                        'price' => ['monthly' => 36.0, 'hourly' => 0.054],
+                        'region_prices' => [['id' => 'eu-test', 'monthly' => 40.0, 'hourly' => 0.06]],
+                    ],
+                ],
+            ], 200),
+            'api.linode.com/v4/regions*' => Http::response([
+                'data' => [
+                    ['id' => 'eu-test', 'label' => 'Test', 'capabilities' => ['Linodes']],
+                ],
+            ], 200),
+        ]);
+
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => Linode::id(),
+            'credentials' => ['token' => 'token'],
+        ]);
+
+        $plans = $this->get(route('server-providers.plans', [
+            'serverProvider' => $serverProvider->id,
+            'region' => 'eu-test',
+        ]))
+            ->assertSuccessful()
+            ->json();
+
+        $this->assertSame(['g6-standard-1', 'g1-gpu-rtx6000-1', 'g7-premium-2'], array_keys($plans));
+        $this->assertTrue($plans['g6-standard-1']['available']);
+        $this->assertStringContainsString('50 Disk', $plans['g6-standard-1']['label']);
+        $this->assertStringContainsString('(12.00/mo)', $plans['g6-standard-1']['label']);
+        $this->assertFalse($plans['g1-gpu-rtx6000-1']['available']);
+        $this->assertFalse($plans['g7-premium-2']['available']);
+        $this->assertStringNotContainsString('/mo', $plans['g7-premium-2']['label']);
+    }
+
     /**
      * @return array<string, array<int, array<string, mixed>>>
      */

@@ -67,30 +67,107 @@ class Linode extends AbstractProvider
         return true;
     }
 
+    /**
+     * @return array<string, array{label: string, available: bool}>
+     */
     public function plans(?string $region): array
     {
         try {
-            /** @var array<string, mixed> $plans */
-            $plans = Http::withToken($this->serverProvider->credentials['token'])
+            /** @var array<string, mixed> $response */
+            $response = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/linode/types')
                 ->json();
 
-            /** @var array<int, array<string, mixed>> $plansData */
-            $plansData = $plans['data'];
+            /** @var array<int, array{id: string, label: string, vcpus: int, memory: int, disk: int, class: string, price: array{monthly: float}, region_prices: array<int, array{id: string, monthly: float}>}> $types */
+            $types = $response['data'] ?? [];
 
-            return collect($plansData)
-                ->mapWithKeys(fn (array $value) => [
-                    $value['id'] => __('server_providers.plan', [
-                        'name' => $value['label'],
-                        'cpu' => $value['vcpus'],
-                        'memory' => $value['memory'],
-                        'disk' => $value['disk'],
-                    ]),
+            $capabilities = $this->regionCapabilities($region);
+
+            return collect($types)
+                ->map(function (array $type) use ($region, $capabilities): array {
+                    $available = $this->planIsAvailable($type['class'] ?? '', $capabilities);
+
+                    $label = __('server_providers.plan', [
+                        'name' => $type['label'],
+                        'cpu' => $type['vcpus'],
+                        'memory' => $type['memory'],
+                        'disk' => intdiv((int) $type['disk'], 1000),
+                    ]);
+
+                    if ($available) {
+                        $price = $this->planMonthlyPrice($type, $region);
+
+                        if ($price !== null) {
+                            $label .= ' ('.number_format($price, 2).'/mo)';
+                        }
+                    }
+
+                    return [
+                        'id' => $type['id'],
+                        'label' => $label,
+                        'available' => $available,
+                    ];
+                })
+                ->sortByDesc('available')
+                ->mapWithKeys(fn (array $plan): array => [
+                    $plan['id'] => [
+                        'label' => $plan['label'],
+                        'available' => $plan['available'],
+                    ],
                 ])
                 ->toArray();
         } catch (Exception) {
             return [];
         }
+    }
+
+    /**
+     * @param  array<int, string>  $capabilities
+     */
+    private function planIsAvailable(string $class, array $capabilities): bool
+    {
+        if ($capabilities === []) {
+            return true;
+        }
+
+        return match ($class) {
+            'gpu' => in_array('GPU Linodes', $capabilities, true),
+            'premium' => in_array('Premium Plans', $capabilities, true),
+            default => in_array('Linodes', $capabilities, true),
+        };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function regionCapabilities(?string $region): array
+    {
+        /** @var array{data?: array<int, array{id: string, capabilities: array<int, string>}>} $response */
+        $response = Http::withToken($this->serverProvider->credentials['token'])
+            ->get($this->apiUrl.'/regions')
+            ->json();
+
+        /** @var array{id: string, capabilities: array<int, string>}|null $match */
+        $match = collect($response['data'] ?? [])->firstWhere('id', $region);
+
+        return $match['capabilities'] ?? [];
+    }
+
+    /**
+     * @param  array{price: array{monthly: float}, region_prices: array<int, array{id: string, monthly: float}>}  $type
+     */
+    private function planMonthlyPrice(array $type, ?string $region): ?float
+    {
+        /** @var array{id: string, monthly: float}|null $regionPrice */
+        $regionPrice = collect($type['region_prices'] ?? [])->firstWhere('id', $region);
+
+        if ($regionPrice !== null) {
+            return (float) $regionPrice['monthly'];
+        }
+
+        $monthly = $type['price']['monthly'] ?? null;
+
+        return $monthly !== null ? (float) $monthly : null;
     }
 
     public function regions(): array
