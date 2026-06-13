@@ -18,12 +18,13 @@ import { asRow } from '@/lib/inertia-table';
 type Page = {
   server: Server;
   databaseUsers: InertiaTableData;
+  usesHost: boolean;
 };
 
 export default function DatabaseUsers() {
   const page = usePage<Page>();
   const dialog = useDialog();
-  const usesHost = page.props.server.services['database'] !== 'postgresql';
+  const usesHost = page.props.usesHost;
 
   return (
     <ServerLayout>

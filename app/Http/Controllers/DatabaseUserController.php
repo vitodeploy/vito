@@ -40,6 +40,7 @@ class DatabaseUserController extends Controller
 
         return Inertia::render('database-users/index', [
             'databases' => DatabaseResource::collection($server->databases()->get()),
+            'usesHost' => $handler->usesHost(),
             'databaseUsers' => DatabaseUserTable::make($server->databaseUsers())
                 ->withHost($handler->usesHost())
                 ->paginate(),
