@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
+use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Services\Database\Mysql;
+use App\Services\Database\Postgresql;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -142,5 +145,69 @@ class DatabaseTest extends TestCase
 
         $this->patch(route('databases.sync', $this->server))
             ->assertSessionDoesntHaveErrors();
+    }
+
+    public function test_create_postgresql_database_with_icu_collation(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        $this->post(route('databases.store', $this->server), [
+            'name' => 'pg_database',
+            'charset' => 'UTF8',
+            'collation' => 'en-US-x-icu',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('databases', [
+            'name' => 'pg_database',
+            'collation' => 'en-US-x-icu',
+            'status' => DatabaseStatus::READY,
+        ]);
+    }
+
+    public function test_create_database_rejects_malicious_collation(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->post(route('databases.store', $this->server), [
+            'name' => 'database',
+            'charset' => 'utf8mb4',
+            'collation' => "x'; DROP DATABASE postgres; --",
+        ])->assertSessionHasErrors('collation');
+
+        $this->assertDatabaseMissing('databases', [
+            'name' => 'database',
+        ]);
+    }
+
+    public function test_postgresql_create_script_applies_collation_locale(): void
+    {
+        $rendered = view('ssh.services.database.postgresql.create', [
+            'name' => 'pg_database',
+            'charset' => 'UTF8',
+            'collation' => 'en-US-x-icu',
+        ])->render();
+
+        $this->assertStringContainsString('CREATE DATABASE', $rendered);
+        $this->assertStringContainsString('LOCALE_PROVIDER', $rendered);
+        $this->assertStringContainsString('\gexec', $rendered);
+        $this->assertStringContainsString('en-US-x-icu', $rendered);
+    }
+
+    private function usePostgresql(): void
+    {
+        $this->server->services()->where('type', Mysql::type())->delete();
+        $this->server->services()->create([
+            'type' => Postgresql::type(),
+            'name' => Postgresql::id(),
+            'version' => '15',
+            'status' => ServiceStatus::READY,
+        ]);
+        $this->server->refresh();
     }
 }

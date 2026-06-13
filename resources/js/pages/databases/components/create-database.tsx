@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import axios from 'axios';
 import { Checkbox } from '@/components/ui/checkbox';
 import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
@@ -158,18 +159,14 @@ export default function CreateDatabase({
             </FormField>
             <FormField>
               <Label htmlFor="collation">Collation</Label>
-              <Select onValueChange={(value) => form.setData('collation', value)} value={form.data.collation}>
-                <SelectTrigger id="collation">
-                  <SelectValue placeholder="Select collation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {collations.map((collation) => (
-                    <SelectItem key={collation} value={collation}>
-                      {collation}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                items={collations.map((collation) => ({ value: collation, label: collation }))}
+                value={form.data.collation}
+                onValueChange={(value) => form.setData('collation', value)}
+                placeholder="Select collation"
+                searchText="Search collations..."
+                noneFoundText="No collations found."
+              />
               <InputError message={form.errors.collation} />
             </FormField>
             <FormField>

@@ -160,6 +160,36 @@ class GetCharsetsTest extends TestCase
                     ],
                 ],
             ],
+            [
+                'postgresql',
+                '18',
+                <<<'EOD'
+                 collation   | charset | id | default | compiled | sortlen | pad_attribute
+                -------------+---------+----+---------+----------+---------+---------------
+                 C           | UTF8    |    |         | Yes      |         |
+                 POSIX       | UTF8    |    |         | Yes      |         |
+                 ucs_basic   | UTF8    |    |         | Yes      |         |
+                 pg_c_utf8   | UTF8    |    |         | Yes      |         |
+                 unicode     | UTF8    |    |         | Yes      |         |
+                 en-US-x-icu | UTF8    |    |         | Yes      |         |
+                 en_US.utf8  | UTF8    |    |         | Yes      |         |
+                (7 rows)
+                EOD,
+                [
+                    'UTF8' => [
+                        'default' => null,
+                        'list' => [
+                            'C',
+                            'POSIX',
+                            'ucs_basic',
+                            'pg_c_utf8',
+                            'unicode',
+                            'en-US-x-icu',
+                            'en_US.utf8',
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }

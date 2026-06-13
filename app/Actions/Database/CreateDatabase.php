@@ -67,10 +67,12 @@ class CreateDatabase
             'charset' => [
                 'required',
                 'string',
+                'regex:/^[A-Za-z0-9_]+$/',
             ],
             'collation' => [
                 'required',
                 'string',
+                'regex:/^[A-Za-z0-9._-]+$/',
             ],
             'username' => [
                 'nullable',
