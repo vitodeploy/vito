@@ -79,8 +79,6 @@ class DigitalOcean extends AbstractProvider
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            Log::debug('DigitalOcean sizes response', ['region' => $region, 'response' => $plans]);
-
             /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available: bool}> $sizes */
             $sizes = $plans['sizes'] ?? [];
 
@@ -125,8 +123,6 @@ class DigitalOcean extends AbstractProvider
             $regions = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/regions', ['per_page' => 200])
                 ->json();
-
-            Log::debug('DigitalOcean regions response', ['response' => $regions]);
 
             $regionsList = $regions['regions'] ?? []; // Ensure it's always an array
 
