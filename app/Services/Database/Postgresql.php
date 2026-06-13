@@ -3,6 +3,8 @@
 namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
+use App\Models\DatabaseUser;
+use App\Models\Server;
 use App\Services\HasLogs;
 use Illuminate\Contracts\View\View;
 
@@ -22,6 +24,19 @@ class Postgresql extends AbstractDatabase implements HasLogs
     protected string $separator = '|';
 
     protected bool $removeLastRow = true;
+
+    public function usesHost(): bool
+    {
+        return false;
+    }
+
+    public function databaseUserExists(Server $server, string $username, string $host, ?DatabaseUser $ignore = null): bool
+    {
+        return $server->databaseUsers()
+            ->where('username', $username)
+            ->when($ignore, fn ($query) => $query->whereKeyNot($ignore->id))
+            ->exists();
+    }
 
     public static function id(): string
     {

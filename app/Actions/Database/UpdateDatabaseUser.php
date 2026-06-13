@@ -24,16 +24,11 @@ class UpdateDatabaseUser
         $oldHost = $databaseUser->host;
         $oldPermission = $databaseUser->permission;
         $newPassword = $input['password'] ?? null;
-        $newHost = null;
+        $newHost = $this->changedHost($databaseUser, $input);
         $permissionChanged = false;
 
-        if (isset($input['remote'])) {
-            $newHost = $input['remote'] ? ($input['host'] ?? '%') : 'localhost';
-            if ($newHost !== $oldHost) {
-                $databaseUser->host = $newHost;
-            } else {
-                $newHost = null;
-            }
+        if ($newHost !== null) {
+            $databaseUser->host = $newHost;
         }
 
         if ($newPassword) {
@@ -79,8 +74,14 @@ class UpdateDatabaseUser
             ];
         }
 
-        if (isset($input['remote']) && $input['remote']) {
-            $rules['host'] = 'required';
+        /** @var Database $handler */
+        $handler = $databaseUser->server->database()->handler();
+
+        if ($handler->usesHost()) {
+            $rules['host'] = [
+                isset($input['remote']) && $input['remote'] ? 'required' : 'nullable',
+                'regex:/^[A-Za-z0-9%._:\-]*$/',
+            ];
         }
 
         $rules['permission'] = [
@@ -89,6 +90,35 @@ class UpdateDatabaseUser
         ];
 
         Validator::make($input, $rules)->validate();
+
+        $newHost = $this->changedHost($databaseUser, $input);
+        if ($newHost !== null && $handler->databaseUserExists($databaseUser->server, $databaseUser->username, $newHost, $databaseUser)) {
+            throw ValidationException::withMessages([
+                'host' => __('A database user with this username and host already exists.'),
+            ]);
+        }
+    }
+
+    /**
+     * Resolves the new host when it is being changed, or null when unchanged or
+     * the database engine does not use hosts (e.g. PostgreSQL).
+     *
+     * @param  array<string, mixed>  $input
+     */
+    private function changedHost(DatabaseUser $databaseUser, array $input): ?string
+    {
+        if (! isset($input['remote'])) {
+            return null;
+        }
+
+        $service = $databaseUser->server->database();
+        if (! $service instanceof Service || ! $service->handler()->usesHost()) {
+            return null;
+        }
+
+        $resolved = $input['remote'] ? (! empty($input['host']) ? $input['host'] : '%') : 'localhost';
+
+        return $resolved !== $databaseUser->host ? $resolved : null;
     }
 
     private function updatePermissions(DatabaseUser $databaseUser, string $oldHost, ?string $newHost): void

@@ -4,6 +4,7 @@ export interface DatabaseUser {
   username: string;
   databases: string[];
   permission: string;
+  permission_color: 'gray' | 'success' | 'info' | 'warning' | 'danger' | 'default';
   host?: string;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';

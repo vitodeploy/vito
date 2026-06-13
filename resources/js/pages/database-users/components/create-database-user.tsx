@@ -29,10 +29,12 @@ type CreateForm = {
 
 export default function CreateDatabaseUser({
   server,
+  usesHost = true,
   onDatabaseUserCreated,
   children,
 }: {
   server: number;
+  usesHost?: boolean;
   onDatabaseUserCreated?: () => void;
   children: ReactNode;
 }) {
@@ -109,19 +111,23 @@ export default function CreateDatabaseUser({
               </Select>
               <InputError message={form.errors.permission} />
             </FormField>
-            <FormField>
-              <div className="flex items-center space-x-3">
-                <Checkbox id="remote" name="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
-                <Label htmlFor="remote">Allow remote connection</Label>
-              </div>
-              <InputError message={form.errors.remote} />
-            </FormField>
-            {form.data.remote && (
-              <FormField>
-                <Label htmlFor="host">Allow connection from (% for all)</Label>
-                <Input type="text" id="host" name="host" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
-                <InputError message={form.errors.host} />
-              </FormField>
+            {usesHost && (
+              <>
+                <FormField>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox id="remote" name="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
+                    <Label htmlFor="remote">Allow remote connection</Label>
+                  </div>
+                  <InputError message={form.errors.remote} />
+                </FormField>
+                {form.data.remote && (
+                  <FormField>
+                    <Label htmlFor="host">Allow connection from (% for all)</Label>
+                    <Input type="text" id="host" name="host" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
+                    <InputError message={form.errors.host} />
+                  </FormField>
+                )}
+              </>
             )}
           </FormFields>
         </Form>
@@ -131,7 +137,7 @@ export default function CreateDatabaseUser({
               Cancel
             </Button>
           </DialogClose>
-          <Button type="button" onClick={submit} disabled={form.processing}>
+          <Button form="create-database-user-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
             Create
           </Button>

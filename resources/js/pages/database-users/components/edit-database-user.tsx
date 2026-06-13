@@ -16,10 +16,12 @@ export default function EditDatabaseUser({
   open,
   onOpenChange,
   databaseUser,
+  usesHost = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   databaseUser: DatabaseUser;
+  usesHost?: boolean;
 }) {
   const form = useForm<{
     password: string;
@@ -70,20 +72,24 @@ export default function EditDatabaseUser({
               <InputError message={form.errors.permission} />
             </FormField>
 
-            <FormField>
-              <div className="flex items-center space-x-3">
-                <Checkbox id="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
-                <Label htmlFor="remote">Allow remote connection</Label>
-              </div>
-              <InputError message={form.errors.remote} />
-            </FormField>
+            {usesHost && (
+              <>
+                <FormField>
+                  <div className="flex items-center space-x-3">
+                    <Checkbox id="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
+                    <Label htmlFor="remote">Allow remote connection</Label>
+                  </div>
+                  <InputError message={form.errors.remote} />
+                </FormField>
 
-            {form.data.remote && (
-              <FormField>
-                <Label htmlFor="host">Allow connection from (% for all)</Label>
-                <Input id="host" type="text" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
-                <InputError message={form.errors.host} />
-              </FormField>
+                {form.data.remote && (
+                  <FormField>
+                    <Label htmlFor="host">Allow connection from (% for all)</Label>
+                    <Input id="host" type="text" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
+                    <InputError message={form.errors.host} />
+                  </FormField>
+                )}
+              </>
             )}
           </FormFields>
         </Form>

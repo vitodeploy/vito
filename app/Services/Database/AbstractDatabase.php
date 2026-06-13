@@ -6,6 +6,8 @@ use App\Actions\Database\SyncDatabases;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Models\BackupFile;
+use App\Models\DatabaseUser;
+use App\Models\Server;
 use App\Services\AbstractService;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -33,6 +35,20 @@ abstract class AbstractDatabase extends AbstractService implements Database
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
+    }
+
+    public function usesHost(): bool
+    {
+        return true;
+    }
+
+    public function databaseUserExists(Server $server, string $username, string $host, ?DatabaseUser $ignore = null): bool
+    {
+        return $server->databaseUsers()
+            ->where('username', $username)
+            ->where('host', $host)
+            ->when($ignore, fn ($query) => $query->whereKeyNot($ignore->id))
+            ->exists();
     }
 
     public function creationRules(array $input): array

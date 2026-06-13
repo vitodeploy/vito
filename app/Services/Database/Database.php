@@ -3,10 +3,16 @@
 namespace App\Services\Database;
 
 use App\Models\BackupFile;
+use App\Models\DatabaseUser;
+use App\Models\Server;
 use App\Services\ServiceInterface;
 
 interface Database extends ServiceInterface
 {
+    public function usesHost(): bool;
+
+    public function databaseUserExists(Server $server, string $username, string $host, ?DatabaseUser $ignore = null): bool;
+
     public function create(string $name, string $charset, string $collation): void;
 
     public function delete(string $name): void;

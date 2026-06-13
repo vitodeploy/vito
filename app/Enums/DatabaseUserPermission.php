@@ -3,8 +3,9 @@
 namespace App\Enums;
 
 use App\Contracts\VitoEnum;
+use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum DatabaseUserPermission: string implements VitoEnum
+enum DatabaseUserPermission: string implements HasTableDisplay, VitoEnum
 {
     case READ = 'read';
     case WRITE = 'write';

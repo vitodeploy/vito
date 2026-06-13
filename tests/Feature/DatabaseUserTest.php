@@ -390,4 +390,227 @@ class DatabaseUserTest extends TestCase
             'databases' => $this->castAsJson(['appdb']),
         ]);
     }
+
+    public function test_create_database_user_same_username_different_host_succeeds(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'app',
+            'host' => 'localhost',
+        ]);
+
+        $this->post(route('database-users.store', ['server' => $this->server]), [
+            'username' => 'app',
+            'password' => 'password',
+            'remote' => true,
+            'host' => '10.0.0.1',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('database_users', [
+            'server_id' => $this->server->id,
+            'username' => 'app',
+            'host' => '10.0.0.1',
+        ]);
+
+        $this->assertSame(
+            2,
+            DatabaseUser::where('server_id', $this->server->id)->where('username', 'app')->count(),
+        );
+    }
+
+    public function test_create_database_user_duplicate_username_and_host_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'app',
+            'host' => '%',
+        ]);
+
+        $this->post(route('database-users.store', ['server' => $this->server]), [
+            'username' => 'app',
+            'password' => 'password',
+            'remote' => true,
+            'host' => '%',
+        ])->assertSessionHasErrors('username');
+
+        $this->assertSame(
+            1,
+            DatabaseUser::where('server_id', $this->server->id)->where('username', 'app')->count(),
+        );
+    }
+
+    public function test_create_database_user_duplicate_username_fails_for_postgresql(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'appuser',
+            'host' => 'localhost',
+        ]);
+
+        $this->post(route('database-users.store', ['server' => $this->server]), [
+            'username' => 'appuser',
+            'password' => 'password',
+        ])->assertSessionHasErrors('username');
+
+        $this->assertSame(
+            1,
+            DatabaseUser::where('server_id', $this->server->id)->where('username', 'appuser')->count(),
+        );
+    }
+
+    public function test_update_database_user_host_collision_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'app',
+            'host' => '10.0.0.1',
+        ]);
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'app',
+            'host' => 'localhost',
+        ]);
+
+        $this->put(route('database-users.update', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), [
+            'remote' => true,
+            'host' => '10.0.0.1',
+            'permission' => $databaseUser->permission->value,
+        ])->assertSessionHasErrors('host');
+
+        $this->assertDatabaseHas('database_users', [
+            'id' => $databaseUser->id,
+            'host' => 'localhost',
+        ]);
+    }
+
+    public function test_create_database_user_rejects_malicious_host(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->post(route('database-users.store', ['server' => $this->server]), [
+            'username' => 'user',
+            'password' => 'password',
+            'remote' => true,
+            'host' => '$(touch /tmp/pwn)',
+        ])->assertSessionHasErrors('host');
+
+        $this->assertDatabaseMissing('database_users', [
+            'username' => 'user',
+        ]);
+    }
+
+    public function test_create_database_user_with_empty_host_defaults_to_localhost(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->post(route('database-users.store', ['server' => $this->server]), [
+            'username' => 'user',
+            'password' => 'password',
+            'remote' => false,
+            'host' => '',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('database_users', [
+            'username' => 'user',
+            'host' => 'localhost',
+        ]);
+    }
+
+    public function test_update_synced_postgresql_user_with_empty_host_succeeds(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'appuser',
+            'host' => '',
+            'permission' => 'admin',
+        ]);
+
+        $this->put(route('database-users.update', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), [
+            'remote' => true,
+            'host' => '',
+            'permission' => 'read',
+        ])->assertSessionDoesntHaveErrors();
+
+        $databaseUser->refresh();
+
+        $this->assertEquals(DatabaseUserPermission::READ, $databaseUser->permission);
+        $this->assertSame('', $databaseUser->host);
+    }
+
+    public function test_database_users_index_shows_host_column_for_mysql(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('database-users', $this->server))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('database-users/index')
+                ->where('databaseUsers.columns', fn ($columns) => collect($columns)->contains(
+                    fn ($column) => ($column['name'] ?? null) === 'host' && empty($column['hidden'])
+                ))
+            );
+    }
+
+    public function test_database_users_index_hides_host_column_for_postgresql(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        $this->get(route('database-users', $this->server))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('database-users/index')
+                ->where('databaseUsers.columns', fn ($columns) => collect($columns)->doesntContain(
+                    fn ($column) => ($column['name'] ?? null) === 'host' && empty($column['hidden'])
+                ))
+            );
+    }
+
+    private function usePostgresql(): void
+    {
+        $this->server->services()->where('type', Mysql::type())->delete();
+        $this->server->services()->create([
+            'type' => Postgresql::type(),
+            'name' => Postgresql::id(),
+            'version' => '15',
+            'status' => ServiceStatus::READY,
+        ]);
+        $this->server->refresh();
+    }
 }
