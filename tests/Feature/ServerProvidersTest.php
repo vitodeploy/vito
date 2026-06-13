@@ -432,7 +432,7 @@ class ServerProvidersTest extends TestCase
                 'data' => [
                     [
                         'id' => 'g6-standard-1', 'label' => 'Linode 2GB', 'class' => 'standard',
-                        'vcpus' => 1, 'memory' => 2048, 'disk' => 50000,
+                        'vcpus' => 1, 'memory' => 2048, 'disk' => 51200,
                         'price' => ['monthly' => 12.0, 'hourly' => 0.018], 'region_prices' => [],
                     ],
                     [

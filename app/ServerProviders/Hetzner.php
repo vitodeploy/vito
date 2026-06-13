@@ -126,7 +126,7 @@ class Hetzner extends AbstractProvider
     }
 
     /**
-     * @param  array{available: bool, deprecation: ?array}  $location
+     * @param  array{available?: bool, deprecation?: ?array}  $location
      */
     private function planIsAvailable(array $location): bool
     {

@@ -49,8 +49,7 @@ type PlanOption = {
   available: boolean;
 };
 
-const normalizePlan = (plan: string | PlanOption): PlanOption =>
-  typeof plan === 'string' ? { label: plan, available: true } : plan;
+const normalizePlan = (plan: string | PlanOption): PlanOption => (typeof plan === 'string' ? { label: plan, available: true } : plan);
 
 type CreateServerForm = {
   provider: string;
@@ -498,7 +497,7 @@ export default function CreateServer({
                                   }}
                                 >
                                   {plan.label}
-                                  {!plan.available && <span className="ml-2 text-muted-foreground">(unavailable)</span>}
+                                  {!plan.available && <span className="text-muted-foreground ml-2">(unavailable)</span>}
                                   <CheckIcon className={cn('ml-auto', form.data.plan === key ? 'opacity-100' : 'opacity-0')} />
                                 </CommandItem>
                               );

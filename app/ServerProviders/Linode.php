@@ -78,7 +78,7 @@ class Linode extends AbstractProvider
                 ->get($this->apiUrl.'/linode/types')
                 ->json();
 
-            /** @var array<int, array{id: string, label: string, vcpus: int, memory: int, disk: int, class: string, price: array{monthly: float}, region_prices: array<int, array{id: string, monthly: float}>}> $types */
+            /** @var array<int, array{id: string, label: string, vcpus: int, memory: int, disk: int, class?: string, price?: array{monthly?: float}, region_prices?: array<int, array{id: string, monthly: float}>}> $types */
             $types = $response['data'] ?? [];
 
             $capabilities = $this->regionCapabilities($region);
@@ -91,7 +91,7 @@ class Linode extends AbstractProvider
                         'name' => $type['label'],
                         'cpu' => $type['vcpus'],
                         'memory' => $type['memory'],
-                        'disk' => intdiv((int) $type['disk'], 1000),
+                        'disk' => intdiv((int) $type['disk'], 1024),
                     ]);
 
                     if ($available) {
@@ -154,7 +154,7 @@ class Linode extends AbstractProvider
     }
 
     /**
-     * @param  array{price: array{monthly: float}, region_prices: array<int, array{id: string, monthly: float}>}  $type
+     * @param  array{price?: array{monthly?: float}, region_prices?: array<int, array{id: string, monthly: float}>}  $type
      */
     private function planMonthlyPrice(array $type, ?string $region): ?float
     {

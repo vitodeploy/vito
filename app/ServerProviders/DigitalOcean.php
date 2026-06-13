@@ -79,7 +79,7 @@ class DigitalOcean extends AbstractProvider
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available: bool}> $sizes */
+            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available?: bool}> $sizes */
             $sizes = $plans['sizes'] ?? [];
 
             return collect($sizes)
