@@ -1,9 +1,9 @@
-wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
+wget -O mariadb_repo_setup https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
 
 chmod +x mariadb_repo_setup
 
 sudo DEBIAN_FRONTEND=noninteractive ./mariadb_repo_setup \
-    --mariadb-server-version="mariadb-11.4"
+    --mariadb-server-version="mariadb-{{ $version }}"
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 

@@ -450,7 +450,7 @@ class ServicesTest extends TestCase
             [
                 'mariadb',
                 'database',
-                '10.4',
+                '10.11',
             ],
             [
                 'postgresql',

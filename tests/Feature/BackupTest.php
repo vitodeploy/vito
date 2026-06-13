@@ -429,7 +429,7 @@ class BackupTest extends TestCase
     {
         return [
             ['mysql', '8.4'],
-            ['mariadb', '10.4'],
+            ['mariadb', '10.11'],
             ['postgresql', '16'],
         ];
     }

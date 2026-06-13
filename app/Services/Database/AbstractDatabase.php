@@ -8,6 +8,7 @@ use App\Exceptions\SSHError;
 use App\Models\BackupFile;
 use App\Services\AbstractService;
 use Closure;
+use Illuminate\Contracts\View\View;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
@@ -56,7 +57,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     public function install(): void
     {
         $version = str_replace('.', '', $this->service->version);
-        $command = view($this->getScriptView('install-'.$version));
+        $command = $this->installScript();
         $this->service->server->ssh()
             ->setLog($this->service->log)
             ->exec($command, 'install-'.$this->service->name.'-'.$version);
@@ -65,6 +66,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $this->service->server->os()->cleanup();
         event('service.installed', $this->service);
         app(SyncDatabases::class)->sync($this->service->server);
+    }
+
+    protected function installScript(): View
+    {
+        $version = str_replace('.', '', $this->service->version);
+
+        return view($this->getScriptView('install-'.$version));
     }
 
     public function deletionRules(): array
