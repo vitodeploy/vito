@@ -404,65 +404,17 @@ paths:
             example: 'nyc1'
       responses:
         '200':
-          description: List of available plans
+          description: Map of available plans keyed by plan identifier
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      description: Plan identifier
-                      example: 's-1vcpu-1gb'
-                    name:
-                      type: string
-                      description: Plan name
-                      example: 'Basic'
-                    memory:
-                      type: integer
-                      description: Memory in MB
-                      example: 1024
-                    vcpus:
-                      type: integer
-                      description: Number of vCPUs
-                      example: 1
-                    disk:
-                      type: integer
-                      description: Disk size in GB
-                      example: 25
-                    price_monthly:
-                      type: number
-                      format: float
-                      description: Monthly price in USD
-                      example: 5.0
-                    price_hourly:
-                      type: number
-                      format: float
-                      description: Hourly price in USD
-                      example: 0.007
-                    available:
-                      type: boolean
-                      description: Whether the plan is available
-                      example: true
+                type: object
+                additionalProperties:
+                  type: string
+                  description: Human-readable plan label
               example:
-                - id: 's-1vcpu-1gb'
-                  name: 'Basic'
-                  memory: 1024
-                  vcpus: 1
-                  disk: 25
-                  price_monthly: 5.0
-                  price_hourly: 0.007
-                  available: true
-                - id: 's-1vcpu-2gb'
-                  name: 'Standard'
-                  memory: 2048
-                  vcpus: 1
-                  disk: 50
-                  price_monthly: 10.0
-                  price_hourly: 0.014
-                  available: true
+                s-1vcpu-1gb: 'Basic - 1 Cores - 1024 Memory - 25 Disk (5.00/mo)'
+                s-1vcpu-2gb: 'Standard - 1 Cores - 2048 Memory - 50 Disk (10.00/mo)'
         '401':
           description: Unauthorized
           content:

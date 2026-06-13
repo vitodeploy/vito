@@ -79,12 +79,12 @@ class DigitalOcean extends AbstractProvider
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available?: bool}> $sizes */
+            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, price_monthly: int|float, regions: array<string>, available: bool}> $sizes */
             $sizes = $plans['sizes'] ?? [];
 
             return collect($sizes)
                 ->map(function (array $size) use ($region): array {
-                    $available = ($size['available'] ?? false) && in_array($region, $size['regions'], true);
+                    $available = (bool) $size['available'] && in_array($region, $size['regions'], true);
 
                     $label = __('server_providers.plan', [
                         'name' => $size['description'],
