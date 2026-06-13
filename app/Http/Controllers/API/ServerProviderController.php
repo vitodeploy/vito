@@ -105,7 +105,7 @@ class ServerProviderController extends Controller
 
         $this->validateRoute($project, $serverProvider);
 
-        return response()->json($serverProvider->provider()->plans($region));
+        return response()->json($serverProvider->provider()->availablePlans($region));
     }
 
     /**

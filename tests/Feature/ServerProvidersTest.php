@@ -274,6 +274,67 @@ class ServerProvidersTest extends TestCase
         );
     }
 
+    public function test_hetzner_plans_expose_availability_and_order_available_first(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            '*' => Http::response([
+                'server_types' => [
+                    [
+                        'name' => 'cpx22', 'cores' => 2, 'memory' => 4, 'disk' => 80,
+                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '9.4900000000']]],
+                        'locations' => [
+                            ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
+                        ],
+                    ],
+                    [
+                        'name' => 'ccx13', 'cores' => 2, 'memory' => 8, 'disk' => 80,
+                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '18.4900000000']]],
+                        'locations' => [
+                            ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
+                        ],
+                    ],
+                    [
+                        'name' => 'cax11', 'cores' => 2, 'memory' => 4, 'disk' => 40,
+                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '5.4900000000']]],
+                        'locations' => [
+                            ['name' => 'fsn1', 'available' => false, 'deprecation' => null],
+                        ],
+                    ],
+                    [
+                        'name' => 'cpx12', 'cores' => 1, 'memory' => 2, 'disk' => 40,
+                        'prices' => [['location' => 'sin', 'price_monthly' => ['net' => '9.4900000000']]],
+                        'locations' => [
+                            ['name' => 'sin', 'available' => true, 'deprecation' => null],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => Hetzner::id(),
+            'credentials' => ['token' => 'token'],
+        ]);
+
+        $plans = $this->get(route('server-providers.plans', [
+            'serverProvider' => $serverProvider->id,
+            'region' => 'fsn1',
+        ]))
+            ->assertSuccessful()
+            ->json();
+
+        $this->assertSame(['cpx22', 'ccx13', 'cax11'], array_keys($plans));
+        $this->assertTrue($plans['ccx13']['available']);
+        $this->assertStringContainsString('($18.49/mo)', $plans['ccx13']['label']);
+        $this->assertFalse($plans['cax11']['available']);
+        $this->assertStringNotContainsString('/mo', $plans['cax11']['label']);
+        $this->assertArrayNotHasKey('cpx12', $plans);
+    }
+
     /**
      * @return array<string, array<int, array<string, mixed>>>
      */

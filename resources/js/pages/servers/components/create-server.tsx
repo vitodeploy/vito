@@ -44,6 +44,14 @@ import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+type PlanOption = {
+  label: string;
+  available: boolean;
+};
+
+const normalizePlan = (plan: string | PlanOption): PlanOption =>
+  typeof plan === 'string' ? { label: plan, available: true } : plan;
+
 type CreateServerForm = {
   provider: string;
   server_provider: number;
@@ -337,7 +345,7 @@ export default function CreateServer({
     }
   };
 
-  const [plans, setPlans] = useState<{ [key: string]: string }>({});
+  const [plans, setPlans] = useState<{ [key: string]: string | PlanOption }>({});
   const fetchPlans = async (serverProvider: number, region: string) => {
     const plans = await axios.get(route('server-providers.plans', { serverProvider: serverProvider, region: region }));
     setPlans(plans.data);
@@ -468,7 +476,7 @@ export default function CreateServer({
                         className="w-full justify-between font-normal"
                         disabled={form.data.region === ''}
                       >
-                        {form.data.plan ? plans[form.data.plan] || form.data.plan : 'Select a plan'}
+                        {form.data.plan ? (plans[form.data.plan] ? normalizePlan(plans[form.data.plan]).label : form.data.plan) : 'Select a plan'}
                         <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -477,19 +485,24 @@ export default function CreateServer({
                         <CommandInput placeholder="Search plan..." />
                         <CommandList>
                           <CommandGroup>
-                            {Object.entries(plans).map(([key, value]) => (
-                              <CommandItem
-                                key={`plan-${key}`}
-                                value={value}
-                                onSelect={() => {
-                                  selectPlan(key);
-                                  setPlanOpen(false);
-                                }}
-                              >
-                                {value}
-                                <CheckIcon className={cn('ml-auto', form.data.plan === key ? 'opacity-100' : 'opacity-0')} />
-                              </CommandItem>
-                            ))}
+                            {Object.entries(plans).map(([key, value]) => {
+                              const plan = normalizePlan(value);
+                              return (
+                                <CommandItem
+                                  key={`plan-${key}`}
+                                  value={plan.label}
+                                  disabled={!plan.available}
+                                  onSelect={() => {
+                                    selectPlan(key);
+                                    setPlanOpen(false);
+                                  }}
+                                >
+                                  {plan.label}
+                                  {!plan.available && <span className="ml-2 text-muted-foreground">(unavailable)</span>}
+                                  <CheckIcon className={cn('ml-auto', form.data.plan === key ? 'opacity-100' : 'opacity-0')} />
+                                </CommandItem>
+                              );
+                            })}
                           </CommandGroup>
                         </CommandList>
                       </Command>

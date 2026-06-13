@@ -95,7 +95,7 @@ class UserServerProviderController extends Controller
             abort(404, 'Server provider not found');
         }
 
-        return response()->json($serverProvider->provider()->plans($region));
+        return response()->json($serverProvider->provider()->availablePlans($region));
     }
 
     #[Delete('{serverProvider}', name: 'api.user.server-providers.delete', middleware: 'ability:write')]

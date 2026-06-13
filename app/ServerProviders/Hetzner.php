@@ -65,50 +65,97 @@ class Hetzner extends AbstractProvider
         return true;
     }
 
+    /**
+     * @return array<string, array{label: string, available: bool}>
+     */
     public function plans(?string $region): array
     {
         try {
-            /** @var array{server_types?: array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>, locations: array<int, array{name: string, deprecation: ?array}>}>} $plans */
+            /** @var array{server_types?: array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string, price_monthly: array{net: string}}>, locations: array<int, array{name: string, available: bool, deprecation: ?array}>}>} $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/server_types', ['per_page' => 50])
                 ->json();
 
-            /** @var array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>, locations: array<int, array{name: string, deprecation: ?array}>}> $serverTypes */
+            /** @var array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string, price_monthly: array{net: string}}>, locations: array<int, array{name: string, available: bool, deprecation: ?array}>}> $serverTypes */
             $serverTypes = $plans['server_types'] ?? [];
 
             return collect($serverTypes)
-                ->filter(fn (array $type): bool => collect($type['prices'])->contains(fn (array $price): bool => $price['location'] === $region))
-                ->filter(function (array $type) use ($region): bool {
+                ->map(function (array $type) use ($region): ?array {
+                    /** @var array{name: string, available: bool, deprecation: ?array}|null $location */
                     $location = collect($type['locations'])->firstWhere('name', $region);
 
                     if (! $location) {
-                        return false;
+                        return null;
                     }
 
-                    if ($location['deprecation'] === null) {
-                        return true;
+                    $available = $this->planIsAvailable($location);
+
+                    $label = __('server_providers.plan', [
+                        'name' => $type['name'],
+                        'cpu' => $type['cores'],
+                        'memory' => $type['memory'],
+                        'disk' => $type['disk'],
+                    ]);
+
+                    if ($available) {
+                        $price = $this->planMonthlyPrice($type, $region);
+
+                        if ($price !== null) {
+                            $label .= ' ($'.number_format($price, 2).'/mo)';
+                        }
                     }
 
-                    $unavailableAfter = $location['deprecation']['unavailable_after'] ?? null;
-
-                    if ($unavailableAfter === null) {
-                        return false;
-                    }
-
-                    return Carbon::parse($unavailableAfter)->isFuture();
+                    return [
+                        'name' => $type['name'],
+                        'label' => $label,
+                        'available' => $available,
+                    ];
                 })
-                ->mapWithKeys(fn (array $value): array => [
-                    $value['name'] => __('server_providers.plan', [
-                        'name' => $value['name'],
-                        'cpu' => $value['cores'],
-                        'memory' => $value['memory'],
-                        'disk' => $value['disk'],
-                    ]),
+                ->filter()
+                ->sortByDesc('available')
+                ->mapWithKeys(fn (array $plan): array => [
+                    $plan['name'] => [
+                        'label' => $plan['label'],
+                        'available' => $plan['available'],
+                    ],
                 ])
                 ->toArray();
         } catch (Exception) {
             return [];
         }
+    }
+
+    /**
+     * @param  array{available: bool, deprecation: ?array}  $location
+     */
+    private function planIsAvailable(array $location): bool
+    {
+        if (! ($location['available'] ?? false)) {
+            return false;
+        }
+
+        $unavailableAfter = $location['deprecation']['unavailable_after'] ?? null;
+
+        if ($unavailableAfter === null) {
+            return true;
+        }
+
+        return Carbon::parse($unavailableAfter)->isFuture();
+    }
+
+    /**
+     * @param  array{prices: array<int, array{location: string, price_monthly: array{net: string}}>}  $type
+     */
+    private function planMonthlyPrice(array $type, ?string $region): ?float
+    {
+        /** @var array{location: string, price_monthly: array{net: string}}|null $price */
+        $price = collect($type['prices'])->firstWhere('location', $region);
+
+        if ($price === null) {
+            return null;
+        }
+
+        return (float) $price['price_monthly']['net'];
     }
 
     public function regions(): array

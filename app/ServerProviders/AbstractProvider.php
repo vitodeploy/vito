@@ -11,6 +11,17 @@ abstract class AbstractProvider implements ServerProvider
 {
     public function __construct(protected Provider $serverProvider, protected Server $server) {}
 
+    /**
+     * @return array<string, string>
+     */
+    public function availablePlans(?string $region): array
+    {
+        return collect($this->plans($region))
+            ->reject(fn (mixed $plan): bool => is_array($plan) && ($plan['available'] ?? true) === false)
+            ->map(fn (mixed $plan): string => is_array($plan) ? $plan['label'] : $plan)
+            ->all();
+    }
+
     public function generateKeyPair(): void
     {
         /** @var FilesystemAdapter $storageDisk */

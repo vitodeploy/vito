@@ -41,6 +41,13 @@ interface ServerProvider
     public function plans(?string $region): array;
 
     /**
+     * Flat, available-only map of plans (key => label) for API responses.
+     *
+     * @return array<string, string>
+     */
+    public function availablePlans(?string $region): array;
+
+    /**
      * @return array<string, mixed>
      */
     public function regions(): array;
