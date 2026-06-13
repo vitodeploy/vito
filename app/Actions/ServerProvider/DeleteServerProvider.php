@@ -2,6 +2,8 @@
 
 namespace App\Actions\ServerProvider;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
 use App\Models\ServerProvider;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +17,15 @@ class DeleteServerProvider
             ]);
         }
 
+        $id = $serverProvider->id;
+        $projectId = $serverProvider->project_id ?? 0;
+
         $serverProvider->delete();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            $projectId,
+            'server-provider.deleted',
+            ['id' => $id],
+        ));
     }
 }

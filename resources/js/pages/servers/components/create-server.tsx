@@ -43,6 +43,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useSocketListener } from '@/hooks/use-socket-events';
 
 type PlanOption = {
   label: string;
@@ -313,20 +314,42 @@ export default function CreateServer({
     const serverProviders = await axios.get(route('server-providers.json'));
     setServerProviders(serverProviders.data);
   };
-  const selectProvider = (provider: string) => {
-    form.setData('provider', provider);
-    form.clearErrors();
-    if (provider !== 'custom') {
-      form.setData('server_provider', 0);
-      form.setData('region', '');
-      form.setData('plan', '');
+
+  useEffect(() => {
+    if (open) {
       fetchServerProviders();
     }
-  };
+  }, [open]);
 
-  const selectServerProvider = async (serverProvider: string) => {
-    form.setData('server_provider', parseInt(serverProvider));
-    await fetchRegions(parseInt(serverProvider));
+  useSocketListener((event) => {
+    if (event.type?.startsWith('server-provider.')) {
+      fetchServerProviders();
+    }
+  });
+
+  const providerValue = form.data.provider === 'custom' ? 'custom' : form.data.server_provider ? form.data.server_provider.toString() : '';
+
+  const selectCombinedProvider = async (value: string) => {
+    form.clearErrors();
+    form.setData('region', '');
+    form.setData('plan', '');
+    setRegions({});
+    setPlans({});
+
+    if (value === 'custom') {
+      form.setData('provider', 'custom');
+      form.setData('server_provider', 0);
+      return;
+    }
+
+    const connection = serverProviders.find((item) => item.id.toString() === value);
+    if (!connection) {
+      return;
+    }
+
+    form.setData('provider', connection.provider);
+    form.setData('server_provider', connection.id);
+    await fetchRegions(connection.id);
   };
 
   const [regionOpen, setRegionOpen] = useState(false);
@@ -372,52 +395,47 @@ export default function CreateServer({
           <FormFields>
             <FormField>
               <Label htmlFor="provider">Provider</Label>
-              <Select value={form.data.provider} onValueChange={(value) => selectProvider(value)}>
-                <SelectTrigger id="provider">
-                  <SelectValue placeholder="Select a provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {Object.entries(configs.server_provider.providers).map(([key, provider]) => (
-                      <SelectItem key={key} value={key}>
-                        {provider.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <InputError message={form.errors.provider} />
-            </FormField>
+              <div className="flex items-center gap-2">
+                <Select value={providerValue} onValueChange={selectCombinedProvider}>
+                  <SelectTrigger id="provider" className="flex-1">
+                    <SelectValue placeholder="Select a provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="custom">{configs.server_provider.providers.custom?.label ?? 'Custom'}</SelectItem>
+                      {Object.entries(configs.server_provider.providers)
+                        .filter(([key]) => key !== 'custom')
+                        .map(([key, provider]) => {
+                          const connections = serverProviders.filter((item: ServerProvider) => item.provider === key);
 
-            {form.data.provider && form.data.provider !== 'custom' && (
-              <FormField>
-                <Label htmlFor="server-provider">Server provider connection</Label>
-                <div className="flex items-center gap-2">
-                  <Select value={form.data.server_provider.toString()} onValueChange={selectServerProvider}>
-                    <SelectTrigger id="provider">
-                      <SelectValue placeholder="Select a provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {serverProviders
-                          .filter((item: ServerProvider) => item.provider === form.data.provider)
-                          .map((provider) => (
-                            <SelectItem key={`server-provider-${provider.id}`} value={provider.id.toString()}>
-                              {provider.name}
+                          if (connections.length === 0) {
+                            return (
+                              <SelectItem key={`provider-${key}`} value={`unavailable-${key}`} disabled>
+                                {provider.label}
+                              </SelectItem>
+                            );
+                          }
+
+                          return connections.map((connection) => (
+                            <SelectItem key={`connection-${connection.id}`} value={connection.id.toString()}>
+                              {provider.label} - {connection.name}
                             </SelectItem>
-                          ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <ConnectServerProvider defaultProvider={form.data.provider} onProviderAdded={fetchServerProviders}>
-                    <Button variant="outline">
-                      <WifiIcon />
-                    </Button>
-                  </ConnectServerProvider>
-                </div>
-                <InputError message={form.errors.server_provider} />
-              </FormField>
-            )}
+                          ));
+                        })}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <ConnectServerProvider
+                  defaultProvider={form.data.provider !== 'custom' ? form.data.provider : undefined}
+                  onProviderAdded={fetchServerProviders}
+                >
+                  <Button type="button" variant="outline" size="icon" aria-label="Add server provider">
+                    <WifiIcon />
+                  </Button>
+                </ConnectServerProvider>
+              </div>
+              <InputError message={form.errors.provider || form.errors.server_provider} />
+            </FormField>
 
             {form.data.provider && form.data.provider !== 'custom' && (
               <div className="grid grid-cols-2 gap-6">

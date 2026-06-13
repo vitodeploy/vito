@@ -2,6 +2,9 @@
 
 namespace App\Actions\ServerProvider;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
 use Illuminate\Support\Facades\Validator;
 
@@ -22,6 +25,12 @@ class EditServerProvider
         $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $serverProvider->user->currentProject?->id;
 
         $serverProvider->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            $serverProvider->project_id ?? 0,
+            'server-provider.updated',
+            new ServerProviderResource($serverProvider),
+        ));
 
         return $serverProvider;
     }

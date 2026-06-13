@@ -2,6 +2,9 @@
 
 namespace App\Actions\ServerProvider;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServerProviderResource;
 use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
@@ -41,6 +44,12 @@ class CreateServerProvider
         $serverProvider->credentials = $provider->credentialData($input);
         $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->currentProject?->id;
         $serverProvider->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            $serverProvider->project_id ?? 0,
+            'server-provider.created',
+            new ServerProviderResource($serverProvider),
+        ));
 
         return $serverProvider;
     }

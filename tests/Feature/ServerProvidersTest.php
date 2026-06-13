@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Events\SocketEvent;
 use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\DigitalOcean;
@@ -9,6 +10,7 @@ use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -272,6 +274,38 @@ class ServerProvidersTest extends TestCase
             ->where('serverProviders.data.0.id', $ownProvider->id)
             ->whereNot('serverProviders.data.0.id', $otherProvider->id)
         );
+    }
+
+    public function test_creating_server_provider_dispatches_socket_event(): void
+    {
+        Event::fake([SocketEvent::class]);
+        $this->actingAs($this->user);
+        Http::fake();
+
+        $this->post(route('server-providers.store'), [
+            'provider' => Hetzner::id(),
+            'name' => 'hetty',
+            'token' => 'token',
+        ])->assertSessionDoesntHaveErrors();
+
+        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.created'
+            && $event->data->data['name'] === 'hetty');
+    }
+
+    public function test_deleting_server_provider_dispatches_socket_event(): void
+    {
+        Event::fake([SocketEvent::class]);
+        $this->actingAs($this->user);
+
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $this->delete(route('server-providers.destroy', $serverProvider))->assertSessionDoesntHaveErrors();
+
+        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.deleted'
+            && $event->data->data['id'] === $serverProvider->id);
     }
 
     public function test_hetzner_plans_expose_availability_and_order_available_first(): void
