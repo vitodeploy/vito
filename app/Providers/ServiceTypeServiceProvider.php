@@ -89,7 +89,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '17',
                 '16',
                 '15',
-                '14',
             ])
             ->configPaths([
                 [
