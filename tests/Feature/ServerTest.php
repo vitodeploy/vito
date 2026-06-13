@@ -420,6 +420,29 @@ class ServerTest extends TestCase
         $this->assertEquals(10, $this->server->updates);
     }
 
+    public function test_check_updates_splits_kernel_updates(): void
+    {
+        SSH::fake("Available updates:5\nKernel updates:2");
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.check-for-updates', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->server->refresh();
+        $this->assertEquals(5, $this->server->updates);
+        $this->assertEquals(2, $this->server->kernel_updates);
+    }
+
+    public function test_kernel_update_warning_is_exposed(): void
+    {
+        $this->server->update(['kernel_updates' => 1]);
+
+        $warnings = collect($this->server->getWarnings());
+
+        $this->assertTrue($warnings->contains(fn (array $w): bool => $w['key'] === 'kernel_update_available' && $w['count'] === 1));
+    }
+
     public function test_update_server(): void
     {
         SSH::fake('Available updates:0');
@@ -433,6 +456,21 @@ class ServerTest extends TestCase
 
         $this->assertEquals(ServerStatus::READY, $this->server->status);
         $this->assertEquals(0, $this->server->updates);
+    }
+
+    public function test_update_kernel(): void
+    {
+        SSH::fake("Available updates:0\nKernel updates:0");
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.update-kernel', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->server->refresh();
+
+        $this->assertEquals(ServerStatus::DISCONNECTED, $this->server->status);
+        $this->assertEquals(0, $this->server->kernel_updates);
     }
 
     public function test_only_owner_can_transfer_server(): void
@@ -756,6 +794,10 @@ class ServerTest extends TestCase
 
         // Test update server
         $this->post(route('servers.update', $this->server))
+            ->assertForbidden();
+
+        // Test update kernel
+        $this->post(route('servers.update-kernel', $this->server))
             ->assertForbidden();
     }
 

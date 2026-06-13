@@ -10,6 +10,7 @@ export default function ServerBanners({ server }: { server: Server }) {
 
   const rebootRequiredWarning = warnings.find((w) => w.key === 'reboot_required');
   const updatesWarning = warnings.find((w) => w.key === 'updates_available');
+  const kernelUpdateWarning = warnings.find((w) => w.key === 'kernel_update_available');
 
   if (rebootRequiredWarning) {
     items.push({
@@ -58,6 +59,33 @@ export default function ServerBanners({ server }: { server: Server }) {
           }
         >
           Update
+        </Button>
+      ),
+    });
+  }
+
+  if (kernelUpdateWarning) {
+    const kernelCount = kernelUpdateWarning.count;
+    items.push({
+      key: 'kernel-update',
+      title: `Kernel update available`,
+      description: <>Install the pending kernel {kernelCount === 1 ? 'package' : 'packages'} and restart to apply the new kernel.</>,
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            dialog.confirm.open({
+              title: `Update kernel on ${server.name}?`,
+              description: `This installs the pending kernel ${kernelCount === 1 ? 'package' : 'packages'} (a full upgrade that may install or remove packages), then restarts the server to boot the new kernel. The server will be unavailable for a minute or two and connections in flight will be dropped.`,
+              variant: 'destructive',
+              confirmLabel: 'Update & restart',
+              method: 'post',
+              url: route('servers.update-kernel', server.id),
+            })
+          }
+        >
+          Update &amp; restart
         </Button>
       ),
     });

@@ -27,6 +27,7 @@ export interface Server {
   progress?: string;
   progress_step?: string;
   updates: number;
+  kernel_updates: number;
   last_update_check?: string;
   features: ServerFeature[];
   created_at: string;
@@ -36,7 +37,10 @@ export interface Server {
   [key: string]: unknown;
 }
 
-export type ServerWarning = { key: 'updates_available'; count: number } | { key: 'reboot_required' };
+export type ServerWarning =
+  | { key: 'updates_available'; count: number }
+  | { key: 'reboot_required' }
+  | { key: 'kernel_update_available'; count: number };
 
 export interface ServerFeature {
   label: string;

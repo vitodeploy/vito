@@ -51,14 +51,30 @@ class OS
     /**
      * @throws SSHError
      */
-    public function availableUpdates(): int
+    public function upgradeKernel(): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.upgrade-kernel'),
+            'upgrade-kernel'
+        );
+    }
+
+    /**
+     * @return array{updates: int, kernel: int}
+     *
+     * @throws SSHError
+     */
+    public function availableUpdates(): array
     {
         $result = $this->server->ssh()->exec(
             view('ssh.os.available-updates'),
             'check-available-updates'
         );
 
-        return max(str($result)->after('Available updates:')->trim()->toInteger(), 0);
+        return [
+            'updates' => max(str($result)->after('Available updates:')->trim()->toInteger(), 0),
+            'kernel' => max(str($result)->after('Kernel updates:')->trim()->toInteger(), 0),
+        ];
     }
 
     /**

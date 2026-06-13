@@ -36,6 +36,7 @@ class ServerResource extends JsonResource
             'progress' => $this->progress,
             'progress_step' => $this->progress_step,
             'updates' => $this->updates,
+            'kernel_updates' => $this->kernel_updates,
             'last_update_check' => $this->last_update_check,
             'status_color' => $this->status->getColor(),
             'features' => $this->features(),

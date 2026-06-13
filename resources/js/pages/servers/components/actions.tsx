@@ -91,6 +91,21 @@ export default function ServerActions({ server }: { server: Server }) {
         >
           Update
         </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={server.kernel_updates == 0}
+          onSelect={() =>
+            dialog.confirm.open({
+              title: `Update kernel on ${server.name}?`,
+              description: `This installs the pending kernel ${server.kernel_updates === 1 ? 'package' : 'packages'} (a full upgrade that may install or remove packages), then restarts the server to boot the new kernel. The server will be unavailable for a minute or two and connections in flight will be dropped.`,
+              variant: 'destructive',
+              confirmLabel: 'Update & restart',
+              method: 'post',
+              url: route('servers.update-kernel', server.id),
+            })
+          }
+        >
+          Update kernel
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

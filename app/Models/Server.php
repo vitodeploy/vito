@@ -69,6 +69,7 @@ use Throwable;
  * @property Collection<int, SshKey> $sshKeys
  * @property string $hostname
  * @property int $updates
+ * @property int $kernel_updates
  * @property ?Carbon $last_update_check
  */
 class Server extends AbstractModel
@@ -96,6 +97,7 @@ class Server extends AbstractModel
         'progress',
         'progress_step',
         'updates',
+        'kernel_updates',
         'last_update_check',
         'feature_data',
     ];
@@ -109,6 +111,7 @@ class Server extends AbstractModel
         'auto_update' => 'boolean',
         'progress' => 'float',
         'updates' => 'integer',
+        'kernel_updates' => 'integer',
         'last_update_check' => 'datetime',
         'feature_data' => 'json',
         'os' => OperatingSystem::class,
@@ -642,7 +645,9 @@ class Server extends AbstractModel
      */
     public function checkForUpdates(): void
     {
-        $this->updates = $this->os()->availableUpdates();
+        $result = $this->os()->availableUpdates();
+        $this->updates = $result['updates'];
+        $this->kernel_updates = $result['kernel'];
         $this->last_update_check = now();
         $this->save();
     }
@@ -698,6 +703,13 @@ class Server extends AbstractModel
             $warnings[] = [
                 'key' => 'updates_available',
                 'count' => $this->updates,
+            ];
+        }
+
+        if ($this->kernel_updates > 0) {
+            $warnings[] = [
+                'key' => 'kernel_update_available',
+                'count' => $this->kernel_updates,
             ];
         }
 
