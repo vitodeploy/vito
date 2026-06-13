@@ -95,7 +95,7 @@ abstract class TestCase extends BaseTestCase
         $this->server->services()->create([
             'type' => Mysql::type(),
             'name' => Mysql::id(),
-            'version' => '8.0',
+            'version' => '8.4',
         ]);
         $this->server->services()->create([
             'type' => PHP::type(),

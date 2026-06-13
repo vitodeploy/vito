@@ -4,6 +4,7 @@ namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
 use App\Services\HasLogs;
+use Illuminate\Contracts\View\View;
 
 class Mysql extends AbstractDatabase implements HasLogs
 {
@@ -31,6 +32,13 @@ class Mysql extends AbstractDatabase implements HasLogs
     public function unit(): string
     {
         return 'mysql';
+    }
+
+    protected function installScript(): View
+    {
+        return view($this->getScriptView('install'), [
+            'version' => $this->service->version,
+        ]);
     }
 
     public function version(): string

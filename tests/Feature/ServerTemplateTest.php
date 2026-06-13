@@ -65,7 +65,7 @@ class ServerTemplateTest extends TestCase
             'services' => [
                 'php' => '8.4',
                 'nginx' => 'latest',
-                'mysql' => '8.0',
+                'mysql' => '8.4',
             ],
         ];
 
@@ -81,7 +81,7 @@ class ServerTemplateTest extends TestCase
             'services' => $this->castAsJson([
                 'php' => '8.4',
                 'nginx' => 'latest',
-                'mysql' => '8.0',
+                'mysql' => '8.4',
             ]),
         ]);
     }
@@ -344,7 +344,7 @@ class ServerTemplateTest extends TestCase
         $services = [
             'php' => '8.4',
             'nginx' => 'latest',
-            'mysql' => '8.0',
+            'mysql' => '8.4',
         ];
 
         $template = ServerTemplate::factory()->create([

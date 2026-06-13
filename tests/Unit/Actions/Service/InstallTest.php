@@ -108,14 +108,14 @@ class InstallTest extends TestCase
         app(Install::class)->install($this->server, [
             'type' => 'database',
             'name' => 'mysql',
-            'version' => '8.0',
+            'version' => '8.4',
         ]);
 
         $this->assertDatabaseHas('services', [
             'server_id' => $this->server->id,
             'name' => 'mysql',
             'type' => 'database',
-            'version' => '8.0',
+            'version' => '8.4',
             'status' => ServiceStatus::READY,
         ]);
     }
@@ -126,7 +126,7 @@ class InstallTest extends TestCase
         app(Install::class)->install($this->server, [
             'type' => 'database',
             'name' => 'mysql',
-            'version' => '8.0',
+            'version' => '8.4',
         ]);
     }
 

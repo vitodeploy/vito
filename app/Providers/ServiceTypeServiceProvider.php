@@ -69,8 +69,8 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('MySQL')
             ->handler(Mysql::class)
             ->versions([
+                '9.7',
                 '8.4',
-                '8.0',
             ])
             ->configPaths([
                 [
