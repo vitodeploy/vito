@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useRef, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -47,6 +47,8 @@ export default function CreateDatabase({
   const [open, setOpen] = useState(false);
   const [charsets, setCharsets] = useState<string[]>([]);
   const [collations, setCollations] = useState<string[]>([]);
+  const fetchedServer = useRef<number | null>(null);
+  const latestCollationRequest = useRef(0);
 
   const form = useForm<CreateForm>({
     name: '',
@@ -66,14 +68,32 @@ export default function CreateDatabase({
     return list[0] ?? '';
   };
 
+  const fetchCollations = async (charset: string, current: string): Promise<void> => {
+    const requestId = ++latestCollationRequest.current;
+    try {
+      const response = await axios.get(route('databases.collations', { server: server, charset }));
+      if (requestId !== latestCollationRequest.current) {
+        return;
+      }
+      setCollations(response.data.list);
+      form.setData('collation', resolveCollation(response.data.list, response.data.default, current));
+    } catch {
+      if (requestId !== latestCollationRequest.current) {
+        return;
+      }
+      setCollations([]);
+      form.setData('collation', '');
+    }
+  };
+
   const fetchCharsets = async () => {
+    setCollations([]);
     const response = await axios.get(route('databases.charsets', server));
+    fetchedServer.current = server;
     setCharsets(response.data);
 
     if (form.data.charset && response.data.includes(form.data.charset)) {
-      const collationResponse = await axios.get(route('databases.collations', { server: server, charset: form.data.charset }));
-      setCollations(collationResponse.data.list);
-      form.setData('collation', resolveCollation(collationResponse.data.list, collationResponse.data.default, form.data.collation));
+      await fetchCollations(form.data.charset, form.data.collation);
     }
   };
 
@@ -95,17 +115,14 @@ export default function CreateDatabase({
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
-    if (open && charsets.length === 0) {
+    if (open && fetchedServer.current !== server) {
       fetchCharsets();
     }
   };
 
   const handleCharsetChange = (value: string) => {
     form.setData('charset', value);
-    axios.get(route('databases.collations', { server: server, charset: value })).then((response) => {
-      setCollations(response.data.list);
-      form.setData('collation', resolveCollation(response.data.list, response.data.default, ''));
-    });
+    void fetchCollations(value, '');
   };
 
   return (
