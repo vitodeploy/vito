@@ -70,25 +70,47 @@ class Vultr extends AbstractProvider
         return true;
     }
 
+    /**
+     * @return array<string, array{label: string, available: bool}>
+     */
     public function plans(?string $region): array
     {
         try {
-            /** @var array<string, mixed> $plans */
-            $plans = Http::withToken($this->serverProvider->credentials['token'])
+            /** @var array<string, mixed> $response */
+            $response = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/plans', ['per_page' => 500])
                 ->json();
 
-            /** @var array<string, mixed> $plans */
-            $plans = $plans['plans'] ?? [];
+            /** @var array<int, array{id: string, type: string, vcpu_count: int, ram: int, disk: int, monthly_cost: int|float, locations: array<string>}> $plans */
+            $plans = $response['plans'] ?? [];
 
-            return collect($plans)->filter(fn (array $plan): bool => in_array($region, $plan['locations']))
-                ->mapWithKeys(fn (array $value) => [
-                    $value['id'] => __('server_providers.plan', [
-                        'name' => $value['type'],
-                        'cpu' => $value['vcpu_count'],
-                        'memory' => $value['ram'],
-                        'disk' => $value['disk'],
-                    ]),
+            return collect($plans)
+                ->map(function (array $plan) use ($region): array {
+                    $available = in_array($region, $plan['locations'], true);
+
+                    $label = __('server_providers.plan', [
+                        'name' => $plan['type'],
+                        'cpu' => $plan['vcpu_count'],
+                        'memory' => $plan['ram'],
+                        'disk' => $plan['disk'],
+                    ]);
+
+                    if ($available) {
+                        $label .= ' ('.number_format((float) $plan['monthly_cost'], 2).'/mo)';
+                    }
+
+                    return [
+                        'id' => $plan['id'],
+                        'label' => $label,
+                        'available' => $available,
+                    ];
+                })
+                ->sortByDesc('available')
+                ->mapWithKeys(fn (array $value): array => [
+                    $value['id'] => [
+                        'label' => $value['label'],
+                        'available' => $value['available'],
+                    ],
                 ])
                 ->toArray();
         } catch (Exception) {

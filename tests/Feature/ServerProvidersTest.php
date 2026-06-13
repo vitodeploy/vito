@@ -379,6 +379,50 @@ class ServerProvidersTest extends TestCase
         $this->assertStringNotContainsString('/mo', $plans['s-1vcpu-512mb-10gb']['label']);
     }
 
+    public function test_vultr_plans_show_every_plan_and_grey_unavailable(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            '*' => Http::response([
+                'plans' => [
+                    [
+                        'id' => 'vc2-1c-1gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 1024, 'disk' => 25,
+                        'monthly_cost' => 5, 'locations' => ['ams', 'ewr'],
+                    ],
+                    [
+                        'id' => 'vc2-2c-4gb', 'type' => 'vc2', 'vcpu_count' => 2, 'ram' => 4096, 'disk' => 80,
+                        'monthly_cost' => 20, 'locations' => ['ams'],
+                    ],
+                    [
+                        'id' => 'vc2-1c-0.5gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 512, 'disk' => 10,
+                        'monthly_cost' => 2.5, 'locations' => ['ewr'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => Vultr::id(),
+            'credentials' => ['token' => 'token'],
+        ]);
+
+        $plans = $this->get(route('server-providers.plans', [
+            'serverProvider' => $serverProvider->id,
+            'region' => 'ams',
+        ]))
+            ->assertSuccessful()
+            ->json();
+
+        $this->assertSame(['vc2-1c-1gb', 'vc2-2c-4gb', 'vc2-1c-0.5gb'], array_keys($plans));
+        $this->assertTrue($plans['vc2-1c-1gb']['available']);
+        $this->assertStringContainsString('(5.00/mo)', $plans['vc2-1c-1gb']['label']);
+        $this->assertFalse($plans['vc2-1c-0.5gb']['available']);
+        $this->assertStringNotContainsString('/mo', $plans['vc2-1c-0.5gb']['label']);
+    }
+
     /**
      * @return array<string, array<int, array<string, mixed>>>
      */
