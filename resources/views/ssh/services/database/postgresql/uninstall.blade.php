@@ -1,9 +1,16 @@
-sudo service postgresql stop
-sudo systemctl stop postgresql 2>/dev/null || true
+# Gracefully stop and drop every PostgreSQL cluster before removing packages
+if command -v pg_lsclusters >/dev/null 2>&1; then
+    pg_lsclusters -h 2>/dev/null | while read -r cluster_version cluster_name _; do
+        sudo pg_dropcluster --stop "$cluster_version" "$cluster_name" 2>/dev/null || true
+    done
+fi
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y postgresql-*
-sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y
-sudo DEBIAN_FRONTEND=noninteractive apt-get autoclean -y
+sudo systemctl stop postgresql 2>/dev/null || true
+sudo service postgresql stop 2>/dev/null || true
+
+sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y postgresql-* 2>/dev/null || true
+sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>/dev/null || true
+sudo DEBIAN_FRONTEND=noninteractive apt-get autoclean -y 2>/dev/null || true
 
 # Remove repository and keys
 sudo rm -f /etc/apt/sources.list.d/pgdg.list
@@ -14,6 +21,3 @@ sudo rm -rf /etc/postgresql
 sudo rm -rf /var/lib/postgresql
 sudo rm -rf /var/log/postgresql
 sudo rm -rf /var/run/postgresql
-sudo rm -rf /var/run/postgresql/postmaster.pid
-sudo rm -rf /var/run/postgresql/.s.PGSQL.5432
-sudo rm -rf /var/run/postgresql/.s.PGSQL.5432.lock

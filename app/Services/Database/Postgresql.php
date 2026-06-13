@@ -4,6 +4,7 @@ namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
 use App\Services\HasLogs;
+use Illuminate\Contracts\View\View;
 
 class Postgresql extends AbstractDatabase implements HasLogs
 {
@@ -35,6 +36,13 @@ class Postgresql extends AbstractDatabase implements HasLogs
     public function unit(): string
     {
         return 'postgresql';
+    }
+
+    protected function installScript(): View
+    {
+        return view($this->getScriptView('install'), [
+            'version' => $this->service->version,
+        ]);
     }
 
     public function version(): string
