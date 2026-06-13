@@ -40,7 +40,7 @@ class GetCharsetsTest extends TestCase
     ];
 
     /**
-     * @param  array<string, string|array<string>>  $expected
+     * @param  array<string, array{default: string|null, list: array<int, string>}>  $expected
      */
     #[DataProvider('data')]
     public function test_update_charsets(string $name, string $version, string $output, array $expected): void

@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -48,12 +48,6 @@ export default function CreateDatabase({
   const [charsets, setCharsets] = useState<string[]>([]);
   const [collations, setCollations] = useState<string[]>([]);
 
-  const fetchCharsets = async () => {
-    axios.get(route('databases.charsets', server)).then((response) => {
-      setCharsets(response.data);
-    });
-  };
-
   const form = useForm<CreateForm>({
     name: '',
     charset: defaultCharset || '',
@@ -62,14 +56,26 @@ export default function CreateDatabase({
     existing_user_id: '',
   });
 
-  // Auto-load collations when modal opens with a default charset
-  useEffect(() => {
-    if (open && form.data.charset && charsets.includes(form.data.charset) && collations.length === 0) {
-      axios.get(route('databases.collations', { server: server, charset: form.data.charset })).then((response) => {
-        setCollations(response.data);
-      });
+  const resolveCollation = (list: string[], defaultCollation: string | null, current: string): string => {
+    if (current && list.includes(current)) {
+      return current;
     }
-  }, [open, charsets, form.data.charset, server, collations]);
+    if (defaultCollation && list.includes(defaultCollation)) {
+      return defaultCollation;
+    }
+    return list[0] ?? '';
+  };
+
+  const fetchCharsets = async () => {
+    const response = await axios.get(route('databases.charsets', server));
+    setCharsets(response.data);
+
+    if (form.data.charset && response.data.includes(form.data.charset)) {
+      const collationResponse = await axios.get(route('databases.collations', { server: server, charset: form.data.charset }));
+      setCollations(collationResponse.data.list);
+      form.setData('collation', resolveCollation(collationResponse.data.list, collationResponse.data.default, form.data.collation));
+    }
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -95,10 +101,10 @@ export default function CreateDatabase({
   };
 
   const handleCharsetChange = (value: string) => {
-    form.setData('collation', '');
     form.setData('charset', value);
     axios.get(route('databases.collations', { server: server, charset: value })).then((response) => {
-      setCollations(response.data);
+      setCollations(response.data.list);
+      form.setData('collation', resolveCollation(response.data.list, response.data.default, ''));
     });
   };
 

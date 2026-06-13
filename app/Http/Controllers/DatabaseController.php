@@ -68,7 +68,10 @@ class DatabaseController extends Controller
 
         $charsets = $server->database()->type_data['charsets'] ?? [];
 
-        return response()->json(data_get($charsets, $charset.'.list', data_get($charsets, $charset.'.default', [])));
+        return response()->json([
+            'default' => data_get($charsets, $charset.'.default'),
+            'list' => data_get($charsets, $charset.'.list', []),
+        ]);
     }
 
     #[Post('/', name: 'databases.store')]
