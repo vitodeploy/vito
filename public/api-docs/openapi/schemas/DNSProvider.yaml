@@ -20,6 +20,11 @@ properties:
     type: boolean
     example: false
     description: 'True if the DNS provider is available globally (not project-specific)'
+  editable_data:
+    type: object
+    additionalProperties: true
+    description: 'Provider-specific editable settings. Empty for providers (e.g. Cloudflare) that expose no editable fields.'
+    example: {}
   created_at:
     type: string
     format: date-time

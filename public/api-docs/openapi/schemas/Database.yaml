@@ -17,11 +17,11 @@ properties:
     example: 'utf8mb4'
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    enum: ['ready', 'creating', 'failed', 'deleting']
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   created_at:
     type: string

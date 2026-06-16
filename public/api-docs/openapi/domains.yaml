@@ -79,7 +79,7 @@ paths:
               dns_provider_id: 1
               provider_domain_id: 'domain-123'
       responses:
-        '201':
+        '200':
           description: Domain added successfully
           content:
             application/json:

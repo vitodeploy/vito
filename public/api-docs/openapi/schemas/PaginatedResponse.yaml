@@ -10,6 +10,7 @@ properties:
         type: string
       last:
         type: string
+        nullable: true
       prev:
         type: string
         nullable: true
@@ -23,11 +24,7 @@ properties:
         type: integer
       from:
         type: integer
-      last_page:
-        type: integer
       per_page:
         type: integer
       to:
-        type: integer
-      total:
         type: integer

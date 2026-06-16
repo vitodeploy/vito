@@ -16,15 +16,16 @@ properties:
     type: string
     example: 'www.example.com'
   mode:
-    type: string
-    example: '301'
+    type: integer
+    enum: [301, 302, 307, 308, 1000]
+    example: 301
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    enum: ['creating', 'ready', 'deleting', 'failed']
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   created_at:
     type: string

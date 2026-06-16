@@ -39,6 +39,7 @@ paths:
               example:
                 data:
                   - id: 1
+                    name: 'Schedule runner'
                     server_id: 1
                     site_id: null
                     command: 'php artisan schedule:run'
@@ -112,6 +113,11 @@ paths:
                 - user
                 - frequency
               properties:
+                name:
+                  type: string
+                  nullable: true
+                  description: Optional descriptive name for the cron job
+                  example: 'Schedule runner'
                 command:
                   type: string
                   description: Command to execute
@@ -122,8 +128,12 @@ paths:
                   example: 'www-data'
                 frequency:
                   type: string
-                  description: Cron frequency expression
+                  description: Cron frequency expression, or 'custom' to provide a raw expression via the custom field
                   example: '* * * * *'
+                custom:
+                  type: string
+                  description: Raw cron expression (required when frequency is 'custom')
+                  example: '*/5 * * * *'
                 site_id:
                   type: integer
                   nullable: true
@@ -376,6 +386,11 @@ paths:
                 - user
                 - frequency
               properties:
+                name:
+                  type: string
+                  nullable: true
+                  description: Optional descriptive name for the cron job
+                  example: 'Schedule runner'
                 command:
                   type: string
                   description: Command to execute
@@ -386,8 +401,12 @@ paths:
                   example: 'www-data'
                 frequency:
                   type: string
-                  description: Cron frequency expression
+                  description: Cron frequency expression, or 'custom' to provide a raw expression via the custom field
                   example: '* * * * *'
+                custom:
+                  type: string
+                  description: Raw cron expression (required when frequency is 'custom')
+                  example: '*/5 * * * *'
             example:
               command: 'php artisan schedule:run'
               user: 'www-data'

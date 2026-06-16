@@ -85,26 +85,53 @@ paths:
               type: object
               required:
                 - name
+                - type
+                - protocol
                 - port
-                - from
               properties:
                 name:
                   type: string
+                  maxLength: 18
                   description: Rule name
                   example: 'SSH Access'
+                type:
+                  type: string
+                  enum: ['allow', 'deny']
+                  description: Whether to allow or deny matching traffic
+                  example: 'allow'
+                protocol:
+                  type: string
+                  enum: ['tcp', 'udp']
+                  description: Network protocol the rule applies to
+                  example: 'tcp'
                 port:
                   type: string
                   description: A single port (e.g. "22") or an inclusive port range (e.g. "3000:3010"). Each side must be between 1 and 65535, and the start must be lower than the end (the start-less-than-end constraint is enforced by the server and not expressible in this pattern).
                   pattern: '^(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))?$'
-                  example: '3000:3010'
-                from:
+                  example: '22'
+                source_any:
+                  type: boolean
+                  description: When true (or when source is omitted), the rule applies to any source IP. When explicitly false, source and mask become required.
+                  example: true
+                source:
                   type: string
-                  description: Source IP or CIDR
-                  example: '0.0.0.0/0'
+                  format: ipv4
+                  nullable: true
+                  description: Source IP address. Required when source_any is false.
+                  example: '192.168.1.1'
+                mask:
+                  type: integer
+                  minimum: 1
+                  maximum: 32
+                  nullable: true
+                  description: CIDR prefix length (1-32) for the source IP. Required when source_any is false.
+                  example: 32
             example:
               name: 'SSH Access'
+              type: 'allow'
+              protocol: 'tcp'
               port: '22'
-              from: '0.0.0.0/0'
+              source_any: true
       responses:
         '201':
           description: Firewall rule created successfully
@@ -192,6 +219,122 @@ paths:
             application/json:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update firewall rule
+      description: Update an existing firewall rule
+      tags:
+        - Firewall Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: firewallRule
+          in: path
+          required: true
+          description: Firewall Rule ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - protocol
+                - port
+              properties:
+                name:
+                  type: string
+                  maxLength: 18
+                  description: Rule name
+                  example: 'SSH Access'
+                type:
+                  type: string
+                  enum: ['allow', 'deny']
+                  description: Whether to allow or deny matching traffic
+                  example: 'allow'
+                protocol:
+                  type: string
+                  enum: ['tcp', 'udp']
+                  description: Network protocol the rule applies to
+                  example: 'tcp'
+                port:
+                  type: string
+                  description: A single port (e.g. "22") or an inclusive port range (e.g. "3000:3010"). Each side must be between 1 and 65535, and the start must be lower than the end (the start-less-than-end constraint is enforced by the server and not expressible in this pattern).
+                  pattern: '^(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))?$'
+                  example: '22'
+                source_any:
+                  type: boolean
+                  description: When true (or when source is omitted), the rule applies to any source IP. When explicitly false, source and mask become required.
+                  example: true
+                source:
+                  type: string
+                  format: ipv4
+                  nullable: true
+                  description: Source IP address. Required when source_any is false.
+                  example: '192.168.1.1'
+                mask:
+                  type: integer
+                  minimum: 1
+                  maximum: 32
+                  nullable: true
+                  description: CIDR prefix length (1-32) for the source IP. Required when source_any is false.
+                  example: 32
+            example:
+              name: 'SSH Access'
+              type: 'allow'
+              protocol: 'tcp'
+              port: '22'
+              source_any: true
+      responses:
+        '200':
+          description: Firewall rule updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/FirewallRule.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Firewall rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
     delete:
       summary: Delete firewall rule
