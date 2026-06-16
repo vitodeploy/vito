@@ -36,6 +36,8 @@ interface SiteType
 
     public function install(): void;
 
+    public function assertReadyToDeploy(): void;
+
     /**
      * @return array<array<string, string>>
      */

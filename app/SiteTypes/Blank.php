@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\DTOs\DynamicField;
 use App\Models\Deployment;
 use App\Models\Site;
+use App\Models\SourceControl;
 
 class Blank extends AbstractProxiedSiteType
 {
@@ -28,7 +29,42 @@ class Blank extends AbstractProxiedSiteType
      */
     public static function formFields(): array
     {
-        return parent::sharedFormFields();
+        $shared = parent::sharedFormFields();
+
+        return [
+            array_shift($shared),
+            DynamicField::make('use_source_control')
+                ->checkbox()
+                ->label('Add source control')
+                ->description('Deploy this site from a Git repository.')
+                ->default(false),
+            ...$shared,
+        ];
+    }
+
+    public function createRules(array $input): array
+    {
+        $rules = [
+            'port' => ['required', 'integer', 'between:1024,65535'],
+            'start_command' => ['nullable', 'string', 'max:255', 'not_regex:/[\r\n]/'],
+        ];
+
+        if (! empty($input['use_source_control'])) {
+            $rules['source_control'] = SourceControl::siteValidationRules($this->site->server);
+            $rules['repository'] = ['required'];
+            $rules['branch'] = ['required'];
+        }
+
+        return $rules;
+    }
+
+    public function defaultDeploymentScript(): string
+    {
+        if (! $this->site->repository) {
+            return '';
+        }
+
+        return parent::defaultDeploymentScript();
     }
 
     public function data(array $input): array

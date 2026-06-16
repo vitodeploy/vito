@@ -11,6 +11,7 @@ use App\Models\DatabaseUser;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\SiteTypes\Blank;
 use App\SiteTypes\BunSite;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
@@ -340,6 +341,48 @@ class SitesTest extends TestCase
             'domain' => 'example.com',
             'status' => SiteStatus::READY,
         ]);
+    }
+
+    public function test_create_blank_site_without_source_control(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => Blank::id(),
+            'domain' => 'blank-example.com',
+            'port' => '3000',
+            'user' => 'blanktest',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'blank-example.com',
+            'status' => SiteStatus::READY->value,
+            'user' => 'blanktest',
+            'source_control_id' => null,
+        ]);
+    }
+
+    public function test_create_blank_site_with_source_control_requires_repository(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => Blank::id(),
+            'domain' => 'blank-sc.com',
+            'port' => '3000',
+            'user' => 'blanksc',
+            'use_source_control' => true,
+            'source_control' => $sourceControl->id,
+        ])->assertSessionHasErrors(['repository', 'branch']);
     }
 
     public function test_create_laravel_site_dispatches_ensure_env_script(): void

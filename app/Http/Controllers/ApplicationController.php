@@ -9,6 +9,7 @@ use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\FailedToDestroyGitHook;
+use App\Exceptions\ReverseProxyNotConfiguredException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Helpers\EnvParser;
@@ -73,6 +74,7 @@ class ApplicationController extends Controller
 
     /**
      * @throws DeploymentScriptIsEmptyException
+     * @throws ReverseProxyNotConfiguredException
      */
     #[Post('/deploy', name: 'application.deploy')]
     public function deploy(Server $server, Site $site): RedirectResponse

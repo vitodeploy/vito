@@ -4,6 +4,7 @@ namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
+use App\Exceptions\ReverseProxyNotConfiguredException;
 use App\Jobs\Site\DeployJob;
 use App\Models\Deployment;
 use App\Models\ServerLog;
@@ -13,9 +14,12 @@ class Deploy
 {
     /**
      * @throws DeploymentScriptIsEmptyException
+     * @throws ReverseProxyNotConfiguredException
      */
     public function run(Site $site, bool $modern = true): Deployment
     {
+        $site->type()->assertReadyToDeploy();
+
         if ($site->sourceControl) {
             $site->sourceControl->getRepo($site->repository);
         }

@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\Actions\Worker\CreateWorker;
 use App\DTOs\DynamicField;
 use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\ReverseProxyNotConfiguredException;
 use App\Exceptions\SSHError;
 use App\Models\Deployment;
 use App\Models\SourceControl;
@@ -27,6 +28,25 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
         return [];
     }
 
+    public function assertReadyToDeploy(): void
+    {
+        $missing = [];
+
+        if (empty($this->site->port)) {
+            $missing[] = 'a port';
+        }
+
+        if ($this->startCommand() === '') {
+            $missing[] = 'a start command';
+        }
+
+        if ($missing !== []) {
+            throw new ReverseProxyNotConfiguredException(
+                'Please set '.implode(' and ', $missing).' before deploying this site.'
+            );
+        }
+    }
+
     public function vhostData(): array
     {
         return ['is_reverse_proxy' => true];
@@ -46,7 +66,7 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
     public function createFields(array $input): array
     {
         return [
-            'source_control_id' => $input['source_control'] ?? '',
+            'source_control_id' => ! empty($input['source_control']) ? $input['source_control'] : null,
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
             'port' => $input['port'] ?? '',
@@ -59,14 +79,14 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
     public static function sharedFormFields(): array
     {
         return [
-            DynamicField::make('source_control')
-                ->component()
-                ->label('Source Control'),
             DynamicField::make('port')
                 ->text()
                 ->label('Port')
                 ->placeholder('3000')
                 ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
+            DynamicField::make('source_control')
+                ->component()
+                ->label('Source Control'),
             DynamicField::make('repository')
                 ->text()
                 ->label('Repository')

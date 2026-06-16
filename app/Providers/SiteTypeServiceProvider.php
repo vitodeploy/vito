@@ -200,7 +200,7 @@ class SiteTypeServiceProvider extends ServiceProvider
     private function blank(): void
     {
         RegisterSiteType::make(Blank::id())
-            ->label('Blank')
+            ->label('Blank (Reverse Proxy)')
             ->handler(Blank::class)
             ->form(DynamicForm::make(Blank::formFields()))
             ->register();
