@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import ScheduleBuilder, { buildSchedule, parseSchedule } from '@/pages/security/components/schedule-builder';
 
 function serviceStatusLabel(status: string): string {
@@ -260,7 +261,7 @@ function ScoreCard({ score }: { score: SecurityScore }) {
             <span className="text-muted-foreground text-sm">/ 100</span>
           </div>
         </div>
-        <Progress value={score.score} className={barColor} />
+        <Progress value={score.score} className={cn('bg-primary/10 dark:bg-primary/20', barColor)} />
         <Table>
           <TableBody>
             {score.checks.map((check) => (
