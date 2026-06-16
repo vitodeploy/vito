@@ -23,7 +23,7 @@
     "mobiledetect/mobiledetectlib": "^4.8",
     "mustache/mustache": "^3.0",
     "opcodesio/log-viewer": "^3.17",
-    "phpseclib/phpseclib": "3.0.52",
+    "phpseclib/phpseclib": "^3.0.52",
     "ratchet/rfc6455": "^0.4",
     "react/event-loop": "^1.5",
     "react/socket": "^1.17",
