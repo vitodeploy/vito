@@ -319,11 +319,18 @@ class SiteToolingTest extends TestCase
 
     public function test_uninstall_marks_failed_when_tool_missing_from_registry(): void
     {
+        Event::fake([SocketEvent::class]);
+
         $this->iuser()->setToolingStatus('ghost-tool', SiteToolingState::STATUS_UNINSTALLING);
 
         dispatch_sync(new UninstallSiteToolingJob($this->isolatedSite, 'ghost-tool'));
 
         $this->assertSame('uninstall_failed', $this->iuser()->toolingStatus('ghost-tool'));
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'isolated-user.tooling-updated',
+        );
     }
 
     public function test_complete_install_broadcasts_tooling_updated(): void
