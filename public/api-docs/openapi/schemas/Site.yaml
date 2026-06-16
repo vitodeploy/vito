@@ -163,14 +163,56 @@ properties:
     example: null
   warnings:
     type: array
-    description: 'Active warnings for the site (e.g. SSL disabled, pending domains).'
+    description: 'Active warnings for the site. Each object always has a "key"; the remaining properties depend on the warning type.'
     items:
       type: object
+      required: [key]
       properties:
         key:
           type: string
+          enum:
+            - pending_domains
+            - ssl_disabled
+            - vhost_generation_disabled
+            - ssl_expiring
+            - needs_first_deploy
+            - worker_not_running
           example: 'ssl_disabled'
+        count:
+          type: integer
+          description: 'Number of affected domains. Present for pending_domains and ssl_expiring.'
+          example: 2
+        domains:
+          type: array
+          description: 'Affected domain names. Present for pending_domains and ssl_expiring.'
+          items:
+            type: string
+          example: ['app.example.com']
+        earliest_expiry:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Earliest SSL expiry date (ISO-8601). Present for ssl_expiring.'
+        worker_id:
+          type: integer
+          description: 'Affected worker ID. Present for worker_not_running.'
+        name:
+          type: string
+          description: 'Worker name. Present for worker_not_running.'
+        status:
+          type: string
+          description: 'Worker status text. Present for worker_not_running.'
+        status_color:
+          type: string
+          description: 'Worker status color. Present for worker_not_running.'
+        error:
+          type: string
+          nullable: true
+          description: 'Worker error output. Present for worker_not_running.'
     example:
+      - key: 'pending_domains'
+        count: 1
+        domains: ['blog.example.com']
       - key: 'ssl_disabled'
   created_at:
     type: string
