@@ -3,6 +3,7 @@
 namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
+use App\Exceptions\SSHError;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Services\HasLogs;
@@ -77,7 +78,7 @@ class Postgresql extends AbstractDatabase implements HasLogs
      *
      * @param  array<string>  $databases
      *
-     * @throws \App\Exceptions\SSHError
+     * @throws SSHError
      */
     public function link(string $username, string $host, array $databases, string $permission = 'admin'): void
     {
@@ -87,7 +88,7 @@ class Postgresql extends AbstractDatabase implements HasLogs
     }
 
     /**
-     * @throws \App\Exceptions\SSHError
+     * @throws SSHError
      */
     public function unlink(string $username, string $host): void
     {
@@ -97,7 +98,7 @@ class Postgresql extends AbstractDatabase implements HasLogs
     }
 
     /**
-     * @throws \App\Exceptions\SSHError
+     * @throws SSHError
      */
     public function deleteUser(string $username, string $host): void
     {
@@ -128,7 +129,7 @@ class Postgresql extends AbstractDatabase implements HasLogs
      *
      * @param  array<int, string>  $revokeOnly  Usernames to scrub but not grant (e.g. a user being unlinked or deleted).
      *
-     * @throws \App\Exceptions\SSHError
+     * @throws SSHError
      */
     private function reconcilePrivileges(string $database, array $revokeOnly = []): void
     {

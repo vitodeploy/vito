@@ -5,20 +5,46 @@ DB_MAJOR=${DB_VERSION%%.*}
 DB_OWNER=$(sudo -u postgres psql -d "$DB_NAME" -tAc "SELECT pg_catalog.pg_get_userbyid(d.datdba) FROM pg_catalog.pg_database d WHERE d.datname = '$DB_NAME';")
 
 @foreach ($scrubUsers as $scrubUser)
-sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;" 2>/dev/null || true
-sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;" 2>/dev/null || true
-sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;" 2>/dev/null || true
-sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON DATABASE \"$DB_NAME\" FROM \"{{ $scrubUser }}\" CASCADE;" 2>/dev/null || true
-sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL ON SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;" 2>/dev/null || true
+if sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = '{{ $scrubUser }}'" | grep -q 1; then
+    if ! sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! sudo -u postgres psql -c "REVOKE ALL PRIVILEGES ON DATABASE \"$DB_NAME\" FROM \"{{ $scrubUser }}\" CASCADE;"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! sudo -u postgres psql -d "$DB_NAME" -c "REVOKE ALL ON SCHEMA public FROM \"{{ $scrubUser }}\" CASCADE;"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
 @foreach ($revokeCreators as $revokeCreator)
-sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON TABLES FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
-sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON SEQUENCES FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
-sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
+    if sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = '{{ $revokeCreator }}'" | grep -q 1; then
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON TABLES FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON SEQUENCES FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"{{ $revokeCreator }}\" IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+    fi
 @endforeach
-if [ -n "$DB_OWNER" ]; then
-    sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON TABLES FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
-    sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON SEQUENCES FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
-    sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM \"{{ $scrubUser }}\";" 2>/dev/null || true
+    if [ -n "$DB_OWNER" ]; then
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON TABLES FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON SEQUENCES FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+        if ! sudo -u postgres psql -d "$DB_NAME" -c "ALTER DEFAULT PRIVILEGES FOR ROLE \"$DB_OWNER\" IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM \"{{ $scrubUser }}\";"; then
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+    fi
 fi
 @endforeach
 
