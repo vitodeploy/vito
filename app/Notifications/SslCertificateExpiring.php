@@ -55,7 +55,7 @@ class SslCertificateExpiring extends AbstractNotification
         }
 
         return __('expires in :days day(s) (:date)', [
-            'days' => (int) ceil(now()->floatDiffInDays($expiresAt)),
+            'days' => (int) ceil(now()->diffInDays($expiresAt, false)),
             'date' => $expiresAt->toFormattedDayDateString(),
         ]);
     }
