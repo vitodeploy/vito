@@ -1,4 +1,4 @@
-set -o pipefail
+set -o pipefail 2>/dev/null || true
 export LC_ALL=C
 UPGRADE_LOG=$(mktemp)
 trap 'rm -f "$UPGRADE_LOG"' EXIT

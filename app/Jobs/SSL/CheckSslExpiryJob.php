@@ -11,6 +11,7 @@ use App\Models\Ssl;
 use App\Notifications\SslCertificateExpiring;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CheckSslExpiryJob implements ShouldQueue
@@ -53,7 +54,12 @@ class CheckSslExpiryJob implements ShouldQueue
             }
 
             $parsed = CertificateParser::parse($certificate);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            Log::warning('[SSL expiry check] Failed to read certificate', [
+                'ssl_id' => $ssl->id,
+                'error' => $e->getMessage(),
+            ]);
+
             return;
         }
 
