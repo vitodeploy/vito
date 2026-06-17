@@ -53,21 +53,26 @@ class CheckSslExpiryJob implements ShouldQueue
             }
 
             $parsed = CertificateParser::parse($certificate);
-            $dirty = false;
-
-            if (! $ssl->expires_at?->equalTo($parsed['expires_at'])) {
-                $ssl->expires_at = $parsed['expires_at'];
-                $ssl->domains = $parsed['domains'];
-                $dirty = true;
-            }
-
-            $dirty = $this->handleExpiryNotification($ssl) || $dirty;
-
-            if ($dirty) {
-                $ssl->save();
-            }
         } catch (Throwable) {
             return;
+        }
+
+        $dirty = false;
+
+        if (! $ssl->expires_at?->equalTo($parsed['expires_at'])) {
+            $ssl->expires_at = $parsed['expires_at'];
+            $dirty = true;
+        }
+
+        if ($ssl->domains !== $parsed['domains']) {
+            $ssl->domains = $parsed['domains'];
+            $dirty = true;
+        }
+
+        $dirty = $this->handleExpiryNotification($ssl) || $dirty;
+
+        if ($dirty) {
+            $ssl->save();
         }
     }
 
