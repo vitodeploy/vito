@@ -1,4 +1,4 @@
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common curl zip unzip git gcc openssl ufw cron
+sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" software-properties-common curl zip unzip git gcc openssl ufw cron
 git config --global user.email "{{ $email }}"
 git config --global user.name "{{ $name }}"
 
