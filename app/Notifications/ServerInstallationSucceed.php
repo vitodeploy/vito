@@ -9,11 +9,6 @@ class ServerInstallationSucceed extends AbstractNotification
 {
     public function __construct(protected Server $server) {}
 
-    public function subject(): string
-    {
-        return __('Server installation succeed!');
-    }
-
     public function rawText(): string
     {
         $this->server->refresh();
@@ -32,11 +27,12 @@ class ServerInstallationSucceed extends AbstractNotification
         $this->server->refresh();
 
         return (new MailMessage)
-            ->subject(__('Server installation succeed!'))
-            ->line('Your server ['.$this->server->name.'] has been installed successfully.')
-            ->line('Server IP: '.$this->server->ip)
-            ->line('User: '.$this->server->authentication['user'])
-            ->line('Password: '.$this->server->authentication['pass'])
-            ->action('Manage Your Server', url('/login'));
+            ->success()
+            ->subject(__('Your server is ready'))
+            ->line(__('Your server [:server] has been installed successfully and is ready to use.', ['server' => $this->server->name]))
+            ->line(__('Server IP: :ip', ['ip' => $this->server->ip]))
+            ->line(__('SSH user: :user', ['user' => $this->server->authentication['user']]))
+            ->line(__('SSH password: :password', ['password' => $this->server->authentication['pass']]))
+            ->action(__('Manage your server'), url('/servers/'.$this->server->id));
     }
 }

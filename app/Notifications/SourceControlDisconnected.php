@@ -19,7 +19,12 @@ class SourceControlDisconnected extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Source control disconnected!'))
-            ->line($this->rawText());
+            ->error()
+            ->subject(__('Source control disconnected'))
+            ->line(__('Your source control [:sourceControl] has been disconnected from Vito.', [
+                'sourceControl' => $this->sourceControl->profile,
+            ]))
+            ->line(__('Reconnect it to keep deployments and repository access working.'))
+            ->action(__('Manage source controls'), url('/settings/source-controls'));
     }
 }

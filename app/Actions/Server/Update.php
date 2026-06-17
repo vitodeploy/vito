@@ -8,10 +8,10 @@ use App\Models\Server;
 
 class Update
 {
-    public function update(Server $server): void
+    public function update(Server $server, bool $notify = false): void
     {
         $server->status = ServerStatus::UPDATING;
         $server->save();
-        dispatch(new UpdateJob($server))->onQueue('ssh');
+        dispatch(new UpdateJob($server, $notify))->onQueue('ssh');
     }
 }

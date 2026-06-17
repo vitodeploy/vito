@@ -38,14 +38,21 @@ class OS
     }
 
     /**
+     * @return array{upgraded: int, reboot_required: bool}
+     *
      * @throws SSHError
      */
-    public function upgrade(): void
+    public function upgrade(): array
     {
-        $this->server->ssh()->exec(
+        $result = $this->server->ssh()->exec(
             view('ssh.os.upgrade'),
             'upgrade'
         );
+
+        return [
+            'upgraded' => max(str($result)->after('Packages upgraded:')->trim()->toInteger(), 0),
+            'reboot_required' => str($result)->after('Reboot required:')->trim()->toInteger() === 1,
+        ];
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Facades\Notifier;
 use App\Http\Resources\ServerResource;
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\Notifications\ServerAutoUpdateCompleted;
 use App\Notifications\ServerUpdateFailed;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -19,15 +20,25 @@ class UpdateJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected Server $server) {}
+    public function __construct(protected Server $server, protected bool $notify = false) {}
 
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function () {
-            $this->server->os()->upgrade();
+            $result = $this->server->os()->upgrade();
             $this->server->checkConnection();
             $this->server->checkForUpdates();
+            $kernelUpdatesRemaining = $this->server->kernel_updates;
             $this->broadcastServerUpdate();
+
+            if ($this->notify && ($result['upgraded'] > 0 || $result['reboot_required'])) {
+                Notifier::send($this->server, new ServerAutoUpdateCompleted(
+                    $this->server,
+                    $result['upgraded'],
+                    $kernelUpdatesRemaining,
+                    $result['reboot_required'],
+                ));
+            }
         });
     }
 

@@ -11,18 +11,19 @@ class SiteInstallationFailed extends AbstractNotification
 
     public function rawText(): string
     {
-        return __("Installation failed for site [:site] \nCheck your server's logs \n:logs", [
+        return __("Installation failed for site [:site]\nOnce you've corrected the errors, you can retry the installation from the site's page.\n:link", [
             'site' => $this->site->domain,
-            'logs' => url('/servers/'.$this->site->server_id.'/logs'),
+            'link' => url('/servers/'.$this->site->server_id.'/sites/'.$this->site->id),
         ]);
     }
 
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Site installation failed!'))
-            ->line('Your site\'s ['.$this->site->domain.'] installation has been failed.')
-            ->line('Check your server logs')
-            ->action('View Logs', url('/servers/'.$this->site->server_id.'/logs'));
+            ->error()
+            ->subject(__('Site installation failed'))
+            ->line(__('Unfortunately, the installation of your site [:domain] failed.', ['domain' => $this->site->domain]))
+            ->line(__('Once you\'ve corrected the errors, you can retry the installation from the site\'s page.'))
+            ->action(__('View site'), url('/servers/'.$this->site->server_id.'/sites/'.$this->site->id));
     }
 }

@@ -25,7 +25,7 @@ class RenewSslCertificatesCommand extends Command
             ->where('expires_at', '<=', now()->addDays(30))
             ->cursor()
             ->each(function (Ssl $ssl) {
-                dispatch(new CreateLetsEncryptWildcardSslJob($ssl->server, $ssl))
+                dispatch(new CreateLetsEncryptWildcardSslJob($ssl->server, $ssl, isRenewal: true))
                     ->onQueue('ssh-certbot');
             });
     }

@@ -8,12 +8,14 @@ use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Events\SocketEvent;
+use App\Facades\Notifier;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\ServerLog;
 use App\Models\Service;
+use App\Notifications\BackupFailed;
 use App\Services\Database\Database;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -66,6 +68,7 @@ class RunJob implements ShouldQueue
         $this->broadcastBackupUpdate();
         $this->broadcastFileUpdate();
         ServerLog::log($this->backup->server, 'run-backup-failed', $e->getMessage());
+        Notifier::send($this->backup->server, new BackupFailed($this->backup));
     }
 
     private function broadcastBackupUpdate(): void
