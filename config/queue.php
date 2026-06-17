@@ -56,7 +56,7 @@ return [
         'ssh' => [
             'driver' => 'redis',
             'connection' => 'default',
-            'queue' => 'default',
+            'queue' => 'ssh',
             'timeout' => 1200,
             'retry_after' => 1260,
             'block_for' => null,
