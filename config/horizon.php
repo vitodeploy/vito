@@ -199,7 +199,7 @@ return [
         ],
 
         'ssh' => [
-            'connection' => 'redis',
+            'connection' => 'ssh',
             'queue' => ['ssh'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
