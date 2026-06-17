@@ -34,29 +34,26 @@ class LinkUser
             throw ValidationException::withMessages(['databases' => __('Databases not found!')]);
         }
 
-        $databaseUser->databases = $input['databases'];
-
         /** @var Service $service */
         $service = $databaseUser->server->database();
 
         /** @var \App\Services\Database\Database $handler */
         $handler = $service->handler();
 
-        // Unlink the user from all databases
         $handler->unlink(
             $databaseUser->username,
             $databaseUser->host
         );
 
-        // Link the user to the selected databases with the user's permission
+        $databaseUser->databases = $input['databases'];
+        $databaseUser->save();
+
         $handler->link(
             $databaseUser->username,
             $databaseUser->host,
             $databaseUser->databases,
             $databaseUser->permission->value
         );
-
-        $databaseUser->save();
 
         $databaseUser->refresh();
 

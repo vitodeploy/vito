@@ -132,6 +132,15 @@ paths:
                   type: integer
                   description: Existing database user ID to link (required if user is true)
                   example: 1
+                username:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  description: Username for a new database user to create and link to this database (optional)
+                  example: 'db_user'
+                password:
+                  type: string
+                  description: Password for the new database user (used with username)
+                  example: 'secure_password'
             example:
               name: 'my_database'
               charset: 'utf8mb4'
@@ -339,14 +348,16 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: '/api-docs/openapi/schemas/Database.yaml'
+                          $ref: '/api-docs/openapi/schemas/DatabaseUser.yaml'
               example:
                 data:
                   - id: 1
-                    database_id: 1
-                    name: 'db_user'
-                    password: 'secure_password'
-                    permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                    server_id: 1
+                    username: 'db_user'
+                    databases: ['my_database', 'another_database']
+                    host: 'localhost'
+                    permission: 'admin'
+                    permission_color: 'warning'
                     status: 'ready'
                     status_color: 'success'
                     created_at: '2024-01-01T00:00:00.000000Z'
@@ -452,10 +463,12 @@ paths:
                 $ref: '/api-docs/openapi/schemas/DatabaseUser.yaml'
               example:
                 id: 1
-                database_id: 1
-                name: 'db_user'
-                password: 'secure_password'
-                permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                server_id: 1
+                username: 'db_user'
+                databases: ['my_database', 'another_database']
+                host: 'localhost'
+                permission: 'admin'
+                permission_color: 'warning'
                 status: 'ready'
                 status_color: 'success'
                 created_at: '2024-01-01T00:00:00.000000Z'
@@ -529,10 +542,12 @@ paths:
                 $ref: '/api-docs/openapi/schemas/DatabaseUser.yaml'
               example:
                 id: 1
-                database_id: 1
-                name: 'db_user'
-                password: 'secure_password'
-                permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                server_id: 1
+                username: 'db_user'
+                databases: ['my_database', 'another_database']
+                host: 'localhost'
+                permission: 'admin'
+                permission_color: 'warning'
                 status: 'ready'
                 status_color: 'success'
                 created_at: '2024-01-01T00:00:00.000000Z'
@@ -556,6 +571,58 @@ paths:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
+    delete:
+      summary: Delete database user
+      description: Delete a database user
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: databaseUser
+          in: path
+          required: true
+          description: Database User ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Database user deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database user not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/database-users/{databaseUser}/link:
     post:
       summary: Link database user
       description: Link a database user to databases
@@ -633,55 +700,4 @@ paths:
             application/json:
               schema:
                 $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
-
-    delete:
-      summary: Delete database user
-      description: Delete a database user
-      tags:
-        - Database Users
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
-        - name: server
-          in: path
-          required: true
-          description: Server ID
-          schema:
-            type: integer
-            example: 1
-        - name: databaseUser
-          in: path
-          required: true
-          description: Database User ID
-          schema:
-            type: integer
-            example: 1
-      responses:
-        '204':
-          description: Database user deleted successfully
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
-        '404':
-          description: Database user not found
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 

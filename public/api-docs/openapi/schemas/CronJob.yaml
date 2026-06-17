@@ -3,6 +3,10 @@ properties:
   id:
     type: integer
     example: 1
+  name:
+    type: string
+    nullable: true
+    example: 'Schedule runner'
   server_id:
     type: integer
     example: 1
@@ -21,11 +25,11 @@ properties:
     example: '* * * * *'
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    enum: ['creating', 'ready', 'deleting', 'enabling', 'disabling', 'updating', 'disabled']
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['warning', 'success', 'danger', 'gray']
     example: 'success'
   created_at:
     type: string

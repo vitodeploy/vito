@@ -50,7 +50,14 @@ paths:
               required:
                 - name
                 - provider
-                - credentials
+              description: >-
+                Provider-specific credential fields are sent as flat top-level
+                properties (not nested under a `credentials` object). The
+                required fields depend on the selected `provider`. For example,
+                `s3` requires `key`, `secret`, `region`, `bucket` (with optional
+                `api_url`, `path`); `ftp`/`sftp` require `host`, `port`,
+                `username`, `password`, `path`; `dropbox` requires `token`;
+                `local` requires `path`.
               properties:
                 name:
                   type: string
@@ -58,20 +65,22 @@ paths:
                   example: 'AWS S3'
                 provider:
                   type: string
-                  enum: ['s3', 'local', 'ftp']
+                  enum: ['s3', 'local', 'ftp', 'sftp', 'dropbox']
                   description: Storage provider type
                   example: 's3'
-                credentials:
-                  type: object
-                  description: Provider-specific credentials
-                  example:
-                    key: 'AKIAIOSFODNN7EXAMPLE'
-                    secret: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
-                    region: 'us-east-1'
                 global:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
                   example: false
+              additionalProperties: true
+            example:
+              name: 'AWS S3'
+              provider: 's3'
+              global: false
+              key: 'your-access-key-id'
+              secret: 'your-secret-access-key'
+              region: 'us-east-1'
+              bucket: 'my-bucket'
       responses:
         '201':
           description: Storage provider created successfully

@@ -26,18 +26,19 @@ properties:
   mask:
     type: string
     nullable: true
-    example: '0.0.0.0'
+    description: 'CIDR prefix length (1-32) for the source IP, or null when the source is unrestricted.'
+    example: '32'
   note:
     type: string
     nullable: true
     example: 'Allow SSH access from anywhere'
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    enum: ['creating', 'updating', 'ready', 'deleting', 'failed']
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['info', 'warning', 'danger', 'success']
     example: 'success'
   created_at:
     type: string

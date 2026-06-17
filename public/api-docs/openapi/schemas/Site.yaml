@@ -20,6 +20,21 @@ properties:
   type_data:
     type: object
     nullable: true
+  basic_auth:
+    type: object
+    description: 'Basic authentication configuration. Password hashes are never returned.'
+    properties:
+      enabled:
+        type: boolean
+        example: false
+      users:
+        type: array
+        items:
+          type: object
+          properties:
+            username:
+              type: string
+              example: 'admin'
   domain:
     type: string
     example: 'example.com'
@@ -29,6 +44,10 @@ properties:
   webserver:
     type: string
     example: 'nginx'
+  webserver_creates_site_ssls:
+    type: boolean
+    description: 'Whether the webserver provisions SSL certificates for the site.'
+    example: true
   path:
     type: string
     example: '/var/www/example.com'
@@ -47,7 +66,7 @@ properties:
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   auto_deploy:
     type: boolean
@@ -58,11 +77,20 @@ properties:
   user:
     type: string
     example: 'www-data'
+  isolated_user_id:
+    type: integer
+    nullable: true
+    description: 'ID of the isolated system user, when the site runs under an isolated user.'
+    example: 1
   url:
     type: string
     example: 'https://example.com'
   force_ssl:
     type: boolean
+    example: true
+  ssl_enabled:
+    type: boolean
+    description: 'Whether SSL is enabled for the site.'
     example: true
   progress:
     type: integer
@@ -87,6 +115,105 @@ properties:
   modern_deployment:
     type: boolean
     example: true
+  can_configure_ssl:
+    type: boolean
+    description: 'Whether SSL can be configured for the site via the webserver.'
+    example: true
+  webserver_allowed_ssl_methods:
+    type: array
+    description: 'SSL provisioning methods the webserver supports.'
+    items:
+      type: string
+    example: ['letsencrypt', 'custom']
+  webserver_default_ssl_method:
+    type: string
+    description: 'Default SSL provisioning method for the webserver.'
+    example: 'letsencrypt'
+  vhost_generation_enabled:
+    type: boolean
+    description: 'Whether automatic VHost generation is enabled for the site.'
+    example: true
+  has_custom_vhost_template:
+    type: boolean
+    description: 'Whether the site uses a custom VHost template.'
+    example: false
+  stats_enabled:
+    type: boolean
+    description: 'Whether traffic statistics collection is enabled for the site.'
+    example: false
+  is_proxied_site_type:
+    type: boolean
+    description: 'Whether the site type is a proxied (reverse-proxy) type.'
+    example: false
+  available_tooling_commands:
+    type: array
+    description: 'Tooling commands available for the site (e.g. php, node, npm).'
+    items:
+      type: string
+    example: ['php', 'node', 'npm']
+  start_command:
+    type: string
+    nullable: true
+    description: 'Start command for proxied site types. Null when not applicable.'
+    example: null
+  bootstrap_worker_id:
+    type: integer
+    nullable: true
+    description: 'ID of the worker that runs the bootstrap/start command. Null when not applicable.'
+    example: null
+  warnings:
+    type: array
+    description: 'Active warnings for the site. Each object always has a "key"; the remaining properties depend on the warning type.'
+    items:
+      type: object
+      required: [key]
+      properties:
+        key:
+          type: string
+          enum:
+            - pending_domains
+            - ssl_disabled
+            - vhost_generation_disabled
+            - ssl_expiring
+            - needs_first_deploy
+            - worker_not_running
+          example: 'ssl_disabled'
+        count:
+          type: integer
+          description: 'Number of affected domains. Present for pending_domains and ssl_expiring.'
+          example: 2
+        domains:
+          type: array
+          description: 'Affected domain names. Present for pending_domains and ssl_expiring.'
+          items:
+            type: string
+          example: ['app.example.com']
+        earliest_expiry:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Earliest SSL expiry date (ISO-8601). Present for ssl_expiring.'
+        worker_id:
+          type: integer
+          description: 'Affected worker ID. Present for worker_not_running.'
+        name:
+          type: string
+          description: 'Worker name. Present for worker_not_running.'
+        status:
+          type: string
+          description: 'Worker status text. Present for worker_not_running.'
+        status_color:
+          type: string
+          description: 'Worker status color. Present for worker_not_running.'
+        error:
+          type: string
+          nullable: true
+          description: 'Worker error output. Present for worker_not_running.'
+    example:
+      - key: 'pending_domains'
+        count: 1
+        domains: ['blog.example.com']
+      - key: 'ssl_disabled'
   created_at:
     type: string
     format: date-time

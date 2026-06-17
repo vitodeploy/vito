@@ -47,8 +47,9 @@ paths:
                     auto_start: true
                     auto_restart: true
                     numprocs: 1
-                    status: 'ready'
+                    status: 'running'
                     status_color: 'success'
+                    is_site_bootstrap: false
                     created_at: '2024-01-01T00:00:00.000000Z'
                     updated_at: '2024-01-01T00:00:00.000000Z'
         '401':
@@ -102,6 +103,9 @@ paths:
                 - name
                 - command
                 - user
+                - auto_start
+                - auto_restart
+                - numprocs
               properties:
                 name:
                   type: string
@@ -123,17 +127,15 @@ paths:
                 auto_start:
                   type: boolean
                   description: Start automatically
-                  default: true
                   example: true
                 auto_restart:
                   type: boolean
                   description: Restart automatically
-                  default: true
                   example: true
                 numprocs:
                   type: integer
+                  minimum: 1
                   description: Number of processes
-                  default: 1
                   example: 1
                 environment:
                   type: array
@@ -356,6 +358,119 @@ paths:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
+    put:
+      summary: Update worker
+      description: Update an existing worker. Workers managed by a site (site bootstrap workers) cannot be edited here.
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: worker
+          in: path
+          required: true
+          description: Worker ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - command
+                - user
+                - auto_start
+                - auto_restart
+                - numprocs
+              properties:
+                name:
+                  type: string
+                  description: Worker name
+                  example: 'queue-worker'
+                command:
+                  type: string
+                  description: Command to execute
+                  example: 'php artisan queue:work'
+                user:
+                  type: string
+                  description: User to run the command as
+                  example: 'www-data'
+                site_id:
+                  type: integer
+                  nullable: true
+                  description: Site ID (optional)
+                  example: 1
+                auto_start:
+                  type: boolean
+                  description: Start automatically
+                  example: true
+                auto_restart:
+                  type: boolean
+                  description: Restart automatically
+                  example: true
+                numprocs:
+                  type: integer
+                  minimum: 1
+                  description: Number of processes
+                  example: 1
+            example:
+              name: 'queue-worker'
+              command: 'php artisan queue:work'
+              user: 'www-data'
+              site_id: 1
+              auto_start: true
+              auto_restart: true
+              numprocs: 1
+      responses:
+        '200':
+          description: Worker updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Worker.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Worker not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
     delete:
       summary: Delete worker
       description: Delete a worker
@@ -388,6 +503,306 @@ paths:
       responses:
         '204':
           description: Worker deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Worker not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/workers:
+    get:
+      summary: List site workers
+      description: Get all workers for a specific site on a server
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of workers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '/api-docs/openapi/schemas/Worker.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project, server or site not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/workers/{worker}:
+    get:
+      summary: Get site worker
+      description: Get a specific worker scoped to a site
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+        - name: worker
+          in: path
+          required: true
+          description: Worker ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Worker details
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Worker.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Worker not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/workers/{worker}/start:
+    post:
+      summary: Start worker
+      description: Start a stopped worker
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: worker
+          in: path
+          required: true
+          description: Worker ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Worker is being started
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Worker.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Worker not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/workers/{worker}/restart:
+    post:
+      summary: Restart worker
+      description: Restart a worker
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: worker
+          in: path
+          required: true
+          description: Worker ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Worker is being restarted
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Worker.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Worker not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/workers/{worker}/logs:
+    get:
+      summary: Get worker logs
+      description: Fetch the latest logs for a worker from the process manager
+      tags:
+        - Workers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: worker
+          in: path
+          required: true
+          description: Worker ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Worker logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: string
+                    description: The worker log output
+              example:
+                logs: '[2024-01-01 00:00:00] Processing jobs...'
         '401':
           description: Unauthorized
           content:

@@ -67,7 +67,7 @@ properties:
         format: date-time
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   csr_data:
     type: object

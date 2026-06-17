@@ -100,7 +100,6 @@
             height: 64px;
             margin: 0 auto 24px;
             display: block;
-            filter: drop-shadow(0 8px 20px rgba(99, 102, 241, 0.45));
         }
 
         .eyebrow {
