@@ -38,16 +38,45 @@ Steps to connect are the same as Amazon S3. But to create a key, you need to fol
 
 ### Dropbox
 
-To connect to Dropbox you need to create an app on your Dropbox developer generate a token for that and use that token
-to connect your VitoDeploy instance to Dropbox.
+Dropbox connects through **OAuth** with offline access. Dropbox access tokens are short-lived and
+expire after 4 hours, so Vito stores a long-lived **refresh token** during authorization and uses it
+to mint a fresh access token automatically whenever a backup runs — there is nothing to rotate by
+hand.
+
+:::warning
+The previous flow, where you pasted a single generated access token, is no longer supported — those
+tokens stop working after 4 hours. If you connected Dropbox this way before, reconnect it using the
+steps below.
+:::
+
+To connect Dropbox:
+
+1. Open the [Dropbox App Console](https://www.dropbox.com/developers/apps) and create an app with
+   **Scoped access** and access to your Dropbox.
+2. On the app's **Permissions** tab, enable the permissions listed below and save.
+3. On the app's **Settings** tab, add Vito's redirect URI under **OAuth 2 → Redirect URIs**. The
+   exact URI is shown in Vito's "Connect to storage provider" dialog when you select Dropbox, and
+   looks like:
+   `https://your-vito-host/settings/storage-providers/dropbox/callback`
+4. Copy the **App key** and **App secret** from the same Settings tab.
+5. In Vito, choose **Dropbox** as the provider, enter the **App key** and **App secret**, then click
+   **Connect**. You will be redirected to Dropbox to authorize access; once you approve, Dropbox
+   returns you to Vito and the provider is connected.
 
 :::info
-Using Dropbox requires the following permissions on your Dropbox API Key:
+Using Dropbox requires the following permissions on your Dropbox app:
 
 - `files.metadata.read`
 - `files.metadata.write`
 - `files.content.read`
 - `files.content.write`
+:::
+
+:::info
+Authorization happens in your own browser, so Vito does **not** need to be publicly accessible — it
+just needs a domain. Dropbox requires the redirect URI to use **HTTPS** for any domain (a local
+`https://your-vito.test` is fine), with one exception: plain HTTP is only allowed when the host is
+`localhost`. The redirect URI you register must match the one Vito uses exactly.
 :::
 
 ### Local
