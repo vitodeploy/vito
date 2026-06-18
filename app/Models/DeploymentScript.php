@@ -48,13 +48,6 @@ class DeploymentScript extends AbstractModel
 
     public function shouldRestartWorkers(): bool
     {
-        $configs = $this->configs ?? [];
-        if (! isset($configs['restart_workers'])) {
-            $configs['restart_workers'] = false;
-            $this->configs = $configs;
-            $this->save();
-        }
-
-        return $configs['restart_workers'];
+        return (bool) ($this->configs['restart_workers'] ?? false);
     }
 }

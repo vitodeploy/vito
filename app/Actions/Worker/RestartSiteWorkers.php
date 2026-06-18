@@ -4,6 +4,7 @@ namespace App\Actions\Worker;
 
 use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\WorkerStatus;
+use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
@@ -16,42 +17,48 @@ class RestartSiteWorkers
 
     private const LOG_TYPE = 'deploy-restart-worker-failed';
 
-    public function restart(Site $site): void
+    public function restart(Site $site, ?ServerLog $log = null): void
     {
         /** @var ProcessManager $handler */
         $handler = $site->server->processManager()->handler();
 
-        $workers = $site->loadMissing('workers')->workers;
+        $workers = $site->loadMissing('workers.site')->workers;
 
         if ($workers->isEmpty()) {
             return;
         }
 
         try {
+            $workers->each(fn (Worker $worker) => $handler->writeConfig($worker));
             $output = $handler->restartMany($workers->pluck('id')->all(), $site->id);
         } catch (Throwable $e) {
             $workers->each(fn (Worker $worker) => $this->markWorkerFailed($worker, $e, self::LOG_TYPE));
             app(BroadcastSiteUpdate::class)->broadcast($site);
+            $log?->write('Failed to restart workers. See worker statuses for details.');
 
             return;
         }
 
         $statuses = $this->parseStatuses($output);
 
-        $workers->each(fn (Worker $worker) => $this->settle($worker, $statuses[$worker->id] ?? []));
+        $failed = $workers->reject(fn (Worker $worker): bool => $this->settle($worker, $statuses[$worker->id] ?? []));
 
         app(BroadcastSiteUpdate::class)->broadcast($site);
+
+        if ($failed->isNotEmpty()) {
+            $log?->write('Failed to restart worker(s): '.$failed->pluck('id')->implode(', '));
+        }
     }
 
     /**
      * @param  array<string, string>  $processes  process token => last reported status
      */
-    private function settle(Worker $worker, array $processes): void
+    private function settle(Worker $worker, array $processes): bool
     {
         if ($processes === []) {
             $this->fail($worker, 'Unable to restart');
 
-            return;
+            return false;
         }
 
         $errors = $this->errorLines($processes);
@@ -59,13 +66,13 @@ class RestartSiteWorkers
         if ($errors !== []) {
             $this->fail($worker, mb_substr(implode("\n", $errors), 0, 500));
 
-            return;
+            return false;
         }
 
         if (! $this->allStarted($processes)) {
             $this->fail($worker, 'Unable to restart (stopped)', WorkerStatus::STOPPED);
 
-            return;
+            return false;
         }
 
         $worker->status = WorkerStatus::RUNNING;
@@ -73,6 +80,8 @@ class RestartSiteWorkers
         $worker->save();
 
         $this->broadcastWorkerUpdate($worker);
+
+        return true;
     }
 
     private function fail(Worker $worker, string $error, WorkerStatus $status = WorkerStatus::FAILED): void
