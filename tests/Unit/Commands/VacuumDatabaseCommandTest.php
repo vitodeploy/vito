@@ -3,12 +3,15 @@
 namespace Tests\Unit\Commands;
 
 use Illuminate\Database\Connection;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Tests\TestCase;
 
 class VacuumDatabaseCommandTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_skips_when_connection_is_not_sqlite(): void
     {
         $connection = Mockery::mock(Connection::class);
