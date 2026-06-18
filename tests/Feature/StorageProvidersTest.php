@@ -129,6 +129,25 @@ class StorageProvidersTest extends TestCase
         $this->assertDatabaseMissing('storage_providers', ['profile' => 'dropbox-test']);
     }
 
+    public function test_dropbox_callback_rejects_missing_code(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->withSession([
+            'dropbox_oauth' => [
+                'state' => 'state-123',
+                'name' => 'dropbox-test',
+                'app_key' => 'my-app-key',
+                'app_secret' => 'my-app-secret',
+                'global' => false,
+            ],
+        ])->get(route('storage-providers.dropbox.callback', ['state' => 'state-123']));
+
+        $response->assertRedirect(route('storage-providers'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('storage_providers', ['profile' => 'dropbox-test']);
+    }
+
     public function test_see_providers_list(): void
     {
         $this->actingAs($this->user);

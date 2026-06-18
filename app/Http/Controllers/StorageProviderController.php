@@ -83,7 +83,7 @@ class StorageProviderController extends Controller
         } catch (ValidationException $e) {
             return to_route('storage-providers')->with('error', $e->validator->errors()->first());
         } catch (Throwable $e) {
-            Log::error('Dropbox OAuth callback failed', ['error' => $e->getMessage()]);
+            Log::error('Dropbox OAuth callback failed', ['exception' => get_class($e)]);
 
             return to_route('storage-providers')->with('error', __('Failed to connect to Dropbox.'));
         }

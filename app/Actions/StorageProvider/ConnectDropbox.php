@@ -75,6 +75,10 @@ class ConnectDropbox
             ]);
         }
 
+        Validator::make($request->query(), [
+            'code' => ['required', 'string'],
+        ])->validate();
+
         $refreshToken = $this->exchangeCode(
             (string) $request->query('code'),
             (string) $pending['app_key'],

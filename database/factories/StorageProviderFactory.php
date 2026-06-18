@@ -54,9 +54,18 @@ class StorageProviderFactory extends Factory
                 'bucket' => 'test-bucket',
                 'path' => '/backups',
             ],
-            FTP::id(), SFTP::id() => [
+            FTP::id() => [
                 'host' => '1.2.3.4',
-                'port' => $provider === FTP::id() ? 21 : 22,
+                'port' => 21,
+                'path' => '/home/vito',
+                'username' => 'username',
+                'password' => 'password',
+                'ssl' => false,
+                'passive' => true,
+            ],
+            SFTP::id() => [
+                'host' => '1.2.3.4',
+                'port' => 22,
                 'path' => '/home/vito',
                 'username' => 'username',
                 'password' => 'password',
