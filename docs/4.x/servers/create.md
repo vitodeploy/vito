@@ -40,7 +40,7 @@ If you've selected a cloud server provider, you will need to fill in the form wi
 The rest of the fields are:
 
 - **Server Name**: The name of your server (must be unique among your current project).
-- **Operating System**: The operating system of your server (Ubuntu 22.04 or 24.04).
+- **Operating System**: The operating system of your server (Ubuntu 20.04, 22.04, or 24.04).
 - **SSH IP**: The IP address of your server (if you are using a custom server provider).
 - **SSH Port**: The SSH port of your server (if you are using a custom server provider).
 

@@ -8,14 +8,18 @@ Vito gives you the ability to manage some of the installed services on your serv
 ## Supported Services
 
 - Nginx
+- Caddy (beta)
 - [PHP](./php)
-- Mysql
+- MySQL
+- MariaDB
 - PostgreSQL
 - Redis
+- Valkey
 - Supervisor
 - UFW
-- [Monitoring](./monitoring)
-- Node.js
+- Fail2ban
+- [Monitoring](./monitoring) (VitoAgent / RemoteMonitor)
+- GoAccess
 
 :::info
 To add more services, you can develop a plugin for Vito. You can find more information about plugins in the [Plugins](../plugins.md#register-services) section.

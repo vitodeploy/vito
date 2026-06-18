@@ -13,6 +13,7 @@ Plugins can change or extend the following features:
 - **Server Providers**: Add support for new server providers or modify existing ones.
 - **Storage Providers**: Integrate with new storage providers or modify existing storage functionalities.
 - **Source Controls**: Integrate with new source control systems or modify existing source control functionalities.
+- **DNS Providers**: Integrate with new DNS providers or modify existing ones.
 - **Notification Channels**: Integrate with new notification channels or modify existing ones.
 - **Services**: Add new services or modify existing ones.
 - **Site Types**: Add new site types or modify existing ones.
@@ -286,7 +287,7 @@ interface.
 Vito is a service-oriented server management system. By default, it comes with some built-in services like Nginx, MySQL,
 Redis, etc.
 
-However, you can register your own services using `App\Plugins\RegisterService` in the `boot` method of your `Plugin.php` file.
+However, you can register your own services using `App\Plugins\RegisterServiceType` in the `boot` method of your `Plugin.php` file.
 
 ```php
 RegisterServiceType::make(Nginx::id())
@@ -483,6 +484,33 @@ encrypted fields such as `token`. See the
 
 :::info
 You can find plenty of examples in the [Source Controls](https://github.com/vitodeploy/vito/tree/4.x/app/SourceControls)
+:::
+
+### Register DNS providers
+
+Vito ships with Cloudflare out of the box, and you can integrate any other DNS provider with a plugin.
+
+You can register your own DNS provider using `App\Plugins\RegisterDNSProvider` in the `boot` method of your `Plugin.php` file.
+
+```php
+\App\Plugins\RegisterDNSProvider::make('cloudflare')
+    ->label('Cloudflare')
+    ->handler(Cloudflare::class)
+    ->form(
+        \App\DTOs\DynamicForm::make([
+            \App\DTOs\DynamicField::make('token')
+                ->text()
+                ->label('API Token'),
+        ])
+    )
+    ->register();
+```
+
+The handler must implement the `App\DNSProviders\DNSProvider` interface or extend the
+`App\DNSProviders\AbstractDNSProvider` class.
+
+:::info
+You can find an example in the [DNS Providers](https://github.com/vitodeploy/vito/tree/4.x/app/DNSProviders)
 :::
 
 ### Register notification channels

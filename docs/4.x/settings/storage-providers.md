@@ -6,9 +6,9 @@ Vito supports multiple storage providers to store your backups, files, and other
 
 ## Supported Providers
 
-- Amazon S3
+- Amazon S3 (and S3-compatible)
 - FTP(s)
-- Wassabi (Depreciated)
+- SFTP
 - Dropbox
 - Local
 
@@ -25,16 +25,18 @@ following info:
 
 For more info on how to create a bucket you can visit [Amazon S3 Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html)
 
+The Amazon S3 provider also works with any S3-compatible storage (such as Wasabi, Backblaze B2, MinIO, etc.) — set the
+`API URL` field to your provider's endpoint when connecting.
+
 ### FTP(s)
 
 To connect to FTP(s) you need to have a separate FTP(s) server with its connection info like HOST, PORT, USERNAME, and
-PASSWORD
+PASSWORD. You can also toggle SSL and passive mode when connecting.
 
-### Wassabi (Depreciated)
+### SFTP
 
-[Wassabi](https://wasabi.com/) is a third-party storage provider and S3 compatible storage provider.
-
-Steps to connect are the same as Amazon S3. But to create a key, you need to follow this [documentation](https://docs.wasabi.com/docs/creating-a-user-account-and-access-key)
+To connect over SFTP you need a server reachable over SSH. Provide the HOST, PORT, USERNAME, PASSWORD, and the PATH
+where the files will be stored.
 
 ### Dropbox
 

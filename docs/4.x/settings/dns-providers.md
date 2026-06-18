@@ -2,9 +2,9 @@
 
 ## Introduction
 
-Vito provides integration with DNS providers to to manage your domains' NS records.
+Vito provides integration with DNS providers to manage your domains' DNS records.
 
-When [adding a new domain](../domains), You need to select the DNS provider you've connected so Vito can list your domains and manage their NS records.
+When [adding a new domain](../domains), You need to select the DNS provider you've connected so Vito can list your domains and manage their DNS records.
 
 ## Supported Providers
 
@@ -27,11 +27,11 @@ If your DNS provider is not listed here, You can develop a plugin to integrate y
 
 DNS providers can be created under a specific project or globally.
 
-If you create a server provider under a project, it will only be available for that project.
+If you create a DNS provider under a project, it will only be available for that project.
 
-If you create a server provider globally, it will be available for all projects.
+If you create a DNS provider globally, it will be available for all projects.
 
-The reason of this feature is when you add a new user to VitoDeploy, you can control which server provider they can
+The reason of this feature is when you add a new user to VitoDeploy, you can control which DNS provider they can
 access.
 
 :::info

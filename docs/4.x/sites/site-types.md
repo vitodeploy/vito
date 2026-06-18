@@ -8,10 +8,11 @@ types for provide more features out of the box for some specific PHP application
 ## Supported Site Types
 
 - PHP (Any other PHP applications)
-- Blank PHP
+- PHP Blank
 - Laravel
-- Node
+- Node.js
 - Bun
+- Blank (Reverse Proxy)
 - WordPress
 - PHPMyAdmin
 - Load Balancer
@@ -26,9 +27,9 @@ any [supported source control providers](../settings/source-controls#supported-p
 To deploy a site this type, You need to have a Webserver and PHP installed on your server in
 the [Services](../servers/services) section.
 
-### Blank PHP
+### PHP Blank
 
-Blank PHP site type is simply a blank php website that doesn't require a source control or composer.
+PHP Blank site type is simply a blank php website that doesn't require a source control or composer.
 
 :::info
 Vito doesn't provide a file manager, and you need to upload your files by connecting to the server via SSH.
@@ -43,16 +44,20 @@ pnpm or Yarn during site creation.
 
 Additional tooling can always be installed via the [Site Tooling](./site-tooling.md) menu post site creation if needed. 
 
-### Node & Bun
+### Node.js & Bun
 
 You can deploy any Node.js or Bun application with these site types including backend and frontend apps like Next.js, 
 Nuxt.js, Express.js, etc.  [Site Tooling](./site-tooling.md) will be enabled based on the selected versions of tools selected during site
 creation automatically.  You are free to install other tooling as needed. 
 
-These run as reverse proxy sites. Once deployed, you can change the port, environment variables, build
-script, and start command, and manage the application worker, from the
-[Application](./application#reverse-proxy-sites) page. 
+These run as reverse proxy sites. Once deployed, you can change the port, environment variables, and start command, and
+manage the application worker, from the [Application](./application#reverse-proxy-sites) page.
 
+### Blank (Reverse Proxy)
+
+The Blank site type runs your server as a reverse proxy in front of any application listening on a local port — useful
+for languages or runtimes that Vito doesn't have a dedicated site type for. You choose the port to proxy to and an
+optional start command, and you can optionally deploy the site from a Git repository.
 
 ### WordPress
 

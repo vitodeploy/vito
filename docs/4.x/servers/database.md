@@ -8,19 +8,16 @@ link users to databases.
 
 ## Supported databases
 
-- Mysql 5.7
-- Mysql 8.0
-- Mariadb 10.3
-- Mariadb 10.4
-- Mariadb 10.6
-- Mariadb 10.11
-- Mariadb 11.4
-- Postgresql 12
-- Postgresql 13
-- Postgresql 14
-- Postgresql 15
-- Postgresql 16
-- Postgresql 17
+- MySQL 8.4
+- MySQL 9.7
+- MariaDB 10.11
+- MariaDB 11.4
+- MariaDB 11.8
+- MariaDB 12.3
+- PostgreSQL 15
+- PostgreSQL 16
+- PostgreSQL 17
+- PostgreSQL 18
 
 ## Install database service
 

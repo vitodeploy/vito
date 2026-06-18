@@ -7,10 +7,12 @@ deployments.
 
 ## Supported Providers
 
-- GitHub (personal access token)
 - GitHub App
+- GitHub (personal access token)
 - Gitlab (Cloud and Self-hosted)
-- Bitbucket
+- Gitea (Self-hosted)
+- Bitbucket V2 (OAuth Consumer)
+- Bitbucket (deprecated)
 
 ## GitHub App
 
@@ -58,6 +60,13 @@ If you're using Github's fine grained personl tokens, Make sure you have Read & 
 ### Gitlab
 
 Generate a personal access token on your Gitlab profile and give it `write_repository, api` permissions.
+
+For self-hosted GitLab, also provide your instance URL and, if it differs from the default, the SSH port.
+
+### Gitea
+
+Generate a personal access token on your Gitea instance and provide it along with your self-hosted Gitea URL. If your
+instance uses a non-default SSH port, set the SSH port as well.
 
 ### Bitbucket (Deprecated)
 

@@ -47,7 +47,7 @@ If your server provider is not listed here, you can use the `Custom` provider wh
 
 Your server must have the following requirements so Vito can provision it:
 
-- The server must be running a fresh installation of Ubuntu 22.04 or 24.04 x64.
+- The server must be running a fresh installation of Ubuntu 20.04, 22.04, or 24.04 x64.
 - The server must be accessible externally over the Internet.
 - The server must have root SSH access enabled.
 - The server requirements should meet the following criteria or more: 1 CPU Core with 1GHz, 1GB RAM, and 10GB Disk space.

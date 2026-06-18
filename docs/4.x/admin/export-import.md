@@ -13,6 +13,7 @@ From **Admin > Export & Import**, click **Export** to download a backup. The fil
 
 - The Vito database (`database.sqlite`), which holds your servers, sites, projects, users, logs, and
   all other records.
+- The instance's environment file (`.env`).
 - The instance's SSH key pair (`ssh-public.key` and `ssh-private.pem`).
 - The server key pairs.
 - The stored server logs.
@@ -27,9 +28,9 @@ and treat it as sensitive.
 Click **Import** and upload a previously exported zip file to restore it.
 
 :::danger
-Importing **replaces** the current database, SSH keys, key pairs, and server logs with the contents
-of the backup. It is a full restore, not a merge. Only import into a fresh instance, or one whose
-current data you are intentionally overwriting.
+Importing **replaces** the current database, environment file, SSH keys, key pairs, and server logs
+with the contents of the backup. It is a full restore, not a merge. Only import into a fresh instance,
+or one whose current data you are intentionally overwriting.
 :::
 
 :::info
