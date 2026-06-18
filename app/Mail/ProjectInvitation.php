@@ -21,7 +21,7 @@ class ProjectInvitation extends Mailable
     public function build(): static
     {
         return $this
-            ->markdown('emails.project-invitation', [
+            ->markdown('mail.project-invitation', [
                 'acceptUrl' => route('projects.invitations.accept', ['project' => $this->project]),
             ])
             ->subject(__('Project Invitation'));
