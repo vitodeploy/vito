@@ -602,6 +602,195 @@ class DatabaseUserTest extends TestCase
             );
     }
 
+    public function test_postgresql_multiple_admins_get_cross_default_privileges(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $adminA = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_a',
+            'permission' => 'admin',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $adminA,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        $adminB = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_b',
+            'permission' => 'admin',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $adminB,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_a\" IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"admin_b\"');
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_b\" IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"admin_a\"');
+    }
+
+    public function test_postgresql_write_user_is_a_creator_with_write_default_privileges(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $admin = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_a',
+            'permission' => 'admin',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $admin,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        $writer = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'writer',
+            'permission' => 'write',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $writer,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_a\" IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRIGGER ON TABLES TO \"writer\"');
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"writer\" IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"admin_a\"');
+    }
+
+    public function test_postgresql_read_user_is_not_a_creator_but_is_granted(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $admin = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_a',
+            'permission' => 'admin',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $admin,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        $reader = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'reader',
+            'permission' => 'read',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $reader,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_a\" IN SCHEMA public GRANT SELECT ON TABLES TO \"reader\"');
+        SSH::assertNotExecutedContains('FOR ROLE \"reader\" IN SCHEMA public GRANT');
+    }
+
+    public function test_postgresql_v15_user_gets_schema_create(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $admin = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_a',
+            'permission' => 'admin',
+            'host' => '',
+        ]);
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $admin,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('GRANT USAGE, CREATE ON SCHEMA public TO \"admin_a\"');
+    }
+
+    public function test_postgresql_deleting_user_revokes_its_default_privileges_before_drop(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->usePostgresql();
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $adminA = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_a',
+            'permission' => 'admin',
+            'host' => '',
+            'databases' => ['app'],
+        ]);
+        $adminB = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'admin_b',
+            'permission' => 'admin',
+            'host' => '',
+            'databases' => ['app'],
+        ]);
+
+        $this->delete(route('database-users.destroy', [
+            'server' => $this->server,
+            'databaseUser' => $adminB,
+        ]))->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_b\" IN SCHEMA public REVOKE ALL ON TABLES FROM \"admin_b\"');
+        SSH::assertExecutedContains('ALTER DEFAULT PRIVILEGES FOR ROLE \"admin_a\" IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"admin_a\"');
+        $this->assertDatabaseMissing('database_users', ['id' => $adminB->id]);
+    }
+
+    public function test_mysql_link_does_not_run_privilege_reconcile(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        Database::factory()->create(['server_id' => $this->server, 'name' => 'app']);
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'app',
+            'host' => 'localhost',
+        ]);
+
+        $this->put(route('database-users.link', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), ['databases' => ['app']])->assertSessionDoesntHaveErrors();
+
+        SSH::assertNotExecutedContains('ALTER DEFAULT PRIVILEGES');
+    }
+
     private function usePostgresql(): void
     {
         $this->server->services()->where('type', Mysql::type())->delete();

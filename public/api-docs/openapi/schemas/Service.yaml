@@ -29,6 +29,7 @@ properties:
     example: '8.2.0'
   unit:
     type: string
+    nullable: true
     example: 'php8.2-fpm'
   status:
     type: string
@@ -42,6 +43,7 @@ properties:
         'starting',
         'stopping',
         'restarting',
+        'reloading',
         'stopped',
         'enabling',
         'disabling',
@@ -58,6 +60,39 @@ properties:
   is_default:
     type: boolean
     example: true
+  log:
+    type: object
+    nullable: true
+    description: The latest server log associated with this service, if any
+    properties:
+      id:
+        type: integer
+        example: 1
+      server_id:
+        type: integer
+        example: 1
+      site_id:
+        type: integer
+        nullable: true
+        example: null
+      type:
+        type: string
+        example: 'service'
+      name:
+        type: string
+        example: 'install-php-8.2'
+      disk:
+        type: string
+        example: 'local'
+      is_remote:
+        type: boolean
+        example: false
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
   created_at:
     type: string
     format: date-time

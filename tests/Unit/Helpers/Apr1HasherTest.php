@@ -3,10 +3,13 @@
 namespace Tests\Unit\Helpers;
 
 use App\Helpers\Apr1Hasher;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class Apr1HasherTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Known-good vectors verified against Apache's htpasswd -vb.
      *

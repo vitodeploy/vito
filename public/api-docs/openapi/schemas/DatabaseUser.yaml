@@ -19,14 +19,19 @@ properties:
     example: 'localhost'
   permission:
     type: string
-    example: 'all'
+    enum: ['read', 'write', 'admin']
+    example: 'admin'
+  permission_color:
+    type: string
+    enum: ['default', 'info', 'warning']
+    example: 'warning'
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    enum: ['ready', 'creating', 'failed', 'deleting']
     example: 'ready'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   created_at:
     type: string

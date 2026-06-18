@@ -3,5 +3,4 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
-      description: Sanctum bearer token authentication
+      description: Laravel Sanctum personal access token. Pass the opaque token in the Authorization header as `Bearer <token>`.

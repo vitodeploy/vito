@@ -86,6 +86,11 @@ abstract class AbstractSiteType implements SiteType
         //
     }
 
+    public function assertReadyToDeploy(): void
+    {
+        //
+    }
+
     public function defaultDeploymentScript(): string
     {
         $path = resource_path('deployment-scripts/'.static::id().'.sh');
@@ -125,7 +130,11 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function deployKey(): void
     {
-        if ($this->site->sourceControl?->isGithubApp()) {
+        if (! $this->site->sourceControl) {
+            return;
+        }
+
+        if ($this->site->sourceControl->isGithubApp()) {
             return;
         }
 
@@ -204,6 +213,10 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function cloneRepository(): void
     {
+        if (! $this->site->repository) {
+            return;
+        }
+
         if ($this->repositoryAlreadyCloned()) {
             return;
         }

@@ -43,7 +43,8 @@ properties:
     example: 22
   os:
     type: string
-    example: 'ubuntu-22.04'
+    enum: ['ubuntu_18', 'ubuntu_20', 'ubuntu_22', 'ubuntu_24']
+    example: 'ubuntu_22'
   provider:
     type: string
     example: 'digitalocean'
@@ -74,8 +75,15 @@ properties:
     type: string
     example: 'Installing services'
   updates:
-    type: object
+    type: integer
     nullable: true
+    description: 'Number of available package updates detected on the server.'
+    example: 5
+  kernel_updates:
+    type: integer
+    nullable: true
+    description: 'Number of available kernel updates detected on the server.'
+    example: 1
   last_update_check:
     type: string
     format: date-time
@@ -89,6 +97,24 @@ properties:
     items:
       type: string
     example: ['ssl', 'backups', 'monitoring']
+  warnings:
+    type: array
+    description: 'Active warnings for the server (available updates, kernel updates, reboot required).'
+    items:
+      type: object
+      properties:
+        key:
+          type: string
+          enum: ['updates_available', 'kernel_update_available', 'reboot_required']
+          example: 'updates_available'
+        count:
+          type: integer
+          description: 'Present for update-related warnings; absent for reboot_required.'
+          example: 5
+    example:
+      - key: 'updates_available'
+        count: 5
+      - key: 'reboot_required'
   created_at:
     type: string
     format: date-time

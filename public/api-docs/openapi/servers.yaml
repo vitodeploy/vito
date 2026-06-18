@@ -138,7 +138,7 @@ paths:
                       name: 'nginx'
                       version: '1.24'
       responses:
-        '201':
+        '200':
           description: Server created successfully
           content:
             application/json:

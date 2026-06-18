@@ -63,11 +63,11 @@ properties:
       author: 'John Doe'
   status:
     type: string
-    enum: ['pending', 'running', 'success', 'failed']
-    example: 'success'
+    enum: ['deploying', 'finished', 'failed']
+    example: 'finished'
   status_color:
     type: string
-    enum: ['success', 'warning', 'danger', 'gray']
+    enum: ['success', 'warning', 'danger']
     example: 'success'
   release:
     type: string

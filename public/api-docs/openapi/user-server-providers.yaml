@@ -71,7 +71,7 @@ paths:
                   description: Whether this provider should be available globally (not tied to current project)
                   example: false
       responses:
-        '201':
+        '200':
           description: Server provider created successfully
           content:
             application/json:

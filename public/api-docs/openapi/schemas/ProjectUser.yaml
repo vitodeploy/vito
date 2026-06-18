@@ -20,7 +20,7 @@ properties:
     example: 'user@example.com'
   role:
     type: string
-    enum: ['owner', 'admin', 'developer', 'viewer']
+    enum: ['user', 'admin', 'owner']
     example: 'owner'
   type:
     type: string

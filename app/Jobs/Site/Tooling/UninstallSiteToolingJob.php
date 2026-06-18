@@ -11,6 +11,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use RuntimeException;
 use Throwable;
 
 class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
@@ -38,7 +39,7 @@ class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
             $tool = ToolingRegistry::find($this->toolId);
 
             if (! $tool) {
-                return;
+                throw new RuntimeException("Tooling '{$this->toolId}' is not registered; it may have been removed or the worker is out of sync.");
             }
 
             $tool->uninstall($this->site);

@@ -88,6 +88,7 @@ paths:
                 connected: true
                 project_id: 1
                 global: false
+                editable_data: {}
                 created_at: '2024-01-01T00:00:00.000000Z'
                 updated_at: '2024-01-01T00:00:00.000000Z'
         '401':
@@ -143,6 +144,7 @@ paths:
                 connected: true
                 project_id: 1
                 global: false
+                editable_data: {}
                 created_at: '2024-01-01T00:00:00.000000Z'
                 updated_at: '2024-01-01T00:00:00.000000Z'
         '401':
@@ -213,6 +215,7 @@ paths:
                 connected: true
                 project_id: 1
                 global: false
+                editable_data: {}
                 created_at: '2024-01-01T00:00:00.000000Z'
                 updated_at: '2024-01-01T12:00:00.000000Z'
         '401':
@@ -266,6 +269,50 @@ paths:
                   message:
                     type: string
                     example: 'DNS provider deleted successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/dns-providers/{dnsProvider}/available:
+    get:
+      summary: List available domains
+      description: Get the domains available on the DNS provider account (fetched live from the provider).
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dnsProvider
+          in: path
+          required: true
+          description: DNS provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Available domains on the DNS provider
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: 'Provider-specific list of available domains.'
         '401':
           description: Unauthorized
           content:

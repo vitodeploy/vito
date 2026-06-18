@@ -10,6 +10,7 @@ use App\Models\GitHook;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Notifications\DeploymentCompleted;
+use App\SiteTypes\Blank;
 use App\SiteTypes\NodeSite;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,6 +147,56 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('git pull');
 
         Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
+    }
+
+    public function test_deploy_reverse_proxy_without_port_and_start_command_shows_error(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Site $proxied */
+        $proxied = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => Blank::id(),
+            'port' => null,
+            'type_data' => [],
+        ]);
+
+        $this->withHeader('X-Inertia', 'true')
+            ->post(route('application.deploy', [
+                'server' => $this->server,
+                'site' => $proxied,
+            ]))->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('deployments', [
+            'site_id' => $proxied->id,
+        ]);
+    }
+
+    public function test_deploy_reverse_proxy_with_port_and_start_command_is_allowed(): void
+    {
+        SSH::fake('fake output');
+        Notification::fake();
+        $this->actingAs($this->user);
+
+        /** @var Site $proxied */
+        $proxied = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => Blank::id(),
+            'port' => 3000,
+            'type_data' => ['start_command' => 'node app.js'],
+        ]);
+
+        $proxied->deploymentScript->update(['content' => 'echo deploy']);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $proxied,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $proxied->id,
+        ]);
     }
 
     public function test_deploy_modern(): void
