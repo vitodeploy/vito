@@ -49,8 +49,8 @@ Vito sends notifications for important events, including:
 - Failures deleting a server from the provider
 
 :::info
-Notifications are sent to **all** configured channels in scope. There is currently no per-event
-subscription — every channel receives every notification.
+Notifications are sent to **all** configured channels, regardless of project scope. There is currently no per-event
+subscription or delivery scoping — every channel receives every notification.
 :::
 
 ## Scope
