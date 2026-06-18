@@ -63,5 +63,5 @@ VitoAgent sends information to Vito instance once per minute.
 ## Data Retention
 
 In the `Metrics` page you can modify the data retention time (in days) so Vito will delete older data
-to keep your Vito's database faster. The default is **30 days**. Vito prunes metrics older than the
+to keep your Vito's database faster. The default is **7 days**. Vito prunes metrics older than the
 retention window automatically once a day.
