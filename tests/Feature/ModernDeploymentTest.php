@@ -44,6 +44,40 @@ class ModernDeploymentTest extends TestCase
         $this->assertEquals(['.env'], $this->site->type_data['modern_deployment_shared_resources']);
     }
 
+    public function test_enabling_modern_deployment_inherits_restart_workers_flag_into_pre_flight(): void
+    {
+        SSH::fake();
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([], 201),
+        ]);
+
+        $this->site->update([
+            'type' => Laravel::id(),
+        ]);
+        $this->site->ensureDeploymentScriptsExist();
+        $this->site->deploymentScript->update(['configs' => ['restart_workers' => true]]);
+
+        $this->actingAs($this->user)
+            ->post(route('site-features.action', [
+                'server' => $this->server,
+                'site' => $this->site,
+                'feature' => 'modern-deployment',
+                'action' => 'enable',
+            ]), [
+                'shared_resources' => '.env',
+                'history' => 10,
+            ])
+            ->assertRedirect();
+
+        $this->site->refresh();
+
+        $this->assertNotNull($this->site->preFlightScript);
+        $this->assertTrue($this->site->preFlightScript->shouldRestartWorkers());
+        $this->assertTrue($this->site->deploymentScriptFor(true)->shouldRestartWorkers());
+        $this->assertTrue($this->site->deploymentScriptFor(false)->shouldRestartWorkers());
+    }
+
     public function test_disable_modern_deployment(): void
     {
         SSH::fake();

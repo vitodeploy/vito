@@ -126,7 +126,12 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
-        app(UpdateDeploymentScript::class)->update($site->deploymentScript, $request->all());
+        $site->ensureDeploymentScriptsExist();
+
+        $script = $site->activeDeploymentScript();
+        abort_if($script === null, 404);
+
+        app(UpdateDeploymentScript::class)->update($script, $request->all());
 
         return response()->noContent();
     }
@@ -139,7 +144,7 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         return response()->json([
-            'script' => $site->deploymentScript?->content,
+            'script' => $site->activeDeploymentScript()?->content,
         ]);
     }
 

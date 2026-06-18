@@ -49,10 +49,20 @@ export function AppHeader({ socketStatus, socketReconnect }: { socketStatus: Soc
             </TooltipContent>
           </Tooltip>
         )}
-        <Button variant="outline" size="sm" onClick={() => window.open('https://github.com/sponsors/saeedvaziry')}>
-          <HeartIcon className="text-pink-600" />
-          <span className="hidden lg:block">Sponsor</span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={() => window.open('https://github.com/sponsors/saeedvaziry')}
+              aria-label="Sponsor"
+            >
+              <HeartIcon className="text-pink-600" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Sponsor</TooltipContent>
+        </Tooltip>
         <AppCommand />
       </div>
     </header>

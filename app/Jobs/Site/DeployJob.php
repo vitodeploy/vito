@@ -103,8 +103,8 @@ class DeployJob implements ShouldQueue
             aliases: $site->environmentAliases(),
         );
 
-        if ($site->deploymentScript->shouldRestartWorkers()) {
-            app(RestartSiteWorkers::class)->restart($site);
+        if ($site->deploymentScriptFor(false)?->shouldRestartWorkers()) {
+            app(RestartSiteWorkers::class)->restart($site, $log);
         }
     }
 
@@ -160,8 +160,8 @@ class DeployJob implements ShouldQueue
             $site->id
         );
 
-        if ($site->preFlightScript?->shouldRestartWorkers()) {
-            app(RestartSiteWorkers::class)->restart($site);
+        if ($site->deploymentScriptFor(true)?->shouldRestartWorkers()) {
+            app(RestartSiteWorkers::class)->restart($site, $log);
         }
     }
 }
