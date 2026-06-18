@@ -173,7 +173,7 @@ export default function ConnectStorageProvider({
             )}
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input type="text" name="host" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <Input type="text" name="name" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
             {configs.storage_provider.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (

@@ -78,6 +78,10 @@ class Dropbox extends AbstractStorageProvider
     {
         $credentials = $this->storageProvider->credentials;
 
+        if (! isset($credentials['app_key'], $credentials['app_secret'], $credentials['refresh_token'])) {
+            throw new RuntimeException('Dropbox credentials are incomplete, please reconnect.');
+        }
+
         $res = Http::asForm()->post($this->tokenUrl, [
             'grant_type' => 'refresh_token',
             'refresh_token' => $credentials['refresh_token'],
