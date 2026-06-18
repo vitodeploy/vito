@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\StorageProvider\ConnectDropbox;
 use App\Actions\StorageProvider\CreateStorageProvider;
 use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Actions\StorageProvider\EditStorageProvider;
@@ -19,6 +20,8 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Throwable;
 
 #[Prefix('settings/storage-providers')]
 #[Middleware(['auth'])]
@@ -58,6 +61,28 @@ class StorageProviderController extends Controller
         app(CreateStorageProvider::class)->create(user(), $request->all());
 
         return back()->with('success', 'Storage provider created.');
+    }
+
+    #[Post('/dropbox/redirect', name: 'storage-providers.dropbox.redirect')]
+    public function dropboxRedirect(Request $request, ConnectDropbox $action): SymfonyResponse
+    {
+        $this->authorize('create', StorageProvider::class);
+
+        return Inertia::location($action->redirectUrl(user(), $request->all()));
+    }
+
+    #[Get('/dropbox/callback', name: 'storage-providers.dropbox.callback')]
+    public function dropboxCallback(Request $request, ConnectDropbox $action): RedirectResponse
+    {
+        $this->authorize('create', StorageProvider::class);
+
+        try {
+            $action->handleCallback(user(), $request);
+        } catch (Throwable $e) {
+            return to_route('storage-providers')->with('error', $e->getMessage());
+        }
+
+        return to_route('storage-providers')->with('success', 'Storage provider created.');
     }
 
     #[Patch('/{storageProvider}', name: 'storage-providers.update')]

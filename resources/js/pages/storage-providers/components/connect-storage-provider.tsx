@@ -1,4 +1,5 @@
-import { LoaderCircle } from 'lucide-react';
+import { Info, LoaderCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,6 +41,7 @@ export default function ConnectStorageProvider({
   const [open, setOpen] = useState(false);
 
   const configs = useConfigs()!;
+  const csrfToken = (usePage().props as { csrf_token: string }).csrf_token;
 
   const form = useForm<Required<StorageProviderForm>>({
     provider: defaultProvider || 'local',
@@ -49,6 +51,12 @@ export default function ConnectStorageProvider({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
+
+    if (form.data.provider === 'dropbox') {
+      redirectToDropbox();
+      return;
+    }
+
     form.post(route('storage-providers.store'), {
       onSuccess: () => {
         setOpen(false);
@@ -57,6 +65,52 @@ export default function ConnectStorageProvider({
         }
       },
     });
+  };
+
+  const redirectToDropbox = () => {
+    const errors: Record<string, string> = {};
+    if (!form.data.name) {
+      errors.name = 'The name field is required.';
+    }
+    /* @ts-expect-error dynamic field */
+    if (!form.data.app_key) {
+      errors.app_key = 'The app key field is required.';
+    }
+    /* @ts-expect-error dynamic field */
+    if (!form.data.app_secret) {
+      errors.app_secret = 'The app secret field is required.';
+    }
+    if (Object.keys(errors).length > 0) {
+      /* @ts-expect-error dynamic field errors */
+      form.setError(errors);
+      return;
+    }
+
+    const values: Record<string, string> = {
+      _token: csrfToken,
+      name: form.data.name,
+      /* @ts-expect-error dynamic field */
+      app_key: form.data.app_key,
+      /* @ts-expect-error dynamic field */
+      app_secret: form.data.app_secret,
+      global: form.data.global ? '1' : '',
+    };
+
+    const nativeForm = document.createElement('form');
+    nativeForm.method = 'POST';
+    nativeForm.action = route('storage-providers.dropbox.redirect');
+    nativeForm.style.display = 'none';
+
+    Object.entries(values).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value ?? '';
+      nativeForm.appendChild(input);
+    });
+
+    document.body.appendChild(nativeForm);
+    nativeForm.submit();
   };
 
   useEffect(() => {
@@ -106,6 +160,17 @@ export default function ConnectStorageProvider({
               </Select>
               <InputError message={form.errors.provider} />
             </FormField>
+            {form.data.provider === 'dropbox' && (
+              <Alert>
+                <Info />
+                <AlertTitle>Connect with Dropbox OAuth</AlertTitle>
+                <AlertDescription>
+                  <p>Create a Dropbox app with offline access enabled, then add this redirect URI to its OAuth settings:</p>
+                  <code className="bg-muted block w-full rounded px-1.5 py-1 text-xs break-all">{route('storage-providers.dropbox.callback')}</code>
+                  <p>Enter the app key and secret below, then continue to Dropbox to authorize access.</p>
+                </AlertDescription>
+              </Alert>
+            )}
             <FormField>
               <Label htmlFor="name">Name</Label>
               <Input type="text" name="host" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
