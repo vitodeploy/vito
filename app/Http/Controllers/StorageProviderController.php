@@ -70,7 +70,7 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        return Inertia::location($action->redirectUrl(user(), $request->all()));
+        return Inertia::location($action->redirectUrl($request->all()));
     }
 
     #[Get('/dropbox/callback', name: 'storage-providers.dropbox.callback')]

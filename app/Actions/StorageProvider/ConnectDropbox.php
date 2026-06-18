@@ -25,7 +25,7 @@ class ConnectDropbox
      *
      * @throws ValidationException
      */
-    public function redirectUrl(User $user, array $input): string
+    public function redirectUrl(array $input): string
     {
         Validator::make($input, [
             'name' => ['required'],
