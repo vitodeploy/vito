@@ -4,7 +4,6 @@ namespace App\Actions\StorageProvider;
 
 use App\Models\StorageProvider;
 use App\StorageProviders\Dropbox;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class DeleteStorageProvider
@@ -18,7 +17,9 @@ class DeleteStorageProvider
         }
 
         if ($storageProvider->provider === Dropbox::id()) {
-            Cache::forget("dropbox_token_{$storageProvider->id}");
+            $provider = $storageProvider->provider();
+            assert($provider instanceof Dropbox);
+            $provider->forgetAccessToken();
         }
 
         $storageProvider->delete();

@@ -22,11 +22,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
 import { useConfigs } from '@/stores/bootstrap-store';
+import { SharedData } from '@/types';
 
 type StorageProviderForm = {
   provider: string;
   name: string;
   global: boolean;
+  app_key: string;
+  app_secret: string;
 };
 
 export default function ConnectStorageProvider({
@@ -41,12 +44,14 @@ export default function ConnectStorageProvider({
   const [open, setOpen] = useState(false);
 
   const configs = useConfigs()!;
-  const csrfToken = (usePage().props as { csrf_token: string }).csrf_token;
+  const csrfToken = usePage<SharedData>().props.csrf_token;
 
   const form = useForm<Required<StorageProviderForm>>({
     provider: defaultProvider || 'local',
     name: '',
     global: false,
+    app_key: '',
+    app_secret: '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -68,20 +73,17 @@ export default function ConnectStorageProvider({
   };
 
   const redirectToDropbox = () => {
-    const errors: Record<string, string> = {};
+    const errors: Partial<Record<keyof StorageProviderForm, string>> = {};
     if (!form.data.name) {
       errors.name = 'The name field is required.';
     }
-    /* @ts-expect-error dynamic field */
     if (!form.data.app_key) {
       errors.app_key = 'The app key field is required.';
     }
-    /* @ts-expect-error dynamic field */
     if (!form.data.app_secret) {
       errors.app_secret = 'The app secret field is required.';
     }
     if (Object.keys(errors).length > 0) {
-      /* @ts-expect-error dynamic field errors */
       form.setError(errors);
       return;
     }
@@ -89,9 +91,7 @@ export default function ConnectStorageProvider({
     const values: Record<string, string> = {
       _token: csrfToken,
       name: form.data.name,
-      /* @ts-expect-error dynamic field */
       app_key: form.data.app_key,
-      /* @ts-expect-error dynamic field */
       app_secret: form.data.app_secret,
       global: form.data.global ? '1' : '',
     };

@@ -6,13 +6,17 @@ use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\StorageProviders\Dropbox as DropboxProvider;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class Dropbox extends AbstractStorage
 {
     private function accessToken(): string
     {
         $provider = $this->storageProvider->provider();
-        assert($provider instanceof DropboxProvider);
+
+        if (! $provider instanceof DropboxProvider) {
+            throw new RuntimeException('Storage provider is not Dropbox.');
+        }
 
         return $provider->accessToken();
     }

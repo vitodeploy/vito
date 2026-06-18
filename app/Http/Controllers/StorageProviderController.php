@@ -12,6 +12,8 @@ use App\Tables\StorageProviderTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -78,8 +80,12 @@ class StorageProviderController extends Controller
 
         try {
             $action->handleCallback(user(), $request);
+        } catch (ValidationException $e) {
+            return to_route('storage-providers')->with('error', $e->validator->errors()->first());
         } catch (Throwable $e) {
-            return to_route('storage-providers')->with('error', $e->getMessage());
+            Log::error('Dropbox OAuth callback failed', ['error' => $e->getMessage()]);
+
+            return to_route('storage-providers')->with('error', __('Failed to connect to Dropbox.'));
         }
 
         return to_route('storage-providers')->with('success', 'Storage provider created.');

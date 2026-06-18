@@ -10,11 +10,11 @@ use RuntimeException;
 
 class Dropbox extends AbstractStorageProvider
 {
+    private const int TOKEN_TTL = 10800;
+
     protected string $apiUrl = 'https://api.dropboxapi.com/2';
 
     protected string $tokenUrl = 'https://api.dropbox.com/oauth2/token';
-
-    protected int $tokenTtl = 10800;
 
     public static function id(): string
     {
@@ -46,10 +46,17 @@ class Dropbox extends AbstractStorageProvider
         }
 
         return Cache::remember(
-            "dropbox_token_{$this->storageProvider->id}",
-            $this->tokenTtl,
+            $this->tokenCacheKey(),
+            self::TOKEN_TTL,
             fn (): string => $this->fetchAccessToken()
         );
+    }
+
+    public function forgetAccessToken(): void
+    {
+        if ($this->storageProvider->id) {
+            Cache::forget($this->tokenCacheKey());
+        }
     }
 
     public function connect(): bool
@@ -60,6 +67,11 @@ class Dropbox extends AbstractStorageProvider
             ]);
 
         return $res->successful();
+    }
+
+    private function tokenCacheKey(): string
+    {
+        return "dropbox_token_{$this->storageProvider->id}";
     }
 
     private function fetchAccessToken(): string

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\StorageProviders\Dropbox;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -26,7 +27,7 @@ class ConnectDropbox
      */
     public function redirectUrl(User $user, array $input): string
     {
-        validator($input, [
+        Validator::make($input, [
             'name' => ['required'],
             'app_key' => ['required'],
             'app_secret' => ['required'],
@@ -53,17 +54,20 @@ class ConnectDropbox
 
     /**
      * @throws ValidationException
+     * @throws RuntimeException
      */
     public function handleCallback(User $user, Request $request): StorageProvider
     {
-        /** @var array<string, mixed>|null $pending */
-        $pending = session()->pull(self::SESSION_KEY);
-
         if ($request->filled('error')) {
+            session()->forget(self::SESSION_KEY);
+
             throw ValidationException::withMessages([
                 'provider' => __('Dropbox authorization was cancelled.'),
             ]);
         }
+
+        /** @var array<string, mixed>|null $pending */
+        $pending = session()->pull(self::SESSION_KEY);
 
         if (! is_array($pending) || ! hash_equals((string) ($pending['state'] ?? ''), (string) $request->query('state'))) {
             throw ValidationException::withMessages([
