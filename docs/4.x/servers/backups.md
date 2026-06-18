@@ -16,7 +16,7 @@ Navigate to the `Backups` section in the server's menu and click on the `Create 
 
 Vito will backup the selected databases into the connected storage provider automatically when you choose one of the predefined intervals.
 
-The predefined intervals are hourly, daily, weekly, and monthly. Custom cron expressions can be saved, but they are not run automatically by Vito's scheduled backup worker. You can trigger any backup on demand at any time with the **Run** action on the backup.
+The intervals that Vito runs automatically are hourly, daily, weekly, and monthly. Other intervals such as `Every Minute`, as well as custom cron expressions, can be saved but are not run automatically by Vito's scheduled backup worker. You can trigger any backup on demand at any time with the **Run** action on the backup.
 
 :::info
 Older backups will be deleted automatically based on the number of backups you want to keep.

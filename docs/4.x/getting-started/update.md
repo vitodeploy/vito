@@ -3,7 +3,12 @@
 ## Update VPS
 
 If you've installed VitoDeploy on a VPS, you can update it by running the bundled update script from the
-project directory as the `root` user:
+project directory as the `vito` user:
+
+:::warning
+Make sure you run this as the `vito` user. If you logged in via the `root` user then switch to it first with
+`su vito`.
+:::
 
 ```sh
 cd /home/vito/vito
