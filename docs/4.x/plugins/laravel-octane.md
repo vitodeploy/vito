@@ -14,7 +14,7 @@ VitoDeploy provides a first party plugin to setup Laravel Octane on your server.
 
 ## Supported Methods
 
-You can setup Laravel Octane on your server in one of the following ways:
+You can set up Laravel Octane by enabling it as a [site feature](#enable-as-a-site-feature) on a Laravel site.
 
 ## How it works
 
@@ -41,7 +41,7 @@ Make sure you have already set the `OCTANE_SERVER` in your `.env` file
 :::
 
 :::info
-Make sure you read [Laravel's official documentation](https://laravel.com/docs/12.x/octane).
+Make sure you read [Laravel's official documentation](https://laravel.com/docs/octane).
 :::
 
 ## Uninstall

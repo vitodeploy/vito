@@ -14,14 +14,22 @@ your deployment script and when working on the server.
 
 Vito ships with the following tools out of the box:
 
-| Tool        | Versions      | Commands             |
-| ----------- | ------------- | -------------------- |
-| **Node.js** | 24, 23, 22    | `node`, `npm`, `npx` |
-| **Bun**     | 1.2, 1.1, 1.0 | `bun`, `bunx`        |
-| **Yarn**    | 4, 3, 1       | `yarn`               |
-| **pnpm**    | 10, 9, 8      | `pnpm`, `pnpx`       |
+| Tool         | Versions                 | Commands                            |
+| ------------ | ------------------------ | ----------------------------------- |
+| **Node.js**  | 24, 23, 22               | `node`, `npm`, `npx`                 |
+| **Bun**      | 1.2, 1.1, 1.0            | `bun`, `bunx`                        |
+| **Yarn**     | 4, 3, 1                  | `yarn`                              |
+| **pnpm**     | 10, 9, 8                 | `pnpm`, `pnpx`                       |
+| **Python**   | 3.14, 3.13, 3.12, 3.11   | `python`, `python3`, `pip`, `pip3`  |
+| **.NET**     | 10, 9, 8                 | `dotnet`                            |
+| **Composer** | 2                        | `composer`                          |
 
 Runtimes are installed with [Mise](https://mise.jdx.dev), which manages versions per isolated user.
+
+:::info
+[Package managers](/docs/4.x/sites/site-types) selected during site creation (such as the JavaScript
+package manager for a Laravel or PHP site) are installed through this same tooling system.
+:::
 
 ## Managing tooling
 

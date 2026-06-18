@@ -61,7 +61,9 @@ details of that process:
   not set one, the site type's default is used.
 - **Worker** - the status of the [worker](/docs/4.x/servers/workers) that runs your app. Vito creates
   this worker automatically so your start command keeps running and restarts if it stops. From the
-  menu you can start, stop, or restart the worker and view its logs.
+  menu you can start, stop, or restart the worker and view its logs. You can also set
+  [environment variables](/docs/4.x/servers/workers#worker-environment-variables) that are passed to
+  the worker process.
 
 The worker status updates in real time. It begins as `pending_deploy` until the worker has been
 created during the first deployment.

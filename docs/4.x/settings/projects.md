@@ -16,9 +16,36 @@ left sidebar, Under Projects dropdown.
 Only admins can create projects.
 :::
 
+## Project Roles
+
+Within a project, each user has one of three roles:
+
+- **Owner**: the user who created the project. The owner has full control and cannot be removed.
+- **Admin**: can manage the project, including inviting and removing users.
+- **User**: has access to the project's resources according to their permissions.
+
+:::info
+These per-project roles are separate from the instance-level [user roles](/docs/4.x/admin/users)
+(Admin/User). A user who is not an instance-level admin can still be the owner or admin of a project.
+:::
+
+## Inviting Users
+
+Admins (and the owner) can invite users to a project by email. Go to the project's user management,
+enter the user's email address, and choose whether they join as an **Admin** or a **User**. Vito
+sends an invitation email with a link to accept.
+
+The invited person accepts the invitation from the link in the email to join the project. Once they
+accept, the project appears in their Projects dropdown.
+
+## Leaving a Project
+
+A user can leave a project they were invited to. The project owner cannot leave their own project
+(delete the project instead).
+
 ## Project User Management
 
-Admins can manage the users of the project. They can add or remove users from the project.
+Admins can manage the users of the project. They can invite, change, or remove users from the project.
 
 ## Deleting a Project
 

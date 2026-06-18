@@ -41,6 +41,22 @@ For docker version you will need to restart/re-create the container.
 Currently Vito supports only SMTP as the mail driver
 :::
 
+## Other Environment Variables
+
+Beyond the basics, a few additional variables let you tune your instance. Most installs never need to
+change these.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `SSH_USER` | `vito` | The Linux user Vito creates and uses to connect to managed servers. |
+| `APP_PORT` | `8000` | The port the application listens on (Docker / local installs). |
+| `APP_DEMO` | `false` | Enables demo mode, which disables destructive and instance-level actions (server creation, plugins, import/export). |
+| `RESTRICTED_IP_ADDRESSES` | _(empty)_ | Comma-separated list of IP addresses that are not allowed as server IPs. |
+| `KEY_PAIRS_DISK` | `key-pairs` | Filesystem disk used to store server SSH key pairs. |
+| `SERVER_LOGS_DISK` | `server-logs` | Filesystem disk used to store server logs. |
+| `SSH_PUBLIC_KEY_NAME` | `ssh-public.key` | Filename of the instance's SSH public key. |
+| `SSH_PRIVATE_KEY_NAME` | `ssh-private.pem` | Filename of the instance's SSH private key. |
+
 ## Force HTTPS
 
 To force HTTPS on your Vito instance, you need to set the `FORCE_HTTPS` environment variable to `true` in the `.env` file.

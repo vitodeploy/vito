@@ -47,3 +47,7 @@ To delete a cronjob you can just hit the delete icon (trash) and confirm that yo
 VitoDeploy allows you to enable/disable a cronjob.
 
 A disabled cronjob will not execute on the given frequency.
+
+## Sync Cronjobs
+
+If you've added cronjobs manually on the server (for example by editing the crontab directly), you can pull them into Vito with the **Sync** button on the Cronjobs page. Vito reads the server's crontab and imports any cronjobs that aren't already tracked.
