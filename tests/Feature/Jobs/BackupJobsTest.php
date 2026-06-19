@@ -55,6 +55,8 @@ class BackupJobsTest extends TestCase
 
     public function test_run_job_failed_sets_backup_and_file_to_failed_and_logs(): void
     {
+        SSH::fake();
+
         $job = new RunJob($this->backupFile, $this->backup);
         $job->failed(new Exception('Backup failed'));
 

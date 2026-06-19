@@ -1,11 +1,3 @@
-if ! sudo DEBIAN_FRONTEND=noninteractive mysqldump -u root {{ $database }} > {{ $file }}.sql; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
-if ! DEBIAN_FRONTEND=noninteractive zip {{ $file }}.zip {{ $file }}.sql; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
-if ! rm {{ $file }}.sql; then
+if ! bash -c 'set -o pipefail; GZIP=$(command -v pigz || echo gzip); sudo DEBIAN_FRONTEND=noninteractive mysqldump --single-transaction --quick --no-tablespaces -u root {{ $database }} | $GZIP > {{ $path }}'; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

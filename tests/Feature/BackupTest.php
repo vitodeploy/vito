@@ -15,6 +15,7 @@ use App\Models\Server;
 use App\Models\StorageProvider;
 use App\Models\User;
 use App\StorageProviders\Dropbox;
+use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -409,6 +410,113 @@ class BackupTest extends TestCase
             'id' => $backupFile->id,
             'status' => BackupFileStatus::RESTORED,
         ]);
+    }
+
+    #[DataProvider('data')]
+    public function test_database_backup_and_restore_are_streamed(string $db, string $version): void
+    {
+        Http::fake();
+        SSH::fake();
+
+        $this->setupDatabase($db, $version);
+
+        $this->actingAs($this->user);
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Dropbox::id(),
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        SSH::assertExecutedContains('| ');
+        SSH::assertExecutedContains('gzip');
+        SSH::assertNotExecutedContains('unzip');
+
+        $this->post(route('backup-files.restore', [
+            'server' => $this->server,
+            'backup' => $backup,
+            'backupFile' => $backupFile,
+        ]), [
+            'database' => $database->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('gunzip -c');
+    }
+
+    public function test_database_backup_captures_compressed_size(): void
+    {
+        Http::fake();
+        SSH::fake('12345');
+
+        $this->setupDatabase('mysql', '8.4');
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Local::id(),
+            'credentials' => ['path' => '/home/vito/backups'],
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $backupFile->id,
+            'status' => BackupFileStatus::CREATED,
+            'size' => 12345,
+        ]);
+    }
+
+    public function test_database_backup_file_uses_sql_gz_extension(): void
+    {
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Dropbox::id(),
+        ]);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::DATABASE,
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $file = BackupFile::factory()->create([
+            'backup_id' => $backup->id,
+            'name' => 'db-20260101000000',
+        ]);
+
+        $this->assertStringEndsWith('.sql.gz', $file->tempPath());
+        $this->assertStringEndsWith('.sql.gz', $file->path());
+    }
+
+    public function test_file_backup_file_uses_tar_gz_extension(): void
+    {
+        $this->assertStringEndsWith('.tar.gz', $this->backupFile->tempPath());
     }
 
     private function setupDatabase(string $database, string $version): void

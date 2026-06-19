@@ -21,6 +21,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Throwable;
 
 class RunJob implements ShouldQueue
 {
@@ -68,7 +69,19 @@ class RunJob implements ShouldQueue
         $this->broadcastBackupUpdate();
         $this->broadcastFileUpdate();
         ServerLog::log($this->backup->server, 'run-backup-failed', $e->getMessage());
+        $this->cleanupTempFile();
         Notifier::send($this->backup->server, new BackupFailed($this->backup));
+    }
+
+    private function cleanupTempFile(): void
+    {
+        try {
+            $this->backup->server->ssh()->exec(
+                'rm -f '.$this->file->tempPath(),
+                'cleanup-failed-backup'
+            );
+        } catch (Throwable) {
+        }
     }
 
     private function broadcastBackupUpdate(): void
