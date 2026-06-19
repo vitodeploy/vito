@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $path
  * @property string $interval
  * @property int $keep_backups
- * @property BackupStatus $status
+ * @property ?BackupStatus $status
  * @property bool $enabled
  * @property Server $server
  * @property StorageProvider $storage

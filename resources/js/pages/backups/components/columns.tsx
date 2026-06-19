@@ -4,7 +4,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from '@/components/ui/button';
 import { Link, useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
 import CopyableBadge from '@/components/copyable-badge';
@@ -27,9 +26,7 @@ function ToggleEnabled({ backup }: { backup: Backup }) {
   };
 
   return (
-    <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={submit} disabled={form.processing}>
-      {form.processing && <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />}
-      <FormSuccessful successful={form.recentlySuccessful} />
+    <DropdownMenuItem onClick={submit} disabled={form.processing}>
       {backup.enabled ? 'Disable' : 'Enable'}
     </DropdownMenuItem>
   );
@@ -94,20 +91,6 @@ export const columns: ColumnDef<Backup>[] = [
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-1.5">
-          <Badge variant={row.original.status_color}>{row.original.status}</Badge>
-          {!row.original.enabled && <Badge variant="gray">Disabled</Badge>}
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: 'last_file',
     header: 'Last file status',
     enableColumnFilter: true,
@@ -124,29 +107,48 @@ export const columns: ColumnDef<Backup>[] = [
     },
   },
   {
+    accessorKey: 'status',
+    header: 'Status',
+    enableColumnFilter: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      if (row.original.status) {
+        return <Badge variant={row.original.status_color ?? 'gray'}>{row.original.status}</Badge>;
+      }
+
+      return row.original.enabled ? <Badge variant="success">enabled</Badge> : <Badge variant="destructive">disabled</Badge>;
+    },
+  },
+  {
     id: 'actions',
     enableColumnFilter: false,
     enableSorting: false,
     cell: ({ row }) => {
       return (
-        <div className="flex items-center justify-end">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVerticalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <Edit backup={row.original} />
-              <ToggleEnabled backup={row.original} />
-              <Link href={route('backup-files', { server: row.original.server_id, backup: row.original.id })}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
-              </Link>
-              <DropdownMenuSeparator />
-              <Delete backup={row.original} />
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center justify-end gap-1.5">
+          {row.original.status === 'deleting' ? (
+            <span className="flex h-8 w-8 items-center justify-center" aria-label="Deleting backup">
+              <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
+            </span>
+          ) : (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <Edit backup={row.original} />
+                <ToggleEnabled backup={row.original} />
+                <Link href={route('backup-files', { server: row.original.server_id, backup: row.original.id })}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                <Delete backup={row.original} />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       );
     },

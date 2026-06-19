@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Backup;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,14 +17,33 @@ return new class extends Migration
             $table->text('message')->nullable()->after('status');
         });
 
-        Backup::query()
+        DB::table('backups')
             ->whereIn('status', ['stopped', 'deleting'])
             ->update(['enabled' => false]);
+
+        Schema::table('backups', function (Blueprint $table): void {
+            $table->string('status')->nullable()->change();
+        });
+
+        DB::table('backups')
+            ->where('status', '!=', 'deleting')
+            ->update(['status' => null]);
     }
 
     public function down(): void
     {
+        DB::table('backups')
+            ->whereNull('status')
+            ->where('enabled', true)
+            ->update(['status' => 'running']);
+
+        DB::table('backups')
+            ->whereNull('status')
+            ->where('enabled', false)
+            ->update(['status' => 'stopped']);
+
         Schema::table('backups', function (Blueprint $table): void {
+            $table->string('status')->nullable(false)->change();
             $table->dropColumn('enabled');
         });
 

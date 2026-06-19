@@ -49,7 +49,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/x.com',
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $this->backupFile = BackupFile::factory()->create([
             'backup_id' => $this->backup->id,
@@ -69,7 +69,7 @@ class BackupTest extends TestCase
             'path' => '/var/www/html',
             'interval' => '0 0 * * *',
             'keep_backups' => 5,
-            'status' => 'running',
+            'status' => null,
         ]);
 
         $this->assertInstanceOf(Backup::class, $backup);
@@ -95,7 +95,7 @@ class BackupTest extends TestCase
             'database_id' => $database->id,
             'interval' => '0 0 * * *',
             'keep_backups' => 5,
-            'status' => 'running',
+            'status' => null,
         ]);
 
         $this->assertInstanceOf(Backup::class, $backup);
@@ -141,7 +141,7 @@ class BackupTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $this->assertDatabaseHas('backup_files', [
@@ -174,7 +174,7 @@ class BackupTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
     }
 
@@ -334,7 +334,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => 1,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $databaseBackupFile = BackupFile::factory()->create([
             'backup_id' => $databaseBackup->id,
@@ -355,7 +355,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => 1,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $databaseBackupFile = BackupFile::factory()->create([
             'backup_id' => $databaseBackup->id,
@@ -537,7 +537,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/x.com',
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
             'enabled' => true,
         ]);
 
@@ -547,7 +547,7 @@ class BackupTest extends TestCase
         $this->assertDatabaseHas('backups', [
             'id' => $backup->id,
             'enabled' => false,
-            'status' => BackupStatus::STOPPED->value,
+            'status' => null,
         ]);
     }
 
@@ -560,7 +560,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/x.com',
-            'status' => BackupStatus::STOPPED,
+            'status' => null,
             'enabled' => false,
         ]);
 
@@ -570,7 +570,7 @@ class BackupTest extends TestCase
         $this->assertDatabaseHas('backups', [
             'id' => $backup->id,
             'enabled' => true,
-            'status' => BackupStatus::RUNNING->value,
+            'status' => null,
         ]);
     }
 

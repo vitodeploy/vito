@@ -38,7 +38,6 @@ class ManageBackup
             'storage_id' => $input['storage'],
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
-            'status' => BackupStatus::RUNNING,
         ]);
         $backup->enabled = true;
         $backup->save();
@@ -58,7 +57,6 @@ class ManageBackup
     public function delete(Backup $backup): void
     {
         $backup->status = BackupStatus::DELETING;
-        $backup->enabled = false;
         $backup->save();
 
         SocketEvent::dispatch(new SocketEventDTO(
@@ -72,13 +70,12 @@ class ManageBackup
 
     public function enable(Backup $backup): void
     {
-        if (in_array($backup->status, [BackupStatus::DELETING, BackupStatus::DELETE_FAILED], true)) {
+        if ($backup->status === BackupStatus::DELETING) {
             throw ValidationException::withMessages([
                 'backup' => __('This backup is being deleted and cannot be enabled.'),
             ]);
         }
 
-        $backup->status = BackupStatus::RUNNING;
         $backup->enabled = true;
         $backup->save();
 
@@ -91,7 +88,6 @@ class ManageBackup
 
     public function stop(Backup $backup): void
     {
-        $backup->status = BackupStatus::STOPPED;
         $backup->enabled = false;
         $backup->save();
 

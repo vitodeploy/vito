@@ -6,8 +6,6 @@ if ! test -e '{{ $sourcePath }}'; then
     echo 'VITO_SSH_ERROR: Source path does not exist' && exit 1
 fi
 
-echo "Source path exists, compressing with tar..."
-
 # Get the item name and parent directory
 ITEM_NAME=$(basename '{{ $sourcePath }}')
 PARENT_DIR=$(dirname '{{ $sourcePath }}')
@@ -15,13 +13,22 @@ PARENT_DIR=$(dirname '{{ $sourcePath }}')
 echo "Item name: $ITEM_NAME"
 echo "Parent directory: $PARENT_DIR"
 
+# Use pigz for parallel compression when available, otherwise fall back to gzip
+GZIP=$(command -v pigz || echo gzip)
+if [ "$(basename "$GZIP")" = "pigz" ]; then
+    echo "Compressing with tar + pigz (parallel)"
+else
+    echo "Compressing with tar + gzip (pigz not installed, install pigz for faster parallel compression)"
+fi
+
 # Change to parent directory and compress the item (file or directory)
 # This creates a tar with only one level: the item name
-if ! tar -czf '{{ $zipPath }}' -C "$PARENT_DIR" "$ITEM_NAME"; then
+START=$SECONDS
+if ! tar -I "$GZIP" -cf '{{ $zipPath }}' -C "$PARENT_DIR" "$ITEM_NAME"; then
     echo 'VITO_SSH_ERROR: Failed to compress with tar' && exit 1
 fi
 
-echo "Compression completed successfully!"
+echo "Compression completed in $((SECONDS - START))s"
 
 echo "Checking if archive was created..."
 

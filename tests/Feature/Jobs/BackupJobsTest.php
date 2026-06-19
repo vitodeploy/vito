@@ -3,7 +3,6 @@
 namespace Tests\Feature\Jobs;
 
 use App\Enums\BackupFileStatus;
-use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Facades\SSH;
 use App\Jobs\Backup\DeleteFileJob;
@@ -47,7 +46,7 @@ class BackupJobsTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => Database::factory()->create(['server_id' => $this->server->id])->id,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $this->backupFile = BackupFile::factory()->create([
@@ -56,7 +55,7 @@ class BackupJobsTest extends TestCase
         ]);
     }
 
-    public function test_run_job_failed_sets_backup_and_file_to_failed_and_logs(): void
+    public function test_run_job_failed_sets_file_to_failed_and_logs(): void
     {
         SSH::fake();
 
@@ -66,7 +65,7 @@ class BackupJobsTest extends TestCase
         $this->backup->refresh();
         $this->backupFile->refresh();
 
-        $this->assertEquals(BackupStatus::FAILED, $this->backup->status);
+        $this->assertNull($this->backup->status);
         $this->assertEquals(BackupFileStatus::FAILED, $this->backupFile->status);
         $this->assertSame('Backup failed', $this->backupFile->message);
 
@@ -175,7 +174,7 @@ class BackupJobsTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/app',
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $file = BackupFile::factory()->create([

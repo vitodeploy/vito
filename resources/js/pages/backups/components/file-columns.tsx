@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon } from 'lucide-react';
+import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import { BackupFile } from '@/types/backup-file';
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
@@ -85,6 +85,19 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: false,
     enableSorting: false,
     cell: ({ row }) => {
+      if (row.original.status === 'creating' || row.original.status === 'deleting') {
+        return (
+          <div className="flex items-center justify-end">
+            <span
+              className="flex h-8 w-8 items-center justify-center"
+              aria-label={row.original.status === 'deleting' ? 'Deleting backup file' : 'Creating backup file'}
+            >
+              <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
+            </span>
+          </div>
+        );
+      }
+
       return (
         <div className="flex items-center justify-end">
           <DropdownMenu modal={false}>

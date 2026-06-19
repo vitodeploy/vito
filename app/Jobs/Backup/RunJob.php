@@ -5,7 +5,6 @@ namespace App\Jobs\Backup;
 use App\Actions\Backup\RunBackup;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
-use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Events\SocketEvent;
 use App\Facades\Notifier;
@@ -62,19 +61,12 @@ class RunJob implements ShouldQueue
             $this->file->message = null;
             $this->file->save();
             $this->broadcastFileUpdate();
-
-            if ($this->backup->status !== BackupStatus::RUNNING) {
-                $this->backup->status = BackupStatus::RUNNING;
-                $this->backup->save();
-            }
             $this->broadcastBackupUpdate();
         });
     }
 
     public function failed(Exception $e): void
     {
-        $this->backup->status = BackupStatus::FAILED;
-        $this->backup->save();
         $this->file->status = BackupFileStatus::FAILED;
         $this->file->message = Str::limit($e->getMessage(), 1000);
         $this->file->save();
@@ -97,6 +89,7 @@ class RunJob implements ShouldQueue
     private function broadcastBackupUpdate(): void
     {
         $this->backup->refresh();
+        $this->backup->load('lastFile');
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->backup->server->project_id,

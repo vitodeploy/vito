@@ -2,9 +2,10 @@
 
 namespace Tests\Unit\Commands;
 
-use App\Enums\BackupStatus;
+use App\Enums\BackupFileStatus;
 use App\Facades\SSH;
 use App\Models\Backup;
+use App\Models\BackupFile;
 use App\Models\Database;
 use App\Models\StorageProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,13 +86,18 @@ class RunBackupCommandTest extends TestCase
         $database = Database::factory()->create(['server_id' => $this->server]);
         $storage = StorageProvider::factory()->dropbox()->create(['user_id' => $this->user->id]);
 
-        Backup::factory()->create([
+        $backup = Backup::factory()->create([
             'server_id' => $this->server->id,
             'database_id' => $database->id,
             'storage_id' => $storage->id,
             'interval' => '1 * * * *',
-            'status' => BackupStatus::FAILED,
+            'status' => null,
             'enabled' => true,
+        ]);
+
+        BackupFile::factory()->create([
+            'backup_id' => $backup->id,
+            'status' => BackupFileStatus::FAILED,
         ]);
 
         $this->artisan('backups:run "1 * * * *"')

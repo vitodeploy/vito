@@ -19,6 +19,7 @@ class RunBackupCommand extends Command
         Backup::query()
             ->where('interval', $this->argument('interval'))
             ->where('enabled', true)
+            ->whereNull('status')
             ->chunk(100, function ($backups) use (&$total): void {
                 /** @var Backup $backup */
                 foreach ($backups as $backup) {

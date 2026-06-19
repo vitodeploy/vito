@@ -56,7 +56,7 @@ class ReconcileBackupsCommand extends Command
             ->chunkById(100, function ($chunk) use (&$backups): void {
                 /** @var Backup $backup */
                 foreach ($chunk as $backup) {
-                    $backup->status = BackupStatus::DELETE_FAILED;
+                    $backup->status = null;
                     $backup->save();
                     $backups++;
 

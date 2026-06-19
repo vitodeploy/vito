@@ -4,7 +4,6 @@ namespace App\Jobs\Backup;
 
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
-use App\Enums\BackupStatus;
 use App\Events\SocketEvent;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;
@@ -34,7 +33,7 @@ class DeleteJob implements ShouldQueue
             }
 
             if ($this->backup->files()->exists()) {
-                $this->backup->status = BackupStatus::DELETE_FAILED;
+                $this->backup->status = null;
                 $this->backup->save();
 
                 SocketEvent::dispatch(new SocketEventDTO(
@@ -61,7 +60,7 @@ class DeleteJob implements ShouldQueue
         ServerLog::log($this->backup->server, 'delete-backup-failed', $e->getMessage());
 
         if ($this->backup->exists) {
-            $this->backup->status = BackupStatus::DELETE_FAILED;
+            $this->backup->status = null;
             $this->backup->save();
             $this->backup->files()
                 ->where('status', BackupFileStatus::DELETING)
