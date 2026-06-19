@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('cron_jobs', 'name')) {
+            return;
+        }
+
         Schema::table('cron_jobs', function (Blueprint $table) {
             $table->string('name')->nullable()->index();
         });
@@ -21,7 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasColumn('cron_jobs', 'name')) {
+            return;
+        }
+
         Schema::table('cron_jobs', function (Blueprint $table) {
+            $table->dropIndex('cron_jobs_name_index');
             $table->dropColumn('name');
         });
     }

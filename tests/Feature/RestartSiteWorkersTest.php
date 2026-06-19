@@ -236,6 +236,46 @@ class RestartSiteWorkersTest extends TestCase
             $this->assertSame(WorkerStatus::FAILED, $worker->status);
         }
     }
+
+    public function test_restart_rewrites_worker_config_before_restarting(): void
+    {
+        Storage::fake(config('core.logs_disk'));
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        $ssh = SSH::fake(
+            "{$worker->id}:{$worker->id}_00: stopped\n".
+            "{$worker->id}:{$worker->id}_00: started"
+        );
+
+        app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+        $ssh->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+    }
+
+    public function test_restart_failure_is_written_to_the_deploy_log(): void
+    {
+        Storage::fake(config('core.logs_disk'));
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (abnormal termination)");
+
+        $log = ServerLog::newLog($this->server, 'deploy-test');
+        $log->save();
+
+        app(RestartSiteWorkers::class)->restart($this->site->fresh(), $log);
+
+        $this->assertStringContainsString('Failed to restart worker(s): '.$worker->id, (string) $log->getContent());
+    }
 }
 
 class ThrowingSupervisor extends Supervisor
