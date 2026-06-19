@@ -112,6 +112,40 @@ class EnvParser
     }
 
     /**
+     * Reconcile the variables parsed from the live server .env file with the
+     * stored variables, carrying over the user-defined `is_secret` flags.
+     *
+     * The live file is always the source of truth for values. The stored array
+     * only contributes the `is_secret` classification so manual secret/normal
+     * toggles survive a reload.
+     *
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>  $parsed
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>|null  $stored
+     * @return array<int, array{key: string, value: string, is_secret: bool}>
+     */
+    public static function reconcileWithStored(array $parsed, ?array $stored): array
+    {
+        if ($stored === null) {
+            return $parsed;
+        }
+
+        $storedMap = [];
+        foreach ($stored as $variable) {
+            $storedMap[$variable['key']] = $variable;
+        }
+
+        return array_map(function ($variable) use ($storedMap) {
+            $key = $variable['key'];
+
+            if (isset($storedMap[$key])) {
+                $variable['is_secret'] = $storedMap[$key]['is_secret'];
+            }
+
+            return $variable;
+        }, $parsed);
+    }
+
+    /**
      * Mask secret values for frontend display
      * Secret values are completely hidden (not sent to frontend)
      *
@@ -130,31 +164,35 @@ class EnvParser
     }
 
     /**
-     * Merge incoming variables with stored variables
-     * For secrets with empty values, keep the stored value
+     * Merge incoming variables with the existing variables.
+     *
+     * A masked secret arrives with an empty value; its real value is restored
+     * from the existing set. The existing set should be parsed from the live
+     * .env file so the restored value reflects what is actually on the server,
+     * never a stale copy.
      *
      * @param  array<int, array{key: string, value: string, is_secret: bool}>  $incoming
-     * @param  array<int, array{key: string, value: string, is_secret: bool}>|null  $stored
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>|null  $existing
      * @return array<int, array{key: string, value: string, is_secret: bool}>
      */
-    public static function mergeWithStored(array $incoming, ?array $stored): array
+    public static function mergeWithStored(array $incoming, ?array $existing): array
     {
-        if ($stored === null) {
+        if ($existing === null) {
             return $incoming;
         }
 
-        $storedMap = [];
-        foreach ($stored as $variable) {
-            $storedMap[$variable['key']] = $variable;
+        $existingMap = [];
+        foreach ($existing as $variable) {
+            $existingMap[$variable['key']] = $variable;
         }
 
-        return array_map(function ($variable) use ($storedMap) {
+        return array_map(function ($variable) use ($existingMap) {
             $key = $variable['key'];
             $isSecret = $variable['is_secret'];
             $value = $variable['value'];
 
-            if ($isSecret && $value === '' && isset($storedMap[$key])) {
-                $variable['value'] = $storedMap[$key]['value'];
+            if ($isSecret && $value === '' && isset($existingMap[$key])) {
+                $variable['value'] = $existingMap[$key]['value'];
             }
 
             return $variable;

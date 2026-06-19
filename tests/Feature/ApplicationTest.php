@@ -556,7 +556,7 @@ class ApplicationTest extends TestCase
 
     public function test_secret_values_are_masked_when_stored_in_db(): void
     {
-        SSH::fake();
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123');
 
         $this->actingAs($this->user);
 
@@ -599,7 +599,7 @@ class ApplicationTest extends TestCase
 
     public function test_secret_values_preserved_when_updating_with_empty_value(): void
     {
-        SSH::fake();
+        SSH::fake('DB_PASSWORD=original_secret');
 
         $this->actingAs($this->user);
 
@@ -628,6 +628,44 @@ class ApplicationTest extends TestCase
         // The original secret value should be preserved
         $storedVar = collect($this->site->env_variables)->firstWhere('key', 'DB_PASSWORD');
         $this->assertEquals('original_secret', $storedVar['value']);
+    }
+
+    public function test_secret_values_reflect_live_server_file_when_changed_out_of_band(): void
+    {
+        $this->actingAs($this->user);
+
+        // Save a secret through Vito so it is also stored in the DB.
+        SSH::fake('DB_PASSWORD=original_secret');
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'TestApp', 'is_secret' => false],
+                ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        // The secret is rotated directly on the server, out of band.
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=rotated_secret');
+
+        // User pulls the env, changes a non-secret field and saves. The masked
+        // secret comes back empty and must be restored from the live file, not
+        // from the stale value stored in the database.
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'ChangedApp', 'is_secret' => false],
+                ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $storedVar = collect($this->site->env_variables)->firstWhere('key', 'DB_PASSWORD');
+        $this->assertEquals('rotated_secret', $storedVar['value']);
     }
 
     public function test_parse_env_endpoint(): void

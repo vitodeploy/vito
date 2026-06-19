@@ -218,4 +218,47 @@ class EnvParserTest extends TestCase
 
         $this->assertEquals($incoming, $merged);
     }
+
+    public function test_merge_restores_secret_from_live_file_value(): void
+    {
+        $live = [
+            ['key' => 'DB_PASSWORD', 'value' => 'rotated_secret', 'is_secret' => true],
+        ];
+
+        $incoming = [
+            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+        ];
+
+        $merged = EnvParser::mergeWithStored($incoming, $live);
+
+        $this->assertEquals('rotated_secret', $merged[0]['value']);
+    }
+
+    public function test_reconcile_carries_over_is_secret_flag(): void
+    {
+        $parsed = [
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+            ['key' => 'CUSTOM_VALUE', 'value' => 'plain', 'is_secret' => false],
+        ];
+
+        $stored = [
+            ['key' => 'CUSTOM_VALUE', 'value' => 'old', 'is_secret' => true],
+        ];
+
+        $reconciled = EnvParser::reconcileWithStored($parsed, $stored);
+
+        $this->assertEquals('Laravel', $reconciled[0]['value']);
+        $this->assertFalse($reconciled[0]['is_secret']);
+        $this->assertEquals('plain', $reconciled[1]['value']);
+        $this->assertTrue($reconciled[1]['is_secret']);
+    }
+
+    public function test_reconcile_with_null_stored_returns_parsed(): void
+    {
+        $parsed = [
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ];
+
+        $this->assertEquals($parsed, EnvParser::reconcileWithStored($parsed, null));
+    }
 }

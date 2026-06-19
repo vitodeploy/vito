@@ -63,6 +63,8 @@ class UpdateEnv
      */
     private function processVariables(Site $site, array $input): array
     {
+        $existing = $this->existingVariables($site);
+
         if (isset($input['variables']) && is_array($input['variables'])) {
             $incoming = array_map(function ($var) {
                 return [
@@ -72,26 +74,41 @@ class UpdateEnv
                 ];
             }, $input['variables']);
 
-            return EnvParser::mergeWithStored($incoming, $site->env_variables);
+            return EnvParser::mergeWithStored($incoming, $existing);
         }
 
         $parsed = EnvParser::parse(trim((string) $input['env']));
 
-        if ($site->env_variables) {
-            $storedMap = [];
-            foreach ($site->env_variables as $var) {
-                $storedMap[$var['key']] = $var;
-            }
+        return EnvParser::reconcileWithStored($parsed, $existing);
+    }
 
-            return array_map(function ($var) use ($storedMap) {
-                if (isset($storedMap[$var['key']])) {
-                    $var['is_secret'] = $storedMap[$var['key']]['is_secret'];
-                }
+    /**
+     * Build the existing variables used to restore masked secrets and classify
+     * keys: values come from the live .env file on the server (the source of
+     * truth), falling back to the database copy so a transient read failure can
+     * never wipe a secret. The user-defined `is_secret` flag stored in the
+     * database always wins over auto-detection on the live file.
+     *
+     * @return array<int, array{key: string, value: string, is_secret: bool}>
+     */
+    private function existingVariables(Site $site): array
+    {
+        $map = [];
 
-                return $var;
-            }, $parsed);
+        foreach ($site->env_variables ?? [] as $variable) {
+            $map[$variable['key']] = $variable;
         }
 
-        return $parsed;
+        foreach (EnvParser::parse($site->getEnv()) as $variable) {
+            $key = $variable['key'];
+
+            if (isset($map[$key])) {
+                $variable['is_secret'] = $map[$key]['is_secret'];
+            }
+
+            $map[$key] = $variable;
+        }
+
+        return array_values($map);
     }
 }

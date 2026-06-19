@@ -125,11 +125,9 @@ class ApplicationController extends Controller
 
         $env = $site->getEnv();
 
-        if ($site->env_variables !== null) {
-            $variables = EnvParser::maskSecrets($site->env_variables);
-        } else {
-            $variables = EnvParser::parse($env);
-        }
+        $variables = EnvParser::maskSecrets(
+            EnvParser::reconcileWithStored(EnvParser::parse($env), $site->env_variables)
+        );
 
         return response()->json([
             'env' => $env,
