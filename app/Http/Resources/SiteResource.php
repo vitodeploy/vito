@@ -35,6 +35,8 @@ class SiteResource extends JsonResource
             'webserver_creates_site_ssls' => $this->webserver()->createsSiteSSLs(),
             'path' => $this->path,
             'php_version' => $this->php_version,
+            'php_settings' => $this->phpSettings(),
+            'supports_php_settings' => $this->supportsPhpSettings(),
             'repository' => $this->repository,
             'branch' => $this->branch,
             'status' => $this->status->getText(),
@@ -77,6 +79,8 @@ class SiteResource extends JsonResource
     private function sanitisedTypeData(): array
     {
         $typeData = $this->type_data ?? [];
+
+        unset($typeData['php']);
 
         if (isset($typeData['basic_auth']['users']) && is_array($typeData['basic_auth']['users'])) {
             $typeData['basic_auth']['users'] = array_map(

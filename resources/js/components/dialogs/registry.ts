@@ -30,6 +30,7 @@ import RestoreBackup from '@/pages/backups/components/restore-backup';
 import SiteFeatureAction from '@/pages/site-features/components/feature-action';
 import ServerFeatureAction from '@/pages/server-features/components/feature-action';
 import Fail2banForm from '@/pages/security/components/fail2ban-form';
+import PhpSettingsDialog from '@/pages/site-settings/components/php-settings-dialog';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -77,6 +78,7 @@ export const dialogs = {
   siteFeatureAction: SiteFeatureAction,
   serverFeatureAction: ServerFeatureAction,
   fail2banForm: Fail2banForm,
+  phpSettings: PhpSettingsDialog,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

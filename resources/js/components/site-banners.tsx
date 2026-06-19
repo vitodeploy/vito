@@ -107,6 +107,7 @@ export default function SiteBanners({ site }: { site: Site }) {
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
   const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');
   const vhostWarning = warnings.find((w) => w.key === 'vhost_generation_disabled');
+  const phpSettingsIgnoredWarning = warnings.find((w) => w.key === 'php_settings_ignored');
   const sslExpiringWarning = warnings.find((w) => w.key === 'ssl_expiring');
   const needsFirstDeployWarning = warnings.find((w) => w.key === 'needs_first_deploy');
   const workerWarnings = warnings.filter((w): w is Extract<SiteWarning, { key: 'worker_not_running' }> => w.key === 'worker_not_running');
@@ -201,6 +202,26 @@ export default function SiteBanners({ site }: { site: Site }) {
         >
           Re-enable
         </Button>
+      ),
+    });
+  }
+
+  if (phpSettingsIgnoredWarning) {
+    items.push({
+      key: 'php-settings-ignored',
+      title: 'PHP settings are not applied',
+      description: (
+        <>
+          This site has custom PHP settings, but a custom VHost template is in use so they are not written to the server. Add the directives to your
+          template manually, or reset the template to apply them automatically.
+        </>
+      ),
+      action: (
+        <Link href={route('site-settings', { server: site.server_id, site: site.id })}>
+          <Button variant="outline" size="sm">
+            Go to Settings
+          </Button>
+        </Link>
       ),
     });
   }

@@ -80,6 +80,9 @@ class GenerateCaddyConfig extends AbstractGenerateConfig
     {
         $block['lb_servers'] = $data['lb_servers'];
         $block['lb_policy'] = $data['lb_policy'];
+        $block['request_body_max_size'] = $data['php_max_upload_size'] !== null
+            ? $data['php_max_upload_size'].'MB'
+            : false;
 
         return $block;
     }

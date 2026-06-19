@@ -204,6 +204,11 @@ class Site extends AbstractModel
             $warnings[] = ['key' => 'vhost_generation_disabled'];
         }
 
+        if (($this->vhost_template !== null || ! $this->vhost_generation_enabled)
+            && array_filter($this->phpSettings(), fn ($v) => $v !== null) !== []) {
+            $warnings[] = ['key' => 'php_settings_ignored'];
+        }
+
         $expiring = $hostedDomains->filter(
             fn ($hd) => $hd->ssl_id
                 && $hd->relationLoaded('ssl')
@@ -504,6 +509,41 @@ class Site extends AbstractModel
         }
 
         return null;
+    }
+
+    public function supportsPhpSettings(): bool
+    {
+        if (! $this->php_version) {
+            return false;
+        }
+
+        $isPhp = (bool) ($this->type()->vhostData()['is_php'] ?? false);
+        $isOctane = (bool) data_get($this->type_data, 'octane', false);
+
+        return $isPhp
+            && ! $isOctane
+            && $this->vhost_generation_enabled
+            && $this->vhost_template === null;
+    }
+
+    /**
+     * @return array{max_upload_size: int|null, max_execution_time: int|null, memory_limit: int|null, max_input_vars: int|null}
+     */
+    public function phpSettings(): array
+    {
+        return [
+            'max_upload_size' => $this->phpSetting('max_upload_size'),
+            'max_execution_time' => $this->phpSetting('max_execution_time'),
+            'memory_limit' => $this->phpSetting('memory_limit'),
+            'max_input_vars' => $this->phpSetting('max_input_vars'),
+        ];
+    }
+
+    private function phpSetting(string $key): ?int
+    {
+        $value = data_get($this->type_data, "php.{$key}");
+
+        return is_numeric($value) ? (int) $value : null;
     }
 
     public function getUrl(): string

@@ -25,8 +25,10 @@ import ChangeSourceControl from '@/pages/site-settings/components/source-control
 import BasicAuth from '@/pages/site-settings/components/basic-auth';
 import StatsToggle from '@/pages/site-settings/components/stats-toggle';
 import WebDirectory from './components/web-directory';
+import { useDialog } from '@/hooks/use-dialog';
 
 export default function Databases() {
+  const dialog = useDialog();
   const page = usePage<{
     server: Server;
     site: Site;
@@ -181,11 +183,23 @@ export default function Databases() {
             <div className="flex items-center justify-between p-4">
               <span>PHP version</span>
               {page.props.site.php_version ? (
-                <ChangePHPVersion site={page.props.site}>
-                  <Button variant="outline" className="h-6">
-                    {page.props.site.php_version}
-                  </Button>
-                </ChangePHPVersion>
+                <div className="flex items-center gap-2">
+                  <ChangePHPVersion site={page.props.site}>
+                    <Button variant="outline" className="h-6">
+                      {page.props.site.php_version}
+                    </Button>
+                  </ChangePHPVersion>
+                  {page.props.site.supports_php_settings && (
+                    <Button
+                      variant="outline"
+                      className="h-6"
+                      aria-label="Configure PHP settings"
+                      onClick={() => dialog.phpSettings.open({ site: page.props.site })}
+                    >
+                      Configure
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <span className="text-muted-foreground">-</span>
               )}

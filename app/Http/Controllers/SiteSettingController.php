@@ -6,6 +6,7 @@ use App\Actions\Site\DeleteSite;
 use App\Actions\Site\PreviewVhost;
 use App\Actions\Site\UpdateBasicAuth;
 use App\Actions\Site\UpdateBranch;
+use App\Actions\Site\UpdatePHPSettings;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdatePort;
 use App\Actions\Site\UpdateSiteStats;
@@ -86,6 +87,21 @@ class SiteSettingController extends Controller
         app(UpdatePHPVersion::class)->update($site, $request->input());
 
         return back()->with('success', 'PHP version updated successfully.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/php-settings', name: 'site-settings.update-php-settings')]
+    public function updatePHPSettings(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        abort_unless($site->supportsPhpSettings(), 404);
+
+        app(UpdatePHPSettings::class)->update($site, $request->input());
+
+        return back()->with('success', 'PHP settings updated successfully.');
     }
 
     /**
