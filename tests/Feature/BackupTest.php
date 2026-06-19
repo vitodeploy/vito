@@ -14,7 +14,6 @@ use App\Models\Database;
 use App\Models\Server;
 use App\Models\StorageProvider;
 use App\Models\User;
-use App\StorageProviders\Dropbox;
 use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -110,7 +109,13 @@ class BackupTest extends TestCase
     public function test_create_database_backup(string $db, string $version): void
     {
         SSH::fake();
-        Http::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
 
         $this->setupDatabase($db, $version);
 
@@ -120,9 +125,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', [
@@ -155,9 +159,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', ['server' => $this->server]), [
@@ -183,9 +186,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         Backup::factory()->create([
@@ -206,9 +208,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -246,9 +247,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -373,7 +373,13 @@ class BackupTest extends TestCase
     #[DataProvider('data')]
     public function test_restore_database_backup(string $db, string $version): void
     {
-        Http::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
         SSH::fake();
 
         $this->setupDatabase($db, $version);
@@ -384,9 +390,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -415,7 +420,13 @@ class BackupTest extends TestCase
     #[DataProvider('data')]
     public function test_database_backup_and_restore_are_streamed(string $db, string $version): void
     {
-        Http::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
         SSH::fake();
 
         $this->setupDatabase($db, $version);
@@ -426,9 +437,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -493,9 +503,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([

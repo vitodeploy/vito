@@ -80,8 +80,8 @@ paths:
                 required fields depend on the selected `provider`. For example,
                 `s3` requires `key`, `secret`, `region`, `bucket` (with optional
                 `api_url`, `path`); `ftp`/`sftp` require `host`, `port`,
-                `username`, `password`, `path`; `dropbox` requires `token`;
-                `local` requires `path`.
+                `username`, `password`, `path`; `dropbox` requires `app_key`,
+                `app_secret`, `refresh_token`; `local` requires `path`.
               properties:
                 name:
                   type: string

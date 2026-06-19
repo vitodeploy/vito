@@ -7,8 +7,8 @@ use App\Facades\SSH;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
-use App\StorageProviders\Dropbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RunBackupCommandTest extends TestCase
@@ -24,14 +24,20 @@ class RunBackupCommandTest extends TestCase
     public function test_run_backups(): void
     {
         SSH::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
 
         $database = Database::factory()->create([
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -51,7 +57,7 @@ class RunBackupCommandTest extends TestCase
         SSH::fake();
 
         $database = Database::factory()->create(['server_id' => $this->server]);
-        $storage = StorageProvider::factory()->create(['user_id' => $this->user->id, 'provider' => Dropbox::id()]);
+        $storage = StorageProvider::factory()->dropbox()->create(['user_id' => $this->user->id]);
 
         Backup::factory()->create([
             'server_id' => $this->server->id,
@@ -68,9 +74,16 @@ class RunBackupCommandTest extends TestCase
     public function test_runs_enabled_backup_even_after_a_failed_run(): void
     {
         SSH::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
 
         $database = Database::factory()->create(['server_id' => $this->server]);
-        $storage = StorageProvider::factory()->create(['user_id' => $this->user->id, 'provider' => Dropbox::id()]);
+        $storage = StorageProvider::factory()->dropbox()->create(['user_id' => $this->user->id]);
 
         Backup::factory()->create([
             'server_id' => $this->server->id,

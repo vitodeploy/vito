@@ -77,9 +77,12 @@ class StorageProviderServiceProvider extends ServiceProvider
             ->handler(Dropbox::class)
             ->form(
                 DynamicForm::make([
-                    DynamicField::make('token')
+                    DynamicField::make('app_key')
                         ->text()
-                        ->label('Token'),
+                        ->label('App key'),
+                    DynamicField::make('app_secret')
+                        ->password()
+                        ->label('App secret'),
                 ])
             )
             ->register();
