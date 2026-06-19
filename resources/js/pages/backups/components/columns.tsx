@@ -2,8 +2,9 @@ import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Link, router } from '@inertiajs/react';
-import { MoreVerticalIcon } from 'lucide-react';
+import { Link, useForm } from '@inertiajs/react';
+import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
+import FormSuccessful from '@/components/form-successful';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
 import CopyableBadge from '@/components/copyable-badge';
@@ -17,12 +18,18 @@ function Edit({ backup }: { backup: Backup }) {
 }
 
 function ToggleEnabled({ backup }: { backup: Backup }) {
+  const form = useForm();
+
+  const submit = () => {
+    form.post(route(backup.enabled ? 'backups.disable' : 'backups.enable', { server: backup.server_id, backup: backup.id }), {
+      preserveScroll: true,
+    });
+  };
+
   return (
-    <DropdownMenuItem
-      onSelect={() =>
-        router.post(route(backup.enabled ? 'backups.disable' : 'backups.enable', { server: backup.server_id, backup: backup.id }))
-      }
-    >
+    <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={submit} disabled={form.processing}>
+      {form.processing && <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />}
+      <FormSuccessful successful={form.recentlySuccessful} />
       {backup.enabled ? 'Disable' : 'Enable'}
     </DropdownMenuItem>
   );

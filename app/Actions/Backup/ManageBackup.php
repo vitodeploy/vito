@@ -39,8 +39,8 @@ class ManageBackup
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
             'status' => BackupStatus::RUNNING,
-            'enabled' => true,
         ]);
+        $backup->enabled = true;
         $backup->save();
 
         app(RunBackup::class)->run($backup);
@@ -72,6 +72,12 @@ class ManageBackup
 
     public function enable(Backup $backup): void
     {
+        if (in_array($backup->status, [BackupStatus::DELETING, BackupStatus::DELETE_FAILED], true)) {
+            throw ValidationException::withMessages([
+                'backup' => __('This backup is being deleted and cannot be enabled.'),
+            ]);
+        }
+
         $backup->status = BackupStatus::RUNNING;
         $backup->enabled = true;
         $backup->save();

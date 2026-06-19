@@ -565,6 +565,29 @@ class BackupTest extends TestCase
         ]);
     }
 
+    public function test_cannot_enable_a_backup_being_deleted(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => BackupStatus::DELETING,
+            'enabled' => false,
+        ]);
+
+        $this->post(route('backups.enable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionHasErrors('backup');
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => false,
+            'status' => BackupStatus::DELETING->value,
+        ]);
+    }
+
     private function setupDatabase(string $database, string $version): void
     {
         $this->server->services()->where('type', 'database')->delete();

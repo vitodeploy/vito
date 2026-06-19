@@ -24,10 +24,19 @@ class RestoreDatabaseJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    public int $timeout;
+
     public function __construct(
         protected BackupFile $backupFile,
         protected Database $database,
-    ) {}
+    ) {
+        $this->timeout = max(300, (int) config('core.backup_run_timeout'));
+    }
+
+    protected function lockSeconds(): int
+    {
+        return $this->timeout + 60;
+    }
 
     public function handle(): void
     {

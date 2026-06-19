@@ -22,12 +22,16 @@ class ReconcileBackupsCommand extends Command
 
     protected $description = 'Fail backup files stuck in a transient state after an interrupted job';
 
+    /**
+     * Sweep records stuck in a transient state after an interrupted (e.g. SIGKILL'd)
+     * job. The window is intentionally 2x the longest backup timeout so an in-flight
+     * dump/restore/delete is never reaped mid-run.
+     */
     public function handle(): void
     {
-        // Intentionally conservative: a window of 2x the longest backup timeout
-        // guarantees no in-flight dump/restore/delete is ever reaped mid-run.
         $threshold = now()->subSeconds(2 * (int) config('core.backup_run_timeout'));
-        $total = 0;
+        $files = 0;
+        $backups = 0;
 
         BackupFile::query()
             ->whereIn('status', [
@@ -37,11 +41,11 @@ class ReconcileBackupsCommand extends Command
             ])
             ->where('updated_at', '<', $threshold)
             ->with('backup.server', 'backup.storage')
-            ->chunkById(100, function ($files) use (&$total): void {
+            ->chunkById(100, function ($chunk) use (&$files): void {
                 /** @var BackupFile $file */
-                foreach ($files as $file) {
+                foreach ($chunk as $file) {
                     $this->reconcile($file);
-                    $total++;
+                    $files++;
                 }
             });
 
@@ -49,11 +53,12 @@ class ReconcileBackupsCommand extends Command
             ->where('status', BackupStatus::DELETING)
             ->where('updated_at', '<', $threshold)
             ->with('server')
-            ->chunkById(100, function ($backups): void {
+            ->chunkById(100, function ($chunk) use (&$backups): void {
                 /** @var Backup $backup */
-                foreach ($backups as $backup) {
+                foreach ($chunk as $backup) {
                     $backup->status = BackupStatus::DELETE_FAILED;
                     $backup->save();
+                    $backups++;
 
                     SocketEvent::dispatch(new SocketEventDTO(
                         projectId: $backup->server->project_id,
@@ -63,7 +68,7 @@ class ReconcileBackupsCommand extends Command
                 }
             });
 
-        $this->info("{$total} stuck backup files reconciled");
+        $this->info("{$files} stuck backup files and {$backups} backups reconciled");
     }
 
     private function reconcile(BackupFile $file): void

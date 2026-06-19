@@ -22,12 +22,21 @@ class RestoreFileJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    public int $timeout;
+
     public function __construct(
         protected BackupFile $backupFile,
         protected string $restorePath,
         protected string $owner,
         protected string $permissions,
-    ) {}
+    ) {
+        $this->timeout = max(300, (int) config('core.backup_run_timeout'));
+    }
+
+    protected function lockSeconds(): int
+    {
+        return $this->timeout + 60;
+    }
 
     public function handle(): void
     {
@@ -36,16 +45,13 @@ class RestoreFileJob implements ShouldQueue
         $this->run("backup-file-{$this->backupFile->id}", function () use ($server) {
             $tempBackupPath = $this->backupFile->tempPath();
 
-            // Download backup from storage provider
             $this->backupFile->backup->storage->provider()->ssh($server)->download(
                 $this->backupFile->path(),
                 $tempBackupPath
             );
 
-            // Extract the archive using OS service with custom owner and permissions
             $server->os()->extractArchive($tempBackupPath, $this->restorePath, $this->owner, $this->permissions);
 
-            // Clean up temporary file
             $server->os()->deleteFile($tempBackupPath);
 
             $this->backupFile->status = BackupFileStatus::RESTORED;

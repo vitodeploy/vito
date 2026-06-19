@@ -39,7 +39,6 @@ class Backup extends AbstractModel
         'interval',
         'keep_backups',
         'status',
-        'enabled',
     ];
 
     protected $casts = [
