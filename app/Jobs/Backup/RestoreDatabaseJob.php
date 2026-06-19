@@ -66,7 +66,8 @@ class RestoreDatabaseJob implements ShouldQueue
 
         try {
             $server->os()->deleteFile($this->backupFile->tempPath());
-        } catch (Throwable) {
+        } catch (Throwable $cleanupError) {
+            ServerLog::log($server, 'cleanup-failed-restore', $cleanupError->getMessage());
         }
     }
 

@@ -30,6 +30,7 @@ class ManageBackupFile
     public function delete(BackupFile $file): void
     {
         $file->status = BackupFileStatus::DELETING;
+        $file->message = null;
         $file->save();
 
         SocketEvent::dispatch(new SocketEventDTO(

@@ -26,6 +26,7 @@ class RestoreBackup
 
         $backup = $backupFile->backup;
         $backupFile->status = BackupFileStatus::RESTORING;
+        $backupFile->message = null;
 
         if ($backup->type === BackupType::DATABASE) {
             $this->restoreDatabase($backupFile, $input);

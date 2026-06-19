@@ -29,4 +29,6 @@ export AWS_ENDPOINT_URL={{ $endpoint }}
 
 if aws s3 rm s3://{{ $bucket }}/{{ $src }}; then
     echo "Delete successful"
+else
+    echo "VITO_SSH_ERROR" && exit 1
 fi
