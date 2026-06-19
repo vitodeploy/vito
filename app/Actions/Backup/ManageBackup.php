@@ -11,6 +11,7 @@ use App\Http\Resources\BackupResource;
 use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
+use App\ValidationRules\CronRule;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -140,6 +141,7 @@ class ManageBackup
         if (isset($input['interval']) && $input['interval'] == 'custom') {
             $rules['custom_interval'] = [
                 'required',
+                new CronRule,
             ];
         }
 
