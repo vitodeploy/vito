@@ -219,6 +219,21 @@ class PhpSettingsTest extends TestCase
         ])->assertNotFound();
     }
 
+    public function test_route_404s_when_vhost_generation_disabled(): void
+    {
+        $this->site->vhost_generation_enabled = false;
+        $this->site->save();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-php-settings', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'max_upload_size' => 64,
+        ])->assertNotFound();
+    }
+
     public function test_resource_exposes_php_settings(): void
     {
         $this->site->type_data = ['php' => ['max_upload_size' => 64, 'max_execution_time' => null, 'memory_limit' => null, 'max_input_vars' => null]];

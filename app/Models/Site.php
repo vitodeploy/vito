@@ -204,7 +204,7 @@ class Site extends AbstractModel
             $warnings[] = ['key' => 'vhost_generation_disabled'];
         }
 
-        if (($this->vhost_template !== null || ! $this->vhost_generation_enabled)
+        if ($this->vhost_template !== null
             && array_filter($this->phpSettings(), fn ($v) => $v !== null) !== []) {
             $warnings[] = ['key' => 'php_settings_ignored'];
         }

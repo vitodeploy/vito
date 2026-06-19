@@ -30,7 +30,7 @@ abstract class AbstractGenerateConfig
 
         $rendered = format_webserver_config($engine->render($template, $data));
 
-        return str_replace(self::PHP_VALUE_TOKEN, $data['php_value_string'] ?? '', $rendered);
+        return str_replace(self::PHP_VALUE_TOKEN, $data['php_value_string'], $rendered);
     }
 
     /**

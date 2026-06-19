@@ -4,7 +4,6 @@ namespace App\Actions\Site;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class UpdatePHPSettings
@@ -18,11 +17,9 @@ class UpdatePHPSettings
     {
         $validated = $this->validate($input);
 
-        DB::transaction(function () use ($site, $validated): void {
-            $typeData = $site->type_data ?? [];
-            $typeData['php'] = $validated;
-            $site->update(['type_data' => $typeData]);
-        });
+        $typeData = $site->type_data ?? [];
+        $typeData['php'] = $validated;
+        $site->update(['type_data' => $typeData]);
 
         $site->webserver()->updateVHost($site);
 

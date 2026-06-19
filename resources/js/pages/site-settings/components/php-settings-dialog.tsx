@@ -120,7 +120,7 @@ export default function PhpSettingsDialog({ open, onOpenChange, site }: { open: 
           </FormFields>
         </Form>
 
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
