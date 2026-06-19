@@ -2,12 +2,9 @@
 
 namespace App\Actions\Backup;
 
-use App\DTOs\SocketEventDTO;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Enums\DatabaseStatus;
-use App\Events\SocketEvent;
-use App\Http\Resources\BackupResource;
 use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
@@ -60,11 +57,7 @@ class ManageBackup
         $backup->status = BackupStatus::DELETING;
         $backup->save();
 
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $backup->server->project_id,
-            type: 'backup.updated',
-            data: new BackupResource($backup),
-        ));
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
 
         dispatch(new DeleteJob($backup))->onQueue('ssh');
     }
@@ -80,11 +73,7 @@ class ManageBackup
         $backup->enabled = true;
         $backup->save();
 
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $backup->server->project_id,
-            type: 'backup.updated',
-            data: new BackupResource($backup),
-        ));
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
     }
 
     public function stop(Backup $backup): void
@@ -92,11 +81,7 @@ class ManageBackup
         $backup->enabled = false;
         $backup->save();
 
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $backup->server->project_id,
-            type: 'backup.updated',
-            data: new BackupResource($backup),
-        ));
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
     }
 
     private function validate(Server $server, array $input): void

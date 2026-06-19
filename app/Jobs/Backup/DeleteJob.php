@@ -2,10 +2,10 @@
 
 namespace App\Jobs\Backup;
 
+use App\Actions\Backup\BroadcastBackupUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Events\SocketEvent;
-use App\Http\Resources\BackupResource;
 use App\Models\Backup;
 use App\Models\ServerLog;
 use App\Traits\UniqueQueue;
@@ -36,11 +36,7 @@ class DeleteJob implements ShouldQueue
                 $this->backup->status = null;
                 $this->backup->save();
 
-                SocketEvent::dispatch(new SocketEventDTO(
-                    projectId: $projectId,
-                    type: 'backup.updated',
-                    data: new BackupResource($this->backup),
-                ));
+                app(BroadcastBackupUpdate::class)->broadcast($this->backup);
 
                 return;
             }
@@ -66,11 +62,7 @@ class DeleteJob implements ShouldQueue
                 ->where('status', BackupFileStatus::DELETING)
                 ->update(['status' => BackupFileStatus::DELETE_FAILED]);
 
-            SocketEvent::dispatch(new SocketEventDTO(
-                projectId: $this->backup->server->project_id,
-                type: 'backup.updated',
-                data: new BackupResource($this->backup),
-            ));
+            app(BroadcastBackupUpdate::class)->broadcast($this->backup);
         }
     }
 }

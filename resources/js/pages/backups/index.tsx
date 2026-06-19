@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
@@ -10,8 +10,9 @@ import { Backup } from '@/types/backup';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/backups/components/columns';
 import { PaginatedData } from '@/types';
-import { useRealtime } from '@/hooks/use-socket-events';
+import { useRealtime, useSocketListener } from '@/hooks/use-socket-events';
 import { useDialog } from '@/hooks/use-dialog';
+import { useCallback, useEffect, useRef } from 'react';
 
 type Page = {
   server: Server;
@@ -22,6 +23,40 @@ export default function Backups() {
   const page = usePage<Page>();
   const dialog = useDialog();
   const [backups] = useRealtime<Backup>(page.props.backups, 'backup', { server_id: page.props.server.id });
+
+  const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleReload = useCallback(() => {
+    if (reloadTimer.current) {
+      clearTimeout(reloadTimer.current);
+    }
+    reloadTimer.current = setTimeout(() => {
+      router.reload({ only: ['backups'] });
+    }, 750);
+  }, []);
+
+  useSocketListener(
+    useCallback(
+      (event) => {
+        if (event.type !== 'backup-file.created' && event.type !== 'backup-file.updated') {
+          return;
+        }
+        const backupId = event.data?.backup_id;
+        if (typeof backupId === 'number' && backups.data.some((backup) => backup.id === backupId)) {
+          scheduleReload();
+        }
+      },
+      [backups.data, scheduleReload],
+    ),
+  );
+
+  useEffect(() => {
+    return () => {
+      if (reloadTimer.current) {
+        clearTimeout(reloadTimer.current);
+      }
+    };
+  }, []);
 
   return (
     <ServerLayout>

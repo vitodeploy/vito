@@ -2,8 +2,11 @@
 
 namespace App\Actions\Backup;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupType;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupFileResource;
 use App\Jobs\Backup\RunJob;
 use App\Models\Backup;
 use App\Models\BackupFile;
@@ -24,6 +27,13 @@ class RunBackup
             'status' => BackupFileStatus::CREATING,
         ]);
         $file->save();
+        $file->setRelation('backup', $backup);
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $backup->server->project_id,
+            type: 'backup-file.created',
+            data: new BackupFileResource($file),
+        ));
 
         dispatch(new RunJob($file, $backup))->onQueue('ssh');
 

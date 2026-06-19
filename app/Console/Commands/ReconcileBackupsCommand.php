@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Backup\BroadcastBackupUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Events\SocketEvent;
 use App\Facades\Notifier;
 use App\Http\Resources\BackupFileResource;
-use App\Http\Resources\BackupResource;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Notifications\BackupFailed;
@@ -60,11 +60,7 @@ class ReconcileBackupsCommand extends Command
                     $backup->save();
                     $backups++;
 
-                    SocketEvent::dispatch(new SocketEventDTO(
-                        projectId: $backup->server->project_id,
-                        type: 'backup.updated',
-                        data: new BackupResource($backup),
-                    ));
+                    app(BroadcastBackupUpdate::class)->broadcast($backup);
                 }
             });
 
