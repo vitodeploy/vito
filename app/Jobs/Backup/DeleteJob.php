@@ -12,6 +12,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 
 class DeleteJob implements ShouldQueue
 {
@@ -56,11 +57,13 @@ class DeleteJob implements ShouldQueue
         ServerLog::log($this->backup->server, 'delete-backup-failed', $e->getMessage());
 
         if ($this->backup->exists) {
-            $this->backup->status = null;
-            $this->backup->save();
-            $this->backup->files()
-                ->where('status', BackupFileStatus::DELETING)
-                ->update(['status' => BackupFileStatus::DELETE_FAILED]);
+            DB::transaction(function (): void {
+                $this->backup->status = null;
+                $this->backup->save();
+                $this->backup->files()
+                    ->where('status', BackupFileStatus::DELETING)
+                    ->update(['status' => BackupFileStatus::DELETE_FAILED]);
+            });
 
             app(BroadcastBackupUpdate::class)->broadcast($this->backup);
         }

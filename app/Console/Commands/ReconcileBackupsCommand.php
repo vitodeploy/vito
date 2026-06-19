@@ -15,6 +15,7 @@ use App\Notifications\BackupFailed;
 use App\Notifications\FailedToDeleteBackupFileFromProvider;
 use App\Notifications\RestoreFailed;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ReconcileBackupsCommand extends Command
 {
@@ -69,7 +70,15 @@ class ReconcileBackupsCommand extends Command
 
     private function reconcile(BackupFile $file): void
     {
-        $server = $file->backup->server;
+        $backup = $file->backup;
+        $server = $backup?->server;
+
+        if (! $backup || ! $server) {
+            Log::warning('Skipping reconciliation for orphaned backup file', ['backup_file_id' => $file->id]);
+
+            return;
+        }
+
         $previous = $file->status;
 
         $file->status = match ($previous) {
@@ -89,7 +98,7 @@ class ReconcileBackupsCommand extends Command
         match ($previous) {
             BackupFileStatus::RESTORING => Notifier::send($server, new RestoreFailed($server, $file)),
             BackupFileStatus::DELETING => Notifier::send($server, new FailedToDeleteBackupFileFromProvider($file)),
-            default => Notifier::send($server, new BackupFailed($file->backup)),
+            default => Notifier::send($server, new BackupFailed($backup)),
         };
     }
 }
