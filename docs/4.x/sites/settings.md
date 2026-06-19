@@ -33,9 +33,9 @@ Leave a field empty to use the server's default. Vito applies these to the site'
 on Caddy), so they take effect for requests served through nginx/Caddy and are preserved across
 deployments. They do not affect the PHP CLI.
 
-Where a value is left unset, the server default applies. PHP defaults to 2&nbsp;MB uploads, a 30s
-execution time, a 128&nbsp;MB memory limit, and 1000 input vars; on nginx, requests are additionally
-capped at 1&nbsp;MB (body size) and 60s until you raise them here.
+Where a value is left unset, the server default applies. PHP defaults to 2 MB uploads, a 30s
+execution time, a 128 MB memory limit, and 1000 input vars; on nginx, requests are additionally
+capped at 1 MB (body size) and 60s until you raise them here.
 
 :::tip
 These settings are per-site. PHP-FPM process pools are shared per system user, so process-manager
