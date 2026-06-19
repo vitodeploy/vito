@@ -41,6 +41,16 @@ Where a VitoAgent is not updated on a given server, certain monitoring statistic
 and restart monitoring of the server will not function.
 :::
 
+## Database Backup Format
+
+In v4.x, database backups are streamed and stored as compressed `.sql.gz` archives. Previously (v3.x) they were stored as `.zip` archives.
+
+:::warning
+**Database backups created in v3.x (`.zip`) cannot be restored in v4.x.** v4 can only restore database backups that were created in v4 (`.sql.gz`). After upgrading, take a fresh database backup so you have a restorable v4 backup, and keep your old v3 `.zip` archives around only if you have a separate way to restore them.
+:::
+
+This only affects **database** backups. File/directory backups are unaffected — they continue to use the `.tar.gz` format and restore as before.
+
 ## Plugins
 
 If you maintain a Vito plugin, these are the contract changes you need to be aware of in v4.x. The
