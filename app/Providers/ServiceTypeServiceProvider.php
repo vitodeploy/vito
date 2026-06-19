@@ -59,6 +59,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('Caddy (beta)')
             ->handler(Caddy::class)
             ->data(['creates_site_ssls' => false])
+            ->configPaths([
+                [
+                    'name' => 'Caddyfile',
+                    'path' => '/etc/caddy/Caddyfile',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
     }
 
@@ -76,6 +83,11 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 [
                     'name' => 'my.cnf',
                     'path' => '/etc/mysql/my.cnf',
+                    'sudo' => true,
+                ],
+                [
+                    'name' => 'mysqld.cnf',
+                    'path' => '/etc/mysql/mysql.conf.d/mysqld.cnf',
                     'sudo' => true,
                 ],
             ])
@@ -96,6 +108,16 @@ class ServiceTypeServiceProvider extends ServiceProvider
                     'path' => '/etc/postgresql/{version}/main/postgresql.conf',
                     'sudo' => true,
                 ],
+                [
+                    'name' => 'pg_hba.conf',
+                    'path' => '/etc/postgresql/{version}/main/pg_hba.conf',
+                    'sudo' => true,
+                ],
+                [
+                    'name' => 'pg_ident.conf',
+                    'path' => '/etc/postgresql/{version}/main/pg_ident.conf',
+                    'sudo' => true,
+                ],
             ])
             ->register();
         RegisterServiceType::make(Mariadb::id())
@@ -112,6 +134,11 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 [
                     'name' => 'my.cnf',
                     'path' => '/etc/mysql/my.cnf',
+                    'sudo' => true,
+                ],
+                [
+                    'name' => '50-server.cnf',
+                    'path' => '/etc/mysql/mariadb.conf.d/50-server.cnf',
                     'sudo' => true,
                 ],
             ])
@@ -235,6 +262,18 @@ class ServiceTypeServiceProvider extends ServiceProvider
                     'intl',
                     'sqlite3',
                     'opcache',
+                ],
+            ])
+            ->configPaths([
+                [
+                    'name' => 'fpm/php.ini',
+                    'path' => '/etc/php/{version}/fpm/php.ini',
+                    'sudo' => true,
+                ],
+                [
+                    'name' => 'cli/php.ini',
+                    'path' => '/etc/php/{version}/cli/php.ini',
+                    'sudo' => true,
                 ],
             ])
             ->register();
