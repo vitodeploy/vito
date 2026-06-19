@@ -45,7 +45,8 @@ class NotificationChannelsTest extends TestCase
     public function test_cannot_add_email_channel(): void
     {
         config()->set('mail.default', 'smtp');
-        config()->set('mail.mailers.smtp.host', '127.0.0.1'); // invalid host
+        config()->set('mail.mailers.smtp.host', '127.0.0.1');
+        config()->set('mail.mailers.smtp.port', 1); // closed port so the SMTP connection fails even if a local mail catcher (e.g. Mailpit) is listening
 
         $this->actingAs($this->user);
 
