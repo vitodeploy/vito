@@ -2,8 +2,8 @@
 
 ## Introduction
 
-In the Settings page you can manage your site's details, its PHP version, web directory, vhost
-template, basic auth, and more.
+In the Settings page you can manage your site's details, its PHP version and PHP settings, web
+directory, vhost template, basic auth, and more.
 
 ## Site details
 
@@ -17,6 +17,36 @@ You can change the PHP version of each website in their Settings page.
 
 Make sure that the PHP version you want to use is already installed in the [PHP](../servers/php#install-and-uninstall)
 page.
+
+## Configure PHP Settings
+
+For PHP sites you can tune common per-site PHP runtime limits without editing any files. Click
+**Configure** next to the PHP version on the Settings page to set:
+
+- **Max upload size** — the largest file that can be uploaded (MB).
+- **Max execution time** — how long a request may run (seconds).
+- **Memory limit** — the maximum memory a request may use (MB).
+- **Max input vars** — the maximum number of input variables, e.g. form fields.
+
+Leave a field empty to use the server's default. Vito applies these to the site's vhost (via FastCGI
+`PHP_VALUE`, together with `client_max_body_size`/`fastcgi_read_timeout` on nginx and `request_body`
+on Caddy), so they take effect for requests served through nginx/Caddy and are preserved across
+deployments. They do not affect the PHP CLI.
+
+Where a value is left unset, the server default applies. PHP defaults to 2&nbsp;MB uploads, a 30s
+execution time, a 128&nbsp;MB memory limit, and 1000 input vars; on nginx, requests are additionally
+capped at 1&nbsp;MB (body size) and 60s until you raise them here.
+
+:::tip
+These settings are per-site. PHP-FPM process pools are shared per system user, so process-manager
+tuning (such as `pm.max_children`) is not configured here.
+:::
+
+:::warning
+Configuration is available only for PHP sites that use automatic vhost generation and the default
+vhost template. If you use a custom vhost template, add the directives to your template manually — a
+banner warns you when stored PHP settings cannot be applied.
+:::
 
 ## Change branch
 
