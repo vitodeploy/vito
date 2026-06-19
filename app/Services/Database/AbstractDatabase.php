@@ -238,7 +238,6 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function runBackup(BackupFile $backupFile): void
     {
-        // backup
         $this->service->server->ssh()->exec(
             view($this->getScriptView('backup'), [
                 'path' => $backupFile->tempPath(),
@@ -247,20 +246,17 @@ abstract class AbstractDatabase extends AbstractService implements Database
             'backup-database'
         );
 
-        // capture the compressed dump size before uploading
         $size = trim($this->service->server->ssh()->exec(
-            'stat -c%s '.$backupFile->tempPath(),
+            'stat -c%s '.escapeshellarg($backupFile->tempPath()),
             'backup-size'
         ));
 
-        // upload to storage
         $backupFile->backup->storage->provider()->ssh($this->service->server)->upload(
             $backupFile->tempPath(),
             $backupFile->path(),
         );
 
-        // cleanup
-        $this->service->server->ssh()->exec('rm '.$backupFile->tempPath(), 'cleanup-backup');
+        $this->service->server->os()->deleteFile($backupFile->tempPath());
 
         $backupFile->size = is_numeric($size) ? (int) $size : null;
         $backupFile->save();

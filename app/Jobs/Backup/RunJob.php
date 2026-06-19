@@ -76,11 +76,9 @@ class RunJob implements ShouldQueue
     private function cleanupTempFile(): void
     {
         try {
-            $this->backup->server->ssh()->exec(
-                'rm -f '.$this->file->tempPath(),
-                'cleanup-failed-backup'
-            );
-        } catch (Throwable) {
+            $this->backup->server->os()->deleteFile($this->file->tempPath());
+        } catch (Throwable $e) {
+            ServerLog::log($this->backup->server, 'cleanup-failed-backup', $e->getMessage());
         }
     }
 

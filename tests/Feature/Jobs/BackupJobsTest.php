@@ -74,6 +74,8 @@ class BackupJobsTest extends TestCase
 
     public function test_restore_database_job_failed_sets_restore_failed_and_logs(): void
     {
+        SSH::fake();
+
         $database = Database::factory()->create([
             'server_id' => $this->server->id,
         ]);

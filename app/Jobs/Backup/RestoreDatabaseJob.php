@@ -45,6 +45,7 @@ class RestoreDatabaseJob implements ShouldQueue
         $this->backupFile->status = BackupFileStatus::RESTORE_FAILED;
         $this->backupFile->save();
         $this->broadcastFileUpdate();
+        $this->database->server->os()->deleteFile($this->backupFile->tempPath());
         ServerLog::log($this->database->server, 'restore-database-failed', $e->getMessage());
     }
 
