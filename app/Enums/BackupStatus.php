@@ -9,6 +9,7 @@ enum BackupStatus: string implements VitoEnum
     case RUNNING = 'running';
     case FAILED = 'failed';
     case DELETING = 'deleting';
+    case DELETE_FAILED = 'delete_failed';
     case STOPPED = 'stopped';
 
     public function getColor(): string
@@ -16,6 +17,7 @@ enum BackupStatus: string implements VitoEnum
         return match ($this) {
             self::RUNNING => 'success',
             self::FAILED,
+            self::DELETE_FAILED,
             self::STOPPED => 'danger',
             self::DELETING => 'warning',
         };

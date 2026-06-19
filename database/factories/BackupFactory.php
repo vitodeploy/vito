@@ -18,6 +18,7 @@ class BackupFactory extends Factory
             'interval' => '0 * * * *',
             'keep_backups' => 10,
             'status' => BackupStatus::RUNNING,
+            'enabled' => true,
         ];
     }
 }

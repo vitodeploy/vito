@@ -58,7 +58,10 @@ return [
             'connection' => 'default',
             'queue' => 'ssh',
             'timeout' => 1200,
-            'retry_after' => 1260,
+            // Must stay greater than the longest per-job timeout on this queue
+            // (core.backup_run_timeout, default 3600) so a long-running job is
+            // never re-reserved while still executing.
+            'retry_after' => 3660,
             'block_for' => null,
             'after_commit' => false,
         ],

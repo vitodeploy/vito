@@ -2,4 +2,4 @@ if ! bash -c 'set -o pipefail; gunzip -c {{ $path }} | sudo DEBIAN_FRONTEND=noni
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-rm -f {{ $path }}
+rm -f {!! escapeshellarg($path) !!}

@@ -21,6 +21,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Str;
 use Throwable;
 
 class RunJob implements ShouldQueue
@@ -28,10 +29,19 @@ class RunJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    public int $timeout;
+
     public function __construct(
         protected BackupFile $file,
         protected Backup $backup,
-    ) {}
+    ) {
+        $this->timeout = max(300, (int) config('core.backup_run_timeout'));
+    }
+
+    protected function lockSeconds(): int
+    {
+        return $this->timeout + 60;
+    }
 
     public function handle(): void
     {
@@ -49,6 +59,7 @@ class RunJob implements ShouldQueue
             }
 
             $this->file->status = BackupFileStatus::CREATED;
+            $this->file->message = null;
             $this->file->save();
             $this->broadcastFileUpdate();
 
@@ -65,6 +76,7 @@ class RunJob implements ShouldQueue
         $this->backup->status = BackupStatus::FAILED;
         $this->backup->save();
         $this->file->status = BackupFileStatus::FAILED;
+        $this->file->message = Str::limit($e->getMessage(), 1000);
         $this->file->save();
         $this->broadcastBackupUpdate();
         $this->broadcastFileUpdate();

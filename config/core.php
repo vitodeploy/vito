@@ -32,6 +32,18 @@ return [
     'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs'), // should be FilesystemAdapter storage
 
     /*
+     * Backups
+     *
+     * Per-job timeout (seconds) for a backup run. Large database dumps can take
+     * a long time; this overrides the queue worker's default timeout for the
+     * backup job (RunJob sets its own $timeout from this value). The 'ssh' queue
+     * connection's retry_after MUST stay greater than this value (see
+     * config/queue.php). If you rely on Horizon's process-level timeout instead
+     * of the per-job override, also raise HORIZON_SSH_TIMEOUT to >= this value.
+     */
+    'backup_run_timeout' => (int) env('BACKUP_RUN_TIMEOUT', 3600),
+
+    /*
      * WebSocket
      */
     'ws_host' => env('WS_HOST', '127.0.0.1'),

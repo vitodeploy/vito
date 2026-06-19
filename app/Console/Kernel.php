@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('backups:run "0 0 * * *"')->daily();
         $schedule->command('backups:run "0 0 * * 0"')->weekly();
         $schedule->command('backups:run "0 0 1 * *"')->monthly();
+        $schedule->command('backups:reconcile')->everyThirtyMinutes();
         $schedule->command('metrics:delete-older-metrics')->daily();
         $schedule->command('db:vacuum')->daily();
         $schedule->command('metrics:get')->everyMinute();

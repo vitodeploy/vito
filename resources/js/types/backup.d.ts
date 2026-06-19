@@ -16,6 +16,7 @@ export interface Backup {
   files_count: number;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+  enabled: boolean;
   created_at: string;
   updated_at: string;
   last_file?: BackupFile;

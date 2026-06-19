@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Commands;
 
+use App\Enums\BackupStatus;
 use App\Facades\SSH;
 use App\Models\Backup;
 use App\Models\Database;
@@ -39,6 +40,45 @@ class RunBackupCommandTest extends TestCase
             'storage_id' => $storage->id,
             'interval' => '1 * * * *',
             'keep_backups' => 10,
+        ]);
+
+        $this->artisan('backups:run "1 * * * *"')
+            ->expectsOutput('1 backups started');
+    }
+
+    public function test_does_not_run_disabled_backups(): void
+    {
+        SSH::fake();
+
+        $database = Database::factory()->create(['server_id' => $this->server]);
+        $storage = StorageProvider::factory()->create(['user_id' => $this->user->id, 'provider' => Dropbox::id()]);
+
+        Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+            'interval' => '1 * * * *',
+            'enabled' => false,
+        ]);
+
+        $this->artisan('backups:run "1 * * * *"')
+            ->expectsOutput('0 backups started');
+    }
+
+    public function test_runs_enabled_backup_even_after_a_failed_run(): void
+    {
+        SSH::fake();
+
+        $database = Database::factory()->create(['server_id' => $this->server]);
+        $storage = StorageProvider::factory()->create(['user_id' => $this->user->id, 'provider' => Dropbox::id()]);
+
+        Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+            'interval' => '1 * * * *',
+            'status' => BackupStatus::FAILED,
+            'enabled' => true,
         ]);
 
         $this->artisan('backups:run "1 * * * *"')

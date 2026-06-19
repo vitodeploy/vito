@@ -25,6 +25,7 @@ import ServerIpForm from '@/pages/server-network/components/form';
 import RecordForm from '@/pages/domains/components/record-form';
 import ScriptForm from '@/pages/scripts/components/form';
 import EditCommand from '@/pages/commands/components/edit-command';
+import CreateBackup from '@/pages/backups/components/create-backup';
 import EditBackup from '@/pages/backups/components/edit-backup';
 import RestoreBackup from '@/pages/backups/components/restore-backup';
 import SiteFeatureAction from '@/pages/site-features/components/feature-action';
@@ -72,6 +73,7 @@ export const dialogs = {
   dnsRecordForm: RecordForm,
   scriptForm: ScriptForm,
   commandEdit: EditCommand,
+  backupCreate: CreateBackup,
   backupEdit: EditBackup,
   backupRestore: RestoreBackup,
   siteFeatureAction: SiteFeatureAction,

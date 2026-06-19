@@ -5,15 +5,19 @@ namespace App\Jobs\Backup;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Events\SocketEvent;
+use App\Facades\Notifier;
 use App\Http\Resources\BackupFileResource;
 use App\Models\BackupFile;
 use App\Models\Database;
 use App\Models\ServerLog;
 use App\Models\Service;
+use App\Notifications\RestoreFailed;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Str;
+use Throwable;
 
 class RestoreDatabaseJob implements ShouldQueue
 {
@@ -34,6 +38,7 @@ class RestoreDatabaseJob implements ShouldQueue
             $databaseHandler = $service->handler();
             $databaseHandler->restoreBackup($this->backupFile, $this->database->name);
             $this->backupFile->status = BackupFileStatus::RESTORED;
+            $this->backupFile->message = null;
             $this->backupFile->restored_at = now();
             $this->backupFile->save();
             $this->broadcastFileUpdate();
@@ -42,11 +47,18 @@ class RestoreDatabaseJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
+        $server = $this->database->server;
         $this->backupFile->status = BackupFileStatus::RESTORE_FAILED;
+        $this->backupFile->message = Str::limit($e->getMessage(), 1000);
         $this->backupFile->save();
         $this->broadcastFileUpdate();
-        $this->database->server->os()->deleteFile($this->backupFile->tempPath());
-        ServerLog::log($this->database->server, 'restore-database-failed', $e->getMessage());
+        ServerLog::log($server, 'restore-database-failed', $e->getMessage());
+        Notifier::send($server, new RestoreFailed($server, $this->backupFile));
+
+        try {
+            $server->os()->deleteFile($this->backupFile->tempPath());
+        } catch (Throwable) {
+        }
     }
 
     private function broadcastFileUpdate(): void

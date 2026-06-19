@@ -267,7 +267,6 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function restoreBackup(BackupFile $backupFile, string $database): void
     {
-        // download
         $backupFile->backup->storage->provider()->ssh($this->service->server)->download(
             $backupFile->path(),
             $backupFile->tempPath(),

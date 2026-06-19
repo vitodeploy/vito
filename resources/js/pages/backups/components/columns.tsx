@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
 import CopyableBadge from '@/components/copyable-badge';
 import { useDialog } from '@/hooks/use-dialog';
+import ErrorIndicator from '@/components/error-indicator';
 
 function Edit({ backup }: { backup: Backup }) {
   const dialog = useDialog();
@@ -88,7 +89,14 @@ export const columns: ColumnDef<Backup>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return row.original.last_file && <Badge variant={row.original.last_file.status_color}>{row.original.last_file.status}</Badge>;
+      return (
+        row.original.last_file && (
+          <div className="flex items-center gap-1.5">
+            <Badge variant={row.original.last_file.status_color}>{row.original.last_file.status}</Badge>
+            <ErrorIndicator error={row.original.last_file.message} label={`Backup #${row.original.id} last file error`} />
+          </div>
+        )
+      );
     },
   },
   {

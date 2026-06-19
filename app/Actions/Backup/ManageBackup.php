@@ -2,9 +2,12 @@
 
 namespace App\Actions\Backup;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Enums\DatabaseStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupResource;
 use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
@@ -36,6 +39,7 @@ class ManageBackup
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
             'status' => BackupStatus::RUNNING,
+            'enabled' => true,
         ]);
         $backup->save();
 
@@ -54,7 +58,14 @@ class ManageBackup
     public function delete(Backup $backup): void
     {
         $backup->status = BackupStatus::DELETING;
+        $backup->enabled = false;
         $backup->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $backup->server->project_id,
+            type: 'backup.updated',
+            data: new BackupResource($backup),
+        ));
 
         dispatch(new DeleteJob($backup))->onQueue('ssh');
     }
@@ -62,7 +73,14 @@ class ManageBackup
     public function stop(Backup $backup): void
     {
         $backup->status = BackupStatus::STOPPED;
+        $backup->enabled = false;
         $backup->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $backup->server->project_id,
+            type: 'backup.updated',
+            data: new BackupResource($backup),
+        ));
     }
 
     private function validate(Server $server, array $input): void

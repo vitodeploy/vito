@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Actions\Backup\RunBackup;
-use App\Enums\BackupStatus;
 use App\Models\Backup;
 use Illuminate\Console\Command;
 
@@ -19,7 +18,7 @@ class RunBackupCommand extends Command
 
         Backup::query()
             ->where('interval', $this->argument('interval'))
-            ->where('status', BackupStatus::RUNNING)
+            ->where('enabled', true)
             ->chunk(100, function ($backups) use (&$total): void {
                 /** @var Backup $backup */
                 foreach ($backups as $backup) {

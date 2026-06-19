@@ -88,7 +88,7 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button form="edit-backup-form" type="button" onClick={submit} disabled={form.processing}>
+            <Button form="edit-backup-form" type="submit" disabled={form.processing}>
               {form.processing && <LoaderCircle className="animate-spin" />}
               Save
             </Button>

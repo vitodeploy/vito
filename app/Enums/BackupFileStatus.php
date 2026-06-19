@@ -13,6 +13,7 @@ enum BackupFileStatus: string implements VitoEnum
     case RESTORING = 'restoring';
     case RESTORED = 'restored';
     case RESTORE_FAILED = 'restore_failed';
+    case DELETE_FAILED = 'delete_failed';
 
     public function getColor(): string
     {
@@ -22,8 +23,9 @@ enum BackupFileStatus: string implements VitoEnum
             self::DELETING,
             self::RESTORING => 'warning',
             self::FAILED,
-            self::RESTORE_FAILED => 'danger',
-            self::RESTORED => 'primary',
+            self::RESTORE_FAILED,
+            self::DELETE_FAILED => 'danger',
+            self::RESTORED => 'info',
         };
     }
 

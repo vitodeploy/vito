@@ -2,4 +2,4 @@ if ! bash -c 'set -o pipefail; gunzip -c {{ $path }} | sudo -u postgres psql -d 
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-rm -f {{ $path }}
+rm -f {!! escapeshellarg($path) !!}

@@ -9,9 +9,9 @@ import { BookOpenIcon, PlusIcon } from 'lucide-react';
 import { Backup } from '@/types/backup';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/backups/components/columns';
-import CreateBackup from '@/pages/backups/components/create-backup';
 import { PaginatedData } from '@/types';
 import { useRealtime } from '@/hooks/use-socket-events';
+import { useDialog } from '@/hooks/use-dialog';
 
 type Page = {
   server: Server;
@@ -20,6 +20,7 @@ type Page = {
 
 export default function Backups() {
   const page = usePage<Page>();
+  const dialog = useDialog();
   const [backups] = useRealtime<Backup>(page.props.backups, 'backup', { server_id: page.props.server.id });
 
   return (
@@ -36,12 +37,10 @@ export default function Backups() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <CreateBackup server={page.props.server}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Create</span>
-              </Button>
-            </CreateBackup>
+            <Button onClick={() => dialog.backupCreate.open({ server: page.props.server })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Create</span>
+            </Button>
           </div>
         </HeaderContainer>
 

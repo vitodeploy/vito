@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import CopyableBadge from '@/components/copyable-badge';
 import { useDialog } from '@/hooks/use-dialog';
 import { Backup } from '@/types/backup';
+import ErrorIndicator from '@/components/error-indicator';
 
 function Restore({ backup, file }: { backup: Backup; file: BackupFile }) {
   const dialog = useDialog();
@@ -71,7 +72,12 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      return (
+        <div className="flex items-center gap-1.5">
+          <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+          <ErrorIndicator error={row.original.message} label={`Backup file "${row.original.name}" error`} />
+        </div>
+      );
     },
   },
   {
