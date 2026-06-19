@@ -15,7 +15,6 @@ use App\Notifications\BackupFailed;
 use App\Notifications\FailedToDeleteBackupFileFromProvider;
 use App\Notifications\RestoreFailed;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class ReconcileBackupsCommand extends Command
 {
@@ -41,6 +40,7 @@ class ReconcileBackupsCommand extends Command
                 BackupFileStatus::DELETING,
             ])
             ->where('updated_at', '<', $threshold)
+            ->whereHas('backup.server')
             ->with('backup.server', 'backup.storage')
             ->chunkById(100, function ($chunk) use (&$files): void {
                 /** @var BackupFile $file */
@@ -53,6 +53,7 @@ class ReconcileBackupsCommand extends Command
         Backup::query()
             ->where('status', BackupStatus::DELETING)
             ->where('updated_at', '<', $threshold)
+            ->whereHas('server')
             ->with('server')
             ->chunkById(100, function ($chunk) use (&$backups): void {
                 /** @var Backup $backup */
@@ -70,15 +71,7 @@ class ReconcileBackupsCommand extends Command
 
     private function reconcile(BackupFile $file): void
     {
-        $backup = $file->backup;
-        $server = $backup?->server;
-
-        if (! $backup || ! $server) {
-            Log::warning('Skipping reconciliation for orphaned backup file', ['backup_file_id' => $file->id]);
-
-            return;
-        }
-
+        $server = $file->backup->server;
         $previous = $file->status;
 
         $file->status = match ($previous) {
@@ -98,7 +91,7 @@ class ReconcileBackupsCommand extends Command
         match ($previous) {
             BackupFileStatus::RESTORING => Notifier::send($server, new RestoreFailed($server, $file)),
             BackupFileStatus::DELETING => Notifier::send($server, new FailedToDeleteBackupFileFromProvider($file)),
-            default => Notifier::send($server, new BackupFailed($backup)),
+            default => Notifier::send($server, new BackupFailed($file->backup)),
         };
     }
 }
