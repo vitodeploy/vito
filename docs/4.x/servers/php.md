@@ -7,6 +7,7 @@ server creation in the `PHP` menu in the server page or in the [Services](./serv
 
 ## Supported PHP Versions
 
+- PHP 5.6
 - PHP 7.0
 - PHP 7.1
 - PHP 7.2
@@ -42,6 +43,7 @@ Available extensions to install:
 - gmagick
 - gmp
 - intl
+- sqlite3
 - opcache
 
 :::info

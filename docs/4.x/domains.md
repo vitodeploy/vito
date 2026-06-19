@@ -7,9 +7,11 @@ domains to a specific site and manage their SSL, see [Site Domains](./sites/doma
 
 ## Introduction
 
-One of the most frequent actions you need to do when deploying a new website on a new server is to point your domain to that server. For that you need to login to your domain registrar or DNS provider and change the NS records of that domain to point to your server's IP address.
+One of the most frequent actions you need to do when deploying a new website on a new server is to point your domain to that server. For that you need to login to your domain registrar or DNS provider and change the DNS records of that domain to point to your server's IP address.
 
-Vito now supports managing your domains' NS records directly from VitoDeploy. You can add your [DNS provider](./settings/dns-providers.md) to VitoDeploy and then add your domain from the selected DNS provider. Vito will fetch all existing NS records and you can manage them directly from VitoDeploy.
+Vito now supports managing your domains' DNS records directly from VitoDeploy. You can add your [DNS provider](./settings/dns-providers.md) to VitoDeploy and then add your domain from the selected DNS provider. Vito will fetch all existing DNS records and you can manage them directly from VitoDeploy.
+
+Supported record types include `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `NS`, `CAA`, `PTR`, and `SOA`.
 
 ## Add domain
 
@@ -23,7 +25,7 @@ When you add a new user to VitoDeploy and assign them to a project, they will be
 
 ## Manage Records
 
-Once you've added a domain, you can manage its NS records directly from VitoDeploy. You can add, edit, and delete NS records as needed.
+Once you've added a domain, you can manage its DNS records directly from VitoDeploy. You can add, edit, and delete DNS records as needed.
 
 When you add or edit a record, Vito will automatically update the record on your DNS provider.
 

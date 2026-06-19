@@ -82,6 +82,21 @@ one or more username/password pairs. This is useful for staging and preview site
 publicly reachable but not openly accessible. Basic auth is managed from the Settings page and shows
 whether it is currently enabled and how many users are configured.
 
+## Force SSL
+
+Once a site has an active SSL certificate, you can enable **Force SSL** to redirect all HTTP traffic
+to HTTPS. Toggle it from the Settings page. See the site's
+[Domains](/docs/4.x/sites/domains#ssl-per-domain) page (per-domain certificates) or the server's
+[SSL Certificates](/docs/4.x/servers/ssl) page (wildcard/custom certificates) for how to issue a
+certificate first.
+
+## Site Statistics
+
+On servers that have the log analysis (GoAccess) service installed, you can enable **Statistics** for
+a site to collect and visualize its web traffic. Enabling it configures log collection for the site;
+disabling it stops collection. See [Monitoring](/docs/4.x/servers/monitoring) for the server-side
+service.
+
 ## Delete
 
 You can delete the website from your server.

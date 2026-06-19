@@ -23,8 +23,14 @@ executions.
 
 ## Default Commands
 
-Specific site types might come with default commands out of the box. For example, a Laravel site
-comes with some useful artisan commands like `artisan up` and `artisan down`.
+Specific site types come with default commands out of the box. For example, a Laravel site is created
+with these artisan commands ready to run:
+
+- **cache:clear** — `php artisan cache:clear`
+- **down** — `php artisan down --retry=5 --refresh=6 --quiet` (enable maintenance mode)
+- **up** — `php artisan up` (disable maintenance mode)
+
+You can edit, remove, or add to these like any other command.
 
 ## Environment
 

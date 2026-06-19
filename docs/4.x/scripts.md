@@ -4,6 +4,11 @@
 
 Scripts allows you to create bash scripts and execute them on your servers any time you want.
 
+:::info
+Scripts are project-scoped. A script you create is only visible to members of the project it belongs
+to.
+:::
+
 ## Variables
 
 VitoDeploy allows you to define variables in your script.

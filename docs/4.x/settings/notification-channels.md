@@ -34,6 +34,25 @@ To add a Telegram channel you will first need to create a bot with `@BotFather` 
 channel and then get the `chat_id` of that chat/channel and enter the `bot_token` and the `chat_id` to add it to your
 Vito instance.
 
+## What triggers a notification
+
+Vito sends notifications for important events, including:
+
+- Server provisioning started, succeeded, or failed
+- Server connected / disconnected
+- Server OS update failed, and automatic updates completed
+- Site installation succeeded or failed
+- Deployment completed (or failed), and webhook deployment failed
+- Backup failed, and failures deleting a backup file from the storage provider
+- SSL certificate expiring, and SSL renewal failed
+- Source control disconnected
+- Failures deleting a server from the provider
+
+:::info
+Notifications are sent to **all** configured channels, regardless of project scope. There is currently no per-event
+subscription or delivery scoping — every channel receives every notification.
+:::
+
 ## Scope
 
 notification channels can be created under a specific project or globally.

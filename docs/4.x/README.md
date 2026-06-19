@@ -40,7 +40,10 @@ databases, deploy sites, and more — all from a clean dashboard.
 | [Services](servers/services.md) | Manage server services |
 | [Monitoring](servers/monitoring.md) | Monitor CPU, memory, and disk |
 | [Console](servers/console.md) | Run commands from the dashboard |
-| [Redis](servers/redis.md) | Install and manage Redis |
+| [Redis](servers/redis.md) | Install and manage Redis & Valkey |
+| [Security](servers/security.md) | Harden the server (Fail2ban, SSH, auto-updates) |
+| [Network](servers/network.md) | Manage server IP addresses |
+| [SSL Certificates](servers/ssl.md) | Server-level SSL certificates |
 | [Settings](servers/settings.md) | Server settings |
 | [Logs](servers/logs.md) | View server logs |
 
@@ -66,11 +69,12 @@ databases, deploy sites, and more — all from a clean dashboard.
 | --- | --- |
 | [Scripts](scripts.md) | Run and manage server scripts |
 
-## Workflows
+## Workflows & Automation
 
 | Page | What's in it |
 | --- | --- |
-| [Workflows & Automations](workflows.md) | Automate repetitive tasks |
+| [Workflows](workflows.md) | Automate repetitive tasks |
+| [Automation & Scheduled Tasks](automation.md) | Background tasks Vito runs automatically |
 
 ## Domains
 
@@ -100,6 +104,12 @@ databases, deploy sites, and more — all from a clean dashboard.
 | [DNS Providers](settings/dns-providers.md) | Connect DNS providers |
 | [API Keys](settings/api-keys.md) | Manage API keys |
 | [Vito Settings](settings/vito-settings.md) | Instance-wide settings |
+
+## API
+
+| Page | What's in it |
+| --- | --- |
+| [API](api.md) | Use the REST API to automate Vito |
 
 ## Admin
 

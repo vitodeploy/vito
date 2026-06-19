@@ -14,7 +14,9 @@ See [Storage Providers](../settings/storage-providers.md) documentation for more
 
 Navigate to the `Backups` section in the server's menu and click on the `Create Backup` button. Select `Database` as backup type and then select the database to backup and storage provider and how many backups you want vito to keep and then backup interval and start the backup.
 
-Vito will backup the selected databases into the connected storage provider on the given interval.
+Vito will backup the selected databases into the connected storage provider automatically when you choose one of the predefined intervals.
+
+The intervals that Vito runs automatically are hourly, daily, weekly, and monthly. Other intervals such as `Every Minute`, as well as custom cron expressions, can be saved but are not run automatically by Vito's scheduled backup worker. You can trigger any backup on demand at any time with the **Run** action on the backup.
 
 :::info
 Older backups will be deleted automatically based on the number of backups you want to keep.
@@ -36,7 +38,7 @@ You can restore a database backup to another database.
 
 Navigate to the `Backups` section in the server's menu and click on the `Create Backup` button. Select `File Backup` as backup type and then enter the path on your server that you want to backup and storage provider and how many backups you want vito to keep and then backup interval and start the backup.
 
-Vito will compress the given path with `tar` and then upload it to the connected storage provider on the given interval.
+Vito will compress the given path with `tar` and then upload it to the connected storage provider automatically when you choose one of the predefined intervals.
 
 :::info
 Older backups will be deleted automatically based on the number of backups you want to keep.

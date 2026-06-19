@@ -230,7 +230,7 @@ Create a new user
 
 Vito by default will run on localhost:8000. You can change the port on your `.env` file.
 
-[Sail Documentation](https://laravel.com/docs/10.x/sail)
+[Sail Documentation](https://laravel.com/docs/13.x/sail)
 
 :::warning
 Make sure you set these [environment variables](#environment-variables) properly according docker installation.

@@ -8,14 +8,18 @@ Vito gives you the ability to manage some of the installed services on your serv
 ## Supported Services
 
 - Nginx
+- Caddy (beta)
 - [PHP](./php)
-- Mysql
+- MySQL
+- MariaDB
 - PostgreSQL
 - Redis
+- Valkey
 - Supervisor
 - UFW
-- [Monitoring](./monitoring)
-- Node.js
+- Fail2ban
+- [Monitoring](./monitoring) (VitoAgent / RemoteMonitor)
+- GoAccess
 
 :::info
 To add more services, you can develop a plugin for Vito. You can find more information about plugins in the [Plugins](../plugins.md#register-services) section.
@@ -26,9 +30,31 @@ To add more services, you can develop a plugin for Vito. You can find more infor
 - Start
 - Stop
 - Restart
+- Reload (reloads the service's configuration without a full restart, where supported)
 - Enable
 - Disable
 - Uninstall
+
+## Edit Service Configuration
+
+For many services, Vito lets you edit the main configuration file directly from the dashboard. Open the service's `Config` action to view and edit files such as:
+
+- Nginx — `/etc/nginx/nginx.conf`
+- MySQL / MariaDB — `/etc/mysql/my.cnf`
+- PostgreSQL — `/etc/postgresql/{version}/main/postgresql.conf`
+- Redis — `/etc/redis/redis.conf`
+- Valkey — `/etc/valkey/valkey.conf`
+- Supervisor — `/etc/supervisor/supervisord.conf`
+
+After saving, reload or restart the service for the changes to take effect.
+
+:::warning
+Editing configuration files incorrectly can break a service. Make sure you understand the change before saving.
+:::
+
+## Service Logs
+
+Services that expose logs (for example Nginx, MySQL, PostgreSQL, Redis) have their logs available under the [Logs](./logs#service-logs) section of the server.
 
 ## Install
 

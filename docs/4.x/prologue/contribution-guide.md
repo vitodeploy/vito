@@ -3,7 +3,7 @@
 ## Environment Setup
 
 Set up your local environment by following
-the [installation documentation](../getting-started/installation.mdx#install-locally)
+the [installation documentation](../getting-started/installation.md#install-locally)
 
 ## Where to start?
 
@@ -42,7 +42,7 @@ upcoming major release.
 
 ## Security Vulnerabilities
 
-If you discover a security vulnerability within Laravel, please email to Saeed Vaziry at sa.vaziry@gmail.com.
+If you discover a security vulnerability within VitoDeploy, please email to Saeed Vaziry at sa.vaziry@gmail.com.
 All security vulnerabilities will be promptly addressed.
 
 ## Coding Style

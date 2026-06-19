@@ -38,6 +38,12 @@ temporarily moved to the URL in the Location header.
 The HTTP 308 Permanent Redirect redirection response status code indicates that the requested resource has been
 permanently moved to the URL given by the Location header.
 
+### Proxy
+
+Instead of returning an HTTP redirect, the Proxy mode reverse-proxies the requests from the given path to the target
+URL (e.g. proxy `/docs` to `https://docs.example.com`). The path stays the same in the browser while the content is
+served from the target.
+
 
 ## Create a Redirect
 

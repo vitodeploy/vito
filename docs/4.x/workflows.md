@@ -8,15 +8,16 @@ You can automate almost anything with Workflows. For example, You can Create a s
 
 ## Actions
 
-Vito provides a variety of built-in actions that you can use to create your workflows. Some of the most common actions include:
+Vito provides a variety of built-in actions that you can use to create your workflows, including:
 
 - Create Server: Create a new server on a cloud provider.
 - Install Service: Install a service on a server.
-- Create Site: Create a new site on a server.
-- Create Database and Database User: Create a new database and database user on a server.
-- Deploy Website: Run the deployment script to deploy your website.
+- Create Site: Create a new site on a server (PHP, PHP Blank, Laravel, WordPress, PHPMyAdmin, Node.js and Load Balancer site types each have their own action).
+- Create Database and Create Database User: Create a new database and database user on a server.
+- Create DNS Record and Delete DNS Record: Manage DNS records on a connected hosted domain.
+- Deploy Site: Run the deployment script to deploy your website.
 - Run Command: Run a custom command on a server.
-- Notify: Send a notification to a specified channel (e.g., Slack, Email).
+- Notify: Send a notification to a specified channel (e.g., Slack, Discord, Telegram, Email).
 - HTTP Call: Make an HTTP request to a specified URL.
 
 :::tip
