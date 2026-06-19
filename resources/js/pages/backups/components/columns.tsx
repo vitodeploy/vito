@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { MoreVerticalIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
@@ -14,6 +14,18 @@ function Edit({ backup }: { backup: Backup }) {
   const dialog = useDialog();
 
   return <DropdownMenuItem onSelect={() => dialog.backupEdit.open({ backup })}>Edit</DropdownMenuItem>;
+}
+
+function ToggleEnabled({ backup }: { backup: Backup }) {
+  return (
+    <DropdownMenuItem
+      onSelect={() =>
+        router.post(route(backup.enabled ? 'backups.disable' : 'backups.enable', { server: backup.server_id, backup: backup.id }))
+      }
+    >
+      {backup.enabled ? 'Disable' : 'Enable'}
+    </DropdownMenuItem>
+  );
 }
 
 function Delete({ backup }: { backup: Backup }) {
@@ -80,7 +92,12 @@ export const columns: ColumnDef<Backup>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      return (
+        <div className="flex items-center gap-1.5">
+          <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+          {!row.original.enabled && <Badge variant="gray">Disabled</Badge>}
+        </div>
+      );
     },
   },
   {
@@ -115,6 +132,7 @@ export const columns: ColumnDef<Backup>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <Edit backup={row.original} />
+              <ToggleEnabled backup={row.original} />
               <Link href={route('backup-files', { server: row.original.server_id, backup: row.original.id })}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
               </Link>

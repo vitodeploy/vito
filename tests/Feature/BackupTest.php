@@ -519,6 +519,52 @@ class BackupTest extends TestCase
         $this->assertStringEndsWith('.tar.gz', $this->backupFile->tempPath());
     }
 
+    public function test_can_disable_backup(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => BackupStatus::RUNNING,
+            'enabled' => true,
+        ]);
+
+        $this->post(route('backups.disable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => false,
+            'status' => BackupStatus::STOPPED->value,
+        ]);
+    }
+
+    public function test_can_enable_backup(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => BackupStatus::STOPPED,
+            'enabled' => false,
+        ]);
+
+        $this->post(route('backups.enable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => true,
+            'status' => BackupStatus::RUNNING->value,
+        ]);
+    }
+
     private function setupDatabase(string $database, string $version): void
     {
         $this->server->services()->where('type', 'database')->delete();

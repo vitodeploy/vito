@@ -70,6 +70,19 @@ class ManageBackup
         dispatch(new DeleteJob($backup))->onQueue('ssh');
     }
 
+    public function enable(Backup $backup): void
+    {
+        $backup->status = BackupStatus::RUNNING;
+        $backup->enabled = true;
+        $backup->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $backup->server->project_id,
+            type: 'backup.updated',
+            data: new BackupResource($backup),
+        ));
+    }
+
     public function stop(Backup $backup): void
     {
         $backup->status = BackupStatus::STOPPED;
