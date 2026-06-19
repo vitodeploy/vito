@@ -16,9 +16,9 @@ Navigate to the `Backups` section in the server's menu and click on the `Create 
 
 Vito will backup the selected databases into the connected storage provider automatically when you choose one of the predefined intervals.
 
-Database dumps are streamed directly into a compressed `.sql.gz` archive as they are created. Nothing uncompressed is written to disk first, so backups use minimal space on your server and upload faster. MySQL and MariaDB dumps are taken with a consistent, non-locking snapshot (`--single-transaction`), so backing up does not interrupt your application.
+Database dumps are streamed directly into a compressed `.sql.gz` archive as they are created. Nothing uncompressed is written to disk first, so backups use minimal space on your server and upload faster. MySQL and MariaDB dumps are taken with a consistent, non-locking snapshot (`--single-transaction`), so backing up your transactional (InnoDB) tables does not interrupt your application. Non-transactional engines such as MyISAM are not covered by this snapshot and may briefly lock during the dump.
 
-The intervals that Vito runs automatically are hourly, daily, weekly, and monthly. Other intervals such as `Every Minute`, as well as custom cron expressions, can be saved but are not run automatically by Vito's scheduled backup worker. You can trigger any backup on demand at any time with the **Run** action on the backup.
+Vito's scheduled backup worker runs every minute and triggers each backup whose interval is due, so the predefined intervals (hourly, daily, weekly, monthly), `Every Minute`, and custom cron expressions are all run automatically. You can also trigger any backup on demand at any time with the **Run** action on the backup.
 
 :::info
 Older backups will be deleted automatically based on the number of backups you want to keep.

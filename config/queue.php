@@ -59,10 +59,10 @@ return [
             'queue' => 'ssh',
             'timeout' => 1200,
             // Must stay greater than the longest per-job timeout on this queue
-            // (core.backup_run_timeout) so a long-running job is never
-            // re-reserved while still executing. Derived from the same env var
-            // (plus a buffer) so raising BACKUP_RUN_TIMEOUT can't break the invariant.
-            'retry_after' => (int) env('BACKUP_RUN_TIMEOUT', 3600) + 60,
+            // (RunJob floors core.backup_run_timeout at 300s) so a long-running
+            // job is never re-reserved while still executing. Mirrors that same
+            // floor plus a buffer so raising BACKUP_RUN_TIMEOUT can't break the invariant.
+            'retry_after' => max(300, (int) env('BACKUP_RUN_TIMEOUT', 3600)) + 60,
             'block_for' => null,
             'after_commit' => false,
         ],
