@@ -193,3 +193,102 @@ Local installation via Laravel Sail is no longer supported in 4.x. Use the
 
 If you run Vito locally another way (Laravel Valet, etc.), make sure you have PHP 8.4 or newer
 installed, switch to the `4.x` branch, and review the [Breaking Changes](./breaking-changes).
+
+## Troubleshooting
+
+This section lists problems you may run into while upgrading a server from 3.x to 4.x, and how to
+resolve them.
+
+### Expired MySQL APT signing key
+
+When updating packages or checking for updates on a server where Vito 3.x installed MySQL, you may
+see an error like this:
+
+```text
+W: GPG error: http://repo.mysql.com/apt/ubuntu noble InRelease: The following signatures were invalid: EXPKEYSIG B7B3B788A8D3785C MySQL Release Engineering <mysql-build@oss.oracle.com>
+E: The repository 'http://repo.mysql.com/apt/ubuntu noble InRelease' is not signed.
+```
+
+This is caused by an **expired GPG key** for the MySQL APT repository that was imported when 3.x
+installed MySQL. APT verifies a repository's release metadata against a stored signing key; once that
+key passes its expiry date (`EXPKEYSIG` = *expired key signature*), APT treats the repository as
+unsigned and refuses to use it, which blocks package updates.
+
+To fix it, run the following command in the server's terminal as the `vito` user:
+
+```sh
+sudo gpg --no-default-keyring --keyring /usr/share/keyrings/mysql-apt-config.gpg \
+    --keyserver hkps://keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C
+```
+
+**What this does and why it works:**
+
+- `--no-default-keyring --keyring /usr/share/keyrings/mysql-apt-config.gpg` tells `gpg` to operate on
+  the dedicated MySQL keyring file rather than your personal keyring. This is the exact keyring the
+  MySQL APT source references with its `signed-by=` option, so it's the copy of the key that APT
+  actually checks signatures against.
+- `--keyserver hkps://keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C` downloads the key with ID
+  `B7B3B788A8D3785C` (the MySQL Release Engineering key named in the error) from the Ubuntu keyserver
+  over an encrypted (`hkps`) connection.
+- MySQL renewed this key under the **same key ID** by extending its expiry date and re-publishing it.
+  Re-fetching it pulls the updated self-signature carrying the new expiry, overwriting the stale,
+  expired copy in the keyring. With a valid, non-expired key in place, APT can verify the repository's
+  signature again and `apt update` succeeds.
+
+:::info
+After importing the key, re-run the package update (or retry the operation in Vito) to confirm the
+error is gone.
+:::
+
+### "Updates available" count never clears
+
+You may see the *"X updates available"* warning and find that, no matter how many times you run the
+update, the count never changes — it always reports the same number of updates remaining (for example,
+3).
+
+This can be caused by an incorrectly configured MySQL install. Check the upgrade log for a message
+like this:
+
+```text
+The following packages have been kept back:
+  libgd3 mysql-common mysql-server
+
+0 upgraded, 0 newly installed, 0 to remove and 3 not upgraded.
+```
+
+"Kept back" means APT is intentionally holding those packages instead of upgrading them, so Vito's
+automatic update never applies them and the count stays stuck.
+
+If the held-back packages are MySQL needing an upgrade to the expected version, back up your databases
+first, then perform the upgrade manually in the server's terminal. For example:
+
+```sh
+sudo apt-get install mysql-server mysql-common libgd3
+```
+
+:::warning
+Take fresh backups **before** upgrading MySQL manually. Your 3.x database backups will **not** restore
+on 4.x, so old backups are not a valid safety net here — see
+[Breaking Changes › Database Backup Format](./breaking-changes#database-backup-format).
+:::
+
+If the manual upgrade causes any issues with the database, you can reinstall the associated SQL
+instance from the server's **Services** page and then restore your databases from your fresh backups.
+
+### Sites report "SSL certificate expiring in 0 days"
+
+After upgrading, you may see a warning on all of your sites along the lines of *"X SSL certificate
+expiring in 0 days"*, even though the certificates are valid.
+
+This happens because Vito 3.x stored each certificate's expiry date when it was issued but never kept
+it up to date, so after renewals the stored date became stale. Vito 4.x maintains these dates for you,
+but it does so via an **overnight script**. The expiry dates will therefore refresh and the warnings
+clear automatically the next time that script runs.
+
+If you would rather clear the warning straight away, you can refresh the dates on demand per site:
+
+1. Open the site and go to the **Domains** menu.
+2. Click the **lock icon** at the top of the Domains menu.
+3. Click **Check SSL expiry (all)**.
+
+Vito will re-read the certificates' real expiry dates and update the warnings immediately.

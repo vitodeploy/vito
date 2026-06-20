@@ -6,6 +6,8 @@ use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SslMethod;
 use App\Enums\SslStatus;
+use App\Enums\SslType;
+use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
@@ -522,5 +524,118 @@ class HostedDomainsTest extends TestCase
         ]))
             ->assertSuccessful()
             ->assertJsonCount(0, 'certificates');
+    }
+
+    public function test_check_expiry_refreshes_date_without_notifying(): void
+    {
+        SSH::fake($this->generateTestCertificate(90));
+        Notifier::spy();
+
+        $this->actingAs($this->user);
+
+        $ssl = Ssl::factory()->create([
+            'site_id' => $this->site->id,
+            'type' => SslType::LETSENCRYPT,
+            'status' => SslStatus::CREATED,
+            'certificate_path' => '/etc/letsencrypt/live/1/fullchain.pem',
+            'expires_at' => now()->addDays(5),
+            'domains' => ['old.example.com'],
+        ]);
+
+        $hostedDomain = HostedDomain::factory()->create([
+            'site_id' => $this->site->id,
+            'ssl_id' => $ssl->id,
+        ]);
+
+        $this->post(route('hosted-domains.check-expiry', [
+            'server' => $this->server->id,
+            'site' => $this->site->id,
+            'hostedDomain' => $hostedDomain->id,
+        ]))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $ssl->refresh();
+        $this->assertTrue($ssl->expires_at->isAfter(now()->addDays(80)));
+        $this->assertContains('example.com', $ssl->domains);
+        Notifier::shouldNotHaveReceived('send');
+    }
+
+    public function test_check_expiry_errors_when_domain_has_no_ssl(): void
+    {
+        $this->actingAs($this->user);
+
+        $hostedDomain = HostedDomain::factory()->create([
+            'site_id' => $this->site->id,
+            'ssl_id' => null,
+        ]);
+
+        $this->post(route('hosted-domains.check-expiry', [
+            'server' => $this->server->id,
+            'site' => $this->site->id,
+            'hostedDomain' => $hostedDomain->id,
+        ]))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
+    public function test_check_expiry_all_refreshes_every_site_certificate(): void
+    {
+        SSH::fake($this->generateTestCertificate(90));
+        Notifier::spy();
+
+        $this->actingAs($this->user);
+
+        $ssl = Ssl::factory()->create([
+            'site_id' => $this->site->id,
+            'type' => SslType::LETSENCRYPT,
+            'status' => SslStatus::CREATED,
+            'certificate_path' => '/etc/letsencrypt/live/1/fullchain.pem',
+            'expires_at' => now()->addDays(5),
+            'domains' => ['old.example.com'],
+        ]);
+
+        HostedDomain::factory()->create([
+            'site_id' => $this->site->id,
+            'ssl_id' => $ssl->id,
+        ]);
+
+        $this->post(route('hosted-domains.check-expiry-all', [
+            'server' => $this->server->id,
+            'site' => $this->site->id,
+        ]))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $ssl->refresh();
+        $this->assertTrue($ssl->expires_at->isAfter(now()->addDays(80)));
+        Notifier::shouldNotHaveReceived('send');
+    }
+
+    private function generateTestCertificate(int $validDays = 90): string
+    {
+        $config = tempnam(sys_get_temp_dir(), 'openssl');
+        file_put_contents($config, <<<'INI'
+[req]
+distinguished_name = req_dn
+req_extensions = v3_req
+
+[req_dn]
+CN = example.com
+
+[v3_req]
+subjectAltName = DNS:example.com,DNS:www.example.com
+INI);
+
+        $key = openssl_pkey_new(['private_key_bits' => 2048, 'config' => $config]);
+        $csr = openssl_csr_new(['CN' => 'example.com'], $key, ['config' => $config]);
+        $cert = openssl_csr_sign($csr, null, $key, $validDays, [
+            'config' => $config,
+            'x509_extensions' => 'v3_req',
+        ]);
+
+        openssl_x509_export($cert, $certPem);
+
+        return $certPem;
     }
 }

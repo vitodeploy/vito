@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   BookOpenIcon,
+  CalendarClockIcon,
   EllipsisVerticalIcon,
   LoaderCircleIcon,
   LockIcon,
@@ -172,6 +173,13 @@ export default function HostedDomains() {
                     Force Renew SSL
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => router.post(route('hosted-domains.check-expiry-all', { server: page.props.server.id, site: page.props.site.id }))}
+                >
+                  <CalendarClockIcon />
+                  Check SSL Expiry (all)
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button onClick={() => dialog.createHostedDomain.open({ site: page.props.site })}>
@@ -216,6 +224,25 @@ export default function HostedDomains() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={() => dialog.editHostedDomain.open({ hostedDomain: hd })}>Edit</DropdownMenuItem>
+                    {hd.ssl_id !== null && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            router.post(
+                              route('hosted-domains.check-expiry', {
+                                server: hd.server_id,
+                                site: hd.site_id,
+                                hostedDomain: hd.id,
+                              }),
+                            )
+                          }
+                        >
+                          <CalendarClockIcon />
+                          Check SSL Expiry
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     {hd.status === 'pending' && (
                       <>
                         <DropdownMenuSeparator />
