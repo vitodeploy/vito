@@ -740,15 +740,17 @@ class ApplicationTest extends TestCase
 
         $this->site->update(['env_variables' => ['DB_PASSWORD']]);
 
+        $raw = '# leading comment'.PHP_EOL.'APP_NAME=Raw'.PHP_EOL.PHP_EOL.'DB_PASSWORD=';
+
         $this->put(route('application.update-env', [
             'server' => $this->server,
             'site' => $this->site,
         ]), [
-            'env' => 'APP_NAME=Raw'.PHP_EOL.'DB_PASSWORD=',
+            'env' => $raw,
         ])->assertSessionDoesntHaveErrors();
 
         $uploaded = $ssh->getUploadedContent();
-        $this->assertStringContainsString('APP_NAME=Raw', $uploaded);
+        $this->assertSame($raw, $uploaded);
         $this->assertStringNotContainsString('DB_PASSWORD=original_secret', $uploaded);
     }
 

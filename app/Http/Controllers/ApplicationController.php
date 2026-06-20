@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\Deploy;
+use App\Actions\Site\GetEnv;
 use App\Actions\Site\Rollback;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
@@ -123,16 +124,7 @@ class ApplicationController extends Controller
             $site->jsonUpdate('type_data', 'env_path', $request->input('env'), false);
         }
 
-        $env = $site->getEnv();
-
-        $variables = EnvParser::maskSecrets(
-            EnvParser::classify(EnvParser::parse($env), $site->env_variables)
-        );
-
-        return response()->json([
-            'env' => $env,
-            'variables' => $variables,
-        ]);
+        return response()->json(app(GetEnv::class)->get($site));
     }
 
     #[Post('/env/parse', name: 'application.parse-env')]

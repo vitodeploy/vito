@@ -41,9 +41,11 @@ class UpdateEnv
 
         $variables = $this->resolveVariables($site, $input, $path);
 
+        $rawSubmission = ! isset($input['variables']) || ! is_array($input['variables']);
+
         $site->server->os()->write(
             $path,
-            EnvParser::stringify($variables),
+            $rawSubmission ? trim((string) $input['env']) : EnvParser::stringify($variables),
             $site->user,
         );
 

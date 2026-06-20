@@ -6,6 +6,7 @@ use App\Actions\Site\CreateSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
+use App\Actions\Site\GetEnv;
 use App\Actions\Site\RetrySite;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
@@ -13,7 +14,6 @@ use App\Actions\Site\UpdateLoadBalancer;
 use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Exceptions\DeploymentScriptIsEmptyException;
-use App\Helpers\EnvParser;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\SiteResource;
@@ -155,17 +155,8 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
-        $env = $site->getEnv();
-
-        $variables = EnvParser::maskSecrets(
-            EnvParser::classify(EnvParser::parse($env), $site->env_variables)
-        );
-
         return response()->json([
-            'data' => [
-                'env' => $env,
-                'variables' => $variables,
-            ],
+            'data' => app(GetEnv::class)->get($site),
         ]);
     }
 
