@@ -122,7 +122,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           RAW_NOTES=$(gh release view "$VERSION" --json body -q .body)
-          NOTES=$(printf '%s' "$RAW_NOTES" | .github/scripts/group-release-notes.sh)
+          NOTES=$(printf '%s' "$RAW_NOTES" | bash .github/scripts/group-release-notes.sh)
           gh release edit "$VERSION" --notes "$NOTES"
           {
             echo "notes<<EOF"

@@ -46,9 +46,9 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   if [[ "$in_changelog" == "true" && "$line" =~ ^[*-][[:space:]]+(.*)$ ]]; then
     entry="${BASH_REMATCH[1]}"
 
-    if [[ "$entry" =~ ^\[Feat\][[:space:]]*(.*)$ ]]; then
+    if [[ "$entry" =~ ^\[Feat\]\ (.*)$ ]]; then
       features+="* ${BASH_REMATCH[1]}"$'\n'
-    elif [[ "$entry" =~ ^\[Fix\][[:space:]]*(.*)$ ]]; then
+    elif [[ "$entry" =~ ^\[Fix\]\ (.*)$ ]]; then
       fixes+="* ${BASH_REMATCH[1]}"$'\n'
     else
       others+="* ${entry}"$'\n'
