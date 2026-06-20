@@ -117,3 +117,4 @@ Vito has a specific architecture. Match these patterns exactly:
 
 - Use `gh` CLI for issues/PRs.
 - Don't change dependencies or create new base folders without approval.
+- PR titles must be prefixed with `[Feat]` or `[Fix]`
