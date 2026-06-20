@@ -39,7 +39,7 @@ use RuntimeException;
  * @property int $server_id
  * @property string $type
  * @property array<string, mixed> $type_data
- * @property ?array<int, array{key: string, value: string, is_secret: bool}> $env_variables
+ * @property ?array<int, string> $env_variables List of keys marked as secret; values live on the server, never in the database.
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $worker_environment
  * @property string $domain
  * @property array<int, string> $aliases
@@ -576,10 +576,10 @@ class Site extends AbstractModel
             : 'site_'.$this->id;
     }
 
-    public function getEnv(): string
+    public function getEnv(?string $path = null): string
     {
         try {
-            $envPath = $this->type_data['env_path'] ?? $this->path.'/.env';
+            $envPath = $path ?? $this->type_data['env_path'] ?? $this->path.'/.env';
 
             return $this->server->os()->readFile($envPath);
         } catch (SSHError) {

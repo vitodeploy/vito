@@ -158,7 +158,7 @@ class SiteController extends Controller
         $env = $site->getEnv();
 
         $variables = EnvParser::maskSecrets(
-            EnvParser::reconcileWithStored(EnvParser::parse($env), $site->env_variables)
+            EnvParser::classify(EnvParser::parse($env), $site->env_variables)
         );
 
         return response()->json([

@@ -695,15 +695,15 @@ paths:
                               example: 'APP_NAME'
                             value:
                               type: string
-                              description: Variable value
+                              description: Variable value. Empty for variables marked as secret — secret values are never returned.
                               example: 'MyApp'
                             is_secret:
                               type: boolean
-                              description: Whether the variable contains sensitive data (PASSWORD, SECRET, TOKEN, KEY, PRIVATE)
+                              description: Whether the variable is marked as secret. Secret values are masked (returned empty) and must be re-entered to change them.
                               example: false
               example:
                 data:
-                  env: "APP_NAME=MyApp\nAPP_ENV=production\nDB_PASSWORD=secret123"
+                  env: "APP_NAME=MyApp\nAPP_ENV=production\nDB_PASSWORD=<the-actual-value>"
                   variables:
                     - key: 'APP_NAME'
                       value: 'MyApp'
@@ -712,7 +712,7 @@ paths:
                       value: 'production'
                       is_secret: false
                     - key: 'DB_PASSWORD'
-                      value: 'secret123'
+                      value: ''
                       is_secret: true
         '401':
           description: Unauthorized
@@ -787,8 +787,12 @@ paths:
                         example: 'APP_NAME'
                       value:
                         type: string
-                        description: Variable value
+                        description: Variable value. For a variable marked as secret, send an empty value to keep the current value on the server unchanged.
                         example: 'MyApp'
+                      is_secret:
+                        type: boolean
+                        description: Mark the variable as secret. Secret values are stored only on the server (never in the database) and are masked when read back.
+                        example: false
                 path:
                   type: string
                   description: Custom path to the .env file
@@ -800,12 +804,20 @@ paths:
                   env: "APP_NAME=MyApp\nAPP_ENV=production"
               structured:
                 summary: Using structured variables
+                description: >-
+                  Set a new secret value by sending it with is_secret true. To
+                  keep an existing secret unchanged, send it with an empty value.
                 value:
                   variables:
                     - key: 'APP_NAME'
                       value: 'MyApp'
-                    - key: 'APP_ENV'
-                      value: 'production'
+                      is_secret: false
+                    - key: 'APP_KEY'
+                      value: 'base64:newly-generated-key'
+                      is_secret: true
+                    - key: 'DB_PASSWORD'
+                      value: ''
+                      is_secret: true
       responses:
         '200':
           description: Environment variables updated successfully

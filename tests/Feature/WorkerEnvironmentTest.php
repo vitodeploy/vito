@@ -137,6 +137,29 @@ class WorkerEnvironmentTest extends TestCase
         ], $worker->refresh()->environment);
     }
 
+    public function test_update_env_stored_secret_cannot_be_wiped_by_marking_it_non_secret(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'environment' => [
+                ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+            ],
+        ]);
+
+        $this->patch(route('workers.update-env', ['server' => $this->server, 'worker' => $worker]), [
+            'variables' => [
+                ['key' => 'API_KEY', 'value' => '', 'is_secret' => false],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertEquals([
+            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+        ], $worker->refresh()->environment);
+    }
+
     public function test_update_env_validates_input(): void
     {
         SSH::fake();
