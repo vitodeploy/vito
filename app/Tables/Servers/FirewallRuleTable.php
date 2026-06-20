@@ -29,6 +29,7 @@ class FirewallRuleTable extends Table
             EnumColumn::make('status', 'Status')->sortable(),
             Column::data('id'),
             Column::data('server_id'),
+            Column::data('mask'),
             ActionsColumn::make(),
         ];
     }
