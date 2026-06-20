@@ -82,7 +82,7 @@ class UpdateWorkerEnvironment
         $storedSecrets = [];
         foreach ($stored ?? [] as $variable) {
             $storedMap[$variable['key']] = $variable['value'];
-            if ($variable['is_secret'] ?? false) {
+            if ($variable['is_secret']) {
                 $storedSecrets[$variable['key']] = true;
             }
         }
