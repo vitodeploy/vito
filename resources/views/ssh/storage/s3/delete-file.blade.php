@@ -27,4 +27,8 @@ export AWS_SECRET_ACCESS_KEY={{ $secret }}
 export AWS_DEFAULT_REGION={{ $region }}
 export AWS_ENDPOINT_URL={{ $endpoint }}
 
-aws s3 rm s3://{{ $bucket }}/{{ $src }}
+if aws s3 rm s3://{{ $bucket }}/{{ $src }}; then
+    echo "Delete successful"
+else
+    echo "VITO_SSH_ERROR" && exit 1
+fi

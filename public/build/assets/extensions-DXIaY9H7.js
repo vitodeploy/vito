@@ -1,1 +1,0 @@
-import{b as e,o as t}from"./app-REiLZtO8.js";import{a as n}from"./dropdown-menu-B--NOjOs.js";import{t as r}from"./use-dialog-CkDBs1NX.js";var i=e({default:()=>o}),a=t();function o({service:e}){let t=r();return(0,a.jsx)(n,{onSelect:()=>t.phpExtensions.open({service:e}),children:`Extensions`})}export{i as n,o as t};

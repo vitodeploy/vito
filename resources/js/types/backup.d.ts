@@ -14,8 +14,9 @@ export interface Backup {
   keep_backups: number;
   interval: string;
   files_count: number;
-  status: string;
-  status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+  status: string | null;
+  status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger' | null;
+  enabled: boolean;
   created_at: string;
   updated_at: string;
   last_file?: BackupFile;

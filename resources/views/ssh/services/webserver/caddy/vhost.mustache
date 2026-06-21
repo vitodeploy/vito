@@ -26,8 +26,14 @@
 
     {{#is_php}}
     root * {{root}}
+    {{#request_body_max_size}}request_body {
+        max_size {{request_body_max_size}}
+    }
+    {{/request_body_max_size}}
     try_files {path} {path}/ /index.php?{query}
-    php_fastcgi {{php_socket}}
+    php_fastcgi {{php_socket}}{{#php_value}} {
+        env PHP_VALUE "@@VITO_PHP_VALUE@@"
+    }{{/php_value}}
     file_server
     {{/is_php}}
 

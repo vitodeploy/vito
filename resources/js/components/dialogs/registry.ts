@@ -25,11 +25,13 @@ import ServerIpForm from '@/pages/server-network/components/form';
 import RecordForm from '@/pages/domains/components/record-form';
 import ScriptForm from '@/pages/scripts/components/form';
 import EditCommand from '@/pages/commands/components/edit-command';
+import CreateBackup from '@/pages/backups/components/create-backup';
 import EditBackup from '@/pages/backups/components/edit-backup';
 import RestoreBackup from '@/pages/backups/components/restore-backup';
 import SiteFeatureAction from '@/pages/site-features/components/feature-action';
 import ServerFeatureAction from '@/pages/server-features/components/feature-action';
 import Fail2banForm from '@/pages/security/components/fail2ban-form';
+import PhpSettingsDialog from '@/pages/site-settings/components/php-settings-dialog';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -72,11 +74,13 @@ export const dialogs = {
   dnsRecordForm: RecordForm,
   scriptForm: ScriptForm,
   commandEdit: EditCommand,
+  backupCreate: CreateBackup,
   backupEdit: EditBackup,
   backupRestore: RestoreBackup,
   siteFeatureAction: SiteFeatureAction,
   serverFeatureAction: ServerFeatureAction,
   fail2banForm: Fail2banForm,
+  phpSettings: PhpSettingsDialog,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

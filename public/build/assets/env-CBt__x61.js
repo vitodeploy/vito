@@ -1,0 +1,1 @@
+function e(e){let t=1,n=`NEW_VARIABLE`;for(;e.includes(n);)n=`NEW_VARIABLE_${t}`,t++;return n}export{e as t};

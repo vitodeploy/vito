@@ -3,28 +3,34 @@
 namespace App\Console\Commands;
 
 use App\Actions\Backup\RunBackup;
-use App\Enums\BackupStatus;
 use App\Models\Backup;
+use Cron\CronExpression;
 use Illuminate\Console\Command;
 
 class RunBackupCommand extends Command
 {
-    protected $signature = 'backups:run {interval}';
+    protected $signature = 'backups:run';
 
-    protected $description = 'Run backup';
+    protected $description = 'Run backups that are due';
 
     public function handle(): void
     {
         $total = 0;
 
         Backup::query()
-            ->where('interval', $this->argument('interval'))
-            ->where('status', BackupStatus::RUNNING)
-            ->chunk(100, function ($backups) use (&$total): void {
+            ->where('enabled', true)
+            ->whereNull('status')
+            ->chunkById(100, function ($backups) use (&$total): void {
                 /** @var Backup $backup */
                 foreach ($backups as $backup) {
-                    app(RunBackup::class)->run($backup);
-                    $total++;
+                    if (! CronExpression::isValidExpression((string) $backup->interval)) {
+                        continue;
+                    }
+
+                    if ((new CronExpression((string) $backup->interval))->isDue(now(), config('app.timezone'))) {
+                        app(RunBackup::class)->run($backup);
+                        $total++;
+                    }
                 }
             });
 

@@ -15,11 +15,16 @@ trait UniqueQueue
         return now()->addHour();
     }
 
+    protected function lockSeconds(): int
+    {
+        return 600;
+    }
+
     public function run(string $key, Closure $callback): void
     {
         $lockKey = "unique-queue:$key";
 
-        $lock = Cache::lock($lockKey, 600);
+        $lock = Cache::lock($lockKey, $this->lockSeconds());
 
         if ($lock->get()) {
             try {

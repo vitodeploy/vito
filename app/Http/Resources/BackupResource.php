@@ -26,9 +26,10 @@ class BackupResource extends JsonResource
             'keep_backups' => $this->keep_backups,
             'interval' => $this->interval,
             'files_count' => $this->files_count,
-            'status' => $this->status->getText(),
+            'status' => $this->status?->getText(),
+            'status_color' => $this->status?->getColor(),
+            'enabled' => $this->enabled,
             'last_file' => BackupFileResource::make($this->whenLoaded('lastFile')),
-            'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

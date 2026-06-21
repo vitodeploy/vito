@@ -81,6 +81,28 @@ class BackupController extends Controller
             ->with('info', 'Backup is being created...');
     }
 
+    #[Post('/{backup}/enable', name: 'backups.enable')]
+    public function enable(Server $server, Backup $backup): RedirectResponse
+    {
+        $this->authorize('update', $backup);
+
+        app(ManageBackup::class)->enable($backup);
+
+        return back()
+            ->with('success', 'Backup enabled.');
+    }
+
+    #[Post('/{backup}/disable', name: 'backups.disable')]
+    public function disable(Server $server, Backup $backup): RedirectResponse
+    {
+        $this->authorize('update', $backup);
+
+        app(ManageBackup::class)->stop($backup);
+
+        return back()
+            ->with('success', 'Backup disabled.');
+    }
+
     #[Delete('/{backup}', name: 'backups.destroy')]
     public function destroy(Server $server, Backup $backup): RedirectResponse
     {

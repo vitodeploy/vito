@@ -2,8 +2,11 @@
 
 namespace App\Actions\Backup;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupType;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupFileResource;
 use App\Jobs\Backup\RestoreDatabaseJob;
 use App\Jobs\Backup\RestoreFileJob;
 use App\Models\BackupFile;
@@ -23,6 +26,7 @@ class RestoreBackup
 
         $backup = $backupFile->backup;
         $backupFile->status = BackupFileStatus::RESTORING;
+        $backupFile->message = null;
 
         if ($backup->type === BackupType::DATABASE) {
             $this->restoreDatabase($backupFile, $input);
@@ -39,6 +43,7 @@ class RestoreBackup
         $database = Database::query()->findOrFail($input['database']);
         $backupFile->restored_to = $database->name;
         $backupFile->save();
+        $this->broadcastFileUpdate($backupFile);
 
         dispatch(new RestoreDatabaseJob($backupFile, $database))->onQueue('ssh');
     }
@@ -51,8 +56,18 @@ class RestoreBackup
 
         $backupFile->restored_to = $restorePath;
         $backupFile->save();
+        $this->broadcastFileUpdate($backupFile);
 
         dispatch(new RestoreFileJob($backupFile, $restorePath, $owner, $permissions))->onQueue('ssh');
+    }
+
+    private function broadcastFileUpdate(BackupFile $backupFile): void
+    {
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $backupFile->backup->server->project_id,
+            type: 'backup-file.updated',
+            data: new BackupFileResource($backupFile),
+        ));
     }
 
     private function validate(Server $server, array $input, BackupType $backupType): void

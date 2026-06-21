@@ -175,47 +175,156 @@ class EnvParserTest extends TestCase
         $this->assertEquals('', $masked[2]['value']);
     }
 
-    public function test_merge_with_stored_preserves_empty_secret_values(): void
+    public function test_merge_with_live_preserves_empty_secret_values(): void
     {
-        $stored = [
+        $live = [
             ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
             ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
         ];
 
         $incoming = [
-            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true], // Empty = keep stored
+            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
             ['key' => 'APP_NAME', 'value' => 'NewName', 'is_secret' => false],
         ];
 
-        $merged = EnvParser::mergeWithStored($incoming, $stored);
+        $merged = EnvParser::mergeWithLive($incoming, $live);
 
         $this->assertEquals('original_secret', $merged[0]['value']);
         $this->assertEquals('NewName', $merged[1]['value']);
     }
 
-    public function test_merge_with_stored_allows_updating_secret_values(): void
+    public function test_merge_with_live_allows_updating_secret_values(): void
     {
-        $stored = [
+        $live = [
             ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
         ];
 
         $incoming = [
-            ['key' => 'DB_PASSWORD', 'value' => 'new_secret', 'is_secret' => true], // New value provided
+            ['key' => 'DB_PASSWORD', 'value' => 'new_secret', 'is_secret' => true],
         ];
 
-        $merged = EnvParser::mergeWithStored($incoming, $stored);
+        $merged = EnvParser::mergeWithLive($incoming, $live);
 
         $this->assertEquals('new_secret', $merged[0]['value']);
     }
 
-    public function test_merge_with_null_stored_returns_incoming(): void
+    public function test_merge_with_empty_live_returns_incoming(): void
     {
         $incoming = [
             ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
         ];
 
-        $merged = EnvParser::mergeWithStored($incoming, null);
+        $this->assertEquals($incoming, EnvParser::mergeWithLive($incoming, []));
+    }
 
-        $this->assertEquals($incoming, $merged);
+    public function test_merge_restores_secret_from_live_file_value(): void
+    {
+        $live = [
+            ['key' => 'DB_PASSWORD', 'value' => 'rotated_secret', 'is_secret' => true],
+        ];
+
+        $incoming = [
+            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+        ];
+
+        $merged = EnvParser::mergeWithLive($incoming, $live);
+
+        $this->assertEquals('rotated_secret', $merged[0]['value']);
+    }
+
+    public function test_merge_does_not_restore_non_secret_empty_values(): void
+    {
+        $live = [
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ];
+
+        $incoming = [
+            ['key' => 'APP_NAME', 'value' => '', 'is_secret' => false],
+        ];
+
+        $merged = EnvParser::mergeWithLive($incoming, $live);
+
+        $this->assertEquals('', $merged[0]['value']);
+    }
+
+    public function test_secret_keys_from_flat_list(): void
+    {
+        $this->assertEquals(['APP_KEY', 'JWT_SECRET'], EnvParser::secretKeys(['APP_KEY', 'JWT_SECRET']));
+    }
+
+    public function test_secret_keys_from_legacy_variable_array(): void
+    {
+        $legacy = [
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+            ['key' => 'DB_PASSWORD', 'value' => 'secret', 'is_secret' => true],
+            ['key' => 'APP_KEY', 'value' => 'base64:abc', 'is_secret' => true],
+        ];
+
+        $this->assertEquals(['DB_PASSWORD', 'APP_KEY'], EnvParser::secretKeys($legacy));
+    }
+
+    public function test_secret_keys_deduplicates(): void
+    {
+        $this->assertEquals(['APP_KEY'], EnvParser::secretKeys(['APP_KEY', 'APP_KEY']));
+    }
+
+    public function test_secret_keys_from_null_returns_empty(): void
+    {
+        $this->assertEquals([], EnvParser::secretKeys(null));
+    }
+
+    public function test_classify_marks_only_stored_secret_keys(): void
+    {
+        $parsed = [
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+        ];
+
+        $classified = EnvParser::classify($parsed, ['APP_NAME']);
+
+        $this->assertTrue($classified[0]['is_secret']);
+        $this->assertFalse($classified[1]['is_secret']);
+    }
+
+    public function test_classify_reads_legacy_stored_shape(): void
+    {
+        $parsed = [
+            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => false],
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ];
+
+        $legacy = [
+            ['key' => 'DB_PASSWORD', 'value' => 'old', 'is_secret' => true],
+            ['key' => 'APP_NAME', 'value' => 'old', 'is_secret' => false],
+        ];
+
+        $classified = EnvParser::classify($parsed, $legacy);
+
+        $this->assertTrue($classified[0]['is_secret']);
+        $this->assertFalse($classified[1]['is_secret']);
+    }
+
+    public function test_classify_with_null_stored_falls_back_to_auto_detection(): void
+    {
+        $parsed = [
+            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ];
+
+        $classified = EnvParser::classify($parsed, null);
+
+        $this->assertTrue($classified[0]['is_secret']);
+        $this->assertFalse($classified[1]['is_secret']);
+    }
+
+    public function test_classify_with_empty_stored_list_is_authoritative(): void
+    {
+        $parsed = [
+            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+        ];
+
+        $classified = EnvParser::classify($parsed, []);
+
+        $this->assertFalse($classified[0]['is_secret']);
     }
 }

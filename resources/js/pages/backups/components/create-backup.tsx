@@ -1,6 +1,6 @@
 import { Server } from '@/types/server';
-import { FormEvent, ReactNode, useState } from 'react';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { FormEvent } from 'react';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,7 @@ import { useConfigs } from '@/stores/bootstrap-store';
 import StorageProviderSelect from '@/pages/storage-providers/components/storage-provider-select';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 
-export default function CreateBackup({ server, children }: { server: Server; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+export default function CreateBackup({ open, onOpenChange, server }: { open: boolean; onOpenChange: (open: boolean) => void; server: Server }) {
   const configs = useConfigs()!;
 
   const form = useForm<{
@@ -38,16 +37,13 @@ export default function CreateBackup({ server, children }: { server: Server; chi
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.post(route('backups.store', { server: server.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
+      onSuccess: () => onOpenChange(false),
     });
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-3xl">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="sm:max-w-3xl" onCloseAutoFocus={(e) => e.preventDefault()}>
         <SheetHeader>
           <SheetTitle>Create backup</SheetTitle>
           <SheetDescription className="sr-only">Create a new backup</SheetDescription>
@@ -159,7 +155,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
         </Form>
         <SheetFooter>
           <div className="flex items-center gap-2">
-            <Button form="create-backup-form" type="button" onClick={submit} disabled={form.processing}>
+            <Button form="create-backup-form" type="submit" disabled={form.processing}>
               {form.processing && <LoaderCircle className="animate-spin" />}
               Create
             </Button>

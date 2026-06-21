@@ -147,8 +147,14 @@ export default function CreateSite({
   useEffect(() => {
     const typeConfig = configs.site.types[form.data.type];
 
+    const sourceControlFields = ['source_control', 'repository', 'branch'];
+    const sourceControlOff = typeConfig?.form?.some((f) => f.name === 'use_source_control') && !form.data.use_source_control;
+
     if (typeConfig?.form) {
       typeConfig.form.forEach((field: DynamicFieldConfig) => {
+        if (sourceControlOff && sourceControlFields.includes(field.name)) {
+          return;
+        }
         if (field.default !== undefined) {
           if (form.data[field.name] === '' || form.data[field.name] === undefined) {
             form.setData(field.name, field.default);
@@ -156,7 +162,7 @@ export default function CreateSite({
         }
       });
     }
-  }, [form.data.type, form.setData, configs]);
+  }, [form.data.type, form.data.use_source_control, form.setData, configs]);
 
   const selectedIsolatedUser = useMemo<IsolatedUserOption | null>(
     () => (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user) ?? null,
@@ -214,7 +220,25 @@ export default function CreateSite({
     });
   }, [activeTools, lockedVersions, form.data, form.setData, configs]);
 
+  const hasSourceControlToggle = useMemo<boolean>(
+    () => (configs.site.types[form.data.type]?.form ?? []).some((f) => f.name === 'use_source_control'),
+    [configs, form.data.type],
+  );
+  const sourceControlEnabled = !hasSourceControlToggle || !!form.data.use_source_control;
+
+  useEffect(() => {
+    if (hasSourceControlToggle && !form.data.use_source_control) {
+      if (form.data.source_control) form.setData('source_control', '');
+      if (form.data.repository) form.setData('repository', '');
+      if (form.data.branch) form.setData('branch', '');
+    }
+  }, [hasSourceControlToggle, form.data.use_source_control, form.data.source_control, form.data.repository, form.data.branch, form.setData]);
+
   const getFormField = (field: DynamicFieldConfig) => {
+    if (!sourceControlEnabled && (field.name === 'source_control' || field.name === 'repository' || field.name === 'branch')) {
+      return null;
+    }
+
     if (field.name === 'source_control') {
       return (
         <FormField key={`field-${field.name}`}>

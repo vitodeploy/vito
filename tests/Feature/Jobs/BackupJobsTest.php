@@ -3,7 +3,6 @@
 namespace Tests\Feature\Jobs;
 
 use App\Enums\BackupFileStatus;
-use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Facades\SSH;
 use App\Jobs\Backup\DeleteFileJob;
@@ -15,9 +14,12 @@ use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
 use App\Models\StorageProvider;
+use App\Notifications\RestoreFailed;
 use App\StorageProviders\Dropbox;
+use App\StorageProviders\S3;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class BackupJobsTest extends TestCase
@@ -44,7 +46,7 @@ class BackupJobsTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => Database::factory()->create(['server_id' => $this->server->id])->id,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $this->backupFile = BackupFile::factory()->create([
@@ -53,16 +55,19 @@ class BackupJobsTest extends TestCase
         ]);
     }
 
-    public function test_run_job_failed_sets_backup_and_file_to_failed_and_logs(): void
+    public function test_run_job_failed_sets_file_to_failed_and_logs(): void
     {
+        SSH::fake();
+
         $job = new RunJob($this->backupFile, $this->backup);
         $job->failed(new Exception('Backup failed'));
 
         $this->backup->refresh();
         $this->backupFile->refresh();
 
-        $this->assertEquals(BackupStatus::FAILED, $this->backup->status);
+        $this->assertNull($this->backup->status);
         $this->assertEquals(BackupFileStatus::FAILED, $this->backupFile->status);
+        $this->assertSame('Backup failed', $this->backupFile->message);
 
         $this->assertDatabaseHas('server_logs', [
             'server_id' => $this->server->id,
@@ -70,8 +75,77 @@ class BackupJobsTest extends TestCase
         ]);
     }
 
+    public function test_restore_database_job_failed_sends_notification(): void
+    {
+        SSH::fake();
+        Notification::fake();
+
+        $database = Database::factory()->create(['server_id' => $this->server->id]);
+        $this->backupFile->update(['status' => BackupFileStatus::RESTORING]);
+
+        $job = new RestoreDatabaseJob($this->backupFile, $database);
+        $job->failed(new Exception('Restore failed'));
+
+        Notification::assertSentTo($this->notificationChannel, RestoreFailed::class);
+    }
+
+    public function test_delete_file_keeps_row_when_remote_delete_fails(): void
+    {
+        SSH::fake();
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => S3::id(),
+            'credentials' => [
+                'key' => 'k',
+                'secret' => 's',
+                'region' => 'us-east-1',
+                'bucket' => 'b',
+                'path' => 'backups',
+            ],
+        ]);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::DATABASE,
+            'server_id' => $this->server->id,
+            'storage_id' => $storage->id,
+            'database_id' => Database::factory()->create(['server_id' => $this->server->id])->id,
+        ]);
+
+        $file = BackupFile::factory()->create([
+            'backup_id' => $backup->id,
+            'status' => BackupFileStatus::DELETING,
+        ]);
+
+        $file->deleteFile();
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $file->id,
+            'status' => BackupFileStatus::DELETE_FAILED->value,
+        ]);
+    }
+
+    public function test_reconcile_marks_stuck_creating_files_as_failed(): void
+    {
+        Notification::fake();
+
+        $this->backupFile->update(['status' => BackupFileStatus::CREATING]);
+        BackupFile::query()
+            ->whereKey($this->backupFile->id)
+            ->update(['updated_at' => now()->subSeconds(2 * (int) config('core.backup_run_timeout') + 60)]);
+
+        $this->artisan('backups:reconcile')->assertSuccessful();
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $this->backupFile->id,
+            'status' => BackupFileStatus::FAILED->value,
+        ]);
+    }
+
     public function test_restore_database_job_failed_sets_restore_failed_and_logs(): void
     {
+        SSH::fake();
+
         $database = Database::factory()->create([
             'server_id' => $this->server->id,
         ]);
@@ -100,7 +174,7 @@ class BackupJobsTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/app',
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $file = BackupFile::factory()->create([

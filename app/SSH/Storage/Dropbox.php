@@ -4,10 +4,23 @@ namespace App\SSH\Storage;
 
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
+use App\StorageProviders\Dropbox as DropboxProvider;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class Dropbox extends AbstractStorage
 {
+    private function accessToken(): string
+    {
+        $provider = $this->storageProvider->provider();
+
+        if (! $provider instanceof DropboxProvider) {
+            throw new RuntimeException('Storage provider is not Dropbox.');
+        }
+
+        return $provider->accessToken();
+    }
+
     /**
      * @throws SSHError
      */
@@ -17,7 +30,7 @@ class Dropbox extends AbstractStorage
             view('ssh.storage.dropbox.upload', [
                 'src' => $src,
                 'dest' => $dest,
-                'token' => $this->storageProvider->credentials['token'],
+                'token' => $this->accessToken(),
             ]),
             'upload-to-dropbox'
         );
@@ -43,7 +56,7 @@ class Dropbox extends AbstractStorage
             view('ssh.storage.dropbox.download', [
                 'src' => $src,
                 'dest' => $dest,
-                'token' => $this->storageProvider->credentials['token'],
+                'token' => $this->accessToken(),
             ]),
             'download-from-dropbox'
         );
@@ -57,7 +70,7 @@ class Dropbox extends AbstractStorage
         $this->server->ssh()->exec(
             view('ssh.storage.dropbox.delete-file', [
                 'src' => $src,
-                'token' => $this->storageProvider->credentials['token'],
+                'token' => $this->accessToken(),
             ]),
             'delete-from-dropbox'
         );

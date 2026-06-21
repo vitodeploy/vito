@@ -30,7 +30,7 @@ class S3 extends AbstractStorage
 
         if (str_contains($upload, 'Error') || ! str_contains($upload, 'upload:')) {
             Log::error('Failed to upload to S3', ['output' => $upload]);
-            throw new SSHCommandError('Failed to upload to S3: '.$upload);
+            throw new SSHCommandError('Failed to upload to S3');
         }
 
         return [
@@ -56,13 +56,11 @@ class S3 extends AbstractStorage
             'endpoint' => $provider->getApiUrl(),
         ]);
 
-        Log::info('Downloading from S3', ['command' => $downloadCommand]);
-
         $download = $this->server->ssh()->exec($downloadCommand, 'download-from-s3');
 
         if (! str_contains($download, 'Download successful')) {
             Log::error('Failed to download from S3', ['output' => $download]);
-            throw new SSHCommandError('Failed to download from S3: '.$download);
+            throw new SSHCommandError('Failed to download from S3');
         }
     }
 
@@ -74,7 +72,7 @@ class S3 extends AbstractStorage
         /** @var \App\StorageProviders\S3 $provider */
         $provider = $this->storageProvider->provider();
 
-        $this->server->ssh()->exec(
+        $delete = $this->server->ssh()->exec(
             view('ssh.storage.s3.delete-file', [
                 'src' => $this->prepareS3Path($src),
                 'bucket' => $this->storageProvider->credentials['bucket'],
@@ -85,6 +83,11 @@ class S3 extends AbstractStorage
             ]),
             'delete-from-s3'
         );
+
+        if (! str_contains($delete, 'Delete successful')) {
+            Log::error('Failed to delete from S3', ['output' => $delete]);
+            throw new SSHCommandError('Failed to delete from S3');
+        }
     }
 
     /**

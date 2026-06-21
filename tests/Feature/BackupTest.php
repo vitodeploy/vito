@@ -14,7 +14,7 @@ use App\Models\Database;
 use App\Models\Server;
 use App\Models\StorageProvider;
 use App\Models\User;
-use App\StorageProviders\Dropbox;
+use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -49,7 +49,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'path' => '/home/vito/x.com',
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $this->backupFile = BackupFile::factory()->create([
             'backup_id' => $this->backup->id,
@@ -69,7 +69,7 @@ class BackupTest extends TestCase
             'path' => '/var/www/html',
             'interval' => '0 0 * * *',
             'keep_backups' => 5,
-            'status' => 'running',
+            'status' => null,
         ]);
 
         $this->assertInstanceOf(Backup::class, $backup);
@@ -95,7 +95,7 @@ class BackupTest extends TestCase
             'database_id' => $database->id,
             'interval' => '0 0 * * *',
             'keep_backups' => 5,
-            'status' => 'running',
+            'status' => null,
         ]);
 
         $this->assertInstanceOf(Backup::class, $backup);
@@ -109,7 +109,13 @@ class BackupTest extends TestCase
     public function test_create_database_backup(string $db, string $version): void
     {
         SSH::fake();
-        Http::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
 
         $this->setupDatabase($db, $version);
 
@@ -119,9 +125,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', [
@@ -136,7 +141,7 @@ class BackupTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
 
         $this->assertDatabaseHas('backup_files', [
@@ -154,9 +159,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', ['server' => $this->server]), [
@@ -170,7 +174,7 @@ class BackupTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
     }
 
@@ -182,9 +186,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         Backup::factory()->create([
@@ -205,9 +208,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -245,9 +247,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -333,7 +334,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => 1,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $databaseBackupFile = BackupFile::factory()->create([
             'backup_id' => $databaseBackup->id,
@@ -354,7 +355,7 @@ class BackupTest extends TestCase
             'server_id' => $this->server->id,
             'storage_id' => $this->storageProvider->id,
             'database_id' => 1,
-            'status' => BackupStatus::RUNNING,
+            'status' => null,
         ]);
         $databaseBackupFile = BackupFile::factory()->create([
             'backup_id' => $databaseBackup->id,
@@ -372,7 +373,13 @@ class BackupTest extends TestCase
     #[DataProvider('data')]
     public function test_restore_database_backup(string $db, string $version): void
     {
-        Http::fake();
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
         SSH::fake();
 
         $this->setupDatabase($db, $version);
@@ -383,9 +390,8 @@ class BackupTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $storage = StorageProvider::factory()->create([
+        $storage = StorageProvider::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -408,6 +414,186 @@ class BackupTest extends TestCase
         $this->assertDatabaseHas('backup_files', [
             'id' => $backupFile->id,
             'status' => BackupFileStatus::RESTORED,
+        ]);
+    }
+
+    #[DataProvider('data')]
+    public function test_database_backup_and_restore_are_streamed(string $db, string $version): void
+    {
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
+        SSH::fake();
+
+        $this->setupDatabase($db, $version);
+
+        $this->actingAs($this->user);
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->dropbox()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        SSH::assertExecutedContains('| ');
+        SSH::assertExecutedContains('gzip');
+        SSH::assertNotExecutedContains('unzip');
+
+        $this->post(route('backup-files.restore', [
+            'server' => $this->server,
+            'backup' => $backup,
+            'backupFile' => $backupFile,
+        ]), [
+            'database' => $database->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('gunzip -c');
+    }
+
+    public function test_database_backup_captures_compressed_size(): void
+    {
+        Http::fake();
+        SSH::fake('12345');
+
+        $this->setupDatabase('mysql', '8.4');
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Local::id(),
+            'credentials' => ['path' => '/home/vito/backups'],
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $backupFile->id,
+            'status' => BackupFileStatus::CREATED,
+            'size' => 12345,
+        ]);
+    }
+
+    public function test_database_backup_file_uses_sql_gz_extension(): void
+    {
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->dropbox()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::DATABASE,
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $file = BackupFile::factory()->create([
+            'backup_id' => $backup->id,
+            'name' => 'db-20260101000000',
+        ]);
+
+        $this->assertStringEndsWith('.sql.gz', $file->tempPath());
+        $this->assertStringEndsWith('.sql.gz', $file->path());
+    }
+
+    public function test_file_backup_file_uses_tar_gz_extension(): void
+    {
+        $this->assertStringEndsWith('.tar.gz', $this->backupFile->tempPath());
+    }
+
+    public function test_can_disable_backup(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => null,
+            'enabled' => true,
+        ]);
+
+        $this->post(route('backups.disable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => false,
+            'status' => null,
+        ]);
+    }
+
+    public function test_can_enable_backup(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => null,
+            'enabled' => false,
+        ]);
+
+        $this->post(route('backups.enable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => true,
+            'status' => null,
+        ]);
+    }
+
+    public function test_cannot_enable_a_backup_being_deleted(): void
+    {
+        $this->actingAs($this->user);
+
+        $backup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $this->server->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/x.com',
+            'status' => BackupStatus::DELETING,
+            'enabled' => false,
+        ]);
+
+        $this->post(route('backups.enable', ['server' => $this->server, 'backup' => $backup]))
+            ->assertSessionHasErrors('backup');
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'enabled' => false,
+            'status' => BackupStatus::DELETING->value,
         ]);
     }
 

@@ -19,7 +19,9 @@ class ServerConnected extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Connection successful!'))
-            ->line('Connection successful to the server ['.$this->server->name.'].');
+            ->success()
+            ->subject(__('Server reconnected'))
+            ->line(__('Vito has successfully connected to your server [:server].', ['server' => $this->server->name]))
+            ->action(__('View server'), url('/servers/'.$this->server->id));
     }
 }

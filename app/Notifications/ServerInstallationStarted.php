@@ -20,11 +20,10 @@ class ServerInstallationStarted extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Server installation started!'))
-            ->line('Your server\'s ['.$this->server->name.'] installation has been started.')
-            ->line("This may take several minutes depending on many things like your server's internet speed.")
-            ->line('As soon as it finishes, We will notify you through this channel.')
-            ->line('You can check the progress live on your dashboard.')
-            ->action('Installation Progress', url('/servers/'.$this->server->id));
+            ->subject(__('Server installation started'))
+            ->line(__('We\'ve started installing your server [:server].', ['server' => $this->server->name]))
+            ->line(__('This may take several minutes depending on factors like your server\'s network speed.'))
+            ->line(__('We\'ll notify you through this channel as soon as it\'s ready. You can also follow the progress live on your dashboard.'))
+            ->action(__('View progress'), url('/servers/'.$this->server->id));
     }
 }

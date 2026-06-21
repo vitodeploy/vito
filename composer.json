@@ -23,7 +23,7 @@
     "mobiledetect/mobiledetectlib": "^4.8",
     "mustache/mustache": "^3.0",
     "opcodesio/log-viewer": "^3.17",
-    "phpseclib/phpseclib": "3.0.52",
+    "phpseclib/phpseclib": "^3.0.52",
     "ratchet/rfc6455": "^0.4",
     "react/event-loop": "^1.5",
     "react/socket": "^1.17",
@@ -32,6 +32,7 @@
     "tightenco/ziggy": "^2.5"
   },
   "require-dev": {
+    "brianium/paratest": "^7.8.5",
     "fakerphp/faker": "^1.9.1",
     "larastan/larastan": "^3.1",
     "laravel/boost": "^2.0",
@@ -80,7 +81,7 @@
       "npm run lint",
       "npm run types",
       "touch storage/database-test.sqlite",
-      "@php artisan test"
+      "@php artisan test --parallel"
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",

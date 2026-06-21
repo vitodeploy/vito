@@ -13,14 +13,12 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '/api-docs/openapi/schemas/Project.yaml'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '/api-docs/openapi/schemas/Project.yaml'
         '401':
           description: Unauthorized
           content:
@@ -53,8 +51,7 @@ paths:
                 name:
                   type: string
                   maxLength: 255
-                  pattern: '^[a-z0-9_-]+$'
-                  description: Project name (lowercase, alphanumeric, hyphens, underscores only)
+                  description: Project name. Must be lowercase and unique across projects.
                   example: 'my-project'
             example:
               name: 'my-new-project'
@@ -169,8 +166,7 @@ paths:
                 name:
                   type: string
                   maxLength: 255
-                  pattern: '^[a-z0-9_-]+$'
-                  description: Project name (lowercase, alphanumeric, hyphens, underscores only)
+                  description: Project name. Must be lowercase and unique across projects.
                   example: 'updated-project-name'
             example:
               name: 'updated-project-name'

@@ -6,10 +6,11 @@ export interface BackupFile {
   backup: Backup;
   server_id: number;
   name: string;
-  size: number;
-  restored_to: string;
-  restored_at: string;
+  size: number | null;
+  restored_to: string | null;
+  restored_at: string | null;
   status: string;
+  message: string | null;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   created_at: string;
   updated_at: string;

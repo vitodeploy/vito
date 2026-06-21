@@ -28,10 +28,6 @@ class StorageProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        if ($input['provider'] === Dropbox::id()) {
-            Http::fake();
-        }
-
         if ($input['provider'] === \App\StorageProviders\FTP::id()) {
             FTP::fake();
         }
@@ -57,13 +53,107 @@ class StorageProvidersTest extends TestCase
         ]);
     }
 
+    public function test_dropbox_oauth_redirect(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->post(route('storage-providers.dropbox.redirect'), [
+            'provider' => Dropbox::id(),
+            'name' => 'dropbox-test',
+            'app_key' => 'my-app-key',
+            'app_secret' => 'my-app-secret',
+        ]);
+
+        $response->assertRedirect();
+
+        $location = (string) $response->headers->get('Location');
+        $this->assertStringContainsString('dropbox.com/oauth2/authorize', $location);
+        $this->assertStringContainsString('token_access_type=offline', $location);
+        $this->assertStringContainsString('my-app-key', $location);
+        $this->assertNotEmpty(session('dropbox_oauth.state'));
+    }
+
+    public function test_dropbox_callback_creates_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+                'refresh_token' => 'the-refresh-token',
+            ]),
+            '*' => Http::response([], 200),
+        ]);
+
+        $response = $this->withSession([
+            'dropbox_oauth' => [
+                'state' => 'state-123',
+                'name' => 'dropbox-test',
+                'app_key' => 'my-app-key',
+                'app_secret' => 'my-app-secret',
+                'global' => false,
+            ],
+        ])->get(route('storage-providers.dropbox.callback', ['code' => 'auth-code', 'state' => 'state-123']));
+
+        $response->assertRedirect(route('storage-providers'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('storage_providers', [
+            'provider' => Dropbox::id(),
+            'profile' => 'dropbox-test',
+            'user_id' => $this->user->id,
+        ]);
+
+        $provider = StorageProviderModel::query()->where('profile', 'dropbox-test')->firstOrFail();
+        $this->assertSame('the-refresh-token', $provider->credentials['refresh_token']);
+        $this->assertSame('my-app-key', $provider->credentials['app_key']);
+    }
+
+    public function test_dropbox_callback_rejects_bad_state(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->withSession([
+            'dropbox_oauth' => [
+                'state' => 'correct-state',
+                'name' => 'dropbox-test',
+                'app_key' => 'my-app-key',
+                'app_secret' => 'my-app-secret',
+                'global' => false,
+            ],
+        ])->get(route('storage-providers.dropbox.callback', ['code' => 'auth-code', 'state' => 'wrong-state']));
+
+        $response->assertRedirect(route('storage-providers'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('storage_providers', ['profile' => 'dropbox-test']);
+    }
+
+    public function test_dropbox_callback_rejects_missing_code(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->withSession([
+            'dropbox_oauth' => [
+                'state' => 'state-123',
+                'name' => 'dropbox-test',
+                'app_key' => 'my-app-key',
+                'app_secret' => 'my-app-secret',
+                'global' => false,
+            ],
+        ])->get(route('storage-providers.dropbox.callback', ['state' => 'state-123']));
+
+        $response->assertRedirect(route('storage-providers'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('storage_providers', ['profile' => 'dropbox-test']);
+    }
+
     public function test_see_providers_list(): void
     {
         $this->actingAs($this->user);
 
-        StorageProviderModel::factory()->create([
+        StorageProviderModel::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->get(route('storage-providers'))
@@ -279,21 +369,6 @@ class StorageProvidersTest extends TestCase
                     'password' => 'password',
                     'ssl' => 1,
                     'passive' => 1,
-                    'global' => 1,
-                ],
-            ],
-            [
-                [
-                    'provider' => Dropbox::id(),
-                    'name' => 'dropbox-test',
-                    'token' => 'token',
-                ],
-            ],
-            [
-                [
-                    'provider' => Dropbox::id(),
-                    'name' => 'dropbox-test',
-                    'token' => 'token',
                     'global' => 1,
                 ],
             ],

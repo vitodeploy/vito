@@ -28,7 +28,7 @@ class RunServerAutoUpdatesCommand extends Command
                     }
 
                     if ((new CronExpression((string) $server->auto_update_schedule))->isDue(now(), config('app.timezone'))) {
-                        app(Update::class)->update($server);
+                        app(Update::class)->update($server, notify: true);
                     }
                 }
             });

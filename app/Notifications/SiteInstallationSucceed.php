@@ -19,9 +19,9 @@ class SiteInstallationSucceed extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Site installation succeed!'))
-            ->line('Your site\'s ['.$this->site->domain.'] installation has been installed.')
-            ->line('Check your site')
-            ->action('View Site', url('/servers/'.$this->site->server_id.'/sites/'.$this->site->id));
+            ->success()
+            ->subject(__('Your site is ready'))
+            ->line(__('Your site [:domain] has been installed successfully.', ['domain' => $this->site->domain]))
+            ->action(__('Open site'), url('/servers/'.$this->site->server_id.'/sites/'.$this->site->id));
     }
 }

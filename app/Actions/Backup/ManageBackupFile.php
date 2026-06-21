@@ -2,7 +2,10 @@
 
 namespace App\Actions\Backup;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupFileResource;
 use App\Jobs\Backup\DeleteFileJob;
 use App\Models\BackupFile;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +30,14 @@ class ManageBackupFile
     public function delete(BackupFile $file): void
     {
         $file->status = BackupFileStatus::DELETING;
+        $file->message = null;
         $file->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $file->backup->server->project_id,
+            type: 'backup-file.updated',
+            data: new BackupFileResource($file),
+        ));
 
         dispatch(new DeleteFileJob($file))->onQueue('ssh');
     }

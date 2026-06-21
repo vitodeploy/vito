@@ -9,6 +9,7 @@ use App\Actions\SSL\CertificateParser;
 use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
 use App\Events\SocketEvent;
+use App\Facades\Notifier;
 use App\Helpers\SSH;
 use App\Http\Resources\SslResource;
 use App\Models\DNSRecord;
@@ -17,6 +18,7 @@ use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Notifications\SslRenewalFailed;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,7 +32,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
 
     public int $timeout = 600;
 
-    public function __construct(protected Server $server, protected Ssl $ssl) {}
+    public function __construct(protected Server $server, protected Ssl $ssl, protected bool $isRenewal = false) {}
 
     public function handle(): void
     {
@@ -86,6 +88,10 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             'create-wildcard-ssl-failed',
             $e->getMessage(),
         );
+
+        if ($this->isRenewal) {
+            Notifier::send($this->server, new SslRenewalFailed($this->server, $this->ssl));
+        }
     }
 
     private function prepareWorkspace(SSH $ssh, string $basePath, Domain $domain): void

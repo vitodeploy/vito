@@ -84,6 +84,12 @@ class GenerateNginxConfig extends AbstractGenerateConfig
     protected function enrichServerBlock(array $block, array $data): array
     {
         $block['upstream_name'] = $data['upstream_name'];
+        $block['client_max_body_size'] = $data['php_max_upload_size'] !== null
+            ? $data['php_max_upload_size'].'M'
+            : false;
+        $block['fastcgi_read_timeout'] = $data['php_max_execution_time'] !== null
+            ? $data['php_max_execution_time'].'s'
+            : false;
 
         return $block;
     }

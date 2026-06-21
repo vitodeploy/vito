@@ -123,21 +123,23 @@ class UpdateDatabaseUser
 
     private function updatePermissions(DatabaseUser $databaseUser, string $oldHost, ?string $newHost): void
     {
-        if (count($databaseUser->databases) > 0) {
-            /** @var Service $service */
-            $service = $databaseUser->server->database();
-
-            /** @var Database $databaseHandler */
-            $databaseHandler = $service->handler();
-
-            $databaseHandler->unlink($databaseUser->username, $oldHost);
-
-            $databaseHandler->link(
-                $databaseUser->username,
-                $newHost ?? $databaseUser->host,
-                $databaseUser->databases,
-                $databaseUser->permission->value
-            );
+        if (count($databaseUser->databases) === 0) {
+            return;
         }
+
+        /** @var Service $service */
+        $service = $databaseUser->server->database();
+
+        /** @var Database $databaseHandler */
+        $databaseHandler = $service->handler();
+
+        $databaseHandler->unlink($databaseUser->username, $oldHost);
+
+        $databaseHandler->link(
+            $databaseUser->username,
+            $newHost ?? $databaseUser->host,
+            $databaseUser->databases,
+            $databaseUser->permission->value
+        );
     }
 }

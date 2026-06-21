@@ -1,11 +1,5 @@
-if ! DEBIAN_FRONTEND=noninteractive unzip {{ $file }}.zip; then
+if ! bash -c 'set -o pipefail; gunzip -c "$2" | sudo DEBIAN_FRONTEND=noninteractive mariadb -u root "$1"' _ {!! escapeshellarg($database) !!} {!! escapeshellarg($path) !!}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo DEBIAN_FRONTEND=noninteractive mariadb -u root {{ $database }} < {{ $file }}.sql; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
-if ! rm {{ $file }}.sql {{ $file }}.zip; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
+rm -f {!! escapeshellarg($path) !!}

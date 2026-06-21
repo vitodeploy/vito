@@ -1,0 +1,41 @@
+name: pr-title
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+    branches:
+      - 2.x
+      - 3.x
+      - 4.x
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+
+    name: Validate PR title
+
+    steps:
+      - name: Check title prefix
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ "$PR_TITLE" =~ ^\[(Feat|Fix)\]\ .+ ]]; then
+            echo "PR title is valid: $PR_TITLE"
+            exit 0
+          fi
+
+          echo "::error::Invalid PR title: \"$PR_TITLE\""
+          echo "::error::PR titles must start with [Feat] or [Fix], followed by a space and a description."
+          echo "::error::Examples: \"[Feat] Add per-site PHP runtime settings\" or \"[Fix] Resolve backup failure\"."
+          exit 1

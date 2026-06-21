@@ -10,6 +10,7 @@ use App\Models\GitHook;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Notifications\DeploymentCompleted;
+use App\SiteTypes\Blank;
 use App\SiteTypes\NodeSite;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,6 +147,56 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('git pull');
 
         Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
+    }
+
+    public function test_deploy_reverse_proxy_without_port_and_start_command_shows_error(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Site $proxied */
+        $proxied = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => Blank::id(),
+            'port' => null,
+            'type_data' => [],
+        ]);
+
+        $this->withHeader('X-Inertia', 'true')
+            ->post(route('application.deploy', [
+                'server' => $this->server,
+                'site' => $proxied,
+            ]))->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('deployments', [
+            'site_id' => $proxied->id,
+        ]);
+    }
+
+    public function test_deploy_reverse_proxy_with_port_and_start_command_is_allowed(): void
+    {
+        SSH::fake('fake output');
+        Notification::fake();
+        $this->actingAs($this->user);
+
+        /** @var Site $proxied */
+        $proxied = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => Blank::id(),
+            'port' => 3000,
+            'type_data' => ['start_command' => 'node app.js'],
+        ]);
+
+        $proxied->deploymentScript->update(['content' => 'echo deploy']);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $proxied,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $proxied->id,
+        ]);
     }
 
     public function test_deploy_modern(): void
@@ -503,13 +554,12 @@ class ApplicationTest extends TestCase
         ]);
     }
 
-    public function test_secret_values_are_masked_when_stored_in_db(): void
+    public function test_only_secret_keys_are_stored_in_db(): void
     {
         SSH::fake();
 
         $this->actingAs($this->user);
 
-        // First, save some variables with secrets
         $this->put(route('application.update-env', [
             'server' => $this->server,
             'site' => $this->site,
@@ -522,11 +572,17 @@ class ApplicationTest extends TestCase
 
         $this->site->refresh();
 
-        // Verify stored in DB
-        $this->assertNotNull($this->site->env_variables);
-        $this->assertCount(2, $this->site->env_variables);
+        $this->assertEquals(['DB_PASSWORD'], $this->site->env_variables);
+    }
 
-        // Now fetch the variables - secrets should be masked
+    public function test_secret_values_are_masked_on_read(): void
+    {
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
         $response = $this->get(route('application.env', [
             'server' => $this->server,
             'site' => $this->site,
@@ -535,34 +591,47 @@ class ApplicationTest extends TestCase
         $response->assertOk();
         $data = $response->json('variables');
 
-        // Find the secret variable
         $secretVar = collect($data)->firstWhere('key', 'DB_PASSWORD');
         $this->assertTrue($secretVar['is_secret']);
-        $this->assertEquals('', $secretVar['value']); // Value should be empty/masked
+        $this->assertEquals('', $secretVar['value']);
 
-        // Non-secret should have value
         $normalVar = collect($data)->firstWhere('key', 'APP_NAME');
         $this->assertFalse($normalVar['is_secret']);
         $this->assertEquals('TestApp', $normalVar['value']);
     }
 
-    public function test_secret_values_preserved_when_updating_with_empty_value(): void
+    public function test_secret_classification_survives_legacy_db_shape(): void
     {
-        SSH::fake();
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123');
 
         $this->actingAs($this->user);
 
-        // First, save variables with secrets
-        $this->put(route('application.update-env', [
+        $this->site->update([
+            'env_variables' => [
+                ['key' => 'APP_NAME', 'value' => 'TestApp', 'is_secret' => false],
+                ['key' => 'DB_PASSWORD', 'value' => 'supersecret123', 'is_secret' => true],
+            ],
+        ]);
+
+        $response = $this->get(route('application.env', [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'variables' => [
-                ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
-            ],
-        ])->assertSessionDoesntHaveErrors();
+        ]));
 
-        // Now update with empty value for the secret (simulating frontend behavior)
+        $response->assertOk();
+        $secretVar = collect($response->json('variables'))->firstWhere('key', 'DB_PASSWORD');
+        $this->assertTrue($secretVar['is_secret']);
+        $this->assertEquals('', $secretVar['value']);
+    }
+
+    public function test_secret_value_preserved_on_server_when_submitted_empty(): void
+    {
+        $ssh = SSH::fake('DB_PASSWORD=original_secret');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
         $this->put(route('application.update-env', [
             'server' => $this->server,
             'site' => $this->site,
@@ -572,11 +641,135 @@ class ApplicationTest extends TestCase
             ],
         ])->assertSessionDoesntHaveErrors();
 
-        $this->site->refresh();
+        $this->assertStringContainsString('DB_PASSWORD=original_secret', $ssh->getUploadedContent());
+    }
 
-        // The original secret value should be preserved
-        $storedVar = collect($this->site->env_variables)->firstWhere('key', 'DB_PASSWORD');
-        $this->assertEquals('original_secret', $storedVar['value']);
+    public function test_secret_value_reflects_live_server_file_when_changed_out_of_band(): void
+    {
+        $ssh = SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=rotated_secret');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'ChangedApp', 'is_secret' => false],
+                ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $uploaded = $ssh->getUploadedContent();
+        $this->assertStringContainsString('DB_PASSWORD=rotated_secret', $uploaded);
+        $this->assertStringContainsString('APP_NAME=ChangedApp', $uploaded);
+    }
+
+    public function test_stored_secret_cannot_be_wiped_by_marking_it_non_secret(): void
+    {
+        $ssh = SSH::fake('DB_PASSWORD=original_secret');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => false],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertStringContainsString('DB_PASSWORD=original_secret', $ssh->getUploadedContent());
+
+        $this->site->refresh();
+        $this->assertEquals(['DB_PASSWORD'], $this->site->env_variables);
+    }
+
+    public function test_secret_can_be_dropped_to_non_secret_with_new_value(): void
+    {
+        $ssh = SSH::fake('DB_PASSWORD=original_secret');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'DB_PASSWORD', 'value' => 'now_plain', 'is_secret' => false],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertStringContainsString('DB_PASSWORD=now_plain', $ssh->getUploadedContent());
+
+        $this->site->refresh();
+        $this->assertEquals([], $this->site->env_variables);
+    }
+
+    public function test_pattern_secrets_masked_for_site_never_saved_through_vito(): void
+    {
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'APP_KEY=base64:supersecret');
+
+        $this->actingAs($this->user);
+
+        $this->assertNull($this->site->env_variables);
+
+        $response = $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]));
+
+        $response->assertOk();
+        $secretVar = collect($response->json('variables'))->firstWhere('key', 'APP_KEY');
+        $this->assertTrue($secretVar['is_secret']);
+        $this->assertEquals('', $secretVar['value']);
+    }
+
+    public function test_raw_env_path_writes_content_verbatim_without_restoring_secrets(): void
+    {
+        $ssh = SSH::fake('DB_PASSWORD=original_secret');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $raw = '# leading comment'.PHP_EOL.'APP_NAME=Raw'.PHP_EOL.PHP_EOL.'DB_PASSWORD=';
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => $raw,
+        ])->assertSessionDoesntHaveErrors();
+
+        $uploaded = $ssh->getUploadedContent();
+        $this->assertSame($raw, $uploaded);
+        $this->assertStringNotContainsString('DB_PASSWORD=original_secret', $uploaded);
+    }
+
+    public function test_update_env_aborts_when_live_file_cannot_be_read(): void
+    {
+        SSH::fake('');
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+            ],
+        ])->assertSessionHasErrors('variables');
     }
 
     public function test_parse_env_endpoint(): void

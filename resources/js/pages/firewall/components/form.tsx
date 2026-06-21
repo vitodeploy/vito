@@ -3,12 +3,13 @@ import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircleIcon } from 'lucide-react';
+import { InfoIcon, LoaderCircleIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FirewallRule } from '@/types/firewall';
 
 export default function RuleForm({
@@ -37,7 +38,7 @@ export default function RuleForm({
     port: firewallRule?.port?.toString() || '',
     source_any: !firewallRule?.source,
     source: firewallRule?.source || '',
-    mask: firewallRule?.mask?.toString() || '',
+    mask: firewallRule?.mask?.toString() || '32',
   });
 
   const submit = (e: FormEvent) => {
@@ -133,6 +134,15 @@ export default function RuleForm({
                 <FormField>
                   <Label htmlFor="mask">Mask</Label>
                   <Input type="text" id="mask" value={form.data.mask} onChange={(e) => form.setData('mask', e.target.value)} />
+                  <Alert>
+                    <InfoIcon />
+                    <AlertDescription>
+                      <p>
+                        The mask sets how many IP addresses this rule covers. Use <code>32</code> for just this one IP, <code>24</code> for its
+                        whole local network (256 addresses), and smaller numbers to cover even more. Lower number = wider range.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
                   <InputError message={form.errors.mask} />
                 </FormField>
               </>

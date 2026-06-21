@@ -20,9 +20,10 @@ class ServerUpdateFailed extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Server update failed!'))
-            ->line('Your server ['.$this->server->name.'] update has been failed.')
-            ->line('Check your server logs')
-            ->action('View Logs', url('/servers/'.$this->server->id.'/logs'));
+            ->error()
+            ->subject(__('Server update failed'))
+            ->line(__('An update on your server [:server] failed.', ['server' => $this->server->name]))
+            ->line(__('Check the server logs to find out what went wrong.'))
+            ->action(__('View logs'), url('/servers/'.$this->server->id.'/logs'));
     }
 }

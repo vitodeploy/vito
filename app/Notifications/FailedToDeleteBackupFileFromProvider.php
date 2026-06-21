@@ -3,13 +3,10 @@
 namespace App\Notifications;
 
 use App\Models\BackupFile;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class FailedToDeleteBackupFileFromProvider extends AbstractNotification
 {
-    use Queueable;
-
     public function __construct(protected BackupFile $backupFile) {}
 
     public function rawText(): string
@@ -20,8 +17,12 @@ class FailedToDeleteBackupFileFromProvider extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Failed to delete backup file from provider'))
-            ->line($this->rawText())
-            ->line('Please check your provider and delete it manually');
+            ->error()
+            ->subject(__('Failed to delete backup file'))
+            ->line(__('We couldn\'t delete the backup file [:file] from :provider.', [
+                'file' => $this->backupFile->name,
+                'provider' => $this->backupFile->backup->storage->provider,
+            ]))
+            ->line(__('Please check your storage provider and remove it manually.'));
     }
 }

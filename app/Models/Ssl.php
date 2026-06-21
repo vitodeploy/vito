@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
  * @property ?array $csr_data
  * @property ?string $csr_passphrase
  * @property ?Carbon $expires_at
+ * @property ?Carbon $expiry_notified_at
  * @property SslStatus $status
  * @property ?Site $site
  * @property ?Server $server
@@ -74,6 +75,7 @@ class Ssl extends AbstractModel
         'csr_data' => 'array',
         'csr_passphrase' => 'encrypted',
         'expires_at' => 'datetime',
+        'expiry_notified_at' => 'datetime',
         'domains' => 'array',
         'log_id' => 'integer',
         'is_wildcard' => 'boolean',

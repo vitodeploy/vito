@@ -24,14 +24,17 @@ properties:
     maximum: 86400
     example: 3600
     description: 'Time to live in seconds'
-  formatted_ttl:
-    type: string
-    example: '1h'
-    description: 'Human readable TTL format (e.g., 1h, 30m, 3600s)'
   proxied:
     type: boolean
     example: false
     description: 'Whether the record is proxied through the DNS provider'
+  priority:
+    type: integer
+    nullable: true
+    minimum: 0
+    maximum: 65535
+    example: 10
+    description: 'Record priority. Only used for MX records.'
   domain_id:
     type: integer
     example: 1

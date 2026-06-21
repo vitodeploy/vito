@@ -41,6 +41,10 @@ properties:
     nullable: true
     description: 'The last error reported by the process manager, if the worker failed.'
     example: '10:10_00: ERROR (no such file)'
+  is_site_bootstrap:
+    type: boolean
+    description: 'Whether this worker is the site bootstrap worker.'
+    example: false
   created_at:
     type: string
     format: date-time

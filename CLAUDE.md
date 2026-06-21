@@ -25,7 +25,7 @@ Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 
 ## PHP
 
 - Curly braces always. Constructor property promotion. Explicit return types on all methods.
-- PHPDoc blocks for documentation. **No inline `//` comments inside function or method bodies** (migrations excepted).
+- Avoid commenting unless it is necessary and only on Doc Blocks. no inline commenting.
 - Use array shapes in PHPDoc where appropriate.
 - Avoid `DB::`, prefer `Model::query()`. Eager load to prevent N+1.
 - Use `config()` not `env()` outside config files.

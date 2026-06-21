@@ -151,12 +151,18 @@ paths:
             schema:
               type: object
               required:
+                - type
                 - common_name
                 - organization
                 - city
                 - state
                 - country
               properties:
+                type:
+                  type: string
+                  enum: ['csr', 'custom', 'letsencrypt']
+                  description: SSL certificate type. Use 'csr' for this endpoint.
+                  example: 'csr'
                 common_name:
                   type: string
                   description: Domain name (e.g., example.com)
@@ -197,6 +203,7 @@ paths:
                   nullable: true
                   description: Optional passphrase to encrypt the private key
             example:
+              type: 'csr'
               common_name: 'example.com'
               organization: 'Acme Inc'
               city: 'San Francisco'
@@ -450,12 +457,6 @@ paths:
             application/json:
               schema:
                 $ref: '/api-docs/openapi/schemas/SSL.yaml'
-        '400':
-          description: SSL certificate cannot be activated
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '401':
           description: Unauthorized
           content:
@@ -463,7 +464,7 @@ paths:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
-          description: Validation error
+          description: Validation error (invalid input, or SSL certificate cannot be activated because it is not a CSR with status 'created')
           content:
             application/json:
               schema:

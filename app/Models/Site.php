@@ -39,7 +39,7 @@ use RuntimeException;
  * @property int $server_id
  * @property string $type
  * @property array<string, mixed> $type_data
- * @property ?array<int, array{key: string, value: string, is_secret: bool}> $env_variables
+ * @property ?array<int, string> $env_variables List of keys marked as secret; values live on the server, never in the database.
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $worker_environment
  * @property string $domain
  * @property array<int, string> $aliases
@@ -204,6 +204,11 @@ class Site extends AbstractModel
             $warnings[] = ['key' => 'vhost_generation_disabled'];
         }
 
+        if ($this->vhost_template !== null
+            && array_filter($this->phpSettings(), fn ($v) => $v !== null) !== []) {
+            $warnings[] = ['key' => 'php_settings_ignored'];
+        }
+
         $expiring = $hostedDomains->filter(
             fn ($hd) => $hd->ssl_id
                 && $hd->relationLoaded('ssl')
@@ -357,18 +362,25 @@ class Site extends AbstractModel
 
     public function ensureDeploymentScriptsExist(): void
     {
+        $created = false;
+
         if ($this->modernDeploymentEnabled()) {
             if (! $this->buildScript) {
                 $this->deploymentScripts()->create([
                     'name' => 'build',
                     'content' => '',
                 ]);
+                $created = true;
             }
             if (! $this->preFlightScript) {
                 $this->deploymentScripts()->create([
                     'name' => 'pre-flight',
                     'content' => '',
+                    'configs' => [
+                        'restart_workers' => $this->deploymentScript?->shouldRestartWorkers() ?? false,
+                    ],
                 ]);
+                $created = true;
             }
         }
 
@@ -377,12 +389,31 @@ class Site extends AbstractModel
                 'name' => 'default',
                 'content' => '',
             ]);
+            $created = true;
+        }
+
+        if ($created) {
+            $this->refresh();
         }
     }
 
     public function modernDeploymentEnabled(): bool
     {
         return (bool) ($this->type_data['modern_deployment'] ?? false);
+    }
+
+    /**
+     * Resolve the deployment script that drives a deploy of the given mode.
+     * Modern deploys use the pre-flight script; classic deploys use the default script.
+     */
+    public function deploymentScriptFor(bool $modern): ?DeploymentScript
+    {
+        return $modern ? $this->preFlightScript : $this->deploymentScript;
+    }
+
+    public function activeDeploymentScript(): ?DeploymentScript
+    {
+        return $this->deploymentScriptFor($this->modernDeploymentEnabled());
     }
 
     public function statsEnabled(): bool
@@ -480,6 +511,41 @@ class Site extends AbstractModel
         return null;
     }
 
+    public function supportsPhpSettings(): bool
+    {
+        if (! $this->php_version) {
+            return false;
+        }
+
+        $isPhp = (bool) ($this->type()->vhostData()['is_php'] ?? false);
+        $isOctane = (bool) data_get($this->type_data, 'octane', false);
+
+        return $isPhp
+            && ! $isOctane
+            && $this->vhost_generation_enabled
+            && $this->vhost_template === null;
+    }
+
+    /**
+     * @return array{max_upload_size: int|null, max_execution_time: int|null, memory_limit: int|null, max_input_vars: int|null}
+     */
+    public function phpSettings(): array
+    {
+        return [
+            'max_upload_size' => $this->phpSetting('max_upload_size'),
+            'max_execution_time' => $this->phpSetting('max_execution_time'),
+            'memory_limit' => $this->phpSetting('memory_limit'),
+            'max_input_vars' => $this->phpSetting('max_input_vars'),
+        ];
+    }
+
+    private function phpSetting(string $key): ?int
+    {
+        $value = data_get($this->type_data, "php.{$key}");
+
+        return is_numeric($value) ? (int) $value : null;
+    }
+
     public function getUrl(): string
     {
         if ($this->ssl_enabled) {
@@ -550,10 +616,10 @@ class Site extends AbstractModel
             : 'site_'.$this->id;
     }
 
-    public function getEnv(): string
+    public function getEnv(?string $path = null): string
     {
         try {
-            $envPath = $this->type_data['env_path'] ?? $this->path.'/.env';
+            $envPath = $path ?? $this->type_data['env_path'] ?? $this->path.'/.env';
 
             return $this->server->os()->readFile($envPath);
         } catch (SSHError) {

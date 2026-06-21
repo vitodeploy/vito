@@ -115,12 +115,15 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'true' }}
           generate_release_notes: true
 
-      - name: Get release notes from GitHub API
+      - name: Group release notes by prefix
         id: fetch-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          NOTES=$(gh release view ${{ steps.version.outputs.version }} --json body -q .body)
+          RAW_NOTES=$(gh release view "$VERSION" --json body -q .body)
+          NOTES=$(printf '%s' "$RAW_NOTES" | bash .github/scripts/group-release-notes.sh)
+          gh release edit "$VERSION" --notes "$NOTES"
           {
             echo "notes<<EOF"
             echo "$NOTES"

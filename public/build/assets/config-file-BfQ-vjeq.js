@@ -1,1 +1,0 @@
-import{b as e,o as t}from"./app-REiLZtO8.js";import{a as n}from"./dropdown-menu-B--NOjOs.js";import{t as r}from"./use-dialog-CkDBs1NX.js";var i=e({default:()=>o}),a=t();function o({service:e,configPath:t}){let i=r();return(0,a.jsxs)(n,{onSelect:()=>i.serviceConfigFile.open({service:e,configPath:t}),children:[`Edit `,t.name]})}export{i as n,o as t};

@@ -3,7 +3,6 @@
 namespace App\Actions\Worker;
 
 use App\Exceptions\SSHError;
-use App\Helpers\EnvParser;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Support\Facades\Validator;
@@ -64,19 +63,49 @@ class UpdateWorkerEnvironment
     }
 
     /**
+     * Worker environment values live only in the database (the supervisor
+     * config is generated from them and never read back), so masked secrets
+     * are restored from the stored copy rather than from a server file.
+     *
+     * A key already stored as secret cannot be wiped by submitting it as a
+     * non-secret with an empty value: while the value is empty it stays secret
+     * and its stored value is restored. Re-adding the key with a real value is
+     * the only way to make it non-secret, which is honoured.
+     *
      * @param  array<int, array<string, mixed>>  $incoming
      * @param  ?array<int, array{key: string, value: string, is_secret: bool}>  $stored
      * @return array<int, array{key: string, value: string, is_secret: bool}>
      */
     public static function processVariables(array $incoming, ?array $stored): array
     {
-        $normalized = array_map(fn (array $variable): array => [
-            'key' => (string) $variable['key'],
-            'value' => (string) ($variable['value'] ?? ''),
-            'is_secret' => (bool) ($variable['is_secret'] ?? false),
-        ], $incoming);
+        $storedMap = [];
+        $storedSecrets = [];
+        foreach ($stored ?? [] as $variable) {
+            $storedMap[$variable['key']] = $variable['value'];
+            if ($variable['is_secret']) {
+                $storedSecrets[$variable['key']] = true;
+            }
+        }
 
-        return EnvParser::mergeWithStored($normalized, $stored);
+        return array_map(function (array $variable) use ($storedMap, $storedSecrets): array {
+            $key = (string) $variable['key'];
+            $value = (string) ($variable['value'] ?? '');
+            $isSecret = (bool) ($variable['is_secret'] ?? false);
+
+            if ($value === '' && isset($storedSecrets[$key])) {
+                $isSecret = true;
+            }
+
+            if ($isSecret && $value === '' && isset($storedMap[$key])) {
+                $value = (string) $storedMap[$key];
+            }
+
+            return [
+                'key' => $key,
+                'value' => $value,
+                'is_secret' => $isSecret,
+            ];
+        }, $incoming);
     }
 }
 

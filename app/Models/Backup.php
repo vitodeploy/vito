@@ -18,7 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $path
  * @property string $interval
  * @property int $keep_backups
- * @property BackupStatus $status
+ * @property ?BackupStatus $status
+ * @property bool $enabled
  * @property Server $server
  * @property StorageProvider $storage
  * @property ?Database $database
@@ -47,6 +48,7 @@ class Backup extends AbstractModel
         'keep_backups' => 'integer',
         'type' => BackupType::class,
         'status' => BackupStatus::class,
+        'enabled' => 'boolean',
     ];
 
     public static function boot(): void

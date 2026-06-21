@@ -17,15 +17,16 @@ class RenewSslCertificatesCommand extends Command
     public function handle(): void
     {
         Ssl::query()
+            ->with('server')
             ->where('type', SslType::LETSENCRYPT)
             ->where('is_wildcard', true)
             ->whereNotNull('server_id')
             ->whereNull('site_id')
             ->where('status', SslStatus::CREATED)
             ->where('expires_at', '<=', now()->addDays(30))
-            ->cursor()
+            ->lazy()
             ->each(function (Ssl $ssl) {
-                dispatch(new CreateLetsEncryptWildcardSslJob($ssl->server, $ssl))
+                dispatch(new CreateLetsEncryptWildcardSslJob($ssl->server, $ssl, isRenewal: true))
                     ->onQueue('ssh-certbot');
             });
     }

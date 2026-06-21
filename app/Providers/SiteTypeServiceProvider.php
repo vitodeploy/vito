@@ -11,6 +11,7 @@ use App\Plugins\RegisterSiteType;
 use App\SiteFeatures\ModernDeployment\Configuration;
 use App\SiteFeatures\ModernDeployment\Disable;
 use App\SiteFeatures\ModernDeployment\Enable;
+use App\SiteTypes\Blank;
 use App\SiteTypes\BunSite;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
@@ -37,6 +38,7 @@ class SiteTypeServiceProvider extends ServiceProvider
         $this->nodeJS();
         $this->nodeSite();
         $this->bunSite();
+        $this->blank();
         $this->loadBalancer();
         $this->phpMyAdmin();
         $this->wordpress();
@@ -192,6 +194,15 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->label('Bun')
             ->handler(BunSite::class)
             ->form(DynamicForm::make(BunSite::formFields()))
+            ->register();
+    }
+
+    private function blank(): void
+    {
+        RegisterSiteType::make(Blank::id())
+            ->label('Blank (Reverse Proxy)')
+            ->handler(Blank::class)
+            ->form(DynamicForm::make(Blank::formFields()))
             ->register();
     }
 

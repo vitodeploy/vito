@@ -8,6 +8,7 @@ use App\Enums\DatabaseStatus;
 use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
+use App\ValidationRules\CronRule;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -35,8 +36,8 @@ class ManageBackup
             'storage_id' => $input['storage'],
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
-            'status' => BackupStatus::RUNNING,
         ]);
+        $backup->enabled = true;
         $backup->save();
 
         app(RunBackup::class)->run($backup);
@@ -56,13 +57,31 @@ class ManageBackup
         $backup->status = BackupStatus::DELETING;
         $backup->save();
 
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
+
         dispatch(new DeleteJob($backup))->onQueue('ssh');
+    }
+
+    public function enable(Backup $backup): void
+    {
+        if ($backup->status === BackupStatus::DELETING) {
+            throw ValidationException::withMessages([
+                'backup' => __('This backup is being deleted and cannot be enabled.'),
+            ]);
+        }
+
+        $backup->enabled = true;
+        $backup->save();
+
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
     }
 
     public function stop(Backup $backup): void
     {
-        $backup->status = BackupStatus::STOPPED;
+        $backup->enabled = false;
         $backup->save();
+
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
     }
 
     private function validate(Server $server, array $input): void
@@ -107,6 +126,7 @@ class ManageBackup
         if (isset($input['interval']) && $input['interval'] == 'custom') {
             $rules['custom_interval'] = [
                 'required',
+                new CronRule,
             ];
         }
 

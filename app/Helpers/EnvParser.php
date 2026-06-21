@@ -112,6 +112,72 @@ class EnvParser
     }
 
     /**
+     * Normalise the stored secret marker into a flat list of secret keys.
+     *
+     * Values are NEVER stored in the database; only the list of keys the user
+     * marked as secret is persisted (e.g. ['APP_KEY', 'JWT_SECRET']). Existing
+     * servers from before this change stored the full variable array
+     * ([{key, value, is_secret}]); this normaliser reads that legacy shape too
+     * so secret classifications survive the upgrade without a data migration.
+     *
+     * @param  array<int, mixed>|null  $stored
+     * @return array<int, string>
+     */
+    public static function secretKeys(?array $stored): array
+    {
+        if ($stored === null) {
+            return [];
+        }
+
+        $keys = [];
+
+        foreach ($stored as $entry) {
+            if (is_string($entry)) {
+                $keys[] = $entry;
+
+                continue;
+            }
+
+            if (is_array($entry) && ($entry['is_secret'] ?? false) && isset($entry['key'])) {
+                $keys[] = (string) $entry['key'];
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
+
+    /**
+     * Classify variables parsed from the live server .env file using the stored
+     * secret-key list. The live file is always the source of truth for values;
+     * the stored list only contributes the `is_secret` classification so manual
+     * secret toggles survive a reload.
+     *
+     * When no list has ever been stored (`null` — e.g. a site that has never
+     * been saved through Vito), there is no authoritative classification, so we
+     * fall back to pattern auto-detection from `parse()` to avoid exposing
+     * obvious secrets unmasked. Once a list exists (even empty), it is
+     * authoritative so deliberately un-secreted keys are not re-masked.
+     *
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>  $parsed
+     * @param  array<int, mixed>|null  $stored
+     * @return array<int, array{key: string, value: string, is_secret: bool}>
+     */
+    public static function classify(array $parsed, ?array $stored): array
+    {
+        if ($stored === null) {
+            return $parsed;
+        }
+
+        $secretKeys = array_flip(self::secretKeys($stored));
+
+        return array_map(function ($variable) use ($secretKeys) {
+            $variable['is_secret'] = isset($secretKeys[$variable['key']]);
+
+            return $variable;
+        }, $parsed);
+    }
+
+    /**
      * Mask secret values for frontend display
      * Secret values are completely hidden (not sent to frontend)
      *
@@ -130,31 +196,29 @@ class EnvParser
     }
 
     /**
-     * Merge incoming variables with stored variables
-     * For secrets with empty values, keep the stored value
+     * Merge incoming variables with the live .env file on the server.
+     *
+     * A masked secret arrives with an empty value; its real value is restored
+     * from the live file so the secret is never lost when the form is saved
+     * without re-typing it. Non-secret variables and secrets with a new value
+     * are taken as-is from the incoming set.
      *
      * @param  array<int, array{key: string, value: string, is_secret: bool}>  $incoming
-     * @param  array<int, array{key: string, value: string, is_secret: bool}>|null  $stored
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>  $live
      * @return array<int, array{key: string, value: string, is_secret: bool}>
      */
-    public static function mergeWithStored(array $incoming, ?array $stored): array
+    public static function mergeWithLive(array $incoming, array $live): array
     {
-        if ($stored === null) {
-            return $incoming;
+        $liveMap = [];
+        foreach ($live as $variable) {
+            $liveMap[$variable['key']] = $variable['value'];
         }
 
-        $storedMap = [];
-        foreach ($stored as $variable) {
-            $storedMap[$variable['key']] = $variable;
-        }
-
-        return array_map(function ($variable) use ($storedMap) {
+        return array_map(function ($variable) use ($liveMap) {
             $key = $variable['key'];
-            $isSecret = $variable['is_secret'];
-            $value = $variable['value'];
 
-            if ($isSecret && $value === '' && isset($storedMap[$key])) {
-                $variable['value'] = $storedMap[$key]['value'];
+            if ($variable['is_secret'] && $variable['value'] === '' && isset($liveMap[$key])) {
+                $variable['value'] = $liveMap[$key];
             }
 
             return $variable;

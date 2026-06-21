@@ -62,6 +62,7 @@ server {
 
     server_name{{#domains}} {{name}}{{/domains}};
     root {{root}};
+    {{#client_max_body_size}}client_max_body_size {{client_max_body_size}};{{/client_max_body_size}}
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -103,8 +104,10 @@ server {
 
     location ~ \.php$ {
         fastcgi_pass {{php_socket}};
+        {{#php_value}}fastcgi_param PHP_VALUE "@@VITO_PHP_VALUE@@";{{/php_value}}
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        {{#fastcgi_read_timeout}}fastcgi_read_timeout {{fastcgi_read_timeout}};{{/fastcgi_read_timeout}}
         fastcgi_hide_header X-Powered-By;
     }
 

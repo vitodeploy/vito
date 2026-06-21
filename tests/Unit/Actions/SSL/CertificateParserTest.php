@@ -3,11 +3,14 @@
 namespace Tests\Unit\Actions\SSL;
 
 use App\Actions\SSL\CertificateParser;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class CertificateParserTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_parses_certificate_with_san(): void
     {
         $cert = $this->generateCertWithSan(['DNS:example.com', 'DNS:www.example.com']);

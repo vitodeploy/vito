@@ -238,25 +238,27 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function runBackup(BackupFile $backupFile): void
     {
-        // backup
         $this->service->server->ssh()->exec(
             view($this->getScriptView('backup'), [
-                'file' => $backupFile->name,
+                'path' => $backupFile->tempPath(),
                 'database' => $backupFile->backup->database->name,
             ]),
             'backup-database'
         );
 
-        // upload to storage
-        $upload = $backupFile->backup->storage->provider()->ssh($this->service->server)->upload(
+        $size = trim($this->service->server->ssh()->exec(
+            'stat -c%s '.escapeshellarg($backupFile->tempPath()),
+            'backup-size'
+        ));
+
+        $backupFile->backup->storage->provider()->ssh($this->service->server)->upload(
             $backupFile->tempPath(),
             $backupFile->path(),
         );
 
-        // cleanup
-        $this->service->server->ssh()->exec('rm '.$backupFile->tempPath(), 'cleanup-backup');
+        $this->service->server->os()->deleteFile($backupFile->tempPath());
 
-        $backupFile->size = $upload['size'];
+        $backupFile->size = is_numeric($size) ? (int) $size : null;
         $backupFile->save();
     }
 
@@ -265,7 +267,6 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function restoreBackup(BackupFile $backupFile, string $database): void
     {
-        // download
         $backupFile->backup->storage->provider()->ssh($this->service->server)->download(
             $backupFile->path(),
             $backupFile->tempPath(),
@@ -274,7 +275,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $this->service->server->ssh()->exec(
             view($this->getScriptView('restore'), [
                 'database' => $database,
-                'file' => rtrim($backupFile->tempPath(), '.zip'),
+                'path' => $backupFile->tempPath(),
             ]),
             'restore-database'
         );

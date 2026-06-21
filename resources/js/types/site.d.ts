@@ -21,6 +21,13 @@ export interface Site {
   webserver_default_ssl_method: string;
   path: string;
   php_version: string;
+  php_settings: {
+    max_upload_size: number | null;
+    max_execution_time: number | null;
+    memory_limit: number | null;
+    max_input_vars: number | null;
+  };
+  supports_php_settings: boolean;
   repository: string;
   branch?: string;
   status: string;
@@ -74,6 +81,7 @@ export type SiteWarning =
   | { key: 'pending_domains'; count: number; domains: string[] }
   | { key: 'ssl_disabled' }
   | { key: 'vhost_generation_disabled' }
+  | { key: 'php_settings_ignored' }
   | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string }
   | { key: 'needs_first_deploy' }
   | {

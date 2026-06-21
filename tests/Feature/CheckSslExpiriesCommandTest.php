@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Actions\SSL\CertificateParser;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
+use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\SSL\CheckSslExpiryJob;
 use App\Models\Ssl;
+use App\Notifications\SslCertificateExpiring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
@@ -209,5 +211,53 @@ INI);
 
         $ssl->refresh();
         $this->assertContains('example.com', $ssl->domains);
+    }
+
+    public function test_notifies_once_when_certificate_expiring_soon(): void
+    {
+        SSH::fake($this->generateTestCertificate(10));
+        Notifier::spy();
+
+        $ssl = $this->createSiteLeSsl();
+
+        $job = new CheckSslExpiryJob($this->server);
+        $job->handle();
+        $job->handle();
+
+        $ssl->refresh();
+        $this->assertNotNull($ssl->expiry_notified_at);
+        Notifier::shouldHaveReceived('send')->withArgs(
+            fn (object $notifiable, object $notification): bool => $notification instanceof SslCertificateExpiring
+        )->once();
+    }
+
+    public function test_does_not_notify_when_not_expiring_soon(): void
+    {
+        SSH::fake($this->generateTestCertificate(90));
+        Notifier::spy();
+
+        $ssl = $this->createSiteLeSsl();
+
+        (new CheckSslExpiryJob($this->server))->handle();
+
+        $ssl->refresh();
+        $this->assertNull($ssl->expiry_notified_at);
+        Notifier::shouldNotHaveReceived('send');
+    }
+
+    public function test_rearms_notification_after_renewal(): void
+    {
+        Notifier::spy();
+        $ssl = $this->createSiteLeSsl();
+
+        SSH::fake($this->generateTestCertificate(10));
+        (new CheckSslExpiryJob($this->server))->handle();
+        $ssl->refresh();
+        $this->assertNotNull($ssl->expiry_notified_at);
+
+        SSH::fake($this->generateTestCertificate(90));
+        (new CheckSslExpiryJob($this->server))->handle();
+        $ssl->refresh();
+        $this->assertNull($ssl->expiry_notified_at);
     }
 }

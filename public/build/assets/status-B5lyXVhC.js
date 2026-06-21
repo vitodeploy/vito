@@ -1,1 +1,0 @@
-import{o as e}from"./app-REiLZtO8.js";import{t}from"./badge-BKd5WLq8.js";var n=e();function r({server:e}){return(0,n.jsx)(t,{variant:e.status_color,children:e.status})}export{r as default};

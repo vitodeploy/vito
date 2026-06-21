@@ -29,7 +29,13 @@ class StorageProvidersTest extends TestCase
         Sanctum::actingAs($this->user, ['read', 'write']);
 
         if ($input['provider'] === Dropbox::id()) {
-            Http::fake();
+            Http::fake([
+                '*oauth2/token' => Http::response([
+                    'access_token' => 'fresh-access',
+                    'expires_in' => 14400,
+                ]),
+                '*' => Http::response([], 200),
+            ]);
         }
 
         if ($input['provider'] === \App\StorageProviders\FTP::id()) {
@@ -55,9 +61,8 @@ class StorageProvidersTest extends TestCase
         Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var StorageProviderModel $provider */
-        $provider = StorageProviderModel::factory()->create([
+        $provider = StorageProviderModel::factory()->dropbox()->create([
             'user_id' => $this->user->id,
-            'provider' => Dropbox::id(),
         ]);
 
         $this->json('GET', route('api.projects.storage-providers', [
@@ -303,14 +308,18 @@ class StorageProvidersTest extends TestCase
                 [
                     'provider' => Dropbox::id(),
                     'name' => 'dropbox-test',
-                    'token' => 'token',
+                    'app_key' => 'app-key',
+                    'app_secret' => 'app-secret',
+                    'refresh_token' => 'refresh-token',
                 ],
             ],
             [
                 [
                     'provider' => Dropbox::id(),
                     'name' => 'dropbox-test',
-                    'token' => 'token',
+                    'app_key' => 'app-key',
+                    'app_secret' => 'app-secret',
+                    'refresh_token' => 'refresh-token',
                     'global' => 1,
                 ],
             ],

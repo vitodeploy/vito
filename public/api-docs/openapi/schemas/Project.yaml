@@ -8,7 +8,7 @@ properties:
     example: 'my-project'
   role:
     type: string
-    enum: ['owner', 'admin', 'developer', 'viewer']
+    enum: ['user', 'admin', 'owner']
     nullable: true
     example: 'owner'
   created_at:

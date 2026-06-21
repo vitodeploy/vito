@@ -1,0 +1,1 @@
+import{b as e}from"./app-DPVsKuJZ.js";var t=e();function n({title:e,description:n}){return(0,t.jsxs)(`div`,{className:`space-y-0.5`,children:[(0,t.jsx)(`h2`,{className:`text-xl font-semibold tracking-tight`,children:e}),n&&(0,t.jsx)(`p`,{className:`text-muted-foreground text-sm`,children:n})]})}export{n as t};

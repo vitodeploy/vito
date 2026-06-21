@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon } from 'lucide-react';
+import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import { BackupFile } from '@/types/backup-file';
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import CopyableBadge from '@/components/copyable-badge';
 import { useDialog } from '@/hooks/use-dialog';
 import { Backup } from '@/types/backup';
+import ErrorIndicator from '@/components/error-indicator';
 
 function Restore({ backup, file }: { backup: Backup; file: BackupFile }) {
   const dialog = useDialog();
@@ -71,7 +72,12 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      return (
+        <div className="flex items-center gap-1.5">
+          <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+          <ErrorIndicator error={row.original.message} label={`Backup file "${row.original.name}" error`} />
+        </div>
+      );
     },
   },
   {
@@ -79,6 +85,19 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: false,
     enableSorting: false,
     cell: ({ row }) => {
+      if (row.original.status === 'creating' || row.original.status === 'deleting') {
+        return (
+          <div className="flex items-center justify-end">
+            <span
+              className="flex h-8 w-8 items-center justify-center"
+              aria-label={row.original.status === 'deleting' ? 'Deleting backup file' : 'Creating backup file'}
+            >
+              <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
+            </span>
+          </div>
+        );
+      }
+
       return (
         <div className="flex items-center justify-end">
           <DropdownMenu modal={false}>

@@ -5,6 +5,7 @@ namespace App\NotificationChannels;
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\NotificationInterface;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -42,11 +43,12 @@ class Email extends AbstractNotificationChannel
     public function connect(): bool
     {
         try {
+            $message = (new MailMessage)
+                ->success()
+                ->subject(__('Email notifications connected'))
+                ->line(__('This confirms that email notifications are now connected for your Vito instance.'));
             Mail::to($this->data()['email'])->send(
-                new NotificationMail(
-                    'Connected to VitoDeploy',
-                    'This email confirms that you have connected your email to VitoDeploy.'
-                )
+                new NotificationMail($message->subject, $message->render())
             );
         } catch (Throwable) {
             return false;

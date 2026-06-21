@@ -20,9 +20,10 @@ class ServerInstallationFailed extends AbstractNotification
     public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('Server installation failed!'))
-            ->line('Your server ['.$this->server->name.'] installation has been failed.')
-            ->line('Check your server logs')
-            ->action('View Logs', url('/servers/'.$this->server->id.'/logs'));
+            ->error()
+            ->subject(__('Server installation failed'))
+            ->line(__('Unfortunately, the installation of your server [:server] failed.', ['server' => $this->server->name]))
+            ->line(__('Check the server logs to find out what went wrong.'))
+            ->action(__('View logs'), url('/servers/'.$this->server->id.'/logs'));
     }
 }

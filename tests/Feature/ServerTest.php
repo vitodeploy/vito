@@ -2,16 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Server\Update;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
+use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
+use App\Notifications\ServerAutoUpdateCompleted;
 use App\ServerProviders\Custom;
 use App\ServerProviders\Hetzner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -456,6 +459,58 @@ class ServerTest extends TestCase
 
         $this->assertEquals(ServerStatus::READY, $this->server->status);
         $this->assertEquals(0, $this->server->updates);
+    }
+
+    public function test_os_upgrade_parses_markers(): void
+    {
+        SSH::fake("Packages upgraded:7\nReboot required:1");
+
+        $result = $this->server->os()->upgrade();
+
+        $this->assertSame(7, $result['upgraded']);
+        $this->assertTrue($result['reboot_required']);
+    }
+
+    public function test_auto_update_notifies_when_packages_upgraded(): void
+    {
+        SSH::fake("Packages upgraded:3\nReboot required:1\nAvailable updates:0\nKernel updates:2");
+        Notifier::spy();
+
+        app(Update::class)->update($this->server, notify: true);
+
+        Notifier::shouldHaveReceived('send')->withArgs(
+            function (object $notifiable, object $notification): bool {
+                if (! $notification instanceof ServerAutoUpdateCompleted) {
+                    return false;
+                }
+
+                $text = $notification->rawText();
+
+                return str_contains($text, 'Packages upgraded: 3')
+                    && str_contains($text, 'Kernel updates available: 2')
+                    && str_contains($text, 'rebooted');
+            }
+        )->once();
+    }
+
+    public function test_manual_update_does_not_notify(): void
+    {
+        SSH::fake("Packages upgraded:3\nReboot required:1\nAvailable updates:0\nKernel updates:2");
+        Notifier::spy();
+
+        app(Update::class)->update($this->server);
+
+        Notifier::shouldNotHaveReceived('send');
+    }
+
+    public function test_auto_update_is_silent_when_nothing_changed(): void
+    {
+        SSH::fake("Packages upgraded:0\nReboot required:0\nAvailable updates:0\nKernel updates:0");
+        Notifier::spy();
+
+        app(Update::class)->update($this->server, notify: true);
+
+        Notifier::shouldNotHaveReceived('send');
     }
 
     public function test_update_kernel(): void

@@ -3,8 +3,10 @@
 namespace App\Jobs\Site;
 
 use App\Actions\Site\Deploy;
+use App\Facades\Notifier;
 use App\Models\ServerLog;
 use App\Models\Site;
+use App\Notifications\WebhookDeploymentFailed;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,6 +41,7 @@ class TriggerDeployFromWebhookJob implements ShouldQueue
                     'site_id' => $site->id,
                     'error' => $e->getMessage(),
                 ]);
+                Notifier::send($site, new WebhookDeploymentFailed($site));
             }
         });
     }

@@ -26,6 +26,8 @@ export default function Deploy({ site, children }: { site: Site; children: React
   }>();
   const form = useForm();
 
+  const reverseProxyMisconfigured = site.is_proxied_site_type && (!site.port || !site.start_command);
+
   const submit = () => {
     form.post(route('application.deploy', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
@@ -60,13 +62,23 @@ export default function Deploy({ site, children }: { site: Site; children: React
               <AlertDescription>Your pre flight script is empty!</AlertDescription>
             </Alert>
           )}
+          {reverseProxyMisconfigured && (
+            <Alert variant="destructive">
+              <TriangleAlert />
+              <AlertDescription>
+                Set {!site.port && 'a port'}
+                {!site.port && !site.start_command && ' and '}
+                {!site.start_command && 'a start command'} before deploying this site.
+              </AlertDescription>
+            </Alert>
+          )}
           <p>Are you sure you want to deploy this site?</p>
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button disabled={form.processing} onClick={submit}>
+          <Button disabled={form.processing || reverseProxyMisconfigured} onClick={submit}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Deploy
