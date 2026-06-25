@@ -53,9 +53,6 @@ class SSH
         $this->log = null;
         $this->asUser = null;
         $this->variables = [];
-        $this->logDisk = null;
-        $this->logPath = null;
-        $this->logOutputCallback = null;
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
         if ($asUser && $asUser !== $server->getSshUser()) {
@@ -101,7 +98,7 @@ class SSH
     /**
      * Write a chunk of output to either a file on a disk or the server log.
      */
-    private function writeOutput(string $chunk): void
+    protected function writeOutput(string $chunk): void
     {
         if ($this->logDisk && $this->logPath) {
             Storage::disk($this->logDisk)->append($this->logPath, $chunk);
@@ -128,6 +125,15 @@ class SSH
         $this->logDisk = $disk;
         $this->logPath = $path;
         $this->logOutputCallback = $outputCallback;
+
+        return $this;
+    }
+
+    public function clearLog(): self
+    {
+        $this->logDisk = null;
+        $this->logPath = null;
+        $this->logOutputCallback = null;
 
         return $this;
     }

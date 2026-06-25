@@ -46,13 +46,17 @@ class RunJob implements ShouldQueue
             if ($this->input['inputs']) {
                 $this->executionTree->inputs = $this->input['inputs'];
             }
-            app(RunWorkflow::class)->executeAction(
-                $this->run,
-                $this->user,
-                $this->workflow,
-                $this->executionTree,
-                $this->input['inputs'] ?? [],
-            );
+            try {
+                app(RunWorkflow::class)->executeAction(
+                    $this->run,
+                    $this->user,
+                    $this->workflow,
+                    $this->executionTree,
+                    $this->input['inputs'] ?? [],
+                );
+            } finally {
+                SSH::clearLog();
+            }
             $this->run->status = WorkflowRunStatus::COMPLETED;
             $this->run->save();
             $this->broadcastRunUpdate();

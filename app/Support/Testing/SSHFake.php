@@ -69,7 +69,7 @@ class SSHFake extends SSH
         $this->commands[] = $command;
 
         $output = $this->output ?? 'fake output';
-        $this->log?->write($output);
+        $this->writeOutput($output);
 
         if ($stream === true) {
             echo $output;
