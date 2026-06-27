@@ -9,6 +9,7 @@ use App\Actions\HostedDomain\DeleteHostedDomain;
 use App\Actions\HostedDomain\ReactivateHostedDomain;
 use App\Actions\HostedDomain\UpdateHostedDomain;
 use App\Actions\SSL\AssignSslToDomains;
+use App\Actions\SSL\CheckSiteSslsExpiry;
 use App\Actions\SSL\CheckSslExpiry;
 use App\Actions\SSL\GetMatchingSslCertificates;
 use App\Actions\SSL\RenewSiteSsl;
@@ -24,7 +25,6 @@ use App\Tables\HostedDomainTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,7 +34,6 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
-use Throwable;
 
 #[Prefix('/servers/{server}/sites/{site}/domains')]
 #[Middleware(['auth', 'has-project'])]
@@ -171,33 +170,16 @@ class HostedDomainController extends Controller
     {
         $this->authorize('create', [HostedDomain::class, $site, $server]);
 
-        $ssls = $site->hostedDomains()
-            ->whereNotNull('ssl_id')
-            ->with('ssl')
-            ->get()
-            ->pluck('ssl')
-            ->filter(fn (?Ssl $ssl): bool => $ssl !== null && $ssl->certificate_path !== null)
-            ->unique('id');
+        ['checked' => $checked, 'failed' => $failed] = app(CheckSiteSslsExpiry::class)->handle($site);
 
-        if ($ssls->isEmpty()) {
+        if ($checked === 0 && $failed === 0) {
             return back()
                 ->with('info', 'No SSL certificates to check for this site.');
         }
 
-        $ssh = $server->ssh();
-        $action = app(CheckSslExpiry::class);
-        $checked = 0;
-
-        foreach ($ssls as $ssl) {
-            try {
-                $action->check($ssl, notify: false, ssh: $ssh);
-                $checked++;
-            } catch (Throwable $e) {
-                Log::warning('[SSL expiry check] Failed to check certificate', [
-                    'ssl_id' => $ssl->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        if ($checked === 0) {
+            return back()
+                ->with('error', 'Failed to refresh SSL expiry for all certificates.');
         }
 
         return back()

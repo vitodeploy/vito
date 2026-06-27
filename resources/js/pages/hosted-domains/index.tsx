@@ -224,7 +224,7 @@ export default function HostedDomains() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={() => dialog.editHostedDomain.open({ hostedDomain: hd })}>Edit</DropdownMenuItem>
-                    {hd.ssl_id !== null && (
+                    {hd.ssl_can_check_expiry && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

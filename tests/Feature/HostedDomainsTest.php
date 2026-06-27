@@ -557,7 +557,8 @@ class HostedDomainsTest extends TestCase
 
         $ssl->refresh();
         $this->assertTrue($ssl->expires_at->isAfter(now()->addDays(80)));
-        $this->assertContains('example.com', $ssl->domains);
+        $this->assertEqualsCanonicalizing(['example.com', 'www.example.com'], $ssl->domains);
+        $this->assertNotContains('old.example.com', $ssl->domains);
         Notifier::shouldNotHaveReceived('send');
     }
 
@@ -586,7 +587,7 @@ class HostedDomainsTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $ssl = Ssl::factory()->create([
+        $sslOne = Ssl::factory()->create([
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
             'status' => SslStatus::CREATED,
@@ -595,9 +596,28 @@ class HostedDomainsTest extends TestCase
             'domains' => ['old.example.com'],
         ]);
 
+        $sslTwo = Ssl::factory()->create([
+            'site_id' => $this->site->id,
+            'type' => SslType::LETSENCRYPT,
+            'status' => SslStatus::CREATED,
+            'certificate_path' => '/etc/letsencrypt/live/2/fullchain.pem',
+            'expires_at' => now()->addDays(5),
+            'domains' => ['old.example.com'],
+        ]);
+
         HostedDomain::factory()->create([
             'site_id' => $this->site->id,
-            'ssl_id' => $ssl->id,
+            'ssl_id' => $sslOne->id,
+        ]);
+
+        HostedDomain::factory()->create([
+            'site_id' => $this->site->id,
+            'ssl_id' => $sslTwo->id,
+        ]);
+
+        HostedDomain::factory()->create([
+            'site_id' => $this->site->id,
+            'ssl_id' => $sslOne->id,
         ]);
 
         $this->post(route('hosted-domains.check-expiry-all', [
@@ -607,8 +627,12 @@ class HostedDomainsTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $ssl->refresh();
-        $this->assertTrue($ssl->expires_at->isAfter(now()->addDays(80)));
+        foreach ([$sslOne, $sslTwo] as $ssl) {
+            $ssl->refresh();
+            $this->assertTrue($ssl->expires_at->isAfter(now()->addDays(80)));
+            $this->assertNotContains('old.example.com', $ssl->domains);
+        }
+
         Notifier::shouldNotHaveReceived('send');
     }
 

@@ -19,7 +19,7 @@ class CheckSslExpiry
      */
     public function check(Ssl $ssl, bool $notify = true, mixed $ssh = null): void
     {
-        $server = $ssl->site?->server;
+        $server = $ssl->server ?? $ssl->site?->server;
 
         if ($server === null || $ssl->certificate_path === null) {
             throw ValidationException::withMessages([
@@ -29,7 +29,7 @@ class CheckSslExpiry
 
         $ssh ??= $server->ssh();
 
-        $certificate = trim($ssh->exec("sudo cat {$ssl->certificate_path}"));
+        $certificate = trim($ssh->exec('sudo cat '.escapeshellarg($ssl->certificate_path)));
 
         if (empty($certificate) || ! str_contains($certificate, 'BEGIN CERTIFICATE')) {
             throw ValidationException::withMessages([
@@ -80,7 +80,7 @@ class CheckSslExpiry
             return false;
         }
 
-        $server = $ssl->site?->server;
+        $server = $ssl->server ?? $ssl->site?->server;
 
         if ($server === null) {
             return false;
