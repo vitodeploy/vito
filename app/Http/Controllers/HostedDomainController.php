@@ -159,7 +159,12 @@ class HostedDomainController extends Controller
                 ->with('error', 'This domain does not have an SSL certificate.');
         }
 
-        app(CheckSslExpiry::class)->check($hostedDomain->ssl, notify: false);
+        try {
+            app(CheckSslExpiry::class)->check($hostedDomain->ssl, notify: false);
+        } catch (ValidationException $e) {
+            return back()
+                ->with('error', $e->getMessage());
+        }
 
         return back()
             ->with('success', 'SSL expiry date refreshed.');
