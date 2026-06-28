@@ -182,6 +182,11 @@ class HostedDomainController extends Controller
                 ->with('error', 'Failed to refresh SSL expiry for all certificates.');
         }
 
+        if ($failed > 0) {
+            return back()
+                ->with('warning', "Refreshed SSL expiry for {$checked} certificate(s); {$failed} failed.");
+        }
+
         return back()
             ->with('success', "Refreshed SSL expiry for {$checked} certificate(s).");
     }
