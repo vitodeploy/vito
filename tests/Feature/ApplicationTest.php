@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DeploymentStatus;
 use App\Enums\WorkerStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\Deployment;
 use App\Models\GitHook;
@@ -14,6 +15,7 @@ use App\SiteTypes\Blank;
 use App\SiteTypes\NodeSite;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
@@ -147,6 +149,65 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('git pull');
 
         Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
+    }
+
+    public function test_deploy_broadcasts_deployment_created(): void
+    {
+        $this->assertBroadcastsDeploymentCreated(function (): void {
+            $this->site->deploymentScript->update([
+                'content' => 'git pull',
+            ]);
+        });
+    }
+
+    public function test_deploy_modern_broadcasts_deployment_created(): void
+    {
+        $this->assertBroadcastsDeploymentCreated(function (): void {
+            $this->site->update([
+                'type_data' => [
+                    'modern_deployment' => true,
+                    'modern_deployment_history' => 10,
+                    'modern_deployment_shared_resources' => ['.env'],
+                ],
+            ]);
+            $this->site->ensureDeploymentScriptsExist();
+            $this->site->refresh();
+        });
+    }
+
+    private function assertBroadcastsDeploymentCreated(callable $siteSetup): void
+    {
+        SSH::fake('fake output');
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'test@example.com',
+                    'url' => 'https://github.com/commit-url',
+                ],
+            ]),
+        ]);
+        Notification::fake();
+        Event::fake([SocketEvent::class]);
+
+        $siteSetup();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'deployment.created'
+                && $event->data->data['site_id'] === $this->site->id
+                && $event->data->projectId === $this->server->project_id,
+        );
     }
 
     public function test_deploy_reverse_proxy_without_port_and_start_command_shows_error(): void

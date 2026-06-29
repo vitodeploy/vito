@@ -2,9 +2,12 @@
 
 namespace App\Actions\Site;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
+use App\Events\SocketEvent;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\ReverseProxyNotConfiguredException;
+use App\Http\Resources\DeploymentResource;
 use App\Jobs\Site\DeployJob;
 use App\Models\Deployment;
 use App\Models\ServerLog;
@@ -54,9 +57,22 @@ class Deploy
         return $this->deployModern($site, $deployment, $log);
     }
 
+    private function broadcastDeploymentCreated(Site $site, Deployment $deployment): void
+    {
+        $deployment->loadMissing('log');
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $site->server->project_id,
+            type: 'deployment.created',
+            data: new DeploymentResource($deployment),
+        ));
+    }
+
     private function deployClassic(Site $site, Deployment $deployment, ServerLog $log): Deployment
     {
         dispatch(new DeployJob($deployment, false));
+
+        $this->broadcastDeploymentCreated($site, $deployment);
 
         return $deployment;
     }
@@ -67,6 +83,8 @@ class Deploy
         $deployment->save();
 
         dispatch(new DeployJob($deployment, true));
+
+        $this->broadcastDeploymentCreated($site, $deployment);
 
         return $deployment;
     }
