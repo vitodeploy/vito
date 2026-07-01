@@ -33,12 +33,11 @@ class PhpSettingsTest extends TestCase
 
         $this->site->refresh();
 
-        $this->assertSame([
-            'max_upload_size' => 64,
-            'max_execution_time' => 120,
-            'memory_limit' => 256,
-            'max_input_vars' => 5000,
-        ], $this->site->type_data['php']);
+        $php = $this->site->type_data['php'];
+        $this->assertSame(64, $php['max_upload_size']);
+        $this->assertSame(120, $php['max_execution_time']);
+        $this->assertSame(256, $php['memory_limit']);
+        $this->assertSame(5000, $php['max_input_vars']);
     }
 
     public function test_blank_values_persist_as_null(): void

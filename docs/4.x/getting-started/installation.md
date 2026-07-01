@@ -142,6 +142,23 @@ This is the admin user's password.
 
 You can also pass this input as an env variable `ADMIN_PASSWORD`
 
+**Database Engine**
+
+By default Vito stores its own data in a **SQLite** database, which needs no setup. If you prefer, the
+installer can provision and use **MariaDB** or **MySQL** instead — recommended for larger fleets where
+concurrent writes would otherwise contend on a single SQLite file.
+
+You can also pass this input as an env variable `V_DB_ENGINE` (`sqlite`, `mariadb`, or `mysql`;
+defaults to `sqlite`). When a server engine is chosen the installer installs it, creates the `vito`
+database and user, and writes the matching `DB_CONNECTION` to your `.env` — set `V_DB_PASSWORD` to
+override the auto-generated database password. A `V_DB_PASSWORD` you set must contain only letters,
+digits and `.` `_` `-` (`[A-Za-z0-9._-]+`); leave it unset to use a safe auto-generated password.
+
+:::info
+Use `mariadb` (not `mysql`) when installing MariaDB so Laravel uses its MariaDB driver and emits
+MariaDB-compatible SQL.
+:::
+
 ### Ready
 
 The installation can take several minutes, and after it is done, It will print an output like bellow:

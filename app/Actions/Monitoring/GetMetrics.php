@@ -90,8 +90,7 @@ class GetMetrics
             ->whereBetween('created_at', [$fromDate->format('Y-m-d H:i:s'), $toDate->format('Y-m-d H:i:s')])
             ->select(
                 [
-                    DB::raw('created_at as date'),
-                    DB::raw('ROUND(AVG(load), 2) as load'),
+                    DB::raw('ROUND(AVG(`load`), 2) as `load`'),
                     DB::raw('ROUND(AVG(memory_total), 2) as memory_total'),
                     DB::raw('ROUND(AVG(memory_used), 2) as memory_used'),
                     DB::raw('ROUND(AVG(memory_free), 2) as memory_free'),
@@ -122,7 +121,7 @@ class GetMetrics
                     $item->{$key} = $item->{$key} !== null ? (float) $item->{$key} : null;
                 }
                 $item->oom_kill_count = $item->oom_kill_count !== null ? (int) $item->oom_kill_count : null;
-                $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
+                $item->date = Carbon::parse($item->date_interval)->format('Y-m-d H:i');
                 $item->disk_used_percent = ($item->disk_total ?? 0) > 0
                     ? round(($item->disk_used / $item->disk_total) * 100, 2)
                     : null;
@@ -177,14 +176,40 @@ class GetMetrics
         }
 
         if (abs($periodInHours) <= 1) {
-            return DB::raw("strftime('%Y-%m-%d %H:%M:00', created_at) as date_interval");
+            return $this->dateInterval('minute');
         }
 
         if ($periodInHours <= 24) {
-            return DB::raw("strftime('%Y-%m-%d %H:00:00', created_at) as date_interval");
+            return $this->dateInterval('hour');
         }
 
-        return DB::raw("strftime('%Y-%m-%d 00:00:00', created_at) as date_interval");
+        return $this->dateInterval('day');
+    }
+
+    /**
+     * Build a driver-portable expression that truncates created_at to the given
+     * granularity, aliased as date_interval. SQLite uses strftime(); MySQL and
+     * MariaDB use DATE_FORMAT() (whose minute token is %i, not strftime's %M).
+     */
+    private function dateInterval(string $granularity): Expression
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $format = match ($granularity) {
+                'minute' => '%Y-%m-%d %H:%M:00',
+                'hour' => '%Y-%m-%d %H:00:00',
+                default => '%Y-%m-%d 00:00:00',
+            };
+
+            return DB::raw("strftime('{$format}', created_at) as date_interval");
+        }
+
+        $format = match ($granularity) {
+            'minute' => '%Y-%m-%d %H:%i:00',
+            'hour' => '%Y-%m-%d %H:00:00',
+            default => '%Y-%m-%d 00:00:00',
+        };
+
+        return DB::raw("DATE_FORMAT(created_at, '{$format}') as date_interval");
     }
 
     private function validate(array $input): void

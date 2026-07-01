@@ -45,6 +45,30 @@ if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
   exit 1
 fi
 
+if [[ -z "${V_DB_ENGINE}" ]]; then
+  read -p "Database engine (sqlite/mariadb/mysql) [sqlite]: " V_DB_ENGINE
+  export V_DB_ENGINE=${V_DB_ENGINE:-sqlite}
+fi
+
+case "${V_DB_ENGINE}" in
+  sqlite|mariadb|mysql) ;;
+  *)
+    echo "Error: V_DB_ENGINE must be one of: sqlite, mariadb, mysql."
+    exit 1
+    ;;
+esac
+
+if [[ "${V_DB_ENGINE}" != "sqlite" && -z "${V_DB_PASSWORD}" ]]; then
+  export V_DB_PASSWORD=$(openssl rand -hex 16)
+fi
+
+# The password is embedded into a SQL heredoc and the .env file, so reject characters that would
+# break either (quotes, whitespace, '#', newlines). Auto-generated hex passwords always pass.
+if [[ "${V_DB_ENGINE}" != "sqlite" && ! "${V_DB_PASSWORD}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "Error: V_DB_PASSWORD may only contain letters, digits, and the characters . _ -"
+  exit 1
+fi
+
 apt remove needrestart -y
 
 useradd -p $(openssl passwd -1 ${V_PASSWORD}) vito
@@ -120,13 +144,36 @@ if [[ -z "${V_PHP_VERSION}" ]]; then
 fi
 
 echo "Installing PHP ${V_PHP_VERSION}..."
-apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
+apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-mysql php${V_PHP_VERSION}-intl
 if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
   echo 'Error installing PHP' && exit 1
 fi
 systemctl enable php${V_PHP_VERSION}-fpm
 service php${V_PHP_VERSION}-fpm start
 service php${V_PHP_VERSION}-fpm restart
+
+# Install and provision the panel database engine (SQLite is the default).
+# Abort on any failure so the .env is never written pointing at a database that was not set up.
+if [[ "${V_DB_ENGINE}" == "mariadb" ]]; then
+  apt install -y mariadb-server || { echo "Failed to install mariadb-server" && exit 1; }
+  systemctl enable --now mariadb || { echo "Failed to start mariadb" && exit 1; }
+elif [[ "${V_DB_ENGINE}" == "mysql" ]]; then
+  apt install -y mysql-server || { echo "Failed to install mysql-server" && exit 1; }
+  systemctl enable --now mysql || { echo "Failed to start mysql" && exit 1; }
+fi
+
+if [[ "${V_DB_ENGINE}" == "mariadb" || "${V_DB_ENGINE}" == "mysql" ]]; then
+  if ! mysql <<SQL
+CREATE DATABASE IF NOT EXISTS vito CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'vito'@'127.0.0.1' IDENTIFIED BY '${V_DB_PASSWORD}';
+ALTER USER 'vito'@'127.0.0.1' IDENTIFIED BY '${V_DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON vito.* TO 'vito'@'127.0.0.1';
+FLUSH PRIVILEGES;
+SQL
+  then
+    echo "Failed to provision the ${V_DB_ENGINE} database and user" && exit 1
+  fi
+fi
 sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
@@ -218,7 +265,19 @@ fi
 composer install --no-dev
 cp .env.prod .env
 sed -i "s|^APP_URL=.*|APP_URL=${VITO_APP_URL}|" .env
-touch /home/vito/vito/storage/database.sqlite
+if [[ "${V_DB_ENGINE}" == "sqlite" ]]; then
+  touch /home/vito/vito/storage/database.sqlite
+else
+  {
+    echo ""
+    echo "DB_CONNECTION=${V_DB_ENGINE}"
+    echo "DB_HOST=127.0.0.1"
+    echo "DB_PORT=3306"
+    echo "DB_DATABASE=vito"
+    echo "DB_USERNAME=vito"
+    echo "DB_PASSWORD=${V_DB_PASSWORD}"
+  } >> .env
+fi
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force

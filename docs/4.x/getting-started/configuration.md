@@ -41,6 +41,59 @@ For docker version you will need to restart/re-create the container.
 Currently Vito supports only SMTP as the mail driver
 :::
 
+## Database
+
+Vito stores its own data (servers, sites, users, settings…) in a database. By default this is a
+**SQLite** file at `storage/database.sqlite`, which requires no configuration and is ideal for small,
+single-node installs.
+
+For larger fleets — where many concurrent writes would otherwise contend on a single SQLite file —
+you can use **MySQL** or **MariaDB** instead. Point Vito at your server database with the following
+variables:
+
+```dotenv
+DB_CONNECTION=mysql   # or "mariadb"
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vito
+DB_USERNAME=vito
+DB_PASSWORD={YOUR-DB-PASSWORD}
+```
+
+:::info
+Use `DB_CONNECTION=mariadb` (not `mysql`) when your server is MariaDB, so Laravel uses its MariaDB
+driver and emits MariaDB-compatible SQL.
+:::
+
+:::info
+On a config-cached install (production runs `php artisan optimize`), apply these changes by clearing
+and rebuilding the cache and restarting workers: `php artisan optimize:clear && php artisan optimize`,
+then restart your queue workers and scheduler.
+:::
+
+### Migrating an existing SQLite install to MySQL/MariaDB
+
+If you started on SQLite and want to move to a server database, create the empty target database, set
+the `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` variables above to point at
+it, and — if your install has cached config (production installs do) — run `php artisan config:clear`
+first so those settings are loaded. Stop the web server, queue workers and scheduler too, so nothing
+writes to SQLite while it is copied. Then run:
+
+```sh
+php artisan migrate-from-sqlite-to-mysql --connection=mysql   # or --connection=mariadb
+```
+
+This builds the schema on the target, copies your data tables from `storage/database.sqlite` (transient
+framework tables — `migrations`, `sessions`, `cache`, `jobs`, `failed_jobs` — are intentionally skipped),
+realigns the auto-increment counters, and switches `DB_CONNECTION` in your `.env`. Afterwards, apply the
+changes:
+
+```sh
+php artisan optimize:clear
+php artisan optimize
+sudo supervisorctl restart worker:*
+```
+
 ## Other Environment Variables
 
 Beyond the basics, a few additional variables let you tune your instance. Most installs never need to

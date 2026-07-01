@@ -133,7 +133,7 @@ class DomainsTest extends TestCase
         $response->assertJsonFragment(['id' => $userDomain->id]);
         $response->assertJsonFragment(['id' => $otherUserDomain->id]);
         // Should NOT see domains from other projects
-        $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
+        $this->assertNotContains($otherProjectDomain->id, array_column($response->json('data'), 'id'));
     }
 
     public function test_user_can_access_domains_created_by_other_users_in_same_project(): void
@@ -541,7 +541,7 @@ class DomainsTest extends TestCase
         $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk();
-        $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
+        $this->assertNotContains($otherProjectDomain->id, array_column($response->json('data'), 'id'));
         $response->assertJsonFragment(['id' => $currentProjectDomain->id]); // Only domains from current project
 
         // Should not be able to access domain from other project

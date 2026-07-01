@@ -7,6 +7,7 @@ on:
       - 1.x
       - 2.x
       - 3.x
+      - 4.x
   pull_request:
 
 jobs:
@@ -14,10 +15,40 @@ jobs:
     runs-on: ubuntu-22.04
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         php: [ 8.4 ]
         node-version: [ "22.x" ]
+        database: [ sqlite, mysql, mariadb ]
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_DATABASE: vito_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "true"
+          MARIADB_DATABASE: vito_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    name: tests (${{ matrix.database }})
 
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +72,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Create sqlite database
+        if: matrix.database == 'sqlite'
         run: touch storage/database-test.sqlite
 
       - name: Set up the .env file
@@ -61,4 +93,11 @@ jobs:
         run: npm run build
 
       - name: Run test suite
+        env:
+          DB_CONNECTION: ${{ matrix.database }}
+          DB_DATABASE: ${{ matrix.database == 'sqlite' && 'database-test.sqlite' || 'vito_test' }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: ${{ matrix.database == 'mariadb' && '3307' || '3306' }}
+          DB_USERNAME: root
+          DB_PASSWORD: ""
         run: php artisan test --parallel

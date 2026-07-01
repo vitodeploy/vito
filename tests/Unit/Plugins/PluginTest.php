@@ -43,8 +43,8 @@ class PluginTest extends TestCase
         $this->movePlugins($this->pluginPath, $this->backupPath);
         File::makeDirectory($this->pluginPath, 0755, true);
 
-        Plugin::truncate();
-        PluginError::truncate();
+        PluginError::query()->delete();
+        Plugin::query()->delete();
 
         app(GetPluginInstance::class)->clear();
     }
