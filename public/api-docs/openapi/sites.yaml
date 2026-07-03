@@ -1589,6 +1589,7 @@ paths:
               from: 'old-path'
               to: 'https://example.com/new-path'
               mode: 301
+              websocket: false
       responses:
         '200':
           description: Redirect created successfully
