@@ -17,12 +17,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Site } from '@/types/site';
 
 type CreateForm = {
   mode: string;
   from: string;
   to: string;
+  websocket: boolean;
 };
 
 export default function CreateRedirect({ site, children }: { site: Site; children: ReactNode }) {
@@ -32,7 +34,16 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
     mode: '',
     from: '',
     to: '',
+    websocket: false,
   });
+
+  const onModeChange = (value: string) => {
+    form.setData((data) => ({
+      ...data,
+      mode: value,
+      websocket: value === '1000' ? data.websocket : false,
+    }));
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -56,7 +67,7 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
           <FormFields>
             <FormField>
               <Label htmlFor="mode">Mode</Label>
-              <Select onValueChange={(value) => form.setData('mode', value)} defaultValue={form.data.mode}>
+              <Select onValueChange={onModeChange} defaultValue={form.data.mode}>
                 <SelectTrigger id="mode">
                   <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
@@ -94,6 +105,20 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
               />
               <InputError message={form.errors.to} />
             </FormField>
+            {form.data.mode === '1000' && (
+              <FormField>
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="websocket"
+                    name="websocket"
+                    checked={form.data.websocket}
+                    onClick={() => form.setData('websocket', !form.data.websocket)}
+                  />
+                  <Label htmlFor="websocket">Support WebSockets</Label>
+                </div>
+                <InputError message={form.errors.websocket} />
+              </FormField>
+            )}
           </FormFields>
         </Form>
         <DialogFooter>

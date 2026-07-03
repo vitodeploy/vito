@@ -19,6 +19,9 @@ properties:
     type: integer
     enum: [301, 302, 307, 308, 1000]
     example: 301
+  websocket:
+    type: boolean
+    example: false
   status:
     type: string
     enum: ['creating', 'ready', 'deleting', 'failed']

@@ -21,6 +21,7 @@ class RedirectResource extends JsonResource
             'from' => $this->from,
             'to' => $this->to,
             'mode' => $this->mode,
+            'websocket' => (bool) $this->websocket,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,

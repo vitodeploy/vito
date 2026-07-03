@@ -75,4 +75,54 @@ class RedirectsTest extends TestCase
             'status' => RedirectStatus::READY,
         ]);
     }
+
+    public function test_create_proxy_redirect_with_websocket(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('redirects.store', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'from' => '/app',
+            'to' => 'https://backend.example.com',
+            'mode' => 1000,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'from' => '/app',
+            'to' => 'https://backend.example.com',
+            'mode' => 1000,
+            'websocket' => true,
+            'status' => RedirectStatus::READY,
+        ]);
+    }
+
+    public function test_websocket_forced_off_when_not_proxy_mode(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('redirects.store', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'from' => '/app',
+            'to' => 'https://example.com/redirect',
+            'mode' => 301,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'from' => '/app',
+            'mode' => 301,
+            'websocket' => false,
+        ]);
+    }
 }
