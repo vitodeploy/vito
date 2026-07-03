@@ -11,7 +11,7 @@ if ! sudo -u postgres psql -c "SELECT DISTINCT collname as collation,
     FROM pg_collation
     WHERE collencoding = -1
         OR pg_encoding_to_char(collencoding) <> ''
-    ORDER BY charset, collation;";
+    ORDER BY charset, \"collation\";";
 then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
