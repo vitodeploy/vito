@@ -21,6 +21,7 @@ properties:
     example: 301
   websocket:
     type: boolean
+    description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
     example: false
   status:
     type: string

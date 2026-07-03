@@ -1584,6 +1584,7 @@ paths:
                 websocket:
                   type: boolean
                   description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
+                  default: false
                   example: false
             example:
               from: 'old-path'
@@ -1700,6 +1701,7 @@ paths:
                 websocket:
                   type: boolean
                   description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
+                  default: false
                   example: false
             example:
               from: 'old-path'
