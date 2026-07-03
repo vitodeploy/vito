@@ -36,7 +36,7 @@ class RedirectBlockTest extends TestCase
         $this->assertStringContainsString('proxy_set_header Upgrade $http_upgrade;', $vhost);
         $this->assertStringContainsString('proxy_set_header Connection "upgrade";', $vhost);
         $this->assertStringContainsString('proxy_read_timeout 60s;', $vhost);
-        $this->assertStringNotContainsString('proxy_ssl_server_name on;', $vhost);
+        $this->assertStringContainsString('proxy_ssl_server_name on;', $vhost);
     }
 
     public function test_nginx_renders_plain_proxy_block_without_websocket(): void

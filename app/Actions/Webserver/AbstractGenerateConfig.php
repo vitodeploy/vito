@@ -5,6 +5,7 @@ namespace App\Actions\Webserver;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Models\HostedDomain;
+use App\Models\Redirect;
 use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Support\Collection;
@@ -272,7 +273,7 @@ abstract class AbstractGenerateConfig
     {
         $redirects = [];
         foreach ($site->activeRedirects as $redirect) {
-            $isProxy = (int) $redirect->mode === 1000;
+            $isProxy = (int) $redirect->mode === Redirect::MODE_PROXY;
             $redirects[] = $this->buildRedirectEntry($redirect, $isProxy);
         }
 

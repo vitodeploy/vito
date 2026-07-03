@@ -22,6 +22,8 @@ class Redirect extends AbstractModel
     /** @use HasFactory<RedirectFactory> */
     use HasFactory;
 
+    public const int MODE_PROXY = 1000;
+
     protected $fillable = [
         'site_id',
         'from',

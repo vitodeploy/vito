@@ -46,7 +46,7 @@ export default function EditRedirect({
               Cancel
             </Button>
           </DialogClose>
-          <Button type="button" onClick={submit} disabled={form.processing}>
+          <Button form="edit-redirect-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
             Save
           </Button>

@@ -21,7 +21,7 @@ class UpdateRedirect
         $redirect->from = $input['from'];
         $redirect->to = $input['to'];
         $redirect->mode = $input['mode'];
-        $redirect->websocket = ((int) $input['mode'] === 1000) && ($input['websocket'] ?? false);
+        $redirect->websocket = ((int) $input['mode'] === Redirect::MODE_PROXY) && ($input['websocket'] ?? false);
         $redirect->status = RedirectStatus::CREATING;
         $redirect->save();
 
@@ -55,7 +55,7 @@ class UpdateRedirect
                     302,
                     307,
                     308,
-                    1000,
+                    Redirect::MODE_PROXY,
                 ]),
             ],
             'websocket' => [
