@@ -57,3 +57,10 @@ complete the upgrade. Provides a **Restart** action.
 
 Shown when the server has pending OS package updates. It includes the number of updates and provides
 an **Update** action to install them.
+
+:::info
+If **Check for updates** or **Update** fails with an APT error about a repository changing its
+`Label` (or `Origin`/`Suite`/`Version`) value, see
+[PHP › Troubleshooting](/docs/4.x/servers/php#troubleshooting) — the same underlying issue also
+affects PHP installs, and the fix there resolves both.
+:::
