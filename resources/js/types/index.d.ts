@@ -134,6 +134,9 @@ export interface SharedData {
   version: string;
   env: string;
   demo: boolean;
+  desktop?: {
+    enabled: boolean;
+  };
   quote: { message: string; author: string };
   auth: Auth;
   ziggy?: Config & { location: string };

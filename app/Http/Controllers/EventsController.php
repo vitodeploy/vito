@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
+use App\Support\DesktopRuntime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -19,19 +20,7 @@ class EventsController extends Controller
             'project_id' => $request->user()->current_project_id,
         ]);
 
-        $appUrl = parse_url(config('app.ws_url') ?: config('app.url'));
-        $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
-        $wsProtocol = $isSecure ? 'wss' : 'ws';
-        $host = $appUrl['host'] ?? 'localhost';
-        $port = $appUrl['port'] ?? ($isSecure ? 443 : 80);
-
-        if (app()->environment('local')) {
-            $wsPort = config('core.ws_port', 8085);
-            $result['url'] = "{$wsProtocol}://{$host}:{$wsPort}/ws/events";
-        } else {
-            $portSuffix = (($isSecure && $port == 443) || (! $isSecure && $port == 80)) ? '' : ":{$port}";
-            $result['url'] = "{$wsProtocol}://{$host}{$portSuffix}/ws/events";
-        }
+        $result['url'] = DesktopRuntime::websocketUrl('/ws/events');
 
         return response()->json($result);
     }

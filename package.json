@@ -4,6 +4,9 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "desktop:build": "npm --prefix desktop run build",
+        "desktop:dev": "npm --prefix desktop run dev",
+        "desktop:package": "npm --prefix desktop run package",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",

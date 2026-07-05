@@ -1,5 +1,9 @@
 /.phpunit.cache
 /node_modules
+/desktop/node_modules
+/desktop/dist
+/desktop/release
+/desktop-build
 /public/hot
 /public/storage
 /storage/*.key

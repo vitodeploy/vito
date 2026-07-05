@@ -10,6 +10,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Support\DesktopRuntime;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -86,6 +87,9 @@ class HandleInertiaRequests extends Middleware
             'env' => config('app.env'),
             'demo' => config('app.demo'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'desktop' => [
+                'enabled' => DesktopRuntime::enabled(),
+            ],
             'auth' => $user ? [
                 'user' => UserResource::make($user->load('projects')),
                 'currentProject' => ProjectResource::make($currentProject),

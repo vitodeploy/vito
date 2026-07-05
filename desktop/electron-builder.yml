@@ -1,0 +1,27 @@
+appId: com.vitodeploy.vito
+productName: Vito
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
+extraResources:
+  - from: ../desktop-build/app
+    to: app
+    filter:
+      - "**/*"
+  - from: resources/bin
+    to: bin
+    filter:
+      - "**/*"
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - dmg
+    - zip
+win:
+  target:
+    - nsis
+linux:
+  target:
+    - AppImage

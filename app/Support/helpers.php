@@ -14,12 +14,12 @@ use function Illuminate\Support\php_binary;
 function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
 {
     chmod($privateKeyPath, 0400);
-    exec("ssh-keygen -y -f {$privateKeyPath} > {$publicKeyPath}");
+    exec('ssh-keygen -y -f '.escapeshellarg($privateKeyPath).' > '.escapeshellarg($publicKeyPath));
 }
 
 function generate_key_pair(string $path): void
 {
-    exec("ssh-keygen -t ed25519 -m PEM -N '' -f {$path}");
+    exec('ssh-keygen -t ed25519 -m PEM -N \'\' -f '.escapeshellarg($path));
     chmod($path, 0400);
 }
 

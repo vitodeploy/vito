@@ -53,6 +53,15 @@ return [
             'after_commit' => false,
         ],
 
+        'database' => [
+            'driver' => 'database',
+            'connection' => env('DB_CONNECTION', 'sqlite'),
+            'table' => 'jobs',
+            'queue' => env('DB_QUEUE', 'default'),
+            'retry_after' => max(300, (int) env('BACKUP_RUN_TIMEOUT', 3600)) + 60,
+            'after_commit' => false,
+        ],
+
         'ssh' => [
             'driver' => 'redis',
             'connection' => 'default',

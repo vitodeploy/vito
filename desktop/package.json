@@ -1,0 +1,18 @@
+{
+  "name": "@vitodeploy/vito-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "electron .",
+    "package": "electron-builder --config electron-builder.yml"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^6.0.3"
+  }
+}

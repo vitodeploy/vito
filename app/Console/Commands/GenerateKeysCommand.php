@@ -22,11 +22,28 @@ class GenerateKeysCommand extends Command
             return;
         }
 
-        exec('openssl genpkey -algorithm RSA -out '.$privateKeyPath);
-        exec('chmod 600 '.$privateKeyPath);
-        exec('ssh-keygen -y -f '.$privateKeyPath.' > '.$publicKeyPath);
-        exec('chown -R '.get_current_user().':'.get_current_user().' '.$privateKeyPath);
-        exec('chown -R '.get_current_user().':'.get_current_user().' '.$publicKeyPath);
+        $privateKey = escapeshellarg($privateKeyPath);
+        $publicKey = escapeshellarg($publicKeyPath);
+
+        exec("openssl genpkey -algorithm RSA -out {$privateKey}", $output, $resultCode);
+
+        if ($resultCode !== 0) {
+            $this->error('Unable to generate private key.');
+
+            return;
+        }
+
+        chmod($privateKeyPath, 0600);
+
+        exec("ssh-keygen -y -f {$privateKey} > {$publicKey}", $output, $resultCode);
+
+        if ($resultCode !== 0) {
+            $this->error('Unable to generate public key.');
+
+            return;
+        }
+
+        chmod($publicKeyPath, 0644);
 
         $this->info('Keys generated successfully.');
     }

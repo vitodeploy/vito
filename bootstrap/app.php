@@ -20,6 +20,20 @@ $app = new Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+$envValue = static function (string $key): ?string {
+    $value = $_ENV[$key] ?? getenv($key);
+
+    return is_string($value) && $value !== '' ? $value : null;
+};
+
+if (($environmentPath = $envValue('VITO_ENV_PATH')) !== null) {
+    $app->useEnvironmentPath($environmentPath);
+}
+
+if (($storagePath = $envValue('VITO_STORAGE_PATH')) !== null) {
+    $app->useStoragePath($storagePath);
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces

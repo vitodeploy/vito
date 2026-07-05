@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\DesktopRuntime;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Request;
 
@@ -12,6 +13,10 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : url('/');
+        if ($request->expectsJson()) {
+            return null;
+        }
+
+        return route(DesktopRuntime::enabled() ? 'desktop.login' : 'login');
     }
 }
