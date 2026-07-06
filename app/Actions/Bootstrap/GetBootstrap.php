@@ -2,6 +2,7 @@
 
 namespace App\Actions\Bootstrap;
 
+use App\Enums\ScriptEventHookEvent;
 use App\Models\GithubApp;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Support\Facades\Cache;
@@ -95,6 +96,17 @@ final class GetBootstrap
                 'installed' => GithubApp::query()->exists(),
             ],
             'tooling' => $this->tooling(),
+            'script_event_hooks' => [
+                'events' => array_map(
+                    fn (ScriptEventHookEvent $e): array => [
+                        'value' => $e->value,
+                        'label' => $e->getText(),
+                        'color' => $e->getColor(),
+                        'variables' => array_keys($e->variables()),
+                    ],
+                    ScriptEventHookEvent::cases()
+                ),
+            ],
         ];
     }
 

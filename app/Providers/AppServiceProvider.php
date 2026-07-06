@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\ServerDeletedEvent;
+use App\Events\ServerInstalledEvent;
+use App\Events\ServiceInstalledEvent;
+use App\Events\ServiceUninstalledEvent;
 use App\Events\SiteCreatedEvent;
 use App\Events\SiteDeletedEvent;
 use App\Events\SocketEvent;
@@ -11,6 +15,7 @@ use App\Helpers\SFTP;
 use App\Helpers\SSH;
 use App\Listeners\HandleSiteCreatedStats;
 use App\Listeners\HandleSiteDeletedStats;
+use App\Listeners\RunScriptEventHooks;
 use App\Listeners\SocketEventListener;
 use App\Models\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -45,5 +50,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(SocketEvent::class, SocketEventListener::class);
         Event::listen(SiteCreatedEvent::class, HandleSiteCreatedStats::class);
         Event::listen(SiteDeletedEvent::class, HandleSiteDeletedStats::class);
+        Event::listen(SiteCreatedEvent::class, RunScriptEventHooks::class);
+        Event::listen(SiteDeletedEvent::class, RunScriptEventHooks::class);
+        Event::listen(ServerInstalledEvent::class, RunScriptEventHooks::class);
+        Event::listen(ServerDeletedEvent::class, RunScriptEventHooks::class);
+        Event::listen(ServiceInstalledEvent::class, RunScriptEventHooks::class);
+        Event::listen(ServiceUninstalledEvent::class, RunScriptEventHooks::class);
     }
 }
