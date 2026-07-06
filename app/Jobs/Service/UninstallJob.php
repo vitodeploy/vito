@@ -4,6 +4,7 @@ namespace App\Jobs\Service;
 
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
+use App\Events\ServiceUninstalledEvent;
 use App\Events\SocketEvent;
 use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
@@ -25,8 +26,12 @@ class UninstallJob implements ShouldQueue
         $this->run("server-{$this->service->server_id}", function () {
             $projectId = $this->service->server->project_id;
             $serviceId = $this->service->id;
+            $serviceName = $this->service->name;
+            $serviceType = $this->service->type;
+            $serverId = $this->service->server_id;
             $this->service->handler()->uninstall();
             $this->service->delete();
+            ServiceUninstalledEvent::dispatch($serviceId, $serviceName, $serviceType, $serverId, $projectId);
 
             SocketEvent::dispatch(new SocketEventDTO(
                 projectId: $projectId,
