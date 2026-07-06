@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
@@ -10,6 +10,7 @@ import { Script } from '@/types/script';
 import { ScriptExecution } from '@/types/script-execution';
 import Layout from '@/layouts/app/layout';
 import { useRealtime } from '@/hooks/use-socket-events';
+import { Button } from '@/components/ui/button';
 
 type Page = {
   script: Script;
@@ -40,6 +41,9 @@ export default function Show() {
           <BreadcrumbHeader breadcrumbs={breadcrumbs}>
             <Heading title={`History of ${page.props.script.name}`} description="Here you can see the script executions" />
           </BreadcrumbHeader>
+          <Button variant="outline" asChild>
+            <Link href={route('scripts.hooks', { script: page.props.script.id })}>Event Hooks</Link>
+          </Button>
         </HeaderContainer>
 
         <DataTable columns={columns} paginatedData={executions} />

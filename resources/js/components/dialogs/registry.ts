@@ -24,6 +24,7 @@ import FirewallRuleForm from '@/pages/firewall/components/form';
 import ServerIpForm from '@/pages/server-network/components/form';
 import RecordForm from '@/pages/domains/components/record-form';
 import ScriptForm from '@/pages/scripts/components/form';
+import ScriptHookForm from '@/pages/scripts/components/hook-form';
 import EditCommand from '@/pages/commands/components/edit-command';
 import CreateBackup from '@/pages/backups/components/create-backup';
 import EditBackup from '@/pages/backups/components/edit-backup';
@@ -73,6 +74,7 @@ export const dialogs = {
   serverIpForm: ServerIpForm,
   dnsRecordForm: RecordForm,
   scriptForm: ScriptForm,
+  scriptHookForm: ScriptHookForm,
   commandEdit: EditCommand,
   backupCreate: CreateBackup,
   backupEdit: EditBackup,
