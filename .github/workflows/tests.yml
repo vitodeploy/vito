@@ -34,7 +34,9 @@ jobs:
 
       - name: Fetch base branch
         if: github.event_name == 'pull_request'
-        run: git fetch --no-tags origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -99,9 +101,11 @@ jobs:
 
       - name: Enforce 75% patch coverage
         if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
           diff-cover build/logs/clover.xml \
-            --compare-branch=origin/${{ github.base_ref }} \
+            --compare-branch="origin/$BASE_REF" \
             --fail-under=75 \
             --markdown-report=build/diff-cover.md
 
