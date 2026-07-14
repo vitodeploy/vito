@@ -205,14 +205,8 @@ class AgentControllerTest extends TestCase
         $service = $this->agentService();
         $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
 
-        $this->json(
-            'POST',
-            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
-            array_merge($this->minimalPayload(), [
-                'services' => [['id' => $nginx->id, 'status' => 'inactive']],
-            ]),
-            ['secret' => 'test-secret']
-        )->assertSuccessful();
+        $this->reportServiceStatus($service, $nginx, 'inactive');
+        $this->reportServiceStatus($service, $nginx, 'inactive');
 
         $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::STOPPED]);
         $this->assertDatabaseHas('metrics', ['server_id' => $this->server->id, 'load' => 0.5]);
@@ -220,6 +214,46 @@ class AgentControllerTest extends TestCase
             && $event->previousStatus === ServiceStatus::READY
             && $event->newStatus === ServiceStatus::STOPPED);
         Event::assertDispatched(SocketEvent::class);
+    }
+
+    public function test_single_inactive_report_does_not_change_status(): void
+    {
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $service = $this->agentService();
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->reportServiceStatus($service, $nginx, 'inactive');
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_agent_reported_restart_flap_does_not_change_status(): void
+    {
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $service = $this->agentService();
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->reportServiceStatus($service, $nginx, 'inactive');
+        $this->reportServiceStatus($service, $nginx, 'active');
+        $this->reportServiceStatus($service, $nginx, 'inactive');
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    private function reportServiceStatus(Service $service, Service $target, string $status): void
+    {
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $target->id, 'status' => $status]],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
     }
 
     public function test_services_entry_for_other_server_is_ignored(): void

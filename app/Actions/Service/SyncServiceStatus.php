@@ -9,6 +9,7 @@ use App\Events\SocketEvent;
 use App\Http\Resources\ServiceResource;
 use App\Models\Server;
 use App\Models\Service;
+use Illuminate\Support\Facades\Cache;
 
 class SyncServiceStatus
 {
@@ -28,15 +29,24 @@ class SyncServiceStatus
             default => null,
         };
 
+        if (! $newStatus instanceof ServiceStatus) {
+            return;
+        }
+
         $previousStatus = $service->status;
 
-        if (! $newStatus instanceof ServiceStatus || $newStatus === $previousStatus) {
+        if ($newStatus === $previousStatus
+            || ($previousStatus === ServiceStatus::DISABLED && $newStatus === ServiceStatus::STOPPED)) {
+            Cache::forget($this->pendingKey($service));
+
             return;
         }
 
-        if ($previousStatus === ServiceStatus::DISABLED && $newStatus === ServiceStatus::STOPPED) {
+        if ($newStatus !== ServiceStatus::READY && ! $this->confirmed($service, $newStatus)) {
             return;
         }
+
+        Cache::forget($this->pendingKey($service));
 
         $updated = Service::query()
             ->where('id', $service->id)
@@ -59,5 +69,23 @@ class SyncServiceStatus
             type: 'service.updated',
             data: new ServiceResource($service),
         ));
+    }
+
+    private function pendingKey(Service $service): string
+    {
+        return "service-status-pending:{$service->id}";
+    }
+
+    private function confirmed(Service $service, ServiceStatus $newStatus): bool
+    {
+        $key = $this->pendingKey($service);
+
+        if (Cache::get($key) === $newStatus->value) {
+            return true;
+        }
+
+        Cache::put($key, $newStatus->value, now()->addHour());
+
+        return false;
     }
 }

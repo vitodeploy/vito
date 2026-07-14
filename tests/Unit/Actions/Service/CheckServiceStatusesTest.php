@@ -9,7 +9,6 @@ use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -27,6 +26,7 @@ class CheckServiceStatusesTest extends TestCase
         $mysql = $this->createService('database', 'mysql', ServiceStatus::READY);
         $redis = $this->createService('memory_database', 'redis', ServiceStatus::STOPPED);
 
+        app(CheckServiceStatuses::class)->check($this->server);
         app(CheckServiceStatuses::class)->check($this->server);
 
         $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
@@ -124,7 +124,42 @@ class CheckServiceStatusesTest extends TestCase
         Event::assertNotDispatched(ServiceStatusChanged::class);
     }
 
-    public function test_skips_check_while_server_is_locked(): void
+    public function test_single_inactive_reading_does_not_change_status(): void
+    {
+        SSH::fake('inactive');
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $this->server->services()->delete();
+        $nginx = $this->createService('webserver', 'nginx', ServiceStatus::READY);
+
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+        Event::assertNotDispatched(SocketEvent::class);
+    }
+
+    public function test_restart_flap_does_not_change_status(): void
+    {
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $this->server->services()->delete();
+        $nginx = $this->createService('webserver', 'nginx', ServiceStatus::READY);
+
+        SSH::fake('inactive');
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        SSH::fake('active');
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        SSH::fake('inactive');
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_two_consecutive_inactive_readings_change_status(): void
     {
         SSH::fake('inactive');
         Event::fake([ServiceStatusChanged::class]);
@@ -132,31 +167,25 @@ class CheckServiceStatusesTest extends TestCase
         $this->server->services()->delete();
         $nginx = $this->createService('webserver', 'nginx', ServiceStatus::READY);
 
-        $lock = Cache::lock("unique-queue:server-{$this->server->id}", 60);
-        $this->assertTrue($lock->get());
-
+        app(CheckServiceStatuses::class)->check($this->server);
         app(CheckServiceStatuses::class)->check($this->server);
 
-        SSH::assertNotExecutedContains('is-active');
-        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
-        Event::assertNotDispatched(ServiceStatusChanged::class);
-
-        $lock->release();
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::STOPPED]);
+        Event::assertDispatchedTimes(ServiceStatusChanged::class, 1);
     }
 
-    public function test_releases_lock_after_check(): void
+    public function test_recovery_to_active_applies_immediately(): void
     {
         SSH::fake('active');
         Event::fake([ServiceStatusChanged::class]);
 
         $this->server->services()->delete();
-        $this->createService('webserver', 'nginx', ServiceStatus::READY);
+        $nginx = $this->createService('webserver', 'nginx', ServiceStatus::STOPPED);
 
         app(CheckServiceStatuses::class)->check($this->server);
 
-        $lock = Cache::lock("unique-queue:server-{$this->server->id}", 60);
-        $this->assertTrue($lock->get());
-        $lock->release();
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertDispatchedTimes(ServiceStatusChanged::class, 1);
     }
 
     private function createService(string $type, string $name, ServiceStatus $status): Service
