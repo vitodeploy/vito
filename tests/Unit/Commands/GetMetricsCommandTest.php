@@ -3,9 +3,11 @@
 namespace Tests\Unit\Commands;
 
 use App\Enums\ServiceStatus;
+use App\Events\ServiceStatusChanged;
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class GetMetricsCommandTest extends TestCase
@@ -70,6 +72,38 @@ class GetMetricsCommandTest extends TestCase
             'oom_kill_count' => 3,
             'cpu_per_core_usage_percent' => null,
         ]);
+    }
+
+    public function test_checks_service_statuses(): void
+    {
+        SSH::fake('active');
+        Event::fake([ServiceStatusChanged::class]);
+
+        $this->server->services()->delete();
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'remote-monitor',
+            'type' => 'monitoring',
+            'type_data' => [
+                'data_retention' => 7,
+            ],
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+        $nginx = $this->server->services()->create([
+            'type' => 'webserver',
+            'name' => 'nginx',
+            'version' => 'latest',
+            'status' => ServiceStatus::STOPPED,
+        ]);
+
+        $this->artisan('metrics:get')->assertSuccessful();
+
+        SSH::assertExecutedContains('is-active');
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertDispatched(fn (ServiceStatusChanged $event): bool => $event->service->id === $nginx->id
+            && $event->previousStatus === ServiceStatus::STOPPED
+            && $event->newStatus === ServiceStatus::READY);
     }
 
     public function test_get_metrics_with_missing_extended_fields(): void
