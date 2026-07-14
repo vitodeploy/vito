@@ -32,9 +32,9 @@ download_pid=$!
 
 elapsed=0
 while kill -0 "$download_pid" 2>/dev/null; do
-    sleep 30
-    elapsed=$((elapsed + 30))
-    if kill -0 "$download_pid" 2>/dev/null; then
+    sleep 1
+    elapsed=$((elapsed + 1))
+    if [ $((elapsed % 30)) -eq 0 ] && kill -0 "$download_pid" 2>/dev/null; then
         echo "Download in progress... (${elapsed}s elapsed)"
     fi
 done
