@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('user');
             $table->boolean('enabled')->default(true);
             $table->timestamps();
+            $table->index(['project_id', 'event', 'enabled']);
         });
     }
 

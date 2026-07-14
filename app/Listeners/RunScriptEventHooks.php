@@ -13,6 +13,7 @@ use App\Events\SiteDeletedEvent;
 use App\Models\ScriptEventHook;
 use App\Models\Server;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RunScriptEventHooks
 {
@@ -30,7 +31,7 @@ class RunScriptEventHooks
             ->each(function (ScriptEventHook $hook) use ($eventEnum, $variables): void {
                 try {
                     app(ExecuteScript::class)->executeForHook($hook, $variables);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::error('Script event hook failed', [
                         'hook_id' => $hook->id,
                         'event' => $eventEnum->value,

@@ -9,12 +9,10 @@ import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConfigs } from '@/stores/bootstrap-store';
-import { ProjectSelect } from '@/components/project-select';
 import ServerSelect from '@/pages/servers/components/server-select';
 import { Script } from '@/types/script';
 import { ScriptEventHook } from '@/types/script-event-hook';
 import { Server } from '@/types/server';
-import { Project } from '@/types/project';
 
 export default function HookForm({
   open,
@@ -27,24 +25,23 @@ export default function HookForm({
   script: Script;
   hook?: ScriptEventHook;
 }) {
-  const configs = useConfigs();
+  const configs = useConfigs()!;
   const [server, setServer] = useState<Server | undefined>(hook?.server);
 
   const form = useForm<{
     event: string;
-    project_id: string;
     server_id: string;
     user: string;
     enabled: boolean;
   }>({
     event: hook?.event_value ?? '',
-    project_id: hook?.project_id?.toString() ?? '',
     server_id: hook?.server_id?.toString() ?? '',
     user: hook?.user ?? '',
     enabled: hook?.enabled ?? true,
   });
 
-  const selectedEvent = configs?.script_event_hooks?.events.find((e) => e.value === form.data.event);
+  const selectedEvent = configs.script_event_hooks.events.find((e) => e.value === form.data.event);
+  const sshUsers = server?.ssh_users ?? (hook ? [hook.user] : []);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -77,7 +74,7 @@ export default function HookForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {configs?.script_event_hooks?.events.map((event) => (
+                    {configs.script_event_hooks.events.map((event) => (
                       <SelectItem key={event.value} value={event.value}>
                         {event.label}
                       </SelectItem>
@@ -100,24 +97,9 @@ export default function HookForm({
             </FormField>
 
             <FormField>
-              <Label htmlFor="project_id">Project</Label>
-              <ProjectSelect
-                value={form.data.project_id}
-                onValueChange={(value: string, project: Project) => {
-                  form.setData('project_id', value);
-                  if (project.id.toString() !== form.data.project_id) {
-                    form.setData('server_id', '');
-                    form.setData('user', '');
-                    setServer(undefined);
-                  }
-                }}
-              />
-              <InputError message={form.errors.project_id} />
-            </FormField>
-
-            <FormField>
               <Label htmlFor="server_id">Server</Label>
               <ServerSelect
+                id="server_id"
                 value={form.data.server_id}
                 onValueChange={(value) => {
                   form.setData('server_id', value ? value.id.toString() : '');
@@ -136,7 +118,7 @@ export default function HookForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {server?.ssh_users?.map((u) => (
+                    {sshUsers.map((u) => (
                       <SelectItem key={`user-${u}`} value={u}>
                         {u}
                       </SelectItem>

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\Script\ExecuteScript;
 use App\Enums\ScriptEventHookEvent;
 use App\Enums\ScriptExecutionStatus;
+use App\Enums\UserRole;
 use App\Events\ServerDeletedEvent;
 use App\Events\ServerInstalledEvent;
 use App\Events\ServiceInstalledEvent;
@@ -52,7 +53,6 @@ class ScriptEventHookTest extends TestCase
 
         $this->post(route('scripts.hooks.store', ['script' => $script->id]), [
             'event' => ScriptEventHookEvent::SITE_CREATED->value,
-            'project_id' => $this->server->project_id,
             'server_id' => $this->server->id,
             'user' => 'root',
             'enabled' => true,
@@ -61,10 +61,29 @@ class ScriptEventHookTest extends TestCase
         $this->assertDatabaseHas('script_event_hooks', [
             'script_id' => $script->id,
             'event' => ScriptEventHookEvent::SITE_CREATED->value,
+            'project_id' => $this->server->project_id,
             'server_id' => $this->server->id,
             'user' => 'root',
             'enabled' => true,
         ]);
+    }
+
+    public function test_cannot_create_hook_without_server_write_access(): void
+    {
+        $otherUser = User::factory()->create();
+        $otherUser->ensureHasDefaultProject();
+        $this->actingAs($otherUser);
+
+        $script = Script::factory()->create(['user_id' => $otherUser->id]);
+
+        $this->post(route('scripts.hooks.store', ['script' => $script->id]), [
+            'event' => ScriptEventHookEvent::SITE_CREATED->value,
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'enabled' => true,
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('script_event_hooks', ['script_id' => $script->id]);
     }
 
     public function test_update_hook(): void
@@ -90,6 +109,34 @@ class ScriptEventHookTest extends TestCase
             'id' => $hook->id,
             'event' => ScriptEventHookEvent::SITE_DELETED->value,
             'enabled' => false,
+        ]);
+    }
+
+    public function test_creator_without_project_write_access_cannot_update_hook(): void
+    {
+        $otherUser = User::factory()->create();
+        $otherUser->ensureHasDefaultProject();
+        $this->server->project->users()->create([
+            'user_id' => $otherUser->id,
+            'role' => UserRole::USER,
+        ]);
+        $this->actingAs($otherUser);
+
+        $script = Script::factory()->create(['user_id' => $otherUser->id]);
+        $hook = ScriptEventHook::factory()->create([
+            'script_id' => $script->id,
+            'user_id' => $otherUser->id,
+            'project_id' => $this->server->project_id,
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->put(route('scripts.hooks.update', ['script' => $script->id, 'hook' => $hook->id]), [
+            'enabled' => false,
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('script_event_hooks', [
+            'id' => $hook->id,
+            'enabled' => true,
         ]);
     }
 
@@ -330,6 +377,34 @@ class ScriptEventHookTest extends TestCase
             ->firstOrFail();
 
         $this->assertEquals($this->site->domain, $execution->variables['site_domain']);
+    }
+
+    public function test_event_variables_are_sanitized(): void
+    {
+        SSH::fake();
+
+        $this->server->update(['name' => 'srv;$(reboot)`rm`']);
+        $this->site->load('server');
+
+        $script = Script::factory()->create([
+            'user_id' => $this->user->id,
+            'content' => 'echo ${server_name}',
+        ]);
+        ScriptEventHook::factory()->create([
+            'script_id' => $script->id,
+            'user_id' => $this->user->id,
+            'project_id' => $this->server->project_id,
+            'server_id' => $this->server->id,
+            'event' => ScriptEventHookEvent::SITE_CREATED,
+        ]);
+
+        SiteCreatedEvent::dispatch($this->site);
+
+        $execution = ScriptExecution::query()
+            ->where('script_id', $script->id)
+            ->firstOrFail();
+
+        $this->assertEquals('srvrebootrm', $execution->variables['server_name']);
     }
 
     public function test_hook_exception_does_not_propagate(): void

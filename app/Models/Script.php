@@ -48,7 +48,6 @@ class Script extends AbstractModel
 
         static::deleting(function (Script $script): void {
             $script->executions()->delete();
-            $script->hooks()->delete();
         });
     }
 

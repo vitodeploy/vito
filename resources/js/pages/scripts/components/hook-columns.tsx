@@ -6,6 +6,7 @@ import { ScriptEventHook } from '@/types/script-event-hook';
 import { Script } from '@/types/script';
 import { useDialog } from '@/hooks/use-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Link } from '@inertiajs/react';
 
 function Actions({ hook, script }: { hook: ScriptEventHook; script: Script }) {
   const dialog = useDialog();
@@ -51,7 +52,14 @@ export function hookColumns(script: Script): ColumnDef<ScriptEventHook>[] {
     {
       accessorKey: 'server',
       header: 'Server',
-      cell: ({ row }) => row.original.server?.name ?? row.original.server_id,
+      cell: ({ row }) =>
+        row.original.server ? (
+          <Link href={route('servers.show', { server: row.original.server_id })} className="hover:underline">
+            {row.original.server.name} ({row.original.server.ip})
+          </Link>
+        ) : (
+          '-'
+        ),
     },
     {
       accessorKey: 'user',

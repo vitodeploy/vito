@@ -6,15 +6,12 @@ use App\Enums\ScriptEventHookEvent;
 use App\Models\ScriptEventHook;
 use App\Models\Server;
 use App\Models\User;
-use App\Traits\HasRolePolicies;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UpdateScriptEventHook
 {
-    use HasRolePolicies;
-
     /**
      * @param  array<string, mixed>  $input
      *
@@ -22,11 +19,16 @@ class UpdateScriptEventHook
      */
     public function update(ScriptEventHook $hook, User $user, array $input): ScriptEventHook
     {
-        $this->validate($user, $input);
+        $server = $this->validate($input);
+
+        if ($server && ! $user->can('update', $server)) {
+            abort(403, 'You do not have permission to run scripts on this server.');
+        }
 
         $hook->fill([
             'event' => $input['event'] ?? $hook->event->value,
-            'server_id' => $input['server_id'] ?? $hook->server_id,
+            'server_id' => $server->id ?? $hook->server_id,
+            'project_id' => $server->project_id ?? $hook->project_id,
             'user' => $input['user'] ?? $hook->user,
             'enabled' => $input['enabled'] ?? $hook->enabled,
         ]);
@@ -40,7 +42,7 @@ class UpdateScriptEventHook
      *
      * @throws ValidationException
      */
-    private function validate(User $user, array $input): void
+    private function validate(array $input): ?Server
     {
         $users = ['root'];
         $server = null;
@@ -70,8 +72,6 @@ class UpdateScriptEventHook
             ],
         ])->validate();
 
-        if ($server && ! $this->hasWriteAccess($user, $server->project)) {
-            throw ValidationException::withMessages(['server_id' => "You do not have write access to this server's project."]);
-        }
+        return $server;
     }
 }

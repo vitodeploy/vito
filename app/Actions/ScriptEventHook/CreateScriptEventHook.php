@@ -3,20 +3,16 @@
 namespace App\Actions\ScriptEventHook;
 
 use App\Enums\ScriptEventHookEvent;
-use App\Models\Project;
 use App\Models\Script;
 use App\Models\ScriptEventHook;
 use App\Models\Server;
 use App\Models\User;
-use App\Traits\HasRolePolicies;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CreateScriptEventHook
 {
-    use HasRolePolicies;
-
     /**
      * @param  array<string, mixed>  $input
      *
@@ -24,15 +20,16 @@ class CreateScriptEventHook
      */
     public function create(User $user, Script $script, array $input): ScriptEventHook
     {
-        $this->validate($user, $input);
+        $server = $this->validate($input);
 
-        /** @var Server $server */
-        $server = Server::query()->findOrFail($input['server_id']);
+        if (! $user->can('update', $server)) {
+            abort(403, 'You do not have permission to run scripts on this server.');
+        }
 
         $hook = new ScriptEventHook([
             'script_id' => $script->id,
             'user_id' => $user->id,
-            'project_id' => $input['project_id'],
+            'project_id' => $server->project_id,
             'server_id' => $server->id,
             'event' => $input['event'],
             'user' => $input['user'],
@@ -48,8 +45,9 @@ class CreateScriptEventHook
      *
      * @throws ValidationException
      */
-    private function validate(User $user, array $input): void
+    private function validate(array $input): Server
     {
+        $server = null;
         $users = ['root'];
         if (isset($input['server_id'])) {
             $server = Server::query()->find($input['server_id']);
@@ -59,10 +57,6 @@ class CreateScriptEventHook
         }
 
         Validator::make($input, [
-            'project_id' => [
-                'required',
-                Rule::exists('projects', 'id'),
-            ],
             'event' => [
                 'required',
                 Rule::enum(ScriptEventHookEvent::class),
@@ -80,16 +74,7 @@ class CreateScriptEventHook
             ],
         ])->validate();
 
-        /** @var Project $project */
-        $project = Project::query()->findOrFail($input['project_id']);
-        if (! $this->hasWriteAccess($user, $project)) {
-            throw ValidationException::withMessages(['project_id' => 'You do not have write access to this project.']);
-        }
-
         /** @var Server $server */
-        $server = Server::query()->findOrFail($input['server_id']);
-        if (! $this->hasWriteAccess($user, $server->project)) {
-            throw ValidationException::withMessages(['server_id' => 'You do not have write access to this server\'s project.']);
-        }
+        return $server;
     }
 }

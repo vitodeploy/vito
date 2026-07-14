@@ -23,7 +23,7 @@ class ScriptEventHookPolicy
 
     public function update(User $user, ScriptEventHook $hook): bool
     {
-        return $user->id === $hook->user_id;
+        return $user->id === $hook->user_id && $this->hasWriteAccess($user, $hook->server->project);
     }
 
     public function delete(User $user, ScriptEventHook $hook): bool

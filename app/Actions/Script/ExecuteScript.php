@@ -27,29 +27,10 @@ class ExecuteScript
 
         $variables = [];
         foreach ($script->getVariables() as $variable) {
-            $variables[$variable] = $eventVariables[$variable] ?? '';
+            $variables[$variable] = $this->sanitizeVariable($eventVariables[$variable] ?? '');
         }
 
-        return DB::transaction(function () use ($script, $hook, $variables): ScriptExecution {
-            $execution = new ScriptExecution([
-                'script_id' => $script->id,
-                'server_id' => $hook->server_id,
-                'user' => $hook->user,
-                'variables' => $variables,
-                'status' => ScriptExecutionStatus::EXECUTING,
-            ]);
-            $execution->save();
-
-            $log = ServerLog::newLog($hook->server, 'script-'.$script->id.'-'.strtotime('now'));
-            $log->save();
-
-            $execution->server_log_id = $log->id;
-            $execution->save();
-
-            dispatch(new ExecuteJob($execution, $log))->onQueue('ssh');
-
-            return $execution;
-        });
+        return $this->startExecution($script, $hook->server, $hook->user, $variables);
     }
 
     /**
@@ -73,24 +54,44 @@ class ExecuteScript
             abort(403, 'You do not have permission to execute scripts on this server.');
         }
 
-        $execution = new ScriptExecution([
-            'script_id' => $script->id,
-            'server_id' => $input['server'],
-            'user' => $input['user'],
-            'variables' => $variables,
-            'status' => ScriptExecutionStatus::EXECUTING,
-        ]);
-        $execution->save();
+        return $this->startExecution($script, $server, $input['user'], $variables);
+    }
 
-        $log = ServerLog::newLog($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
-        $log->save();
+    /**
+     * @param  array<string, string>  $variables
+     */
+    private function startExecution(Script $script, Server $server, string $user, array $variables): ScriptExecution
+    {
+        /** @var array{0: ScriptExecution, 1: ServerLog} $result */
+        $result = DB::transaction(function () use ($script, $server, $user, $variables): array {
+            $execution = new ScriptExecution([
+                'script_id' => $script->id,
+                'server_id' => $server->id,
+                'user' => $user,
+                'variables' => $variables,
+                'status' => ScriptExecutionStatus::EXECUTING,
+            ]);
+            $execution->save();
 
-        $execution->server_log_id = $log->id;
-        $execution->save();
+            $log = ServerLog::newLog($server, 'script-'.$script->id.'-'.strtotime('now'));
+            $log->save();
+
+            $execution->server_log_id = $log->id;
+            $execution->save();
+
+            return [$execution, $log];
+        });
+
+        [$execution, $log] = $result;
 
         dispatch(new ExecuteJob($execution, $log))->onQueue('ssh');
 
         return $execution;
+    }
+
+    private function sanitizeVariable(string $value): string
+    {
+        return preg_replace('/[^A-Za-z0-9 ._\-\/:@]/', '', $value) ?? '';
     }
 
     private function validate(Script $script, array $input): void
