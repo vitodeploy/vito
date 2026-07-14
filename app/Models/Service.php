@@ -21,7 +21,7 @@ use InvalidArgumentException;
  * @property int $server_id
  * @property ?int $log_id
  * @property string $type
- * @property array<string, mixed> $type_data
+ * @property ?array<string, mixed> $type_data
  * @property string $name
  * @property string $version
  * @property string $installed_version

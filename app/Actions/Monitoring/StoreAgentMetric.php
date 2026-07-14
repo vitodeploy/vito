@@ -2,8 +2,11 @@
 
 namespace App\Actions\Monitoring;
 
+use App\Actions\Service\SyncServiceStatus;
 use App\Models\Metric;
 use App\Models\Server;
+use App\Models\Service;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 
 class StoreAgentMetric
@@ -34,11 +37,40 @@ class StoreAgentMetric
             'oom_kill_count' => 'nullable|integer',
             'uptime_seconds' => 'nullable|numeric',
             'reboot_required' => 'nullable|boolean',
+            'services' => 'nullable|array|max:100',
+            'services.*.id' => 'required|integer',
+            'services.*.status' => 'required|string|max:32',
         ])->validate();
 
         /** @var Metric $metric */
-        $metric = $server->metrics()->create(array_merge($validated, ['server_id' => $server->id]));
+        $metric = $server->metrics()->create(array_merge(Arr::except($validated, ['services']), ['server_id' => $server->id]));
+
+        if (! empty($validated['services'])) {
+            $this->syncServiceStatuses($server, $validated['services']);
+        }
 
         return $metric;
+    }
+
+    /**
+     * @param  array<int, array{id: int, status: string}>  $services
+     */
+    private function syncServiceStatuses(Server $server, array $services): void
+    {
+        $serverServices = $server->services()
+            ->whereIn('id', array_column($services, 'id'))
+            ->whereIn('status', SyncServiceStatus::SETTLED_STATUSES)
+            ->where('type', '!=', 'monitoring')
+            ->get()
+            ->keyBy('id');
+
+        foreach ($services as $entry) {
+            /** @var ?Service $service */
+            $service = $serverServices->get((int) $entry['id']);
+            if (! $service || ! $service->hasHandler() || ! $service->handler()->shouldCheckStatus()) {
+                continue;
+            }
+            app(SyncServiceStatus::class)->sync($server, $service, $entry['status']);
+        }
     }
 }

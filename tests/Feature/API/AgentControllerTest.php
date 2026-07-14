@@ -3,8 +3,12 @@
 namespace Tests\Feature\API;
 
 use App\Enums\ServiceStatus;
+use App\Events\ServiceStatusChanged;
+use App\Events\SocketEvent;
+use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class AgentControllerTest extends TestCase
@@ -159,5 +163,166 @@ class AgentControllerTest extends TestCase
             ['load' => 'not-a-number'],
             ['secret' => 'test-secret']
         )->assertStatus(422);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function minimalPayload(): array
+    {
+        return [
+            'load' => 0.5,
+            'memory_total' => '1000',
+            'memory_used' => '500',
+            'memory_free' => '500',
+            'disk_total' => '100',
+            'disk_used' => '50',
+            'disk_free' => '50',
+        ];
+    }
+
+    public function test_store_metrics_without_services_key_changes_no_statuses(): void
+    {
+        Event::fake([ServiceStatusChanged::class]);
+
+        $service = $this->agentService();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            $this->minimalPayload(),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('metrics', ['server_id' => $this->server->id, 'load' => 0.5]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_store_metrics_with_services_updates_statuses(): void
+    {
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $service = $this->agentService();
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $nginx->id, 'status' => 'inactive']],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::STOPPED]);
+        $this->assertDatabaseHas('metrics', ['server_id' => $this->server->id, 'load' => 0.5]);
+        Event::assertDispatched(fn (ServiceStatusChanged $event): bool => $event->service->id === $nginx->id
+            && $event->previousStatus === ServiceStatus::READY
+            && $event->newStatus === ServiceStatus::STOPPED);
+        Event::assertDispatched(SocketEvent::class);
+    }
+
+    public function test_services_entry_for_other_server_is_ignored(): void
+    {
+        Event::fake([ServiceStatusChanged::class]);
+
+        $service = $this->agentService();
+        $otherServer = Server::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+        $otherService = Service::factory()->create([
+            'server_id' => $otherServer->id,
+            'name' => 'nginx',
+            'type' => 'webserver',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $otherService->id, 'status' => 'inactive']],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $otherService->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_services_entry_for_transitional_service_is_ignored(): void
+    {
+        Event::fake([ServiceStatusChanged::class]);
+
+        $service = $this->agentService();
+        $mysql = $this->server->services()->where('name', 'mysql')->firstOrFail();
+        $mysql->update(['status' => ServiceStatus::INSTALLING]);
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $mysql->id, 'status' => 'active']],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $mysql->id, 'status' => ServiceStatus::INSTALLING]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_services_entry_with_unknown_status_is_ignored(): void
+    {
+        Event::fake([ServiceStatusChanged::class]);
+
+        $service = $this->agentService();
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $nginx->id, 'status' => 'activating']],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_services_entry_for_monitoring_service_is_ignored(): void
+    {
+        Event::fake([ServiceStatusChanged::class]);
+
+        $service = $this->agentService();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [['id' => $service->id, 'status' => 'inactive']],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $service->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_services_must_be_an_array(): void
+    {
+        $service = $this->agentService();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), ['services' => 'nope']),
+            ['secret' => 'test-secret']
+        )->assertStatus(422);
+
+        $this->assertDatabaseCount('metrics', 0);
     }
 }

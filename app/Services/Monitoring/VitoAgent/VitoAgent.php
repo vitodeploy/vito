@@ -100,9 +100,50 @@ class VitoAgent extends AbstractService
                 ]),
                 'install-vito-agent'
             );
+        $this->updateConfig();
         $status = $this->service->server->systemd()->status($this->unit());
         event('service.installed', $this->service);
         $this->service->validateInstall($status);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function updateConfig(): void
+    {
+        $config = [
+            'url' => $this->data()['url'],
+            'secret' => $this->data()['secret'],
+            'services' => $this->configServices(),
+        ];
+
+        $this->service->server->ssh()->write(
+            '/etc/vito-agent/config.json',
+            (string) json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            'root'
+        );
+
+        $this->service->server->systemd()->restart($this->unit());
+    }
+
+    /**
+     * @return array<int, array{id: int, unit: string}>
+     */
+    private function configServices(): array
+    {
+        $services = [];
+        foreach ($this->service->server->services()->get() as $service) {
+            if ($service->id === $this->service->id || ! $service->hasHandler()) {
+                continue;
+            }
+            $handler = $service->handler();
+            if (! $handler->shouldCheckStatus()) {
+                continue;
+            }
+            $services[] = ['id' => $service->id, 'unit' => $handler->unit()];
+        }
+
+        return $services;
     }
 
     /**
