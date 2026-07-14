@@ -27,7 +27,7 @@ export AWS_SECRET_ACCESS_KEY={{ $secret }}
 export AWS_DEFAULT_REGION={{ $region }}
 export AWS_ENDPOINT_URL={{ $endpoint }}
 
-aws s3 cp --no-progress s3://{{ $bucket }}/{{ $src }} {{ $dest }} &
+aws s3 cp --no-progress "s3://{{ $bucket }}/{{ $src }}" "{{ $dest }}" &
 download_pid=$!
 
 elapsed=0
@@ -41,4 +41,7 @@ done
 
 if wait "$download_pid"; then
     echo "Download successful"
+else
+    echo "Error: Download failed"
+    exit 1
 fi
