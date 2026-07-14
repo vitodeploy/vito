@@ -69,7 +69,7 @@ export default function InstallService({ name, children }: { name?: string; chil
                       <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                     <Command>
                       <CommandInput placeholder="Search service..." />
                       <CommandList>
@@ -114,7 +114,7 @@ export default function InstallService({ name, children }: { name?: string; chil
                     <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                   <Command>
                     <CommandInput placeholder="Search version..." />
                     <CommandList>

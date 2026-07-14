@@ -89,7 +89,7 @@ export default function IsolatedUserSelect({ serverId, value, onValueChange, onS
           <ChevronsUpDown className="opacity-50" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search or type new user..." value={search} onValueChange={handleSearchChange} />
           <CommandList>
