@@ -65,7 +65,9 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
                   value={selectedServer ? String(selectedServer.id) : ''}
                   onValueChange={(value) => {
                     setSelectedServer(value);
-                    form.setData('type', 'file');
+                    if (!value?.services?.database) {
+                      form.setData('type', 'file');
+                    }
                     form.setData('database', '');
                   }}
                 />

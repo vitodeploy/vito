@@ -68,7 +68,7 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: false,
     enableSorting: false,
     cell: ({ row }) => {
-      return row.original.size ? formatBytes(row.original.size, 2) : '-';
+      return row.original.size === null ? '-' : formatBytes(row.original.size, 2);
     },
   },
   {

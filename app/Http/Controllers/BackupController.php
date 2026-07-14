@@ -47,6 +47,8 @@ class BackupController extends Controller
     #[Get('/servers/{server}/backups/{backup}', name: 'backups.show')]
     public function show(Server $server, Backup $backup): JsonResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('view', $backup);
 
         return response()->json([
@@ -69,6 +71,8 @@ class BackupController extends Controller
     #[Patch('/servers/{server}/backups/{backup}', name: 'backups.update')]
     public function update(Request $request, Server $server, Backup $backup): RedirectResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('update', $backup);
 
         app(ManageBackup::class)->update($backup, $request->all());
@@ -80,6 +84,8 @@ class BackupController extends Controller
     #[Post('/servers/{server}/backups/{backup}/run', name: 'backups.run')]
     public function run(Server $server, Backup $backup): RedirectResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('create', [BackupFile::class, $backup]);
 
         app(RunBackup::class)->run($backup);
@@ -91,6 +97,8 @@ class BackupController extends Controller
     #[Post('/servers/{server}/backups/{backup}/enable', name: 'backups.enable')]
     public function enable(Server $server, Backup $backup): RedirectResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('update', $backup);
 
         app(ManageBackup::class)->enable($backup);
@@ -102,6 +110,8 @@ class BackupController extends Controller
     #[Post('/servers/{server}/backups/{backup}/disable', name: 'backups.disable')]
     public function disable(Server $server, Backup $backup): RedirectResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('update', $backup);
 
         app(ManageBackup::class)->stop($backup);
@@ -113,6 +123,8 @@ class BackupController extends Controller
     #[Delete('/servers/{server}/backups/{backup}', name: 'backups.destroy')]
     public function destroy(Server $server, Backup $backup): RedirectResponse
     {
+        abort_unless($backup->server_id === $server->id, 404);
+
         $this->authorize('delete', $backup);
 
         app(ManageBackup::class)->delete($backup);
