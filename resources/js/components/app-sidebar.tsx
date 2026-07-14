@@ -17,6 +17,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
   BookOpen,
   ChevronRightIcon,
+  CloudUploadIcon,
   CogIcon,
   Folder,
   Globe,
@@ -46,6 +47,11 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Sites',
       href: route('sites.all'),
       icon: MousePointerClickIcon,
+    },
+    {
+      title: 'Backups',
+      href: route('backups.all'),
+      icon: CloudUploadIcon,
     },
     {
       title: 'Scripts',

@@ -23,6 +23,8 @@ use Throwable;
  * @property int $backup_id
  * @property string $name
  * @property ?int $size
+ * @property ?string $database_engine
+ * @property ?string $database_version
  * @property BackupFileStatus $status
  * @property ?string $message
  * @property ?string $restored_to
@@ -87,6 +89,65 @@ class BackupFile extends AbstractModel
         return $this->backup->storage->provider === Local::id();
     }
 
+    public static function normalizeVersion(?string $raw): ?string
+    {
+        if ($raw === null || ! preg_match('/\d+(\.\d+){0,2}/', trim($raw), $matches)) {
+            return null;
+        }
+
+        return $matches[0];
+    }
+
+    public function restoreCompatibilityError(Database $target): ?string
+    {
+        $targetServer = $target->server;
+
+        if ($targetServer->id === $this->backup->server_id) {
+            return null;
+        }
+
+        if ($this->isLocal()) {
+            return 'Backups on local storage can only be restored to their original server.';
+        }
+
+        if (! $this->database_engine || ! $this->database_version) {
+            return 'This backup file has no source database metadata and can only be restored to its original server.';
+        }
+
+        $service = $targetServer->database();
+        if (! $service) {
+            return 'The selected server has no database service.';
+        }
+
+        if ($service->name !== $this->database_engine) {
+            return "The backup was taken from {$this->database_engine} and cannot be restored to a server running {$service->name}.";
+        }
+
+        $targetVersion = static::normalizeVersion($service->installed_version ?: $service->version);
+        if ($targetVersion === null) {
+            return "Cannot determine the target server's database version.";
+        }
+
+        if (! static::versionGte($targetVersion, $this->database_version)) {
+            return "The target database version ({$targetVersion}) is lower than the backup source version ({$this->database_version}).";
+        }
+
+        return null;
+    }
+
+    public static function versionGte(string $target, string $source): bool
+    {
+        $targetParts = explode('.', $target);
+        $sourceParts = explode('.', $source);
+        $length = min(count($targetParts), count($sourceParts));
+
+        return version_compare(
+            implode('.', array_slice($targetParts, 0, $length)),
+            implode('.', array_slice($sourceParts, 0, $length)),
+            '>='
+        );
+    }
+
     /**
      * @return BelongsTo<Backup, covariant $this>
      */
@@ -95,11 +156,11 @@ class BackupFile extends AbstractModel
         return $this->belongsTo(Backup::class);
     }
 
-    public function tempPath(): string
+    public function tempPath(?Server $server = null): string
     {
         $extension = $this->getBackupExtension();
 
-        return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.$extension;
+        return '/home/'.($server ?? $this->backup->server)->getSshUser().'/'.$this->name.$extension;
     }
 
     public function path(): string

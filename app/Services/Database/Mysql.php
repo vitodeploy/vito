@@ -44,7 +44,7 @@ class Mysql extends AbstractDatabase implements HasLogs
     public function version(): string
     {
         $version = $this->service->server->ssh()->exec(
-            'mysql -V | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+            'mysql -V | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\' | head -n 1'
         );
 
         return trim($version);

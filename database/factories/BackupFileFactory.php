@@ -19,4 +19,12 @@ class BackupFileFactory extends Factory
             'status' => BackupFileStatus::CREATED,
         ];
     }
+
+    public function withSourceMetadata(string $engine = 'mysql', string $version = '8.0.36'): static
+    {
+        return $this->state([
+            'database_engine' => $engine,
+            'database_version' => $version,
+        ]);
+    }
 }

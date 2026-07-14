@@ -35,6 +35,8 @@ class RunBackup
             data: new BackupFileResource($file),
         ));
 
+        app(BroadcastBackupUpdate::class)->broadcast($backup);
+
         dispatch(new RunJob($file, $backup))->onQueue('ssh');
 
         return $file;

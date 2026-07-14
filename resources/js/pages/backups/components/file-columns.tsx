@@ -49,6 +49,19 @@ export const columns: ColumnDef<BackupFile>[] = [
     },
   },
   {
+    accessorKey: 'database_engine',
+    header: 'Source DB',
+    enableColumnFilter: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      return row.original.database_engine ? (
+        <Badge variant="outline">{`${row.original.database_engine} ${row.original.database_version ?? ''}`.trim()}</Badge>
+      ) : (
+        '-'
+      );
+    },
+  },
+  {
     accessorKey: 'restored_to',
     header: 'Restored to',
     enableColumnFilter: true,
