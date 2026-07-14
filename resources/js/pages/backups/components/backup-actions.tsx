@@ -68,9 +68,9 @@ export default function BackupActions({ backup }: { backup: Backup }) {
           <DropdownMenuContent align="end">
             <Edit backup={backup} />
             <ToggleEnabled backup={backup} />
-            <Link href={route('backup-files', { server: backup.server_id, backup: backup.id })}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
-            </Link>
+            <DropdownMenuItem asChild>
+              <Link href={route('backup-files', { server: backup.server_id, backup: backup.id })}>Files</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <Delete backup={backup} />
           </DropdownMenuContent>

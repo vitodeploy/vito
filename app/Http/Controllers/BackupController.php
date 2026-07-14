@@ -27,7 +27,7 @@ class BackupController extends Controller
     #[Get('/backups', name: 'backups.all')]
     public function index(): Response
     {
-        $this->authorize('viewAny', user()->currentProject);
+        $this->authorize('view', user()->currentProject);
 
         return Inertia::render('backups/index', [
             'backups' => BackupTable::make(user()->currentProject->backups())->simplePaginate(),

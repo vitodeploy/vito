@@ -258,7 +258,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
 
         $size = trim($this->service->server->ssh()->exec(
-            'stat -c%s '.escapeshellarg($backupFile->tempPath()),
+            'stat -c%s '.escapeshellarg($backupFile->tempPath()).' || true',
             'backup-size'
         ));
 

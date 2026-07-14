@@ -55,7 +55,7 @@ class RunBackup
         $server->os()->compress($sourcePath, $tempZipPath);
 
         $size = trim($server->ssh()->exec(
-            'stat -c%s '.escapeshellarg($tempZipPath),
+            'stat -c%s '.escapeshellarg($tempZipPath).' || true',
             'backup-size'
         ));
 

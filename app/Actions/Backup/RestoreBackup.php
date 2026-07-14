@@ -43,7 +43,7 @@ class RestoreBackup
     private function restoreDatabase(BackupFile $backupFile, array $input): void
     {
         /** @var Database $database */
-        $database = Database::query()->findOrFail($input['database']);
+        $database = Database::query()->with('server')->findOrFail($input['database']);
         $backupFile->restored_to = $database->server_id === $backupFile->backup->server_id
             ? $database->name
             : "{$database->name} ({$database->server->name})";
@@ -120,7 +120,7 @@ class RestoreBackup
             $rules['path'] = [
                 'required',
                 'string',
-                'min:1',
+                'regex:/^\/[^\r\n]*$/',
             ];
             $rules['owner'] = [
                 'required',
