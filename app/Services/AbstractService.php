@@ -48,11 +48,6 @@ abstract class AbstractService implements ServiceInterface
         return (bool) $this->unit();
     }
 
-    public function shouldCheckStatus(): bool
-    {
-        return (bool) $this->unit();
-    }
-
     public function manage(string $action): bool
     {
         $expectedState = in_array($action, ['stop', 'disable'], true) ? 'Active: inactive' : 'Active: active';

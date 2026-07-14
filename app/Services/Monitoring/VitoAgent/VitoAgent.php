@@ -123,6 +123,11 @@ class VitoAgent extends AbstractService
             'root'
         );
 
+        $this->service->server->ssh()->exec(
+            'sudo chmod 600 /etc/vito-agent/config.json',
+            'secure-vito-agent-config'
+        );
+
         $this->service->server->systemd()->restart($this->unit());
     }
 
@@ -137,7 +142,7 @@ class VitoAgent extends AbstractService
                 continue;
             }
             $handler = $service->handler();
-            if (! $handler->shouldCheckStatus()) {
+            if (! $handler->canBeManaged()) {
                 continue;
             }
             $services[] = ['id' => $service->id, 'unit' => $handler->unit()];

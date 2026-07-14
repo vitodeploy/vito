@@ -23,6 +23,7 @@ class UpdateVitoAgentConfigJobTest extends TestCase
 
         SSH::assertExecutedContains('/etc/vito-agent/config.json');
         SSH::assertExecutedContains('&& rm -f /tmp/');
+        SSH::assertExecutedContains('chmod 600 /etc/vito-agent/config.json');
         SSH::assertExecutedContains('restart vito-agent');
 
         $config = json_decode(SSH::getUploadedContent(), true);

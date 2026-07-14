@@ -67,7 +67,7 @@ class StoreAgentMetric
         foreach ($services as $entry) {
             /** @var ?Service $service */
             $service = $serverServices->get((int) $entry['id']);
-            if (! $service || ! $service->hasHandler() || ! $service->handler()->shouldCheckStatus()) {
+            if (! $service || ! $service->hasHandler() || ! $service->handler()->canBeManaged()) {
                 continue;
             }
             app(SyncServiceStatus::class)->sync($server, $service, $entry['status']);

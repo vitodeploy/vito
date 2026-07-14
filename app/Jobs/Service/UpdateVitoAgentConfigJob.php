@@ -25,7 +25,7 @@ class UpdateVitoAgentConfigJob implements ShouldQueue
             return;
         }
 
-        if (! $service->hasHandler() || ! $service->handler()->shouldCheckStatus()) {
+        if (! $service->hasHandler() || ! $service->handler()->canBeManaged()) {
             return;
         }
 

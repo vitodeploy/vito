@@ -9,6 +9,7 @@ use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -121,6 +122,41 @@ class CheckServiceStatusesTest extends TestCase
         $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::STOPPED]);
         $this->assertDatabaseHas('services', ['id' => $mysql->id, 'status' => ServiceStatus::STOPPED]);
         Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
+    public function test_skips_check_while_server_is_locked(): void
+    {
+        SSH::fake('inactive');
+        Event::fake([ServiceStatusChanged::class]);
+
+        $this->server->services()->delete();
+        $nginx = $this->createService('webserver', 'nginx', ServiceStatus::READY);
+
+        $lock = Cache::lock("unique-queue:server-{$this->server->id}", 60);
+        $this->assertTrue($lock->get());
+
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        SSH::assertNotExecutedContains('is-active');
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+
+        $lock->release();
+    }
+
+    public function test_releases_lock_after_check(): void
+    {
+        SSH::fake('active');
+        Event::fake([ServiceStatusChanged::class]);
+
+        $this->server->services()->delete();
+        $this->createService('webserver', 'nginx', ServiceStatus::READY);
+
+        app(CheckServiceStatuses::class)->check($this->server);
+
+        $lock = Cache::lock("unique-queue:server-{$this->server->id}", 60);
+        $this->assertTrue($lock->get());
+        $lock->release();
     }
 
     private function createService(string $type, string $name, ServiceStatus $status): Service

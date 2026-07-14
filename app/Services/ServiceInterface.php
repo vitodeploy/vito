@@ -40,7 +40,5 @@ interface ServiceInterface
 
     public function canBeManaged(): bool;
 
-    public function shouldCheckStatus(): bool;
-
     public function manage(string $action): bool;
 }
