@@ -7,6 +7,7 @@ use App\Facades\SSH;
 use App\Jobs\Service\UpdateVitoAgentConfigJob;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class UpdateVitoAgentConfigJobTest extends TestCase
@@ -62,6 +63,26 @@ class UpdateVitoAgentConfigJobTest extends TestCase
 
         SSH::assertNotExecutedContains('restart vito-agent');
         $this->assertSame('', SSH::getUploadedContent());
+    }
+
+    public function test_dispatch_for_never_throws_into_the_calling_job(): void
+    {
+        Queue::fake();
+
+        $this->createAgent(ServiceStatus::READY);
+        config()->set('service.services.broken.handler', 'App\Services\DoesNotExist');
+
+        /** @var Service $broken */
+        $broken = $this->server->services()->create([
+            'type' => 'broken',
+            'name' => 'broken',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        UpdateVitoAgentConfigJob::dispatchFor($broken);
+
+        Queue::assertNotPushed(UpdateVitoAgentConfigJob::class);
     }
 
     private function createAgent(ServiceStatus $status): Service

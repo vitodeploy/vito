@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class UpdateVitoAgentConfigJob implements ShouldQueue
 {
@@ -21,20 +22,27 @@ class UpdateVitoAgentConfigJob implements ShouldQueue
 
     public static function dispatchFor(Service $service): void
     {
-        if ($service->name === VitoAgent::id()) {
-            return;
-        }
+        try {
+            if ($service->name === VitoAgent::id()) {
+                return;
+            }
 
-        if (! $service->hasHandler() || ! $service->handler()->canBeManaged()) {
-            return;
-        }
+            if (! $service->hasHandler() || ! $service->handler()->canBeManaged()) {
+                return;
+            }
 
-        $monitoring = $service->server->monitoring();
-        if (! $monitoring instanceof Service || $monitoring->name !== VitoAgent::id()) {
-            return;
-        }
+            $monitoring = $service->server->monitoring();
+            if (! $monitoring instanceof Service || $monitoring->name !== VitoAgent::id()) {
+                return;
+            }
 
-        dispatch(new self($service->server))->onQueue('ssh');
+            dispatch(new self($service->server))->onQueue('ssh');
+        } catch (Throwable $e) {
+            Log::warning('Failed to dispatch vito-agent config update', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function handle(): void

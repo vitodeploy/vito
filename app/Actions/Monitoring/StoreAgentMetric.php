@@ -57,16 +57,21 @@ class StoreAgentMetric
      */
     private function syncServiceStatuses(Server $server, array $services): void
     {
+        $entries = [];
+        foreach ($services as $entry) {
+            $entries[(int) $entry['id']] = $entry;
+        }
+
         $serverServices = $server->services()
-            ->whereIn('id', array_column($services, 'id'))
+            ->whereIn('id', array_keys($entries))
             ->whereIn('status', SyncServiceStatus::SETTLED_STATUSES)
             ->where('type', '!=', 'monitoring')
             ->get()
             ->keyBy('id');
 
-        foreach ($services as $entry) {
+        foreach ($entries as $id => $entry) {
             /** @var ?Service $service */
-            $service = $serverServices->get((int) $entry['id']);
+            $service = $serverServices->get($id);
             if (! $service || ! $service->hasHandler() || ! $service->handler()->canBeManaged()) {
                 continue;
             }

@@ -10,6 +10,7 @@ use Closure;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
+use JsonException;
 use Ramsey\Uuid\Uuid;
 
 class VitoAgent extends AbstractService
@@ -108,6 +109,7 @@ class VitoAgent extends AbstractService
 
     /**
      * @throws SSHError
+     * @throws JsonException
      */
     public function updateConfig(): void
     {
@@ -119,7 +121,7 @@ class VitoAgent extends AbstractService
 
         $this->service->server->ssh()->write(
             '/etc/vito-agent/config.json',
-            (string) json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
             'root'
         );
 

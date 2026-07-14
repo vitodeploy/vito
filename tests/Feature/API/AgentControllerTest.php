@@ -229,6 +229,29 @@ class AgentControllerTest extends TestCase
         Event::assertNotDispatched(ServiceStatusChanged::class);
     }
 
+    public function test_duplicate_service_entries_count_as_one_reading(): void
+    {
+        Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
+
+        $service = $this->agentService();
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            array_merge($this->minimalPayload(), [
+                'services' => [
+                    ['id' => $nginx->id, 'status' => 'inactive'],
+                    ['id' => $nginx->id, 'status' => 'inactive'],
+                ],
+            ]),
+            ['secret' => 'test-secret']
+        )->assertSuccessful();
+
+        $this->assertDatabaseHas('services', ['id' => $nginx->id, 'status' => ServiceStatus::READY]);
+        Event::assertNotDispatched(ServiceStatusChanged::class);
+    }
+
     public function test_agent_reported_restart_flap_does_not_change_status(): void
     {
         Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
