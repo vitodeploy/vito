@@ -9,7 +9,7 @@ export interface ScriptEventHook {
   server?: Server;
   event: string;
   event_value: string;
-  event_color: string;
+  event_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   user: string;
   enabled: boolean;
   created_at: string;

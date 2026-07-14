@@ -116,8 +116,8 @@ class RunScriptEventHooks
             [
                 'service_name' => $event->serviceName,
                 'service_type' => $event->serviceType,
-                'server_name' => $server?->name ?? '',
-                'server_ip' => $server?->ip ?? '',
+                'server_name' => $server->name ?? '',
+                'server_ip' => $server->ip ?? '',
             ],
         ];
     }

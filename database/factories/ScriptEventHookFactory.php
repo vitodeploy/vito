@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ScriptEventHookEvent;
 use App\Models\ScriptEventHook;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +19,7 @@ class ScriptEventHookFactory extends Factory
     public function definition(): array
     {
         return [
-            'event' => \App\Enums\ScriptEventHookEvent::SITE_CREATED,
+            'event' => ScriptEventHookEvent::SITE_CREATED,
             'user' => 'root',
             'enabled' => true,
         ];

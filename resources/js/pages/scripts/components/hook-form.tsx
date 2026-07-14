@@ -149,11 +149,7 @@ export default function HookForm({
 
             <FormField>
               <div className="flex items-center gap-2">
-                <Checkbox
-                  id="enabled"
-                  checked={form.data.enabled}
-                  onCheckedChange={(checked) => form.setData('enabled', checked === true)}
-                />
+                <Checkbox id="enabled" checked={form.data.enabled} onCheckedChange={(checked) => form.setData('enabled', checked === true)} />
                 <Label htmlFor="enabled">Enabled</Label>
               </div>
               <InputError message={form.errors.enabled} />

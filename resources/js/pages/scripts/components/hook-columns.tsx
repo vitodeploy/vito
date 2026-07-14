@@ -46,11 +46,7 @@ export function hookColumns(script: Script): ColumnDef<ScriptEventHook>[] {
     {
       accessorKey: 'event',
       header: 'Event',
-      cell: ({ row }) => (
-        <Badge variant={row.original.event_color}>
-          {row.original.event}
-        </Badge>
-      ),
+      cell: ({ row }) => <Badge variant={row.original.event_color}>{row.original.event}</Badge>,
     },
     {
       accessorKey: 'server',

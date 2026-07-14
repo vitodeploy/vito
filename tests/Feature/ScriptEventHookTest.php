@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Script\ExecuteScript;
 use App\Enums\ScriptEventHookEvent;
 use App\Enums\ScriptExecutionStatus;
 use App\Events\ServerDeletedEvent;
@@ -13,6 +14,7 @@ use App\Events\SiteDeletedEvent;
 use App\Facades\SSH;
 use App\Models\Script;
 use App\Models\ScriptEventHook;
+use App\Models\ScriptExecution;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -323,7 +325,7 @@ class ScriptEventHookTest extends TestCase
             'status' => ScriptExecutionStatus::COMPLETED,
         ]);
 
-        $execution = \App\Models\ScriptExecution::query()
+        $execution = ScriptExecution::query()
             ->where('script_id', $script->id)
             ->firstOrFail();
 
@@ -342,7 +344,7 @@ class ScriptEventHookTest extends TestCase
         ]);
 
         // Make executeForHook throw by binding a mock that always throws
-        $this->mock(\App\Actions\Script\ExecuteScript::class, function ($mock): void {
+        $this->mock(ExecuteScript::class, function ($mock): void {
             $mock->shouldReceive('executeForHook')->andThrow(new \RuntimeException('simulated failure'));
         });
 
