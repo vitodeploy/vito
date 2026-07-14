@@ -22,12 +22,12 @@ class CheckServiceStatuses
             if (! $service->hasHandler()) {
                 continue;
             }
-            $handler = $service->handler();
-            if (! $handler->canBeManaged()) {
+            $unit = $service->handler()->unit();
+            if ($unit === '') {
                 continue;
             }
             $checkable[] = $service;
-            $units[] = $handler->unit();
+            $units[] = $unit;
         }
 
         if ($units === []) {

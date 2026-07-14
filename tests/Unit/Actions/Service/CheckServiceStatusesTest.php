@@ -82,7 +82,7 @@ class CheckServiceStatusesTest extends TestCase
         $this->createService('webserver', 'nginx', ServiceStatus::INSTALLING);
         $this->createService('nodejs', 'nodejs', ServiceStatus::READY);
         $this->createService('log_analysis', 'goaccess', ServiceStatus::READY);
-        $mysql = $this->createService('database', 'mysql', ServiceStatus::READY);
+        $mysql = $this->createService('database', 'mysql', ServiceStatus::STOPPED);
 
         app(CheckServiceStatuses::class)->check($this->server);
 
@@ -90,8 +90,9 @@ class CheckServiceStatusesTest extends TestCase
         SSH::assertNotExecutedContains('nginx');
         SSH::assertNotExecutedContains('nodejs');
         SSH::assertNotExecutedContains('goaccess');
+        SSH::assertNotExecutedContains("''");
         $this->assertDatabaseHas('services', ['id' => $mysql->id, 'status' => ServiceStatus::READY]);
-        Event::assertNotDispatched(ServiceStatusChanged::class);
+        Event::assertDispatchedTimes(ServiceStatusChanged::class, 1);
     }
 
     public function test_skips_ssh_when_no_pollable_services(): void
