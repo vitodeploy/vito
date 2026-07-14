@@ -43,12 +43,11 @@ class BackupTable extends Table
 
         return [
             ...$columns,
-            Column::make('id', 'ID')->sortable(),
             EnumColumn::make('type', 'Type')->sortable(),
             Column::make('target', 'Target')
                 ->value(fn (Backup $backup) => $backup->type === BackupType::FILE ? $backup->path : $backup->database?->name)
                 ->fallback('-'),
-            Column::make('storage.name', 'Storage'),
+            Column::make('storage.profile', 'Storage'),
             BadgeColumn::make('last_file_status', 'Last file')
                 ->value(fn (Backup $backup) => $backup->lastFile?->status->getText())
                 ->colorField('last_file_status_color')
@@ -59,6 +58,7 @@ class BackupTable extends Table
             DateTimeColumn::make('created_at', 'Created at')->sortable(),
             Column::data('last_file_status_color', fn (Backup $backup) => $backup->lastFile?->status->getColor()),
             Column::data('state_color', fn (Backup $backup) => $backup->status?->getColor() ?? ($backup->enabled ? 'success' : 'gray')),
+            Column::data('id'),
             Column::data('server_id'),
             Column::data('resource', fn (Backup $backup) => BackupResource::make($backup)),
             ActionsColumn::make(),

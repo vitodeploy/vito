@@ -54,6 +54,11 @@ class RunBackup
         // Compress the file/directory using OS service
         $server->os()->compress($sourcePath, $tempZipPath);
 
+        $size = trim($server->ssh()->exec(
+            'stat -c%s '.escapeshellarg($tempZipPath),
+            'backup-size'
+        ));
+
         // Upload to storage provider
         $upload = $backup->storage->provider()->ssh($server)->upload(
             $tempZipPath,
@@ -63,8 +68,7 @@ class RunBackup
         // Clean up temporary file
         $server->os()->deleteFile($tempZipPath);
 
-        // Set file size from upload response
-        $file->size = $upload['size'];
+        $file->size = is_numeric($size) ? (int) $size : ($upload['size'] ?? null);
         $file->save();
     }
 }

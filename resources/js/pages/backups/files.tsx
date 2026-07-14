@@ -23,6 +23,9 @@ export default function Files() {
   const page = usePage<Page>();
   const [files] = useRealtime<BackupFile>(page.props.files, 'backup-file', { backup_id: page.props.backup.id });
 
+  const visibleColumns =
+    page.props.backup.type === 'file' ? columns.filter((column) => !('accessorKey' in column && column.accessorKey === 'database_engine')) : columns;
+
   const runBackupForm = useForm();
   const runBackup = () => {
     runBackupForm.post(route('backups.run', { server: page.props.server.id, backup: page.props.backup.id }));
@@ -50,7 +53,7 @@ export default function Files() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={files} />
+        <DataTable columns={visibleColumns} paginatedData={files} />
       </Container>
     </ServerLayout>
   );
