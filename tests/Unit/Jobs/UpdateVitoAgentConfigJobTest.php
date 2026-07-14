@@ -19,12 +19,20 @@ class UpdateVitoAgentConfigJobTest extends TestCase
         SSH::fake();
 
         $agent = $this->createAgent(ServiceStatus::READY);
+        $this->server->services()->create([
+            'type' => 'log_analysis',
+            'name' => 'goaccess',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
 
         dispatch(new UpdateVitoAgentConfigJob($this->server));
 
         SSH::assertExecutedContains('/etc/vito-agent/config.json');
         SSH::assertExecutedContains('&& rm -f /tmp/');
         SSH::assertExecutedContains('chmod 600 /etc/vito-agent/config.json');
+        SSH::assertExecutedContains('Monitoring services: ');
+        SSH::assertNotExecutedContains('agent-secret');
         SSH::assertExecutedContains('restart vito-agent');
 
         $config = json_decode(SSH::getUploadedContent(), true);
@@ -40,6 +48,7 @@ class UpdateVitoAgentConfigJobTest extends TestCase
         $this->assertContains('ufw', $units);
         $this->assertContains('supervisor', $units);
         $this->assertContains('redis-server', $units);
+        $this->assertNotContains('', $units);
         $this->assertArrayNotHasKey($agent->id, $units);
     }
 
