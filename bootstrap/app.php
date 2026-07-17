@@ -26,12 +26,14 @@ $envValue = static function (string $key): ?string {
     return is_string($value) && $value !== '' ? $value : null;
 };
 
-if (($environmentPath = $envValue('VITO_ENV_PATH')) !== null) {
-    $app->useEnvironmentPath($environmentPath);
-}
+if (filter_var($envValue('VITO_DESKTOP') ?? false, FILTER_VALIDATE_BOOL)) {
+    if (($environmentPath = $envValue('VITO_ENV_PATH')) !== null) {
+        $app->useEnvironmentPath($environmentPath);
+    }
 
-if (($storagePath = $envValue('VITO_STORAGE_PATH')) !== null) {
-    $app->useStoragePath($storagePath);
+    if (($storagePath = $envValue('VITO_STORAGE_PATH')) !== null) {
+        $app->useStoragePath($storagePath);
+    }
 }
 
 /*

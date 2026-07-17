@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Actions\User\ResetUserPassword;
 use App\Actions\User\UpdateUserPassword;
 use App\Actions\User\UpdateUserProfileInformation;
+use App\Models\User;
 use App\Support\DesktopRuntime;
+use Closure;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -26,24 +28,14 @@ class AuthServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
 
-        Fortify::loginView(fn () => DesktopRuntime::enabled()
-            ? to_route('desktop.login')
-            : Inertia::render('auth/login'));
-        Fortify::requestPasswordResetLinkView(fn () => DesktopRuntime::enabled()
-            ? to_route('desktop.login')
-            : Inertia::render('auth/forgot-password'));
-        Fortify::confirmPasswordView(fn () => DesktopRuntime::enabled()
-            ? to_route('desktop.login')
-            : Inertia::render('auth/confirm-password'));
-        Fortify::resetPasswordView(fn (Request $request) => DesktopRuntime::enabled()
-            ? to_route('desktop.login')
-            : Inertia::render('auth/reset-password', [
-                'email' => $request->email,
-                'token' => $request->route('token'),
-            ]));
-        Fortify::twoFactorChallengeView(fn () => DesktopRuntime::enabled()
-            ? to_route('desktop.login')
-            : Inertia::render('auth/two-factor'));
+        Fortify::loginView($this->desktopAware(fn () => Inertia::render('auth/login')));
+        Fortify::requestPasswordResetLinkView($this->desktopAware(fn () => Inertia::render('auth/forgot-password')));
+        Fortify::confirmPasswordView($this->desktopAware(fn () => Inertia::render('auth/confirm-password')));
+        Fortify::resetPasswordView($this->desktopAware(fn (Request $request) => Inertia::render('auth/reset-password', [
+            'email' => $request->email,
+            'token' => $request->route('token'),
+        ])));
+        Fortify::twoFactorChallengeView($this->desktopAware(fn () => Inertia::render('auth/two-factor')));
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username()).'|'.$request->ip()));
@@ -54,5 +46,17 @@ class AuthServiceProvider extends ServiceProvider
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
+
+        RateLimiter::for('desktop-auth', function (Request $request) {
+            $user = $request->route('user');
+            $userKey = $user instanceof User ? $user->id : (string) $user;
+
+            return Limit::perMinute(5)->by($userKey.'|'.$request->ip());
+        });
+    }
+
+    private function desktopAware(Closure $view): Closure
+    {
+        return fn (Request $request) => DesktopRuntime::enabled() ? to_route('desktop.login') : $view($request);
     }
 }

@@ -134,7 +134,7 @@ export interface SharedData {
   version: string;
   env: string;
   demo: boolean;
-  desktop?: {
+  desktop: {
     enabled: boolean;
   };
   quote: { message: string; author: string };

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const SIMPLE_VALUE = /^[A-Za-z0-9_./:@-]*$/;
 
@@ -25,7 +25,9 @@ export function readEnvFile(path: string): Record<string, string> {
     const key = trimmed.slice(0, equalsAt).trim();
     let value = trimmed.slice(equalsAt + 1).trim();
 
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (value.startsWith('"') && value.endsWith('"')) {
+      value = value.slice(1, -1).replace(/\\(["\\])/g, '$1');
+    } else if (value.startsWith("'") && value.endsWith("'")) {
       value = value.slice(1, -1);
     }
 
@@ -37,7 +39,11 @@ export function readEnvFile(path: string): Record<string, string> {
 
 export function writeEnvFile(path: string, values: Record<string, string>): void {
   const lines = Object.entries(values).map(([key, value]) => `${key}=${formatEnvValue(value)}`);
-  writeFileSync(path, `${lines.join('\n')}\n`, 'utf8');
+  writeFileSync(path, `${lines.join('\n')}\n`, { encoding: 'utf8', mode: 0o600 });
+
+  try {
+    chmodSync(path, 0o600);
+  } catch {}
 }
 
 export function appKey(): string {

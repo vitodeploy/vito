@@ -4,16 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import AuthLayout from '@/layouts/auth/layout';
-import { useInitials } from '@/hooks/use-initials';
+import { UserInfo } from '@/components/user-info';
 import { type User } from '@/types/user';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { LoaderCircleIcon, LockKeyholeIcon, UserPlusIcon, UserRoundIcon } from 'lucide-react';
+import { LoaderCircleIcon, LockKeyholeIcon, UserPlusIcon } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
-type DesktopUser = Pick<User, 'id' | 'name' | 'email' | 'is_admin' | 'created_at' | 'updated_at'>;
-
 type DesktopLoginProps = {
-  users: DesktopUser[];
+  users: User[];
   setup_required: boolean;
   locked: boolean;
   locked_user_id: number | null;
@@ -21,10 +19,11 @@ type DesktopLoginProps = {
 
 export default function DesktopLogin() {
   const { users, setup_required, locked, locked_user_id } = usePage<DesktopLoginProps>().props;
-  const initials = useInitials();
   const [selectedUserId, setSelectedUserId] = useState<number | null>(locked_user_id);
-  const loginForm = useForm<{ password: string }>({
+  const [choosing, setChoosing] = useState(false);
+  const loginForm = useForm<{ password: string; code: string }>({
     password: '',
+    code: '',
   });
   const setupForm = useForm<{
     name: string;
@@ -46,14 +45,25 @@ export default function DesktopLogin() {
       ? 'Enter the password for the selected user.'
       : 'Select a local desktop user to continue.';
 
-  const chooseUser = (user: DesktopUser) => {
+  const chooseUser = (user: User) => {
     if (!locked) {
-      router.post(route('desktop.login.store', { user: user.id }));
+      if (choosing) {
+        return;
+      }
+
+      setChoosing(true);
+      router.post(
+        route('desktop.login.store', { user: user.id }),
+        {},
+        {
+          onFinish: () => setChoosing(false),
+        },
+      );
       return;
     }
 
     loginForm.clearErrors();
-    loginForm.reset('password');
+    loginForm.reset('password', 'code');
     setSelectedUserId(user.id);
   };
 
@@ -73,7 +83,7 @@ export default function DesktopLogin() {
     }
 
     loginForm.post(route('desktop.login.store', { user: selectedUser.id }), {
-      onFinish: () => loginForm.reset('password'),
+      onFinish: () => loginForm.reset('password', 'code'),
     });
   };
 
@@ -161,18 +171,14 @@ export default function DesktopLogin() {
                   key={user.id}
                   type="button"
                   onClick={() => chooseUser(user)}
+                  disabled={!locked && choosing}
                   className={cn(
-                    'border-input bg-background hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors',
+                    'border-input bg-background hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors disabled:pointer-events-none disabled:opacity-50',
                     selected && 'border-ring ring-ring/40 ring-2',
                   )}
                 >
-                  <span className="bg-accent text-accent-foreground border-ring flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-sm font-medium">
-                    {initials(user.name) || <UserRoundIcon className="size-4" />}
-                  </span>
-                  <span className="grid min-w-0 flex-1 text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="text-muted-foreground truncate text-xs">{user.email}</span>
-                  </span>
+                  <UserInfo user={user} showEmail />
+                  {!locked && choosing && <LoaderCircleIcon className="text-muted-foreground size-4 animate-spin" />}
                   {locked && selected && <LockKeyholeIcon className="text-muted-foreground size-4" />}
                 </button>
               );
@@ -196,6 +202,22 @@ export default function DesktopLogin() {
               />
               <InputError message={loginForm.errors.password} />
             </div>
+
+            {selectedUser.two_factor_enabled && (
+              <div className="grid gap-2">
+                <Label htmlFor="code">Two-factor code</Label>
+                <Input
+                  id="code"
+                  type="text"
+                  required
+                  autoComplete="one-time-code"
+                  value={loginForm.data.code}
+                  onChange={(e) => loginForm.setData('code', e.target.value)}
+                  placeholder="Authentication or recovery code"
+                />
+                <InputError message={loginForm.errors.code} />
+              </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={loginForm.processing}>
               {loginForm.processing && <LoaderCircleIcon className="animate-spin" />}

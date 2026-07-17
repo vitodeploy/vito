@@ -7,6 +7,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
 class DesktopAuthTest extends TestCase
@@ -166,5 +167,69 @@ class DesktopAuthTest extends TestCase
         $response
             ->assertRedirect(RouteServiceProvider::HOME)
             ->assertSessionMissing('desktop.locked_user_id');
+    }
+
+    public function test_desktop_unlock_requires_two_factor_code_when_enabled(): void
+    {
+        config()->set('desktop.enabled', true);
+
+        $secret = app(Google2FA::class)->generateSecretKey();
+
+        /** @var User $user */
+        $user = User::factory()->create([
+            'password' => Hash::make('secret-password'),
+            'two_factor_secret' => encrypt($secret),
+            'two_factor_recovery_codes' => encrypt((string) json_encode(['recovery-code-1'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $this->withSession(['desktop.locked_user_id' => $user->id])
+            ->post(route('desktop.login.store', $user), [
+                'password' => 'secret-password',
+            ])
+            ->assertSessionHasErrors('code');
+
+        $this->assertGuest();
+
+        $this->withSession(['desktop.locked_user_id' => $user->id])
+            ->post(route('desktop.login.store', $user), [
+                'password' => 'secret-password',
+                'code' => '000000',
+            ])
+            ->assertSessionHasErrors('code');
+
+        $this->assertGuest();
+
+        $response = $this->withSession(['desktop.locked_user_id' => $user->id])
+            ->post(route('desktop.login.store', $user), [
+                'password' => 'secret-password',
+                'code' => app(Google2FA::class)->getCurrentOtp($secret),
+            ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
+    public function test_desktop_unlock_accepts_recovery_code(): void
+    {
+        config()->set('desktop.enabled', true);
+
+        /** @var User $user */
+        $user = User::factory()->create([
+            'password' => Hash::make('secret-password'),
+            'two_factor_secret' => encrypt(app(Google2FA::class)->generateSecretKey()),
+            'two_factor_recovery_codes' => encrypt((string) json_encode(['recovery-code-1'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this->withSession(['desktop.locked_user_id' => $user->id])
+            ->post(route('desktop.login.store', $user), [
+                'password' => 'secret-password',
+                'code' => 'recovery-code-1',
+            ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $this->assertNotContains('recovery-code-1', $user->fresh()->recoveryCodes());
     }
 }

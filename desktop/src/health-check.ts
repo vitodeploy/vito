@@ -4,7 +4,7 @@ export async function waitForHttp(url: string, timeoutMs: number): Promise<void>
 
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
       if (response.ok) {
         return;
       }

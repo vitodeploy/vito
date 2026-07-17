@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
         ResourceCollection::withoutWrapping();
 
         if (DesktopRuntime::enabled()) {
-            Vite::useBuildDirectory('build-desktop');
+            Vite::useBuildDirectory((string) config('desktop.build_directory'));
         }
 
         // facades

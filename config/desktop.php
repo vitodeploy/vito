@@ -5,4 +5,5 @@ return [
     'data_path' => env('VITO_DATA_PATH'),
     'env_path' => env('VITO_ENV_PATH'),
     'storage_path' => env('VITO_STORAGE_PATH'),
+    'build_directory' => 'build-desktop',
 ];

@@ -41,10 +41,23 @@ fi
 
 fetch_windows() {
   local zip="$TARGET/php-windows.zip"
+  local releases
+  releases="$(curl -fsSL --retry 3 -A "vito-desktop-build" https://windows.php.net/downloads/releases/releases.json)"
 
-  curl -fsSL --retry 3 \
-    "https://windows.php.net/downloads/releases/latest/php-${PHP_SERIES}-nts-Win32-vs17-x64-latest.zip" \
+  local zip_name
+  local zip_sha256
+  zip_name="$(jq -r ".\"${PHP_SERIES}\".\"nts-vs17-x64\".zip.path" <<< "$releases")"
+  zip_sha256="$(jq -r ".\"${PHP_SERIES}\".\"nts-vs17-x64\".zip.sha256" <<< "$releases")"
+
+  if [ -z "$zip_name" ] || [ "$zip_name" = "null" ] || [ -z "$zip_sha256" ] || [ "$zip_sha256" = "null" ]; then
+    echo "Unable to resolve the PHP ${PHP_SERIES} NTS x64 build from releases.json" >&2
+    exit 1
+  fi
+
+  curl -fsSL --retry 3 -A "vito-desktop-build" \
+    "https://windows.php.net/downloads/releases/${zip_name}" \
     -o "$zip"
+  verify_sha256 "$zip" "$zip_sha256"
   unzip -qo "$zip" -d "$TARGET"
   rm -f "$zip"
 
@@ -74,6 +87,28 @@ INI
   done
 }
 
+verify_sha256() {
+  local file="$1"
+  local expected="$2"
+  local actual
+
+  actual="$(shasum -a 256 "$file" | awk '{print $1}')"
+
+  if [ "$actual" != "$expected" ]; then
+    echo "Checksum mismatch for $file: expected $expected, got $actual" >&2
+    exit 1
+  fi
+}
+
+spc_sha256() {
+  case "$1" in
+    spc-macos-aarch64) echo "acf2f25d56d0cbf8e65aa82e5054fef555f7be7c5c38046c6e0819f266d83225" ;;
+    spc-macos-x86_64) echo "e8b798048f62ca4960764196543b60ae703f7174aa418824cf542aeec1d2cd6a" ;;
+    spc-linux-x86_64) echo "523ba4279c54c7a377156c0dd3a36adf92ee64b01e9a7f5e9e2ec084b8e458e5" ;;
+    *) echo "" ;;
+  esac
+}
+
 fetch_unix() {
   local spc_platform
   local spc_arch
@@ -96,6 +131,7 @@ fetch_unix() {
   curl -fsSL --retry 3 \
     "https://github.com/crazywhalecc/static-php-cli/releases/download/${SPC_VERSION}/spc-${spc_platform}-${spc_arch}.tar.gz" \
     -o "$workdir/spc.tar.gz"
+  verify_sha256 "$workdir/spc.tar.gz" "$(spc_sha256 "spc-${spc_platform}-${spc_arch}")"
   tar -xzf "$workdir/spc.tar.gz" -C "$workdir"
   chmod +x "$workdir/spc"
 

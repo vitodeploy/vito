@@ -19,6 +19,7 @@ export type RuntimeContext = {
   phpBinary: string;
   phpArgs: string[];
   env: NodeJS.ProcessEnv;
+  redactions: string[];
 };
 
 export async function createRuntimeContext(): Promise<RuntimeContext> {
@@ -102,6 +103,7 @@ export async function createRuntimeContext(): Promise<RuntimeContext> {
     phpBinary,
     phpArgs,
     env,
+    redactions: [envValues.APP_KEY, envValues.WS_BROADCAST_SECRET],
   };
 }
 
@@ -121,13 +123,13 @@ function ensureRuntimeDirectories(storagePath: string, runtimePath: string, boot
   ];
 
   for (const directory of directories) {
-    mkdirSync(directory, { recursive: true });
+    mkdirSync(directory, { recursive: true, mode: 0o700 });
   }
 }
 
 function ensureFile(path: string): void {
   if (!existsSync(path)) {
-    writeFileSync(path, '');
+    writeFileSync(path, '', { mode: 0o600 });
   }
 }
 

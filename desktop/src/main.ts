@@ -14,7 +14,7 @@ let quitting = false;
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
-  app.quit();
+  app.exit(0);
 }
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
@@ -54,47 +54,56 @@ app.on('before-quit', async (event) => {
   app.exit(0);
 });
 
-app.whenReady().then(async () => {
-  mainWindow = createWindow();
-  await mainWindow.loadURL(loadingPage('Preparing local runtime...'));
+app
+  .whenReady()
+  .then(async () => {
+    if (!gotLock) {
+      return;
+    }
 
-  try {
-    const context = await createRuntimeContext();
-    const log = new DesktopLog(context.logPath);
-    const pidFilePath = join(context.runtimePath, 'processes.json');
+    mainWindow = createWindow();
+    await mainWindow.loadURL(loadingPage('Preparing local runtime...'));
 
-    cleanupStaleProcesses(pidFilePath, log);
+    try {
+      const context = await createRuntimeContext();
+      const log = new DesktopLog(context.logPath, context.redactions);
+      const pidFilePath = join(context.runtimePath, 'processes.json');
 
-    supervisor = new ProcessSupervisor(log, pidFilePath, (name) => {
-      if (quitting || name !== 'vito-http') {
-        return;
-      }
+      cleanupStaleProcesses(pidFilePath, log);
 
-      const message = 'The local Vito backend repeatedly crashed and could not be restarted.';
-      log.error(message);
-      void mainWindow?.loadURL(errorPage(message));
-      dialog.showErrorBox('Vito backend stopped', message);
-    });
+      supervisor = new ProcessSupervisor(log, pidFilePath, (name) => {
+        if (quitting || name !== 'vito-http') {
+          return;
+        }
 
-    log.info(`Using Laravel app path: ${context.appRoot}`);
-    log.info(`Using desktop data path: ${context.dataPath}`);
+        const message = 'The local Vito backend repeatedly crashed and could not be restarted.';
+        log.error(message);
+        void mainWindow?.loadURL(errorPage(message));
+        dialog.showErrorBox('Vito backend stopped', message);
+      });
 
-    attachNavigationGuards(mainWindow, context.appUrl);
+      log.info(`Using Laravel app path: ${context.appRoot}`);
+      log.info(`Using desktop data path: ${context.dataPath}`);
 
-    await mainWindow.loadURL(loadingPage('Migrating local database...'));
-    await prepareLaravelRuntime(context, log);
+      attachNavigationGuards(mainWindow, context.appUrl);
 
-    await mainWindow.loadURL(loadingPage('Starting backend services...'));
-    startLaravelProcesses(context, supervisor);
-    await waitForHttp(`${context.appUrl}/api/health`, 45000);
+      await mainWindow.loadURL(loadingPage('Migrating local database...'));
+      await prepareLaravelRuntime(context, log);
 
-    await mainWindow.loadURL(`${context.appUrl}/desktop/login`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await mainWindow.loadURL(errorPage(message));
-    dialog.showErrorBox('Vito could not start', message);
-  }
-});
+      await mainWindow.loadURL(loadingPage('Starting backend services...'));
+      startLaravelProcesses(context, supervisor);
+      await waitForHttp(`${context.appUrl}/api/health`, 45000);
+
+      await mainWindow.loadURL(`${context.appUrl}/desktop/login`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await mainWindow.loadURL(errorPage(message));
+      dialog.showErrorBox('Vito could not start', message);
+    }
+  })
+  .catch((error) => {
+    dialog.showErrorBox('Vito could not start', error instanceof Error ? error.message : String(error));
+  });
 
 app.on('window-all-closed', () => {
   app.quit();

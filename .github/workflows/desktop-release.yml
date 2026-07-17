@@ -12,6 +12,21 @@ on:
         description: 'Existing release tag to build and attach desktop apps to'
         required: true
         type: string
+    secrets:
+      DESKTOP_MAC_CSC_LINK:
+        required: false
+      DESKTOP_MAC_CSC_KEY_PASSWORD:
+        required: false
+      DESKTOP_WIN_CSC_LINK:
+        required: false
+      DESKTOP_WIN_CSC_KEY_PASSWORD:
+        required: false
+      DESKTOP_APPLE_ID:
+        required: false
+      DESKTOP_APPLE_APP_SPECIFIC_PASSWORD:
+        required: false
+      DESKTOP_APPLE_TEAM_ID:
+        required: false
 
 permissions:
   contents: write
