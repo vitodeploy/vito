@@ -2,11 +2,14 @@
 
 namespace Tests\Unit\Commands;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class GenerateKeysCommandTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_it_generates_keys_when_storage_path_contains_spaces(): void
     {
         $storagePath = storage_path('framework/testing/key path with spaces');
