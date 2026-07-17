@@ -24,6 +24,7 @@ class CreateRedirect
         $redirect->from = $input['from'];
         $redirect->to = $input['to'];
         $redirect->mode = $input['mode'];
+        $redirect->websocket = ((int) $input['mode'] === Redirect::MODE_PROXY) && ($input['websocket'] ?? false);
         $redirect->status = RedirectStatus::CREATING;
         $redirect->save();
 
@@ -54,8 +55,12 @@ class CreateRedirect
                     302,
                     307,
                     308,
-                    1000,
+                    Redirect::MODE_PROXY,
                 ]),
+            ],
+            'websocket' => [
+                'nullable',
+                'boolean',
             ],
         ];
 

@@ -1490,6 +1490,7 @@ paths:
                     from: 'old-path'
                     to: 'https://example.com/new-path'
                     mode: 301
+                    websocket: false
                     status: 'ready'
                     status_color: 'success'
                     created_at: '2024-01-01T00:00:00.000000Z'
@@ -1580,10 +1581,16 @@ paths:
                   enum: [301, 302, 307, 308, 1000]
                   description: 'HTTP redirect mode'
                   example: 301
+                websocket:
+                  type: boolean
+                  description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
+                  default: false
+                  example: false
             example:
               from: 'old-path'
               to: 'https://example.com/new-path'
               mode: 301
+              websocket: false
       responses:
         '200':
           description: Redirect created successfully
@@ -1598,6 +1605,7 @@ paths:
                 from: 'old-path'
                 to: 'https://example.com/new-path'
                 mode: 301
+                websocket: false
                 status: 'creating'
                 status_color: 'warning'
                 created_at: '2024-01-01T00:00:00.000000Z'
@@ -1628,6 +1636,121 @@ paths:
                 $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/redirects/{redirect}:
+    put:
+      summary: Update redirect
+      description: Update an existing redirect for a site
+      tags:
+        - Redirects
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+        - name: redirect
+          in: path
+          required: true
+          description: Redirect ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from
+                - to
+                - mode
+              properties:
+                from:
+                  type: string
+                  maxLength: 255
+                  description: 'Source path to redirect from (must not start with http:// or https://)'
+                  example: 'old-path'
+                to:
+                  type: string
+                  format: uri
+                  description: 'Destination URL to redirect to'
+                  example: 'https://example.com/new-path'
+                mode:
+                  type: integer
+                  enum: [301, 302, 307, 308, 1000]
+                  description: 'HTTP redirect mode'
+                  example: 301
+                websocket:
+                  type: boolean
+                  description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
+                  default: false
+                  example: false
+            example:
+              from: 'old-path'
+              to: 'https://example.com/new-path'
+              mode: 301
+              websocket: false
+      responses:
+        '200':
+          description: Redirect updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Redirect.yaml'
+              example:
+                id: 1
+                server_id: 1
+                site_id: 1
+                from: 'old-path'
+                to: 'https://example.com/new-path'
+                mode: 301
+                websocket: false
+                status: 'creating'
+                status_color: 'warning'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Redirect not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
     delete:
       summary: Delete redirect
       description: Delete a redirect from a site

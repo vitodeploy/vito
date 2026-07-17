@@ -7,6 +7,12 @@ import DateTime from '@/components/date-time';
 import { Redirect } from '@/types/redirect';
 import { useDialog } from '@/hooks/use-dialog';
 
+function Edit({ redirect }: { redirect: Redirect }) {
+  const dialog = useDialog();
+
+  return <DropdownMenuItem onSelect={() => dialog.redirectEdit.open({ redirect })}>Edit</DropdownMenuItem>;
+}
+
 function Delete({ redirect }: { redirect: Redirect }) {
   const dialog = useDialog();
 
@@ -48,7 +54,7 @@ export const columns: ColumnDef<Redirect>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return row.original.mode === '1000' ? 'Proxy' : row.original.mode;
+      return String(row.original.mode) === '1000' ? 'Proxy' : row.original.mode;
     },
   },
   {
@@ -84,6 +90,7 @@ export const columns: ColumnDef<Redirect>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <Edit redirect={row.original} />
               <Delete redirect={row.original} />
             </DropdownMenuContent>
           </DropdownMenu>

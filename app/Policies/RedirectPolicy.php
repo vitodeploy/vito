@@ -38,6 +38,16 @@ class RedirectPolicy
             && $siteServer->isReady();
     }
 
+    public function update(User $user, Redirect $redirect, Site $site, Server $server): bool
+    {
+        $siteServer = $site->server;
+
+        return $this->hasWriteAccess($user, $siteServer->project)
+            && $site->server_id === $server->id
+            && $server->isReady()
+            && $redirect->site_id === $site->id;
+    }
+
     public function delete(User $user, Redirect $redirect, Site $site, Server $server): bool
     {
         $siteServer = $site->server;

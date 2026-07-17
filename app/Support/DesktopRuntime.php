@@ -56,7 +56,7 @@ class DesktopRuntime
         $port = $appUrl['port'] ?? ($isSecure ? 443 : 80);
         $path = str_starts_with($path, '/') ? $path : "/{$path}";
 
-        if (app()->environment('local') || self::enabled()) {
+        if ((app()->environment('local') && ! config('app.ws_url')) || self::enabled()) {
             return "{$wsProtocol}://{$host}:".self::websocketPort().$path;
         }
 

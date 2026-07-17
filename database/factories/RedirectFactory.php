@@ -23,6 +23,7 @@ class RedirectFactory extends Factory
             'from' => $this->faker->word,
             'to' => $this->faker->url,
             'mode' => $this->faker->randomElement([301, 302, 307, 308]),
+            'websocket' => false,
             'status' => RedirectStatus::READY,
         ];
     }

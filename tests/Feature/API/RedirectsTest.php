@@ -37,6 +37,32 @@ class RedirectsTest extends TestCase
             ]);
     }
 
+    public function test_update_redirect(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->json('PUT', route('api.projects.servers.sites.redirects.update', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $this->site,
+            'redirect' => $this->redirect->id,
+        ]), [
+            'from' => 'updated/path',
+            'to' => 'https://updated.example.com',
+            'mode' => 302,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'id' => $this->redirect->id,
+                'from' => 'updated/path',
+                'to' => 'https://updated.example.com',
+                'mode' => 302,
+                'status' => RedirectStatus::READY,
+            ]);
+    }
+
     public function test_see_redirects_list(): void
     {
         Sanctum::actingAs($this->user, ['read']);

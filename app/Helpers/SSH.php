@@ -299,7 +299,7 @@ class SSH
             $storageDisk->put($tmpName, $content);
             $tmpRemotePath = '/tmp/'.$tmpName;
             $this->upload($storageDisk->path($tmpName), $tmpRemotePath, $owner, $log, $siteId);
-            $this->asUser($owner)->exec('cat '.$tmpRemotePath.' > '.$remotePath);
+            $this->asUser($owner)->exec('cat '.$tmpRemotePath.' > '.$remotePath.' && rm -f '.$tmpRemotePath);
         } catch (Throwable $e) {
             throw new SSHCommandError(
                 message: $e->getMessage()

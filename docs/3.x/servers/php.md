@@ -61,3 +61,39 @@ FPM.
 
 Under the `PHP` or `Services` page, you can `start`, `stop`, `restart`, `enable`, or `disable` the FPM service for each
 PHP version.
+
+## Troubleshooting
+
+### `apt-get update` fails with "Repository ... changed its 'Label' value"
+
+When installing a PHP version, or updating a server that already has PHP installed, you may see an
+error like this:
+
+```text
+E: Repository 'https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble InRelease' changed its 'Label' value from 'PPA for PHP' to 'Use packages.sury.org/php instead'
+```
+
+Vito 3.x installs PHP from the `ondrej/php` Launchpad PPA. That PPA is being merged into
+[packages.sury.org](https://packages.sury.org/php/), and as part of the move it changed the `Label`
+field in its release metadata to announce this. APT treats a changed `Label` (along with `Origin`,
+`Suite`, or `Version`) as a potential security concern and refuses to refresh that repository's
+package list unless you explicitly allow it — which aborts the whole `apt-get update`, and with it
+the PHP install or server update that triggered it.
+
+:::warning
+This fix is only available as a manual workaround for 3.x. It is not being backported into Vito's
+3.x install/update scripts, so you'll need to apply it yourself on each affected server (once per
+server is enough).
+:::
+
+Vito keeps installing PHP from the `ondrej/php` PPA rather than migrating to `packages.sury.org`,
+because that mirror doesn't yet carry every extension package Vito needs (such as `php-redis`) for
+all PHP versions. Instead, just tell APT to accept the (expected) label change:
+
+```sh
+sudo apt-get update -o Acquire::AllowReleaseInfoChange::Label=true
+```
+
+:::info
+After that, retry the PHP install or server update in Vito — it should complete normally.
+:::

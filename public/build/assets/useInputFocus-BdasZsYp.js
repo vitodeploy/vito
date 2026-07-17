@@ -1,0 +1,1 @@
+import{m as e}from"./app-wcMHOZyO.js";var t=e(e=>({isFocused:!1,setFocused:t=>e({isFocused:t})}));export{t};

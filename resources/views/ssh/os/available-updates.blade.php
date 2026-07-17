@@ -1,4 +1,4 @@
-sudo DEBIAN_FRONTEND=noninteractive apt-get update > /dev/null 2>&1
+sudo DEBIAN_FRONTEND=noninteractive apt-get update -o Acquire::AllowReleaseInfoChange::Label=true > /dev/null 2>&1
 
 UPGRADABLE=$(sudo DEBIAN_FRONTEND=noninteractive apt list --upgradable 2>/dev/null | tail -n +2)
 

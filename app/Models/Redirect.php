@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $from
  * @property string $to
  * @property string $mode
+ * @property bool $websocket
  * @property RedirectStatus $status
  * @property Site $site
  */
@@ -21,15 +22,19 @@ class Redirect extends AbstractModel
     /** @use HasFactory<RedirectFactory> */
     use HasFactory;
 
+    public const int MODE_PROXY = 1000;
+
     protected $fillable = [
         'site_id',
         'from',
         'to',
         'mode',
+        'websocket',
         'status',
     ];
 
     protected $casts = [
+        'websocket' => 'boolean',
         'status' => RedirectStatus::class,
     ];
 

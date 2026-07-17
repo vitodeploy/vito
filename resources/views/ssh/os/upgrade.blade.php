@@ -3,7 +3,7 @@ export LC_ALL=C
 UPGRADE_LOG=$(mktemp)
 trap 'rm -f "$UPGRADE_LOG"' EXIT
 sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get clean
-sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get update
+sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get update -o Acquire::AllowReleaseInfoChange::Label=true
 sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get upgrade -y | tee "$UPGRADE_LOG"
 sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y
 sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get autoremove -y

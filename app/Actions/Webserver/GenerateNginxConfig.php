@@ -72,6 +72,7 @@ class GenerateNginxConfig extends AbstractGenerateConfig
             'to' => $redirect->to,
             'mode' => $redirect->mode,
             'is_proxy' => $isProxy,
+            'is_websocket' => $isProxy && (bool) $redirect->websocket,
             'to_host' => $isProxy ? parse_url($redirect->to, PHP_URL_HOST) : '',
         ];
     }

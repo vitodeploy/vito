@@ -75,4 +75,147 @@ class RedirectsTest extends TestCase
             'status' => RedirectStatus::READY,
         ]);
     }
+
+    public function test_create_proxy_redirect_with_websocket(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('redirects.store', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'from' => '/app',
+            'to' => 'https://backend.example.com',
+            'mode' => 1000,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'from' => '/app',
+            'to' => 'https://backend.example.com',
+            'mode' => 1000,
+            'websocket' => true,
+            'status' => RedirectStatus::READY,
+        ]);
+    }
+
+    public function test_websocket_forced_off_when_not_proxy_mode(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('redirects.store', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'from' => '/app',
+            'to' => 'https://example.com/redirect',
+            'mode' => 301,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'from' => '/app',
+            'mode' => 301,
+            'websocket' => false,
+        ]);
+    }
+
+    public function test_update_redirect(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $redirect = Redirect::factory()->create([
+            'site_id' => $this->site->id,
+            'mode' => 301,
+        ]);
+
+        $this->put(route('redirects.update', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'redirect' => $redirect,
+        ]), [
+            'from' => 'updated-path',
+            'to' => 'https://example.com/updated',
+            'mode' => 302,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'id' => $redirect->id,
+            'from' => 'updated-path',
+            'to' => 'https://example.com/updated',
+            'mode' => 302,
+            'status' => RedirectStatus::READY,
+        ]);
+    }
+
+    public function test_update_redirect_to_proxy_with_websocket(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $redirect = Redirect::factory()->create([
+            'site_id' => $this->site->id,
+            'mode' => 301,
+            'websocket' => false,
+        ]);
+
+        $this->put(route('redirects.update', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'redirect' => $redirect,
+        ]), [
+            'from' => 'ws-path',
+            'to' => 'https://backend.example.com',
+            'mode' => 1000,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'id' => $redirect->id,
+            'mode' => 1000,
+            'websocket' => true,
+        ]);
+    }
+
+    public function test_update_redirect_away_from_proxy_forces_websocket_off(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $redirect = Redirect::factory()->create([
+            'site_id' => $this->site->id,
+            'mode' => 1000,
+            'websocket' => true,
+        ]);
+
+        $this->put(route('redirects.update', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'redirect' => $redirect,
+        ]), [
+            'from' => 'plain-path',
+            'to' => 'https://example.com/plain',
+            'mode' => 301,
+            'websocket' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('redirects', [
+            'id' => $redirect->id,
+            'mode' => 301,
+            'websocket' => false,
+        ]);
+    }
 }

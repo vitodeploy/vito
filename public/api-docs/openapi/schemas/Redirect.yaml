@@ -19,6 +19,10 @@ properties:
     type: integer
     enum: [301, 302, 307, 308, 1000]
     example: 301
+  websocket:
+    type: boolean
+    description: 'Enable WebSocket upgrade support (only applies when mode is 1000 / proxy)'
+    example: false
   status:
     type: string
     enum: ['creating', 'ready', 'deleting', 'failed']

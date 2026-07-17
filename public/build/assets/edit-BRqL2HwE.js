@@ -1,1 +1,0 @@
-import{c as e}from"./utils-BXt4K30h.js";import{a as t}from"./dropdown-menu-BWQI_Ysy.js";import{t as n}from"./use-dialog-CfujgaSe.js";var r=e();function i({notificationChannel:e}){let i=n();return(0,r.jsx)(t,{onSelect:()=>i.notificationChannelEdit.open({notificationChannel:e}),children:`Edit`})}export{i as default};

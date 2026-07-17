@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Actions\Redirect\CreateRedirect;
 use App\Actions\Redirect\DeleteRedirect;
+use App\Actions\Redirect\UpdateRedirect;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RedirectResource;
 use App\Models\Project;
@@ -18,6 +19,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('api/projects/{project}/servers/{server}/sites/{site}/redirects')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
@@ -41,6 +43,18 @@ class RedirectController extends Controller
         $this->validateRoute($project, $server, $site);
 
         $redirect = app(CreateRedirect::class)->create($site, $request->all());
+
+        return new RedirectResource($redirect);
+    }
+
+    #[Put('/{redirect}', name: 'api.projects.servers.sites.redirects.update', middleware: 'ability:write')]
+    public function update(Request $request, Project $project, Server $server, Site $site, Redirect $redirect): RedirectResource
+    {
+        $this->authorize('update', [$redirect, $site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $redirect = app(UpdateRedirect::class)->update($site, $redirect, $request->all());
 
         return new RedirectResource($redirect);
     }

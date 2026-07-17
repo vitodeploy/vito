@@ -5,6 +5,7 @@ export interface Redirect {
   from: string;
   to: string;
   mode: string;
+  websocket: boolean;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   created_at: string;

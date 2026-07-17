@@ -10,6 +10,7 @@ use Closure;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
+use JsonException;
 use Ramsey\Uuid\Uuid;
 
 class VitoAgent extends AbstractService
@@ -100,9 +101,57 @@ class VitoAgent extends AbstractService
                 ]),
                 'install-vito-agent'
             );
+        $this->updateConfig();
         $status = $this->service->server->systemd()->status($this->unit());
         event('service.installed', $this->service);
         $this->service->validateInstall($status);
+    }
+
+    /**
+     * @throws SSHError
+     * @throws JsonException
+     */
+    public function updateConfig(): void
+    {
+        $config = [
+            'url' => $this->data()['url'],
+            'secret' => $this->data()['secret'],
+            'services' => $this->configServices(),
+        ];
+
+        $this->service->server->ssh()->write(
+            '/etc/vito-agent/config.json',
+            json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            'root'
+        );
+
+        $this->service->server->ssh()->exec(
+            'sudo chmod 600 /etc/vito-agent/config.json'."\n".
+            'echo '.escapeshellarg('vito-agent config updated. Monitoring services: '.json_encode($config['services'], JSON_THROW_ON_ERROR)),
+            'secure-vito-agent-config'
+        );
+
+        $this->service->server->systemd()->restart($this->unit());
+    }
+
+    /**
+     * @return array<int, array{id: int, unit: string}>
+     */
+    private function configServices(): array
+    {
+        $services = [];
+        foreach ($this->service->server->services()->get() as $service) {
+            if ($service->id === $this->service->id || ! $service->hasHandler()) {
+                continue;
+            }
+            $unit = $service->handler()->unit();
+            if ($unit === '') {
+                continue;
+            }
+            $services[] = ['id' => $service->id, 'unit' => $unit];
+        }
+
+        return $services;
     }
 
     /**
