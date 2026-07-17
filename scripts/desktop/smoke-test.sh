@@ -92,6 +92,7 @@ export QUEUE_CONNECTION=database
 export CACHE_DRIVER=file
 export SESSION_DRIVER=file
 export FILESYSTEM_DISK=local
+export INERTIA_ENSURE_PAGES_EXIST=false
 export MAIL_MAILER=log
 export WS_HOST=127.0.0.1
 export WS_PORT=18212

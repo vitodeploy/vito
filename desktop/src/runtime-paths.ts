@@ -66,6 +66,7 @@ export async function createRuntimeContext(): Promise<RuntimeContext> {
     CACHE_DRIVER: 'file',
     SESSION_DRIVER: 'file',
     FILESYSTEM_DISK: 'local',
+    INERTIA_ENSURE_PAGES_EXIST: 'false',
     MAIL_MAILER: existing.MAIL_MAILER || 'log',
     WS_HOST: '127.0.0.1',
     WS_PORT: String(websocketPort),
