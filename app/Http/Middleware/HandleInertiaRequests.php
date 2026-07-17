@@ -34,6 +34,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
+        if (DesktopRuntime::enabled() && file_exists($manifest = public_path('build-desktop/manifest.json'))) {
+            return md5_file($manifest) ?: null;
+        }
+
         return parent::version($request);
     }
 

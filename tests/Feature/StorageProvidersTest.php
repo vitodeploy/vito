@@ -239,16 +239,16 @@ class StorageProvidersTest extends TestCase
         ]);
 
         $this->get(route('storage-providers'))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->post(route('storage-providers.store'), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->patch(route('storage-providers.update', $storageProvider), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->delete(route('storage-providers.destroy', $storageProvider))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
     }
 
     public function test_cannot_manipulate_user_id_on_creation(): void

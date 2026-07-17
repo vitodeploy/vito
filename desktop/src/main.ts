@@ -1,19 +1,26 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, shell } from 'electron';
 import { join } from 'node:path';
 import { waitForHttp } from './health-check.js';
 import { prepareLaravelRuntime, startLaravelProcesses } from './laravel-runtime.js';
 import { loadingPage, errorPage } from './loading-page.js';
 import { DesktopLog } from './logging.js';
-import { ProcessSupervisor } from './process-supervisor.js';
+import { cleanupStaleProcesses, ProcessSupervisor } from './process-supervisor.js';
 import { createRuntimeContext } from './runtime-paths.js';
 
 let mainWindow: BrowserWindow | null = null;
 let supervisor: ProcessSupervisor | null = null;
+let quitting = false;
 
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
   app.quit();
+}
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.on(signal, () => {
+    app.quit();
+  });
 }
 
 app.on('second-instance', () => {
@@ -29,11 +36,18 @@ app.on('second-instance', () => {
 });
 
 app.on('before-quit', async (event) => {
+  if (quitting) {
+    event.preventDefault();
+
+    return;
+  }
+
   if (!supervisor) {
     return;
   }
 
   event.preventDefault();
+  quitting = true;
   const currentSupervisor = supervisor;
   supervisor = null;
   await currentSupervisor.stopAll();
@@ -47,10 +61,25 @@ app.whenReady().then(async () => {
   try {
     const context = await createRuntimeContext();
     const log = new DesktopLog(context.logPath);
-    supervisor = new ProcessSupervisor(log);
+    const pidFilePath = join(context.runtimePath, 'processes.json');
+
+    cleanupStaleProcesses(pidFilePath, log);
+
+    supervisor = new ProcessSupervisor(log, pidFilePath, (name) => {
+      if (quitting || name !== 'vito-http') {
+        return;
+      }
+
+      const message = 'The local Vito backend repeatedly crashed and could not be restarted.';
+      log.error(message);
+      void mainWindow?.loadURL(errorPage(message));
+      dialog.showErrorBox('Vito backend stopped', message);
+    });
 
     log.info(`Using Laravel app path: ${context.appRoot}`);
     log.info(`Using desktop data path: ${context.dataPath}`);
+
+    attachNavigationGuards(mainWindow, context.appUrl);
 
     await mainWindow.loadURL(loadingPage('Migrating local database...'));
     await prepareLaravelRuntime(context, log);
@@ -82,7 +111,30 @@ function createWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       preload: join(app.getAppPath(), 'dist', 'preload.js'),
-      sandbox: false,
+      sandbox: true,
     },
+  });
+}
+
+function attachNavigationGuards(window: BrowserWindow, appUrl: string): void {
+  const openExternally = (url: string): void => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      void shell.openExternal(url);
+    }
+  };
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    openExternally(url);
+
+    return { action: 'deny' };
+  });
+
+  window.webContents.on('will-navigate', (event, url) => {
+    if (url === appUrl || url.startsWith(`${appUrl}/`)) {
+      return;
+    }
+
+    event.preventDefault();
+    openExternally(url);
   });
 }

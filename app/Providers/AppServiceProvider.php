@@ -13,9 +13,11 @@ use App\Listeners\HandleSiteCreatedStats;
 use App\Listeners\HandleSiteDeletedStats;
 use App\Listeners\SocketEventListener;
 use App\Models\PersonalAccessToken;
+use App\Support\DesktopRuntime;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
 
@@ -29,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ResourceCollection::withoutWrapping();
+
+        if (DesktopRuntime::enabled()) {
+            Vite::useBuildDirectory('build-desktop');
+        }
 
         // facades
         $this->app->bind('ssh', fn (): SSH => new SSH);

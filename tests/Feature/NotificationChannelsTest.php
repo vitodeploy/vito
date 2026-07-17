@@ -274,16 +274,16 @@ class NotificationChannelsTest extends TestCase
         ]);
 
         $this->get(route('notification-channels'))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->post(route('notification-channels.store'), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->patch(route('notification-channels.update', $channel), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->delete(route('notification-channels.destroy', $channel))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
     }
 
     public function test_cannot_manipulate_user_id_on_creation(): void

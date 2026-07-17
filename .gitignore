@@ -3,7 +3,9 @@
 /desktop/node_modules
 /desktop/dist
 /desktop/release
+/desktop/resources/bin
 /desktop-build
+/public/build-desktop
 /public/hot
 /public/storage
 /storage/*.key

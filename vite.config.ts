@@ -5,12 +5,13 @@ import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     laravel({
       input: ['resources/css/app.css', 'resources/js/app.tsx'],
       ssr: 'resources/js/ssr.tsx',
       refresh: true,
+      buildDirectory: mode === 'desktop' ? 'build-desktop' : 'build',
     }),
     inertia(),
     react(),
@@ -25,4 +26,4 @@ export default defineConfig({
       'decimal.js-light': resolve(__dirname, 'node_modules/decimal.js-light/decimal.mjs'),
     },
   },
-});
+}));

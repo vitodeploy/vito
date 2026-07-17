@@ -13,7 +13,6 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
-use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
@@ -24,8 +23,7 @@ class DesktopAuthController extends Controller
 
     private const LOCKED_AT = 'desktop.locked_at';
 
-    #[Get('/login', name: 'desktop.login')]
-    #[Middleware('guest')]
+    #[Get('/login', name: 'desktop.login', middleware: 'guest')]
     public function create(Request $request): Response
     {
         abort_unless(DesktopRuntime::enabled(), 404);
@@ -52,8 +50,7 @@ class DesktopAuthController extends Controller
         ]);
     }
 
-    #[Post('/setup', name: 'desktop.setup')]
-    #[Middleware('guest')]
+    #[Post('/setup', name: 'desktop.setup', middleware: 'guest')]
     public function setup(Request $request): RedirectResponse
     {
         abort_unless(DesktopRuntime::enabled(), 404);
@@ -84,8 +81,7 @@ class DesktopAuthController extends Controller
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
-    #[Post('/login/{user}', name: 'desktop.login.store')]
-    #[Middleware('guest')]
+    #[Post('/login/{user}', name: 'desktop.login.store', middleware: 'guest')]
     public function store(Request $request, User $user): RedirectResponse
     {
         abort_unless(DesktopRuntime::enabled(), 404);
@@ -112,8 +108,7 @@ class DesktopAuthController extends Controller
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
-    #[Post('/lock', name: 'desktop.lock')]
-    #[Middleware('auth')]
+    #[Post('/lock', name: 'desktop.lock', middleware: 'auth')]
     public function lock(Request $request): RedirectResponse
     {
         abort_unless(DesktopRuntime::enabled(), 404);

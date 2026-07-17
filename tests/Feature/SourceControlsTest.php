@@ -191,16 +191,16 @@ class SourceControlsTest extends TestCase
         ]);
 
         $this->get(route('source-controls'))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->post(route('source-controls.store'), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->patch(route('source-controls.update', $sourceControl), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->delete(route('source-controls.destroy', $sourceControl))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
     }
 
     public function test_cannot_manipulate_user_id_on_creation(): void

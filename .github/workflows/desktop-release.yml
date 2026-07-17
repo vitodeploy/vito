@@ -1,0 +1,146 @@
+name: desktop-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing release tag to build and attach desktop apps to (e.g. 4.1.0)'
+        required: true
+  workflow_call:
+    inputs:
+      version:
+        description: 'Existing release tag to build and attach desktop apps to'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-arm64
+            os: macos-15
+            platform: darwin
+            arch: arm64
+            build-args: --mac --arm64
+          - name: macos-x64
+            os: macos-15-intel
+            platform: darwin
+            arch: x64
+            build-args: --mac --x64
+          - name: windows-x64
+            os: windows-latest
+            platform: win32
+            arch: x64
+            build-args: --win --x64
+          - name: linux-x64
+            os: ubuntu-24.04
+            platform: linux
+            arch: x64
+            build-args: --linux --x64
+
+    steps:
+      - name: Remove optional "v" prefix
+        id: version
+        shell: bash
+        run: echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.version.outputs.version }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, ftp, iconv, intl, mbstring, openssl, pdo_sqlite, sqlite3, zip
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install NPM dependencies
+        run: npm install --force
+
+      - name: Build desktop frontend assets
+        run: npm run build:desktop
+
+      - name: Assemble desktop app distribution
+        shell: bash
+        run: bash scripts/desktop/build-app.sh
+
+      - name: Cache PHP runtime
+        uses: actions/cache@v4
+        with:
+          path: desktop/resources/bin
+          key: desktop-php-${{ matrix.platform }}-${{ matrix.arch }}-${{ hashFiles('scripts/desktop/fetch-php.sh') }}
+
+      - name: Fetch PHP runtime
+        shell: bash
+        run: bash scripts/desktop/fetch-php.sh "${{ matrix.platform }}" "${{ matrix.arch }}"
+
+      - name: Smoke test desktop app distribution
+        shell: bash
+        run: |
+          PHP_BIN="desktop/resources/bin/${{ matrix.platform }}/${{ matrix.arch }}/php"
+          if [ "${{ matrix.platform }}" = "win32" ]; then
+            PHP_BIN="$PHP_BIN.exe"
+          fi
+          bash scripts/desktop/smoke-test.sh "$PWD/$PHP_BIN"
+
+      - name: Install desktop shell dependencies
+        shell: bash
+        run: npm ci
+        working-directory: desktop
+
+      - name: Build desktop shell
+        shell: bash
+        run: npm run build
+        working-directory: desktop
+
+      - name: Set desktop app version
+        shell: bash
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+        working-directory: desktop
+
+      - name: Package desktop app
+        shell: bash
+        run: npx electron-builder --config electron-builder.yml ${{ matrix.build-args }} --publish never
+        working-directory: desktop
+        env:
+          CSC_LINK: ${{ secrets.DESKTOP_MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.DESKTOP_MAC_CSC_KEY_PASSWORD }}
+          WIN_CSC_LINK: ${{ secrets.DESKTOP_WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.DESKTOP_WIN_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.DESKTOP_APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.DESKTOP_APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.DESKTOP_APPLE_TEAM_ID }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.DESKTOP_MAC_CSC_LINK != '' }}
+
+      - name: Upload desktop apps to release
+        shell: bash
+        run: |
+          shopt -s nullglob
+          FILES=(desktop/release/*.dmg desktop/release/*-mac-*.zip desktop/release/*.exe desktop/release/*.AppImage)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No desktop artifacts found to upload" >&2
+            exit 1
+          fi
+          gh release upload "$VERSION" "${FILES[@]}" --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}

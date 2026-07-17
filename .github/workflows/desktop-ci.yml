@@ -1,0 +1,86 @@
+name: desktop-ci
+
+on:
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - 'scripts/desktop/**'
+      - '.github/workflows/desktop-ci.yml'
+      - '.github/workflows/desktop-release.yml'
+      - 'vite.config.ts'
+      - 'bootstrap/app.php'
+      - 'config/desktop.php'
+      - 'app/Support/DesktopRuntime.php'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install desktop shell dependencies
+        run: npm ci
+        working-directory: desktop
+
+      - name: Build desktop shell
+        run: npm run build
+        working-directory: desktop
+
+  package-smoke:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, ftp, iconv, intl, mbstring, openssl, pdo_sqlite, sqlite3, zip
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install NPM dependencies
+        run: npm install --force
+
+      - name: Build desktop frontend assets
+        run: npm run build:desktop
+
+      - name: Assemble desktop app distribution
+        run: bash scripts/desktop/build-app.sh
+
+      - name: Cache PHP runtime
+        uses: actions/cache@v4
+        with:
+          path: desktop/resources/bin
+          key: desktop-php-linux-x64-${{ hashFiles('scripts/desktop/fetch-php.sh') }}
+
+      - name: Fetch PHP runtime
+        run: bash scripts/desktop/fetch-php.sh linux x64
+
+      - name: Smoke test desktop app distribution
+        run: bash scripts/desktop/smoke-test.sh "$PWD/desktop/resources/bin/linux/x64/php"
+
+      - name: Install desktop shell dependencies
+        run: npm ci
+        working-directory: desktop
+
+      - name: Build desktop shell
+        run: npm run build
+        working-directory: desktop
+
+      - name: Package desktop app (unpacked)
+        run: npx electron-builder --config electron-builder.yml --linux --x64 --dir --publish never
+        working-directory: desktop

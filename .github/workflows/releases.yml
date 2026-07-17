@@ -179,6 +179,15 @@ jobs:
             echo "Discord notification failed; release succeeded regardless"
           fi
 
+  desktop:
+    needs: release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/desktop-release.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
   docker-tags:
     runs-on: ubuntu-24.04
     needs: release

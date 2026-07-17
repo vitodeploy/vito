@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use phpseclib3\Crypt\RSA;
 
 class GenerateKeysCommand extends Command
 {
@@ -22,27 +23,12 @@ class GenerateKeysCommand extends Command
             return;
         }
 
-        $privateKey = escapeshellarg($privateKeyPath);
-        $publicKey = escapeshellarg($publicKeyPath);
+        $privateKey = RSA::createKey(2048);
 
-        exec("openssl genpkey -algorithm RSA -out {$privateKey}", $output, $resultCode);
-
-        if ($resultCode !== 0) {
-            $this->error('Unable to generate private key.');
-
-            return;
-        }
-
+        File::put($privateKeyPath, $privateKey->toString('PKCS8'));
         chmod($privateKeyPath, 0600);
 
-        exec("ssh-keygen -y -f {$privateKey} > {$publicKey}", $output, $resultCode);
-
-        if ($resultCode !== 0) {
-            $this->error('Unable to generate public key.');
-
-            return;
-        }
-
+        File::put($publicKeyPath, $privateKey->getPublicKey()->toString('OpenSSH', ['comment' => 'vito']));
         chmod($publicKeyPath, 0644);
 
         $this->info('Keys generated successfully.');

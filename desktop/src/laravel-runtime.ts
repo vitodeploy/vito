@@ -20,7 +20,7 @@ export function startLaravelProcesses(context: RuntimeContext, supervisor: Proce
   supervisor.start({
     name: 'vito-websocket',
     command: context.phpBinary,
-    args: ['artisan', 'ws:serve', '--host=127.0.0.1', `--port=${context.websocketPort}`],
+    args: [...context.phpArgs, 'artisan', 'ws:serve', '--host=127.0.0.1', `--port=${context.websocketPort}`],
     ...common,
   });
 
@@ -28,31 +28,42 @@ export function startLaravelProcesses(context: RuntimeContext, supervisor: Proce
     name: 'vito-queue',
     command: context.phpBinary,
     args: [
+      ...context.phpArgs,
       'artisan',
       'queue:work',
       'database',
       '--queue=default,ssh,ssh-certbot',
       '--sleep=3',
-      '--timeout=3660',
+      '--timeout=3600',
       '--tries=1',
     ],
+    gracefulStop: {
+      command: context.phpBinary,
+      args: [...context.phpArgs, 'artisan', 'queue:restart'],
+    },
     ...common,
   });
 
   supervisor.start({
     name: 'vito-scheduler',
     command: context.phpBinary,
-    args: ['artisan', 'schedule:work'],
+    args: [...context.phpArgs, 'artisan', 'schedule:work'],
     ...common,
   });
 
   supervisor.start({
     name: 'vito-http',
     command: context.phpBinary,
-    args: ['artisan', 'serve', '--host=127.0.0.1', `--port=${context.httpPort}`, '--no-reload'],
+    args: [
+      ...context.phpArgs,
+      '-S',
+      `127.0.0.1:${context.httpPort}`,
+      join(context.appRoot, 'vendor', 'laravel', 'framework', 'src', 'Illuminate', 'Foundation', 'resources', 'server.php'),
+    ],
     maxRestarts: 3,
     restartWindowMs: 60000,
-    ...common,
+    cwd: join(context.appRoot, 'public'),
+    env: process.platform === 'win32' ? context.env : { ...context.env, PHP_CLI_SERVER_WORKERS: '8' },
   });
 }
 
@@ -63,7 +74,7 @@ function artisan(
   name: string,
   timeoutMs?: number,
 ): Promise<void> {
-  return runCommand(context.phpBinary, ['artisan', ...args], {
+  return runCommand(context.phpBinary, [...context.phpArgs, 'artisan', ...args], {
     cwd: context.appRoot,
     env: context.env,
     log,
@@ -80,10 +91,9 @@ async function ensureSshKeys(context: RuntimeContext, log: DesktopLog): Promise<
     return;
   }
 
-  try {
-    await artisan(context, log, ['ssh-key:generate'], 'artisan:ssh-key-generate', 120000);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    log.error(`Unable to generate SSH keys during desktop startup: ${message}`);
+  await artisan(context, log, ['ssh-key:generate'], 'artisan:ssh-key-generate', 120000);
+
+  if (!existsSync(publicKey) || !existsSync(privateKey)) {
+    throw new Error('SSH key generation completed without creating both required key files');
   }
 }

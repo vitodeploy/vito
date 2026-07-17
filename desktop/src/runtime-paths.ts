@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { appKey, readEnvFile, secret, writeEnvFile } from './env-file.js';
 import { getAvailablePort } from './ports.js';
 
@@ -17,6 +17,7 @@ export type RuntimeContext = {
   websocketPort: number;
   appUrl: string;
   phpBinary: string;
+  phpArgs: string[];
   env: NodeJS.ProcessEnv;
 };
 
@@ -33,6 +34,7 @@ export async function createRuntimeContext(): Promise<RuntimeContext> {
   const appUrl = `http://127.0.0.1:${httpPort}`;
   const appRoot = resolveAppRoot();
   const phpBinary = resolvePhpBinary();
+  const phpArgs = resolvePhpArgs(phpBinary);
 
   ensureRuntimeDirectories(storagePath, runtimePath, bootstrapCachePath);
   ensureFile(join(storagePath, 'database.sqlite'));
@@ -72,12 +74,18 @@ export async function createRuntimeContext(): Promise<RuntimeContext> {
 
   writeEnvFile(envFile, envValues);
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...envValues,
     VITO_ENV_PATH: envPath,
     VITO_STORAGE_PATH: storagePath,
   };
+
+  const caBundle = join(dirname(phpBinary), 'cacert.pem');
+  if (existsSync(caBundle)) {
+    env.SSL_CERT_FILE = caBundle;
+    env.CURL_CA_BUNDLE = caBundle;
+  }
 
   return {
     appRoot,
@@ -92,6 +100,7 @@ export async function createRuntimeContext(): Promise<RuntimeContext> {
     websocketPort,
     appUrl,
     phpBinary,
+    phpArgs,
     env,
   };
 }
@@ -141,4 +150,25 @@ function resolvePhpBinary(): string {
 
   const exe = process.platform === 'win32' ? 'php.exe' : 'php';
   return join(process.resourcesPath, 'bin', process.platform, process.arch, exe);
+}
+
+function resolvePhpArgs(phpBinary: string): string[] {
+  const args: string[] = [];
+  const binDir = dirname(phpBinary);
+
+  if (app.isPackaged) {
+    args.push('-d', 'memory_limit=512M');
+  }
+
+  const caBundle = join(binDir, 'cacert.pem');
+  if (existsSync(caBundle)) {
+    args.push('-d', `curl.cainfo=${caBundle}`, '-d', `openssl.cafile=${caBundle}`);
+  }
+
+  const extensionDir = join(binDir, 'ext');
+  if (process.platform === 'win32' && existsSync(extensionDir)) {
+    args.push('-d', `extension_dir=${extensionDir}`);
+  }
+
+  return args;
 }

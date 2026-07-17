@@ -183,19 +183,19 @@ class ServerProvidersTest extends TestCase
         ]);
 
         $this->get(route('server-providers'))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->get(route('server-providers.regions', $serverProvider))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->post(route('server-providers.store'), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->patch(route('server-providers.update', $serverProvider), [])
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
 
         $this->delete(route('server-providers.destroy', $serverProvider))
-            ->assertRedirect('/');
+            ->assertRedirect(route('login'));
     }
 
     public function test_cannot_manipulate_user_id_on_creation(): void

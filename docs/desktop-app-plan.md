@@ -755,25 +755,24 @@ Exit:
 
 ## Work Checklist
 
-- [ ] Run NativePHP spike.
-- [ ] Decide NativePHP vs custom Electron.
+- [x] Decide NativePHP vs custom Electron: custom Electron shell bundling a static PHP built with static-php-cli (the same runtime approach NativePHP uses).
 - [x] Add desktop env profile.
 - [x] Add storage path override.
 - [x] Add database queue connection.
-- [ ] Confirm jobs table migration covers all queue needs.
+- [x] Confirm jobs table migration covers all queue needs.
 - [x] Remove Redis requirement from desktop mode.
 - [ ] Disable Horizon runtime in desktop mode.
 - [x] Make websocket port dynamic.
-- [ ] Add desktop first-run admin setup.
+- [x] Add desktop first-run admin setup.
 - [x] Add Electron shell.
 - [x] Add process supervisor.
 - [x] Add app data path management.
 - [x] Add health check based launch.
 - [x] Add graceful shutdown.
 - [ ] Add diagnostics.
-- [ ] Add desktop smoke tests.
-- [ ] Add packaging.
-- [ ] Add code signing.
+- [x] Add desktop smoke tests (scripts/desktop/smoke-test.sh, run in CI).
+- [x] Add packaging (electron-builder + scripts/desktop + desktop-release workflow).
+- [x] Add code signing (optional GitHub secrets, unsigned builds without them).
 - [ ] Add auto-update.
 - [ ] Run beta hardening matrix.
 

@@ -1,5 +1,6 @@
 appId: com.vitodeploy.vito
 productName: Vito
+artifactName: Vito-${version}-${os}-${arch}.${ext}
 directories:
   output: release
 files:
@@ -16,12 +17,27 @@ extraResources:
       - "**/*"
 mac:
   category: public.app-category.developer-tools
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: entitlements.mac.plist
+  entitlementsInherit: entitlements.mac.plist
+  binaries:
+    - "Resources/bin/darwin/${arch}/php"
   target:
     - dmg
     - zip
+dmg:
+  sign: false
 win:
   target:
     - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
 linux:
+  category: Development
+  maintainer: VitoDeploy
   target:
     - AppImage
+publish: null
+npmRebuild: false
