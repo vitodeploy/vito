@@ -93,7 +93,9 @@ export function cleanupStaleProcesses(pidFilePath: string, log: DesktopLog): voi
 
         try {
           process.kill(pid, 'SIGKILL');
-        } catch {}
+        } catch {
+          continue;
+        }
       }
     }
   } catch (error) {
@@ -136,15 +138,21 @@ function findStalePids(entry: StaleProcessEntry): number[] {
 }
 
 function killProcessTree(child: ChildProcessWithoutNullStreams, signal: NodeJS.Signals): void {
-  if (process.platform !== 'win32' && typeof child.pid === 'number') {
-    try {
-      process.kill(-child.pid, signal);
-
-      return;
-    } catch {}
+  if (process.platform !== 'win32' && typeof child.pid === 'number' && killProcessGroup(child.pid, signal)) {
+    return;
   }
 
   child.kill(signal);
+}
+
+function killProcessGroup(pid: number, signal: NodeJS.Signals): boolean {
+  try {
+    process.kill(-pid, signal);
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 class ManagedProcess {

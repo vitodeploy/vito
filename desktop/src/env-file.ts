@@ -43,7 +43,9 @@ export function writeEnvFile(path: string, values: Record<string, string>): void
 
   try {
     chmodSync(path, 0o600);
-  } catch {}
+  } catch {
+    return;
+  }
 }
 
 export function appKey(): string {
