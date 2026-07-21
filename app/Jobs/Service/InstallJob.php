@@ -23,7 +23,8 @@ class InstallJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->service->server_id}", function () {
+        $succeeded = false;
+        $this->run("server-{$this->service->server_id}", function () use (&$succeeded) {
             Log::info("Installing service ID {$this->service->id} on server ID {$this->service->server_id}");
 
             $this->service->newLog();
@@ -34,7 +35,12 @@ class InstallJob implements ShouldQueue
             $this->service->save();
             $this->broadcastServiceUpdate('service.updated');
             Log::info("Service ID {$this->service->id} installed successfully");
+            $succeeded = true;
         });
+
+        if ($succeeded) {
+            UpdateVitoAgentConfigJob::dispatchFor($this->service);
+        }
     }
 
     public function failed(Exception $e): void

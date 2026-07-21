@@ -5,10 +5,12 @@ namespace Tests\Unit\Actions\Service;
 use App\Actions\Service\Uninstall;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Jobs\Service\UpdateVitoAgentConfigJob;
 use App\Models\Database;
 use App\Models\Service;
 use App\Models\Worker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -35,6 +37,52 @@ class UninstallTest extends TestCase
         $this->assertDatabaseMissing('services', [
             'id' => $service->id,
         ]);
+    }
+
+    public function test_uninstalling_service_dispatches_agent_config_update(): void
+    {
+        SSH::fake();
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'type_data' => [
+                'url' => 'https://vito.test/agent-endpoint',
+                'secret' => 'agent-secret',
+                'data_retention' => 7,
+            ],
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $redis = $this->server->services()->where('name', 'redis')->firstOrFail();
+
+        app(Uninstall::class)->uninstall($redis);
+
+        $this->assertDatabaseMissing('services', ['id' => $redis->id]);
+        Bus::assertDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    public function test_uninstalling_vito_agent_does_not_dispatch_agent_config_update(): void
+    {
+        SSH::fake();
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        $this->server->monitoring()?->delete();
+
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        app(Uninstall::class)->uninstall($this->server->monitoring());
+
+        Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
     }
 
     /**

@@ -5,7 +5,10 @@ namespace Tests\Unit\Actions\Service;
 use App\Actions\Service\Install;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Jobs\Service\UpdateVitoAgentConfigJob;
+use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -167,6 +170,119 @@ class InstallTest extends TestCase
             'server_id' => $this->server->id,
             'name' => 'redis',
             'type' => 'memory_database',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+    }
+
+    public function test_installing_service_dispatches_agent_config_update(): void
+    {
+        SSH::fake('Active: active');
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        $this->createVitoAgent();
+        $this->server->memoryDatabase()->delete();
+
+        app(Install::class)->install($this->server, [
+            'type' => 'memory_database',
+            'name' => 'redis',
+            'version' => 'latest',
+        ]);
+
+        Bus::assertDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    public function test_installing_service_without_unit_does_not_dispatch_agent_config_update(): void
+    {
+        SSH::fake('Active: active');
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        $this->createVitoAgent();
+        $this->server->services()->where('name', 'nodejs')->delete();
+
+        app(Install::class)->install($this->server, [
+            'type' => 'nodejs',
+            'name' => 'nodejs',
+            'version' => '20',
+        ]);
+
+        Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    public function test_failed_install_does_not_dispatch_agent_config_update(): void
+    {
+        SSH::fake('inactive');
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        $this->createVitoAgent();
+        $this->server->memoryDatabase()->delete();
+
+        app(Install::class)->install($this->server, [
+            'type' => 'memory_database',
+            'name' => 'redis',
+            'version' => 'latest',
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => $this->server->id,
+            'name' => 'redis',
+            'status' => ServiceStatus::INSTALLATION_FAILED,
+        ]);
+        Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    public function test_installing_service_without_vito_agent_does_not_dispatch_agent_config_update(): void
+    {
+        SSH::fake('Active: active');
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+
+        $this->server->memoryDatabase()->delete();
+
+        app(Install::class)->install($this->server, [
+            'type' => 'memory_database',
+            'name' => 'redis',
+            'version' => 'latest',
+        ]);
+
+        Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    public function test_installing_vito_agent_writes_config_with_services(): void
+    {
+        SSH::fake('Active: active');
+        Bus::fake([UpdateVitoAgentConfigJob::class]);
+        Http::fake([
+            'https://api.github.com/repos/vitodeploy/agent/tags' => Http::response([['name' => '0.1.0']]),
+        ]);
+
+        $this->server->monitoring()?->delete();
+
+        app(Install::class)->install($this->server, [
+            'type' => 'monitoring',
+            'name' => 'vito-agent',
+            'version' => 'latest',
+        ]);
+
+        $config = json_decode(SSH::getUploadedContent(), true);
+        $this->assertNotEmpty($config['url']);
+        $this->assertNotEmpty($config['secret']);
+        $this->assertArrayNotHasKey('data_retention', $config);
+        $this->assertContains('nginx', array_column($config['services'], 'unit'));
+
+        Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
+    }
+
+    private function createVitoAgent(): void
+    {
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'type_data' => [
+                'url' => 'https://vito.test/agent-endpoint',
+                'secret' => 'agent-secret',
+                'data_retention' => 7,
+            ],
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);

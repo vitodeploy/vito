@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 /** @mixin Service */
 class ServiceResource extends JsonResource
@@ -18,7 +19,7 @@ class ServiceResource extends JsonResource
             'id' => $this->id,
             'server_id' => $this->server_id,
             'type' => $this->type,
-            'type_data' => $this->type_data,
+            'type_data' => $this->type_data !== null ? Arr::except($this->type_data, ['secret']) : null,
             'config_paths' => config("service.services.{$this->name}.config_paths", []),
             'name' => $this->name,
             'version' => $this->version,

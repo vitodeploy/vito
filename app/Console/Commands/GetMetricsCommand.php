@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Service\CheckServiceStatuses;
 use App\Enums\ServerStatus;
 use App\Models\Server;
 use Illuminate\Console\Command;
@@ -32,6 +33,14 @@ class GetMetricsCommand extends Command
                         $checkedMetrics++;
                     } catch (Throwable $e) {
                         Log::warning('Failed to collect metrics for server', [
+                            'server_id' => $server->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                    try {
+                        app(CheckServiceStatuses::class)->check($server);
+                    } catch (Throwable $e) {
+                        Log::warning('Failed to check service statuses for server', [
                             'server_id' => $server->id,
                             'error' => $e->getMessage(),
                         ]);

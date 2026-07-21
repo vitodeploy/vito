@@ -4,6 +4,7 @@ namespace Tests\Feature\API;
 
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -12,6 +13,32 @@ use Tests\TestCase;
 class ServicesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_services_list_redacts_type_data_secret(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'type_data' => [
+                'url' => 'https://vito.test/agent-endpoint',
+                'secret' => 'agent-secret',
+                'data_retention' => 7,
+            ],
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.services', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonFragment(['url' => 'https://vito.test/agent-endpoint'])
+            ->assertJsonMissing(['secret' => 'agent-secret']);
+    }
 
     public function test_see_services_list(): void
     {

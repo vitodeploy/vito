@@ -22,7 +22,8 @@ class UninstallJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->service->server_id}", function () {
+        $succeeded = false;
+        $this->run("server-{$this->service->server_id}", function () use (&$succeeded) {
             $projectId = $this->service->server->project_id;
             $serviceId = $this->service->id;
             $this->service->handler()->uninstall();
@@ -33,7 +34,12 @@ class UninstallJob implements ShouldQueue
                 type: 'service.deleted',
                 data: ['id' => $serviceId],
             ));
+            $succeeded = true;
         });
+
+        if ($succeeded) {
+            UpdateVitoAgentConfigJob::dispatchFor($this->service);
+        }
     }
 
     public function failed(Exception $e): void

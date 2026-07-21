@@ -29,6 +29,21 @@ export AWS_SECRET_ACCESS_KEY={{ $secret }}
 export AWS_DEFAULT_REGION={{ $region }}
 export AWS_ENDPOINT_URL={{ $endpoint }}
 
-if aws s3 cp {{ $src }} s3://{{ $bucket }}/{{ $dest }}; then
+aws s3 cp --no-progress "{{ $src }}" "s3://{{ $bucket }}/{{ $dest }}" &
+upload_pid=$!
+
+elapsed=0
+while kill -0 "$upload_pid" 2>/dev/null; do
+    sleep 1
+    elapsed=$((elapsed + 1))
+    if [ $((elapsed % 30)) -eq 0 ] && kill -0 "$upload_pid" 2>/dev/null; then
+        echo "Upload in progress... (${elapsed}s elapsed)"
+    fi
+done
+
+if wait "$upload_pid"; then
     echo "Upload successful"
+else
+    echo "Error: Upload failed"
+    exit 1
 fi

@@ -18,7 +18,7 @@ class AgentController extends Controller
         /** @var ?Service $service */
         $service = $server->services()->find($id);
 
-        $expected = $service?->handler()->data()['secret'] ?? null;
+        $expected = $service?->hasHandler() ? ($service->handler()->data()['secret'] ?? null) : null;
         $provided = (string) $request->header('secret');
 
         if (! $service || ! is_string($expected) || $expected === '' || ! hash_equals($expected, $provided)) {

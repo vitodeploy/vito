@@ -25,7 +25,7 @@ class EventsController extends Controller
         $host = $appUrl['host'] ?? 'localhost';
         $port = $appUrl['port'] ?? ($isSecure ? 443 : 80);
 
-        if (app()->environment('local')) {
+        if (app()->environment('local') && ! config('app.ws_url')) {
             $wsPort = config('core.ws_port', 8085);
             $result['url'] = "{$wsProtocol}://{$host}:{$wsPort}/ws/events";
         } else {
