@@ -17,7 +17,7 @@ class NetworkServerTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->with(['server.services', 'serverIpAddress'])->latest();
+        $this->query->with(['server.services', 'serverIpAddress'])->orderBy('id');
     }
 
     protected function columns(): array
