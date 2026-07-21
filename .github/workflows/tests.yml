@@ -87,7 +87,7 @@ jobs:
 
       - name: Run test suite with coverage
         if: github.event_name == 'pull_request'
-        run: php artisan test --parallel --coverage-clover=build/logs/clover.xml
+        run: php artisan test --parallel --coverage-cobertura=build/logs/cobertura.xml
 
       - name: Setup Python
         if: github.event_name == 'pull_request'
@@ -104,7 +104,7 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          diff-cover build/logs/clover.xml \
+          diff-cover build/logs/cobertura.xml \
             --compare-branch="origin/$BASE_REF" \
             --fail-under=75 \
             --markdown-report=build/diff-cover.md

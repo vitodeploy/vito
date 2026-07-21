@@ -89,15 +89,15 @@
     ],
     "test:coverage": [
       "@putenv XDEBUG_MODE=coverage",
-      "@php artisan test --parallel --coverage --coverage-clover=build/logs/clover.xml"
+      "@php artisan test --parallel --coverage --coverage-cobertura=build/logs/cobertura.xml"
     ],
-    "test:coverage:herd": "herd coverage php artisan test --parallel --coverage --coverage-clover=build/logs/clover.xml",
+    "test:coverage:herd": "herd coverage php artisan test --parallel --coverage --coverage-cobertura=build/logs/cobertura.xml",
     "test:coverage:lerd": [
       "@putenv XDEBUG_MODE=coverage",
-      "lerd artisan test --parallel --coverage --coverage-clover=build/logs/clover.xml"
+      "lerd artisan test --parallel --coverage --coverage-cobertura=build/logs/cobertura.xml"
     ],
-    "test:coverage:yerd": "phpcover artisan test --parallel --coverage --coverage-clover=build/logs/clover.xml",
-    "coverage:diff": "diff-cover build/logs/clover.xml --compare-branch=origin/4.x --fail-under=75",
+    "test:coverage:yerd": "phpcover artisan test --parallel --coverage --coverage-cobertura=build/logs/cobertura.xml",
+    "coverage:diff": "diff-cover build/logs/cobertura.xml --compare-branch=origin/4.x --fail-under=75",
     "test:coverage-diff": [
       "@test:coverage",
       "@coverage:diff"
