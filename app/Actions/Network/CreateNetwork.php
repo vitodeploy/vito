@@ -2,6 +2,7 @@
 
 namespace App\Actions\Network;
 
+use App\Enums\FirewallRuleStatus;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkAddressingPool;
 use App\Enums\NetworkServerStatus;
@@ -35,16 +36,22 @@ class CreateNetwork
 
         $type = NetworkType::from($input['type']);
 
-        $network = DB::transaction(fn (): Network => $type === NetworkType::WIREGUARD
-            ? $this->buildWireGuard($project, $input)
-            : $this->buildProvider($project, $input));
+        $network = DB::transaction(function () use ($type, $project, $input): Network {
+            $network = $type === NetworkType::WIREGUARD
+                ? $this->buildWireGuard($project, $input)
+                : $this->buildProvider($project, $input);
+
+            $this->seedDefaultFirewallRule($network);
+
+            return $network;
+        });
 
         if ($network->type === NetworkType::WIREGUARD) {
             $network->load('servers.server');
             foreach ($network->servers as $member) {
                 $this->sync->toPresent($member);
             }
-        } elseif ($network->firewall_enabled) {
+        } else {
             $this->firewall->handle($network);
         }
 
@@ -82,7 +89,6 @@ class CreateNetwork
             'cidr' => $cidr,
             'cidr_canonical' => $cidr,
             'port' => $this->allocatePort($project, $members->pluck('id')->all(), (int) ($input['port'] ?? 51820)),
-            'firewall_enabled' => (bool) ($input['firewall_enabled'] ?? false),
         ]);
 
         $used = [];
@@ -131,7 +137,6 @@ class CreateNetwork
             'status' => NetworkStatus::ACTIVE,
             'cidr' => $input['cidr'] ?? null,
             'cidr_canonical' => isset($input['cidr']) ? Cidr::canonical($input['cidr']) : null,
-            'firewall_enabled' => (bool) ($input['firewall_enabled'] ?? false),
         ]);
 
         foreach ($input['servers'] as $serverId) {
@@ -143,6 +148,16 @@ class CreateNetwork
         }
 
         return $network;
+    }
+
+    private function seedDefaultFirewallRule(Network $network): void
+    {
+        $network->firewallRules()->create([
+            'name' => 'Allow all',
+            'protocol' => null,
+            'port' => null,
+            'status' => FirewallRuleStatus::READY,
+        ]);
     }
 
     /**

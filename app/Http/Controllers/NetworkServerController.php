@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Actions\Network\AddServersToNetwork;
 use App\Actions\Network\RemoveServerFromNetwork;
 use App\Actions\Network\SyncNetwork;
+use App\Actions\Network\UpdateNetworkServerIp;
+use App\Enums\NetworkType;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +15,7 @@ use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('networks/{network}/servers')]
 #[Middleware(['auth', 'has-project'])]
@@ -37,6 +40,18 @@ class NetworkServerController extends Controller
         app(SyncNetwork::class)->member($networkServer);
 
         return back()->with('info', 'Server configuration is being regenerated.');
+    }
+
+    #[Put('/{networkServer}', name: 'networks.servers.update')]
+    public function update(Request $request, Network $network, NetworkServer $networkServer): RedirectResponse
+    {
+        $this->authorize('update', $network);
+        $this->ensureBelongsToNetwork($network, $networkServer);
+        abort_unless($network->type === NetworkType::PROVIDER, 404);
+
+        app(UpdateNetworkServerIp::class)->update($networkServer, $request->only('server_ip_address_id'));
+
+        return back()->with('success', 'IP address updated.');
     }
 
     #[Delete('/{networkServer}', name: 'networks.servers.destroy')]

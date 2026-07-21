@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $cidr
  * @property ?string $cidr_canonical
  * @property ?int $port
- * @property bool $firewall_enabled
  * @property Project $project
  * @property Collection<int, NetworkServer> $servers
  * @property Collection<int, NetworkFirewallRule> $firewallRules
@@ -40,13 +39,11 @@ class Network extends AbstractModel
         'cidr',
         'cidr_canonical',
         'port',
-        'firewall_enabled',
     ];
 
     protected $casts = [
         'project_id' => 'integer',
         'port' => 'integer',
-        'firewall_enabled' => 'boolean',
         'type' => NetworkType::class,
         'status' => NetworkStatus::class,
         'addressing_pool' => NetworkAddressingPool::class,

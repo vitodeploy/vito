@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\GenerateWireGuardKeys;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
@@ -282,19 +283,64 @@ class NetworkTest extends TestCase
     {
         SSH::fake();
         $network = Network::factory()->create(['project_id' => $this->server->project_id]);
-        $rule = NetworkFirewallRule::factory()->create(['network_id' => $network->id, 'type' => 'allow', 'port' => '80']);
+        $rule = NetworkFirewallRule::factory()->create(['network_id' => $network->id, 'port' => '80']);
 
         $this->actingAs($this->user);
 
         $this->put(route('networks.firewall.update', ['network' => $network, 'networkFirewallRule' => $rule]), [
             'name' => 'updated',
-            'type' => 'deny',
             'protocol' => 'tcp',
             'port' => '443',
-            'position' => 0,
         ])->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('network_firewall_rules', ['id' => $rule->id, 'type' => 'deny', 'port' => '443']);
+        $this->assertDatabaseHas('network_firewall_rules', ['id' => $rule->id, 'name' => 'updated', 'port' => '443']);
+    }
+
+    public function test_update_provider_network_server_ip_via_http(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $ip1 = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);
+        $ip2 = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.6', 'type' => IpAddressType::PRIVATE]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'prov-net',
+            'type' => 'provider',
+            'cidr' => '10.0.0.0/24',
+            'servers' => [$this->server->id],
+            'ip_addresses' => [$this->server->id => $ip1->id],
+        ]);
+        $member = $network->servers()->firstOrFail();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('networks.servers.update', ['network' => $network, 'networkServer' => $member]), [
+            'server_ip_address_id' => $ip2->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('network_servers', ['id' => $member->id, 'server_ip_address_id' => $ip2->id]);
+    }
+
+    public function test_cannot_update_ip_on_wireguard_network_server(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $ip = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.6', 'type' => IpAddressType::PRIVATE]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+        $member = $network->servers()->firstOrFail();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('networks.servers.update', ['network' => $network, 'networkServer' => $member]), [
+            'server_ip_address_id' => $ip->id,
+        ])->assertNotFound();
     }
 
     public function test_sub_resource_404_when_not_belonging_to_network(): void

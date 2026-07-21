@@ -43,7 +43,7 @@ class AddServersToNetwork
                     $this->sync->toPresent($member);
                 }
             }
-        } elseif ($network->firewall_enabled) {
+        } else {
             $this->firewall->handle($network);
         }
 

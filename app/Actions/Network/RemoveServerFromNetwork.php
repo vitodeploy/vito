@@ -29,7 +29,7 @@ class RemoveServerFromNetwork
                     $this->sync->toPresent($sibling);
                 }
             }
-        } elseif ($network->firewall_enabled) {
+        } else {
             $this->firewall->handle($network);
         }
 

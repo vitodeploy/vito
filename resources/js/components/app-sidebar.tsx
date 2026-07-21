@@ -44,6 +44,11 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       icon: ServerIcon,
     },
     {
+      title: 'Networks',
+      href: route('networks'),
+      icon: NetworkIcon,
+    },
+    {
       title: 'Sites',
       href: route('sites.all'),
       icon: MousePointerClickIcon,
@@ -57,11 +62,6 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Workflows',
       href: route('workflows'),
       icon: WorkflowIcon,
-    },
-    {
-      title: 'Networks',
-      href: route('networks'),
-      icon: NetworkIcon,
     },
     {
       title: 'Domains',

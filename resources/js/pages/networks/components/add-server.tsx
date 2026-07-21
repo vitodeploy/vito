@@ -1,15 +1,14 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/ui/input-error';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Combobox } from '@/components/ui/combobox';
 import { NetworkServerOption } from '@/types/network';
+import PrivateIpSelect, { PrivateIp } from './private-ip-select';
 
 type AddServerForm = {
   servers: number[];
@@ -21,7 +20,7 @@ export default function AddServer({
   onOpenChange,
   networkId,
   isProvider,
-  servers,
+  servers: initialServers,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,14 +28,19 @@ export default function AddServer({
   isProvider: boolean;
   servers: NetworkServerOption[];
 }) {
+  const [servers, setServers] = useState<NetworkServerOption[]>(initialServers);
+
   const form = useForm<AddServerForm>({
     servers: [],
     ip_addresses: {},
   });
 
-  const toggleServer = (id: number) => {
-    const selected = form.data.servers.includes(id);
-    form.setData('servers', selected ? form.data.servers.filter((s) => s !== id) : [...form.data.servers, id]);
+  const selectServer = (id: number) => {
+    form.setData((prev) => ({ ...prev, servers: [id], ip_addresses: {} }));
+  };
+
+  const applyRefreshedIps = (serverId: number, ips: PrivateIp[]) => {
+    setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, private_ips: ips } : s)));
   };
 
   const submit = (e: FormEvent) => {
@@ -49,67 +53,49 @@ export default function AddServer({
     });
   };
 
+  const selectedServerId = form.data.servers[0] ?? null;
+  const selectedServer = selectedServerId ? (servers.find((s) => s.id === selectedServerId) ?? null) : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Add servers</DialogTitle>
-          <DialogDescription className="sr-only">Add servers to the network</DialogDescription>
+          <DialogTitle>Add server</DialogTitle>
+          <DialogDescription className="sr-only">Add a server to the network</DialogDescription>
         </DialogHeader>
         <Form id="add-server-form" onSubmit={submit} className="max-h-[70vh] overflow-y-auto p-4">
           <FormFields>
             <FormField>
-              <Label>Servers</Label>
-              <div className="flex flex-col gap-3">
-                {servers.length === 0 && <p className="text-muted-foreground text-sm">No eligible servers available.</p>}
-                {servers.map((server) => {
-                  const selected = form.data.servers.includes(server.id);
-                  const selectedIp = form.data.ip_addresses[server.id];
-                  const primaryChosen = server.private_ips.find((ip) => ip.id === selectedIp)?.is_primary;
-                  return (
-                    <div key={server.id} className="flex flex-col gap-2 rounded-md border p-3">
-                      <div className="flex items-center gap-3">
-                        <Checkbox id={`add-server-${server.id}`} checked={selected} onClick={() => toggleServer(server.id)} />
-                        <Label htmlFor={`add-server-${server.id}`} className="flex-1">
-                          {server.name}
-                        </Label>
-                        {!server.is_ready && <span className="text-muted-foreground text-xs">not ready</span>}
-                      </div>
-                      {selected && isProvider && (
-                        <div className="pl-7">
-                          <Select
-                            value={selectedIp ? String(selectedIp) : ''}
-                            onValueChange={(value) => form.setData('ip_addresses', { ...form.data.ip_addresses, [server.id]: Number(value) })}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a private IP" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                {server.private_ips.map((ip) => (
-                                  <SelectItem key={ip.id} value={String(ip.id)}>
-                                    {ip.ip}
-                                    {ip.is_primary ? ' (primary)' : ''}
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                          {primaryChosen && (
-                            <Alert className="mt-2">
-                              <TriangleAlertIcon />
-                              <AlertDescription>This is the server&apos;s primary IP. Make sure you intend to use it for this network.</AlertDescription>
-                            </Alert>
-                          )}
-                          <InputError message={form.errors[`ip_addresses.${server.id}` as keyof typeof form.errors]} />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <Label htmlFor="add-server">Server</Label>
+              <Combobox
+                id="add-server"
+                items={servers.map((server) => ({
+                  value: String(server.id),
+                  label: server.is_ready ? server.name : `${server.name} (not ready)`,
+                  keywords: [server.name],
+                }))}
+                value={selectedServerId ? String(selectedServerId) : ''}
+                placeholder="Select a server"
+                searchText="Filter servers..."
+                noneFoundText="No eligible servers available."
+                onValueChange={(value) => selectServer(Number(value))}
+              />
               <InputError message={form.errors.servers} />
             </FormField>
+
+            {isProvider && (
+              <FormField>
+                <Label htmlFor="add-server-ip">Private IP</Label>
+                <PrivateIpSelect
+                  serverId={selectedServerId}
+                  ips={selectedServer?.private_ips ?? []}
+                  value={selectedServerId ? form.data.ip_addresses[selectedServerId] : undefined}
+                  onValueChange={(ipId) => form.setData('ip_addresses', selectedServerId ? { [selectedServerId]: ipId } : {})}
+                  onRefreshed={applyRefreshedIps}
+                />
+                <InputError message={selectedServerId ? form.errors[`ip_addresses.${selectedServerId}` as keyof typeof form.errors] : undefined} />
+              </FormField>
+            )}
           </FormFields>
         </Form>
         <DialogFooter>

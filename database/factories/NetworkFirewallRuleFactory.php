@@ -19,10 +19,8 @@ class NetworkFirewallRuleFactory extends Factory
         return [
             'network_id' => Network::factory(),
             'name' => $this->faker->word(),
-            'type' => 'allow',
             'protocol' => 'tcp',
             'port' => (string) $this->faker->numberBetween(1, 65535),
-            'position' => 0,
             'status' => FirewallRuleStatus::READY,
         ];
     }

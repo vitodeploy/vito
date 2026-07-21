@@ -25,7 +25,7 @@ class ManageNetworkFirewallRule
         $rule = $network->firewallRules()->create($this->attributes($input));
 
         $this->broadcast($network, 'network-firewall-rule.updated', new NetworkFirewallRuleResource($rule));
-        $this->applyIfEnabled($network);
+        $this->apply->handle($network);
 
         return $rule;
     }
@@ -40,7 +40,7 @@ class ManageNetworkFirewallRule
         $rule->update($this->attributes($input));
 
         $this->broadcast($rule->network, 'network-firewall-rule.updated', new NetworkFirewallRuleResource($rule));
-        $this->applyIfEnabled($rule->network);
+        $this->apply->handle($rule->network);
 
         return $rule;
     }
@@ -52,7 +52,7 @@ class ManageNetworkFirewallRule
         $rule->delete();
 
         $this->broadcast($network, 'network-firewall-rule.deleted', ['id' => $ruleId]);
-        $this->applyIfEnabled($network);
+        $this->apply->handle($network);
     }
 
     /**
@@ -67,13 +67,6 @@ class ManageNetworkFirewallRule
         ));
     }
 
-    private function applyIfEnabled(Network $network): void
-    {
-        if ($network->firewall_enabled) {
-            $this->apply->handle($network);
-        }
-    }
-
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
@@ -84,10 +77,8 @@ class ManageNetworkFirewallRule
 
         return [
             'name' => $input['name'],
-            'type' => $input['type'],
             'protocol' => $input['protocol'] ?? null,
             'port' => ($port === null || $port === '') ? null : (string) $port,
-            'position' => (int) ($input['position'] ?? 0),
             'status' => FirewallRuleStatus::READY,
         ];
     }
@@ -99,8 +90,6 @@ class ManageNetworkFirewallRule
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:allow,deny'],
-            'position' => ['nullable', 'integer', 'min:0'],
             'protocol' => ['nullable', 'in:tcp,udp', 'required_with:port'],
             'port' => ['nullable', 'required_with:protocol', new PortOrPortRangeRule],
         ])->validate();

@@ -24,7 +24,6 @@ class NetworkResource extends JsonResource
             'addressing_pool' => $this->addressing_pool->getText(),
             'cidr' => $this->cidr,
             'port' => $this->port,
-            'firewall_enabled' => $this->firewall_enabled,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
             'servers_count' => $this->whenCounted('servers'),

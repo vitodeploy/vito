@@ -23,16 +23,12 @@ export default function NetworkFirewallRuleForm({
 }) {
   const form = useForm<{
     name: string;
-    type: string;
     protocol: string;
     port: string;
-    position: string;
   }>({
     name: rule?.name || '',
-    type: rule?.type || 'deny',
     protocol: rule?.protocol || '',
     port: rule?.port || '',
-    position: rule?.position?.toString() || '0',
   });
 
   const submit = (e: FormEvent) => {
@@ -61,22 +57,6 @@ export default function NetworkFirewallRuleForm({
               <Label htmlFor="name">Name</Label>
               <Input id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
-            </FormField>
-
-            <FormField>
-              <Label htmlFor="type">Type</Label>
-              <Select value={form.data.type} onValueChange={(value) => form.setData('type', value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="allow">Allow</SelectItem>
-                    <SelectItem value="deny">Deny</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <InputError message={form.errors.type} />
             </FormField>
 
             <FormField>
@@ -109,13 +89,6 @@ export default function NetworkFirewallRuleForm({
               />
               <p className="text-muted-foreground text-xs">Leave protocol and port empty to match all traffic from the network.</p>
               <InputError message={form.errors.port} />
-            </FormField>
-
-            <FormField>
-              <Label htmlFor="position">Position</Label>
-              <Input id="position" value={form.data.position} onChange={(e) => form.setData('position', e.target.value)} />
-              <p className="text-muted-foreground text-xs">Lower positions are evaluated first. Put denies above allows.</p>
-              <InputError message={form.errors.position} />
             </FormField>
           </FormFields>
         </Form>

@@ -35,6 +35,7 @@ import Fail2banForm from '@/pages/security/components/fail2ban-form';
 import PhpSettingsDialog from '@/pages/site-settings/components/php-settings-dialog';
 import CreateNetwork from '@/pages/networks/components/create-network';
 import AddNetworkServer from '@/pages/networks/components/add-server';
+import EditNetworkServer from '@/pages/networks/components/edit-network-server';
 import NetworkFirewallRuleForm from '@/pages/networks/components/firewall-rule-form';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
@@ -88,6 +89,7 @@ export const dialogs = {
   phpSettings: PhpSettingsDialog,
   networkCreate: CreateNetwork,
   networkAddServer: AddNetworkServer,
+  networkEditServer: EditNetworkServer,
   networkFirewallForm: NetworkFirewallRuleForm,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;

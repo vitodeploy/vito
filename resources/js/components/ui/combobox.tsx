@@ -15,7 +15,7 @@ export function Combobox({
   placeholder = '',
   onValueChange,
 }: {
-  items: { value: string; label: string }[];
+  items: { value: string; label: string; keywords?: string[] }[];
   value: string;
   id?: string;
   searchText?: string;
@@ -45,6 +45,7 @@ export function Combobox({
                   <CommandItem
                     key={item.value}
                     value={item.value}
+                    keywords={item.keywords}
                     onSelect={(currentValue) => {
                       value = currentValue;
                       onValueChange(value);

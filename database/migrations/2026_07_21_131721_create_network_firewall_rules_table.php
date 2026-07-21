@@ -13,14 +13,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('network_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('type');
             $table->string('protocol')->nullable();
             $table->string('port')->nullable();
-            $table->unsignedInteger('position')->default(0);
             $table->string('status')->default(FirewallRuleStatus::CREATING->value);
             $table->timestamps();
-
-            $table->index(['network_id', 'position']);
         });
     }
 

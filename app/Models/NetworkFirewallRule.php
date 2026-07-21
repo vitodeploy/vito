@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $network_id
  * @property string $name
- * @property string $type
  * @property ?string $protocol
  * @property ?string $port
- * @property int $position
  * @property FirewallRuleStatus $status
  * @property Network $network
  */
@@ -26,16 +24,13 @@ class NetworkFirewallRule extends AbstractModel
     protected $fillable = [
         'network_id',
         'name',
-        'type',
         'protocol',
         'port',
-        'position',
         'status',
     ];
 
     protected $casts = [
         'network_id' => 'integer',
-        'position' => 'integer',
         'status' => FirewallRuleStatus::class,
     ];
 

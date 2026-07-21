@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\FirewallRule\ManageRule;
+use App\Enums\NetworkServerStatus;
 use App\Models\FirewallRule;
 use App\Models\Network;
 use App\Models\Server;
@@ -30,8 +31,8 @@ class FirewallController extends Controller
         return Inertia::render('firewall/index', [
             'rules' => FirewallRuleTable::make($server->firewallRules())->simplePaginate(),
             'managedNetworks' => Network::query()
-                ->where('firewall_enabled', true)
-                ->whereHas('servers', fn ($query) => $query->where('server_id', $server->id))
+                ->whereHas('servers', fn ($query) => $query->where('server_id', $server->id)
+                    ->where('status', '!=', NetworkServerStatus::LEAVING))
                 ->get()
                 ->map(fn (Network $network): array => [
                     'id' => $network->id,

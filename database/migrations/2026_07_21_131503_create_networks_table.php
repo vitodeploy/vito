@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('cidr')->nullable();
             $table->string('cidr_canonical')->nullable();
             $table->unsignedInteger('port')->nullable();
-            $table->boolean('firewall_enabled')->default(false);
             $table->timestamps();
 
             $table->unique(['project_id', 'name']);

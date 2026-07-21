@@ -14,11 +14,12 @@ use stdClass;
 class CompileServerFirewallRules
 {
     /**
-     * Ordered network firewall pseudo-rules for a server, emitted BEFORE the
-     * server's own rules. Order (ufw is first-match): WireGuard handshake
-     * (always, so the tunnel survives `default deny incoming`), then per-network
-     * position-ordered allow/deny rules scoped to the network source, then a
-     * default `allow from <source>` catch-all (network is allow-all by default).
+     * Network firewall allow-rules for a server, emitted BEFORE the server's own
+     * rules. Order (ufw is first-match): WireGuard handshake (always, so the
+     * tunnel survives `default deny incoming`), then the network's allow rules
+     * scoped to the network source. A network is seeded with an "Allow all" rule
+     * (null protocol/port → `allow from <source>`) so it is permissive by
+     * default; deleting that rule locks the network down to its explicit allows.
      *
      * @return array<int, stdClass>
      */
@@ -32,32 +33,18 @@ class CompileServerFirewallRules
 
         $handshakes = [];
         $ruleSpecs = [];
-        $catchAlls = [];
 
         foreach ($memberships as $membership) {
             $network = $membership->network;
-            $wireguard = $network->type === NetworkType::WIREGUARD;
 
-            if ($wireguard) {
+            if ($network->type === NetworkType::WIREGUARD) {
                 $handshakes = array_merge($handshakes, $this->handshakeSpecs($network, $server));
             }
 
-            if (! $wireguard && ! $network->firewall_enabled) {
-                continue;
-            }
-
-            $sources = $this->sources($network, $server);
-
-            if ($network->firewall_enabled) {
-                $ruleSpecs = array_merge($ruleSpecs, $this->ruleSpecs($network, $sources));
-            }
-
-            foreach ($sources as $source) {
-                $catchAlls[] = $this->spec('allow', $source['ip'], $source['mask'], null, null);
-            }
+            $ruleSpecs = array_merge($ruleSpecs, $this->ruleSpecs($network, $this->sources($network, $server)));
         }
 
-        return array_merge($handshakes, $ruleSpecs, $catchAlls);
+        return array_merge($handshakes, $ruleSpecs);
     }
 
     /**
@@ -88,14 +75,13 @@ class CompileServerFirewallRules
 
         $rules = $network->firewallRules()
             ->where('status', '!=', FirewallRuleStatus::DELETING)
-            ->orderBy('position')
             ->orderBy('id')
             ->get();
 
         foreach ($rules as $rule) {
             foreach ($sources as $source) {
                 $specs[] = $this->spec(
-                    $rule->type,
+                    'allow',
                     $source['ip'],
                     $source['mask'],
                     $rule->protocol,

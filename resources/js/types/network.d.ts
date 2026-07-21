@@ -10,7 +10,6 @@ export interface Network {
   addressing_pool: string;
   cidr: string | null;
   port: number | null;
-  firewall_enabled: boolean;
   status: string;
   status_color: StatusColor;
   servers_count?: number;
@@ -36,10 +35,8 @@ export interface NetworkFirewallRule {
   id: number;
   network_id: number;
   name: string;
-  type: string;
   protocol: string | null;
   port: string | null;
-  position: number;
   status: string;
   status_color: StatusColor;
   created_at: string;
@@ -50,5 +47,13 @@ export interface NetworkServerOption {
   id: number;
   name: string;
   is_ready: boolean;
+  private_ips: { id: number; ip: string; is_primary: boolean }[];
+}
+
+export interface NetworkMemberIp {
+  id: number;
+  server_id: number;
+  server_name: string;
+  ip_address_id: number | null;
   private_ips: { id: number; ip: string; is_primary: boolean }[];
 }

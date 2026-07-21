@@ -6,7 +6,6 @@ use App\Actions\FirewallRule\ManageRule;
 use App\Actions\Network\CompileServerFirewallRules;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\ManageNetworkFirewallRule;
-use App\Actions\Network\UpdateNetwork;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
@@ -23,17 +22,34 @@ class NetworkFirewallTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function wireguardNetwork(array $servers, bool $firewall): \App\Models\Network
+    /**
+     * @param  array<int, int>  $servers
+     */
+    private function wireguardNetwork(array $servers): \App\Models\Network
     {
         return app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'wg-net',
             'type' => 'wireguard',
-            'firewall_enabled' => $firewall,
             'servers' => $servers,
         ]);
     }
 
-    public function test_wireguard_handshake_port_is_opened_even_when_firewall_disabled(): void
+    public function test_network_is_seeded_with_a_default_allow_all_rule(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = $this->wireguardNetwork([$this->server->id]);
+
+        $this->assertDatabaseHas('network_firewall_rules', [
+            'network_id' => $network->id,
+            'name' => 'Allow all',
+            'protocol' => null,
+            'port' => null,
+        ]);
+    }
+
+    public function test_wireguard_handshake_port_is_opened(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
@@ -44,39 +60,38 @@ class NetworkFirewallTest extends TestCase
             'status' => ServerStatus::READY,
         ]);
 
-        $this->wireguardNetwork([$this->server->id, $peer->id], false);
+        $this->wireguardNetwork([$this->server->id, $peer->id]);
 
         SSH::assertExecutedContains('proto udp port 51820');
     }
 
-    public function test_firewall_enabled_emits_default_allow_catch_all(): void
+    public function test_default_allow_all_rule_emits_catch_all(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $this->wireguardNetwork([$this->server->id], true);
+        $this->wireguardNetwork([$this->server->id]);
 
         SSH::assertExecutedContains('allow from 100.64.0.0/24 to any');
     }
 
-    public function test_deny_rule_is_emitted_scoped_to_the_network_cidr(): void
+    public function test_allow_rule_is_emitted_scoped_to_the_network_cidr(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
+        $network = $this->wireguardNetwork([$this->server->id]);
 
         app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
+            'name' => 'mysql',
             'protocol' => 'tcp',
             'port' => '3306',
         ]);
 
-        SSH::assertExecutedContains('deny from 100.64.0.0/24 to any proto tcp port 3306');
+        SSH::assertExecutedContains('allow from 100.64.0.0/24 to any proto tcp port 3306');
         $this->assertDatabaseHas('network_firewall_rules', [
             'network_id' => $network->id,
-            'type' => 'deny',
+            'name' => 'mysql',
             'port' => '3306',
         ]);
     }
@@ -86,10 +101,9 @@ class NetworkFirewallTest extends TestCase
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
+        $network = $this->wireguardNetwork([$this->server->id]);
         app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
+            'name' => 'mysql',
             'protocol' => 'tcp',
             'port' => '3306',
         ]);
@@ -102,7 +116,7 @@ class NetworkFirewallTest extends TestCase
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
+        $network = $this->wireguardNetwork([$this->server->id]);
 
         $this->actingAs($this->user);
 
@@ -114,12 +128,29 @@ class NetworkFirewallTest extends TestCase
                 ->where('managedNetworks.0.id', $network->id));
     }
 
+    public function test_leaving_member_network_is_not_listed_as_managed(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = $this->wireguardNetwork([$this->server->id]);
+        $network->servers()->update(['status' => NetworkServerStatus::LEAVING]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('firewall', ['server' => $this->server]))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('firewall/index')
+                ->count('managedNetworks', 0));
+    }
+
     public function test_server_level_firewall_change_reapplies_network_rules(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $this->wireguardNetwork([$this->server->id], true);
+        $this->wireguardNetwork([$this->server->id]);
 
         app(ManageRule::class)->create($this->server, [
             'name' => 'ssh',
@@ -127,18 +158,6 @@ class NetworkFirewallTest extends TestCase
             'protocol' => 'tcp',
             'port' => '22',
         ]);
-
-        SSH::assertExecutedContains('allow from 100.64.0.0/24 to any');
-    }
-
-    public function test_toggling_firewall_enabled_applies_network_rules(): void
-    {
-        SSH::fake();
-        $this->server->update(['status' => ServerStatus::READY]);
-
-        $network = $this->wireguardNetwork([$this->server->id], false);
-
-        app(UpdateNetwork::class)->update($network, ['firewall_enabled' => true]);
 
         SSH::assertExecutedContains('allow from 100.64.0.0/24 to any');
     }
@@ -154,7 +173,7 @@ class NetworkFirewallTest extends TestCase
             'status' => ServerStatus::READY,
         ]);
 
-        $this->wireguardNetwork([$this->server->id, $peer->id], false);
+        $this->wireguardNetwork([$this->server->id, $peer->id]);
 
         SSH::fake();
         $this->server->firewall()->handler()->install();
@@ -167,7 +186,7 @@ class NetworkFirewallTest extends TestCase
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
+        $network = $this->wireguardNetwork([$this->server->id]);
         $member = $network->servers()->firstOrFail();
 
         (new ApplyNetworkFirewallJob($member))->failed(new \RuntimeException('boom'));
@@ -175,61 +194,29 @@ class NetworkFirewallTest extends TestCase
         $this->assertSame(NetworkServerStatus::FAILED, $member->fresh()->status);
     }
 
-    public function test_deny_rule_is_ordered_before_the_catch_all(): void
+    public function test_deleting_allow_all_locks_down_but_keeps_tunnel_handshake(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
-        app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
-            'protocol' => 'tcp',
-            'port' => '3306',
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
         ]);
 
-        $specs = app(CompileServerFirewallRules::class)->forServer($this->server);
+        $network = $this->wireguardNetwork([$this->server->id, $peer->id]);
 
-        $denyIndex = $this->indexOf($specs, fn ($s) => $s->type === 'deny' && $s->port === '3306');
-        $catchAllIndex = $this->indexOf($specs, fn ($s) => $s->type === 'allow' && $s->port === null && $s->source === '100.64.0.0');
+        $allowAll = $network->firewallRules()->whereNull('protocol')->whereNull('port')->firstOrFail();
+        app(ManageNetworkFirewallRule::class)->delete($allowAll);
 
-        $this->assertNotNull($denyIndex);
-        $this->assertNotNull($catchAllIndex);
-        $this->assertLessThan($catchAllIndex, $denyIndex);
-    }
+        $specs = app(CompileServerFirewallRules::class)->forServer($this->server->fresh());
 
-    public function test_portless_deny_all_rule_is_emitted(): void
-    {
-        SSH::fake();
-        $this->server->update(['status' => ServerStatus::READY]);
+        $catchAll = $this->indexOf($specs, fn ($s) => $s->port === null && $s->protocol === null && $s->source === '100.64.0.0');
+        $handshake = $this->indexOf($specs, fn ($s) => $s->protocol === 'udp' && $s->port === '51820');
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
-        app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'lockdown',
-            'type' => 'deny',
-        ]);
-
-        SSH::assertExecutedContains('deny from 100.64.0.0/24 to any');
-    }
-
-    public function test_disabling_firewall_removes_deny_rules_but_keeps_tunnel_allowed(): void
-    {
-        SSH::fake();
-        $this->server->update(['status' => ServerStatus::READY]);
-
-        $network = $this->wireguardNetwork([$this->server->id], true);
-        app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
-            'protocol' => 'tcp',
-            'port' => '3306',
-        ]);
-
-        SSH::fake();
-        app(UpdateNetwork::class)->update($network, ['firewall_enabled' => false]);
-
-        SSH::assertNotExecutedContains('deny from 100.64.0.0/24 to any proto tcp port 3306');
-        SSH::assertExecutedContains('allow from 100.64.0.0/24 to any');
+        $this->assertNull($catchAll);
+        $this->assertNotNull($handshake);
     }
 
     public function test_firewall_change_on_offline_server_marks_member_pending(): void
@@ -237,13 +224,12 @@ class NetworkFirewallTest extends TestCase
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
 
-        $network = $this->wireguardNetwork([$this->server->id], true);
+        $network = $this->wireguardNetwork([$this->server->id]);
 
         $this->server->update(['status' => ServerStatus::DISCONNECTED]);
 
         app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
+            'name' => 'mysql',
             'protocol' => 'tcp',
             'port' => '3306',
         ]);
@@ -267,19 +253,17 @@ class NetworkFirewallTest extends TestCase
             'name' => 'prov-net',
             'type' => 'provider',
             'cidr' => '10.0.0.0/24',
-            'firewall_enabled' => true,
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
         ]);
 
         app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
+            'name' => 'mysql',
             'protocol' => 'tcp',
             'port' => '3306',
         ]);
 
-        SSH::assertExecutedContains('deny from 10.0.0.0/24 to any proto tcp port 3306');
+        SSH::assertExecutedContains('allow from 10.0.0.0/24 to any proto tcp port 3306');
     }
 
     public function test_provider_network_without_cidr_uses_member_private_ip(): void
@@ -307,14 +291,12 @@ class NetworkFirewallTest extends TestCase
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
             'type' => 'provider',
-            'firewall_enabled' => true,
             'servers' => [$this->server->id, $peer->id],
             'ip_addresses' => [$this->server->id => $ip1->id, $peer->id => $ip2->id],
         ]);
 
         app(ManageNetworkFirewallRule::class)->create($network, [
-            'name' => 'no-mysql',
-            'type' => 'deny',
+            'name' => 'mysql',
             'protocol' => 'tcp',
             'port' => '3306',
         ]);
@@ -332,22 +314,11 @@ class NetworkFirewallTest extends TestCase
             'name' => 'prov-net',
             'type' => 'provider',
             'cidr' => '10.0.0.0/24',
-            'firewall_enabled' => true,
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
         ]);
 
         SSH::assertExecutedContains('allow from 10.0.0.0/24 to any');
-    }
-
-    public function test_wireguard_tunnel_is_allowed_when_firewall_disabled(): void
-    {
-        SSH::fake();
-        $this->server->update(['status' => ServerStatus::READY]);
-
-        $this->wireguardNetwork([$this->server->id], false);
-
-        SSH::assertExecutedContains('allow from 100.64.0.0/24 to any');
     }
 
     public function test_server_with_zero_networks_emits_no_network_rules(): void

@@ -29,7 +29,6 @@ class NetworkFactory extends Factory
             'cidr' => "100.64.{$block}.0/24",
             'cidr_canonical' => "100.64.{$block}.0/24",
             'port' => 51820,
-            'firewall_enabled' => false,
         ];
     }
 }
