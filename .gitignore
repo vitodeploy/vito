@@ -8,6 +8,7 @@
 /storage/test-key.pub
 /storage/test-key-*
 /vendor
+/build
 /storage/database.sqlite
 /storage/database-test.sqlite
 /storage/database.sqlite-journal

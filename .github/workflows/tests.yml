@@ -7,7 +7,15 @@ on:
       - 1.x
       - 2.x
       - 3.x
+      - 4.x
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
@@ -21,11 +29,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          coverage: pcov
 
       - name: Cache Composer packages
         id: composer-cache
@@ -61,4 +78,40 @@ jobs:
         run: npm run build
 
       - name: Run test suite
+        if: github.event_name != 'pull_request'
         run: php artisan test --parallel
+
+      - name: Assert coverage driver is active
+        if: github.event_name == 'pull_request'
+        run: php -m | grep -qi pcov
+
+      - name: Run test suite with coverage
+        if: github.event_name == 'pull_request'
+        run: php artisan test --parallel --coverage-clover=build/logs/clover.xml
+
+      - name: Setup Python
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install diff-cover
+        if: github.event_name == 'pull_request'
+        run: pip install "diff-cover==9.*"
+
+      - name: Enforce 75% patch coverage
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          diff-cover build/logs/clover.xml \
+            --compare-branch="origin/$BASE_REF" \
+            --fail-under=75 \
+            --markdown-report=build/diff-cover.md
+
+      - name: Publish coverage report to job summary
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          if [ -f build/diff-cover.md ]; then
+            cat build/diff-cover.md >> "$GITHUB_STEP_SUMMARY"
+          fi

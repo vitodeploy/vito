@@ -34,6 +34,7 @@ Vito is a self-hosted server management tool. Stack: Laravel 13 (L10 structure),
 - `TestCase` provides `$this->user`, `$this->server`, `$this->site` with services pre-configured.
 - Use `SSH::fake()` for SSH operations, `Http::fake()` for HTTP calls.
 - Don't over-test trivial logic that PHP handles natively.
+- **Coverage:** PRs must cover at least 75% of their new/changed `app/` lines (enforced on PRs by the `tests` workflow via `diff-cover`). Run `composer test:coverage` locally (needs PCOV, or `XDEBUG_MODE=coverage`) to generate a report — or the variant for your local dev environment: `test:coverage:herd`, `test:coverage:lerd`, or `test:coverage:yerd`. `composer test:coverage-diff` (after `pip install diff-cover`) previews the patch-coverage gate against `origin/4.x`; after a framework variant, run `composer coverage:diff` for the gate alone.
 
 ## Topic-specific guidelines
 
