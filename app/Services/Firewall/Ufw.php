@@ -2,6 +2,7 @@
 
 namespace App\Services\Firewall;
 
+use App\Actions\Network\CompileServerFirewallRules;
 use App\DTOs\ServiceLog;
 use App\Enums\FirewallRuleStatus;
 use App\Exceptions\SSHError;
@@ -39,6 +40,9 @@ class Ufw extends AbstractFirewall implements HasLogs
                 ]),
                 'install-ufw'
             );
+
+        $this->applyRules();
+
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
@@ -53,10 +57,14 @@ class Ufw extends AbstractFirewall implements HasLogs
      */
     public function applyRules(): void
     {
-        $rules = $this->service->server
+        $serverRules = $this->service->server
             ->firewallRules()
             ->where('status', '!=', FirewallRuleStatus::DELETING)
             ->get();
+
+        $networkRules = collect(app(CompileServerFirewallRules::class)->forServer($this->service->server));
+
+        $rules = $networkRules->merge($serverRules);
 
         $this->service->server->ssh()->exec(
             view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),

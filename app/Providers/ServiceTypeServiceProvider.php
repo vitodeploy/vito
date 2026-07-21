@@ -16,6 +16,7 @@ use App\Services\PHP\PHP;
 use App\Services\ProcessManager\Supervisor;
 use App\Services\Redis\Redis;
 use App\Services\Valkey\Valkey;
+use App\Services\VPN\WireGuard;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +37,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->logAnalysis();
         $this->php();
         $this->node();
+        $this->vpn();
     }
 
     private function webservers(): void
@@ -291,6 +293,15 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '18',
                 '16',
             ])
+            ->register();
+    }
+
+    private function vpn(): void
+    {
+        RegisterServiceType::make(WireGuard::id())
+            ->type(WireGuard::type())
+            ->label('WireGuard')
+            ->handler(WireGuard::class)
             ->register();
     }
 }

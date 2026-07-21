@@ -20,10 +20,17 @@ fi
             : 'any';
     @endphp
 
+    @if(isset($rule->port) && $rule->port !== null && $rule->port !== '')
     if ! sudo ufw {{ $rule->type }} from {{ $source }} to any proto {{ $rule->protocol }} port {{ $rule->port }}; then
         @include('ssh.services.firewall.ufw.restore-rules')
         echo 'VITO_SSH_ERROR' && exit 1
     fi
+    @else
+    if ! sudo ufw {{ $rule->type }} from {{ $source }} to any; then
+        @include('ssh.services.firewall.ufw.restore-rules')
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    @endif
 @endforeach
 
 if ! sudo ufw --force enable; then

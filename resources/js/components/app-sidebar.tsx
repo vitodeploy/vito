@@ -23,6 +23,7 @@ import {
   ListEndIcon,
   LogsIcon,
   MousePointerClickIcon,
+  NetworkIcon,
   ServerIcon,
   Settings2Icon,
   WorkflowIcon,
@@ -56,6 +57,11 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Workflows',
       href: route('workflows'),
       icon: WorkflowIcon,
+    },
+    {
+      title: 'Networks',
+      href: route('networks'),
+      icon: NetworkIcon,
     },
     {
       title: 'Domains',

@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Actions\Network\DispatchNetworkServerSync;
 use App\Actions\Server\CheckConnection;
+use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkType;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
@@ -124,9 +127,44 @@ class Server extends AbstractModel
 
     public bool $deleteFromProvider = true;
 
+    /** @var array<int, array<int, int>> */
+    protected static array $networkSiblingsToResync = [];
+
     public static function boot(): void
     {
         parent::boot();
+
+        static::deleting(function (Server $server): void {
+            $siblings = [];
+            NetworkServer::query()
+                ->where('server_id', $server->id)
+                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
+                ->pluck('network_id')
+                ->each(function (int $networkId) use ($server, &$siblings): void {
+                    NetworkServer::query()
+                        ->where('network_id', $networkId)
+                        ->where('server_id', '!=', $server->id)
+                        ->where('status', '!=', NetworkServerStatus::LEAVING)
+                        ->pluck('id')
+                        ->each(function (int $id) use (&$siblings): void {
+                            $siblings[$id] = true;
+                        });
+                });
+            static::$networkSiblingsToResync[$server->id] = array_keys($siblings);
+        });
+
+        static::deleted(function (Server $server): void {
+            $ids = static::$networkSiblingsToResync[$server->id] ?? [];
+            unset(static::$networkSiblingsToResync[$server->id]);
+
+            NetworkServer::query()
+                ->whereIn('id', $ids)
+                ->with('server', 'network')
+                ->get()
+                ->each(function (NetworkServer $member): void {
+                    app(DispatchNetworkServerSync::class)->toPresent($member);
+                });
+        });
 
         static::deleting(function (Server $server): void {
             DB::beginTransaction();

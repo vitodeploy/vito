@@ -74,7 +74,9 @@ export default function InstallService({ name, children }: { name?: string; chil
                       <CommandInput placeholder="Search service..." />
                       <CommandList>
                         <CommandGroup>
-                          {Object.entries(configs.service.services).map(([key, service]) => (
+                          {Object.entries(configs.service.services)
+                            .filter(([, service]) => service.type !== 'vpn')
+                            .map(([key, service]) => (
                             <CommandItem
                               key={`service-${key}`}
                               value={service.label}

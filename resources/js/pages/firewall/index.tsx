@@ -1,15 +1,16 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
 import { FirewallRule } from '@/types/firewall';
 import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, NetworkIcon, PlusIcon } from 'lucide-react';
 import Container from '@/components/container';
 import { VitoTable } from '@/components/vito-table';
 import Delete from '@/pages/firewall/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { CellRenderProps, InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
 import { useDialog } from '@/hooks/use-dialog';
@@ -20,8 +21,10 @@ export default function Firewall() {
   const page = usePage<{
     server: Server;
     rules: InertiaTableData;
+    managedNetworks: { id: number; name: string }[];
   }>();
   const dialog = useDialog();
+  const managedNetworks = page.props.managedNetworks ?? [];
 
   return (
     <ServerLayout>
@@ -43,6 +46,27 @@ export default function Firewall() {
             </Button>
           </div>
         </HeaderContainer>
+
+        {managedNetworks.length > 0 && (
+          <Alert className="mb-4">
+            <NetworkIcon />
+            <AlertTitle>Private network rules are active on this server</AlertTitle>
+            <AlertDescription>
+              <p>
+                Firewall rules for{' '}
+                {managedNetworks.map((network, index) => (
+                  <span key={network.id}>
+                    {index > 0 && ', '}
+                    <Link href={route('networks.show', { network: network.id })} className="underline">
+                      {network.name}
+                    </Link>
+                  </span>
+                ))}{' '}
+                are managed from the network and are not editable here.
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <VitoTable
           tableData={page.props.rules}

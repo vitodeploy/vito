@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\FirewallRule\ManageRule;
 use App\Models\FirewallRule;
+use App\Models\Network;
 use App\Models\Server;
 use App\Tables\Servers\FirewallRuleTable;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,15 @@ class FirewallController extends Controller
 
         return Inertia::render('firewall/index', [
             'rules' => FirewallRuleTable::make($server->firewallRules())->simplePaginate(),
+            'managedNetworks' => Network::query()
+                ->where('firewall_enabled', true)
+                ->whereHas('servers', fn ($query) => $query->where('server_id', $server->id))
+                ->get()
+                ->map(fn (Network $network): array => [
+                    'id' => $network->id,
+                    'name' => $network->name,
+                ])
+                ->values(),
         ]);
     }
 
