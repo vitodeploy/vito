@@ -6,6 +6,7 @@ use App\Enums\FirewallRuleStatus;
 use Database\Factories\NetworkFirewallRuleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -40,5 +41,13 @@ class NetworkFirewallRule extends AbstractModel
     public function network(): BelongsTo
     {
         return $this->belongsTo(Network::class);
+    }
+
+    /**
+     * @return HasMany<ServerNetworkRule, covariant $this>
+     */
+    public function serverRules(): HasMany
+    {
+        return $this->hasMany(ServerNetworkRule::class);
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Actions\Network\ApplyNetworkFirewall;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
+use App\Enums\NetworkType;
 use Database\Factories\ServerIpAddressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +46,29 @@ class ServerIpAddress extends AbstractModel
         'type' => IpAddressType::class,
         'status' => IpAddressStatus::class,
     ];
+
+    /** @var array<int, int> */
+    public array $reapplyNetworkIds = [];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (ServerIpAddress $address): void {
+            $address->reapplyNetworkIds = NetworkServer::query()
+                ->where('server_ip_address_id', $address->id)
+                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::PROVIDER))
+                ->pluck('network_id')
+                ->unique()
+                ->values()
+                ->all();
+        });
+
+        static::deleted(function (ServerIpAddress $address): void {
+            Network::query()
+                ->whereIn('id', $address->reapplyNetworkIds)
+                ->get()
+                ->each(fn (Network $network) => app(ApplyNetworkFirewall::class)->handle($network));
+        });
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>

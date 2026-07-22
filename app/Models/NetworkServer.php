@@ -6,6 +6,7 @@ use App\Enums\NetworkServerStatus;
 use Database\Factories\NetworkServerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -68,5 +69,13 @@ class NetworkServer extends AbstractModel
     public function serverIpAddress(): BelongsTo
     {
         return $this->belongsTo(ServerIpAddress::class);
+    }
+
+    /**
+     * @return HasMany<ServerNetworkRule, covariant $this>
+     */
+    public function rules(): HasMany
+    {
+        return $this->hasMany(ServerNetworkRule::class);
     }
 }

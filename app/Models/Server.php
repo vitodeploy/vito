@@ -310,6 +310,14 @@ class Server extends AbstractModel
     }
 
     /**
+     * @return HasMany<ServerNetworkRule, covariant $this>
+     */
+    public function networkRules(): HasMany
+    {
+        return $this->hasMany(ServerNetworkRule::class);
+    }
+
+    /**
      * @return HasMany<ServerIpAddress, covariant $this>
      */
     public function ipAddresses(): HasMany

@@ -7,6 +7,7 @@ use App\Models\Service;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
+use Forjed\InertiaTable\Columns\LinkColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
 use Forjed\InertiaTable\Table;
 
@@ -23,7 +24,7 @@ class NetworkServerTable extends Table
     protected function columns(): array
     {
         return [
-            TextColumn::make('server.name', 'Server')->sortable(),
+            LinkColumn::make('server.name', 'Server')->sortable()->route('servers.show', ['server' => ':server_id']),
             TextColumn::make('ip', 'IP address')
                 ->value(fn (NetworkServer $member) => $member->ip ?? $member->serverIpAddress?->ip)
                 ->fallback('—'),

@@ -2,6 +2,10 @@
 
 namespace App\Actions\Server;
 
+use App\Actions\Network\DispatchNetworkServerSync;
+use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkType;
+use App\Models\NetworkServer;
 use App\Models\Server;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class EditServer
 {
+    public function __construct(private DispatchNetworkServerSync $sync) {}
+
     /**
      * @param  array<string, mixed>  $input
      * @return Server $server
@@ -21,12 +27,14 @@ class EditServer
         $this->validate($server, $input);
 
         $checkConnection = false;
+        $ipChanged = false;
         if (isset($input['name'])) {
             $server->name = $input['name'];
         }
         if (isset($input['ip'])) {
             if ($server->ip !== $input['ip']) {
                 $checkConnection = true;
+                $ipChanged = true;
             }
             $server->ip = $input['ip'];
         }
@@ -41,11 +49,36 @@ class EditServer
         }
         $server->save();
 
+        if ($ipChanged) {
+            $this->resyncWireGuardPeers($server);
+        }
+
         if ($checkConnection) {
             return $server->checkConnection();
         }
 
         return $server;
+    }
+
+    /**
+     * The server's public IP feeds every peer's WireGuard endpoint and handshake
+     * firewall rule, so re-sync the peers in each of its WireGuard networks.
+     */
+    private function resyncWireGuardPeers(Server $server): void
+    {
+        NetworkServer::query()
+            ->where('server_id', $server->id)
+            ->where('status', '!=', NetworkServerStatus::LEAVING)
+            ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
+            ->with('network')
+            ->get()
+            ->each(function (NetworkServer $membership) use ($server): void {
+                $membership->network->servers()
+                    ->where('server_id', '!=', $server->id)
+                    ->whereIn('status', [NetworkServerStatus::ACTIVE, NetworkServerStatus::UPDATING])
+                    ->get()
+                    ->each(fn (NetworkServer $peer) => $this->sync->toPresent($peer));
+            });
     }
 
     private function validate(Server $server, array $input): void

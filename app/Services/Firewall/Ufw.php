@@ -2,7 +2,7 @@
 
 namespace App\Services\Firewall;
 
-use App\Actions\Network\CompileServerFirewallRules;
+use App\Actions\Network\FinalizeServerNetworkRules;
 use App\DTOs\ServiceLog;
 use App\Enums\FirewallRuleStatus;
 use App\Exceptions\SSHError;
@@ -57,19 +57,36 @@ class Ufw extends AbstractFirewall implements HasLogs
      */
     public function applyRules(): void
     {
-        $serverRules = $this->service->server
-            ->firewallRules()
+        $server = $this->service->server;
+
+        $networkRules = $server->networkRules()
+            ->where('status', '!=', FirewallRuleStatus::DELETING)
+            ->ordered()
+            ->get();
+
+        $emittedIds = $networkRules->pluck('id')->all();
+        $deletingIds = $server->networkRules()->where('status', FirewallRuleStatus::DELETING)->pluck('id')->all();
+
+        $serverRules = $server->firewallRules()
             ->where('status', '!=', FirewallRuleStatus::DELETING)
             ->get();
 
-        $networkRules = collect(app(CompileServerFirewallRules::class)->forServer($this->service->server));
+        $rules = $networkRules->concat($serverRules);
 
-        $rules = $networkRules->merge($serverRules);
+        $finalize = app(FinalizeServerNetworkRules::class);
 
-        $this->service->server->ssh()->exec(
-            view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),
-            'apply-rules'
-        );
+        try {
+            $server->ssh()->exec(
+                view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),
+                'apply-rules'
+            );
+        } catch (SSHError $e) {
+            $finalize->failure($server, $emittedIds);
+
+            throw $e;
+        }
+
+        $finalize->success($server, $emittedIds, $deletingIds);
     }
 
     public function version(): string

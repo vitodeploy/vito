@@ -10,7 +10,10 @@ use App\Models\Service;
 
 class ApplyNetworkFirewall
 {
-    public function __construct(private RecomputeNetworkStatus $recompute) {}
+    public function __construct(
+        private RecomputeNetworkStatus $recompute,
+        private MaterializeServerNetworkRules $materialize,
+    ) {}
 
     /**
      * Re-apply the network's firewall on each member. Reachable servers apply
@@ -19,6 +22,8 @@ class ApplyNetworkFirewall
      */
     public function handle(Network $network): void
     {
+        $this->materialize->forNetwork($network);
+
         $deferred = false;
 
         $network->servers()

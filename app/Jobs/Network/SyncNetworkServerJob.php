@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Network;
 
+use App\Actions\Network\MaterializeServerNetworkRules;
 use App\Actions\Network\RecomputeNetworkStatus;
 use App\DTOs\SocketEventDTO;
 use App\Enums\NetworkServerStatus;
@@ -110,6 +111,8 @@ class SyncNetworkServerJob implements ShouldQueue
 
     private function applyFirewall(): void
     {
+        app(MaterializeServerNetworkRules::class)->forServer($this->member->server);
+
         $service = $this->member->server->firewall();
         if (! $service instanceof Service) {
             return;

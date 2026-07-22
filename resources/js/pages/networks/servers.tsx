@@ -59,7 +59,7 @@ export default function NetworkServers() {
                           }
                         }}
                       >
-                        Edit IP
+                        Edit
                       </DropdownMenuItem>
                     )}
                     {!isProvider && (

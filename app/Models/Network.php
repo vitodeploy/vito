@@ -72,4 +72,12 @@ class Network extends AbstractModel
     {
         return $this->hasMany(NetworkFirewallRule::class);
     }
+
+    /**
+     * @return HasMany<ServerNetworkRule, covariant $this>
+     */
+    public function serverRules(): HasMany
+    {
+        return $this->hasMany(ServerNetworkRule::class);
+    }
 }

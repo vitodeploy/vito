@@ -22,10 +22,12 @@ class NetworkFirewallRuleTable extends Table
     {
         return [
             TextColumn::make('name', 'Name')->sortable(),
-            TextColumn::make('protocol', 'Protocol'),
-            TextColumn::make('port', 'Port'),
+            Column::make('_protocol', 'Protocol')->accessor('protocol')->text()->fallback('*'),
+            Column::make('_port', 'Port')->accessor('port')->text()->fallback('*'),
             EnumColumn::make('status', 'Status'),
             Column::data('id'),
+            Column::data('protocol'),
+            Column::data('port'),
             ActionsColumn::make(),
         ];
     }

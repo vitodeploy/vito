@@ -3,17 +3,18 @@
 namespace Tests\Feature;
 
 use App\Actions\FirewallRule\ManageRule;
-use App\Actions\Network\CompileServerFirewallRules;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\ManageNetworkFirewallRule;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
+use App\Enums\ServerNetworkRuleKind;
 use App\Enums\ServerStatus;
 use App\Facades\SSH;
 use App\Jobs\Network\ApplyNetworkFirewallJob;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
+use App\Models\ServerNetworkRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -124,8 +125,8 @@ class NetworkFirewallTest extends TestCase
             ->assertSuccessful()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('firewall/index')
-                ->where('managedNetworks.0.name', $network->name)
-                ->where('managedNetworks.0.id', $network->id));
+                ->where('networkRules.data.0.network_id', $network->id)
+                ->where('networkRules.data.0.name', 'Allow all'));
     }
 
     public function test_leaving_member_network_is_not_listed_as_managed(): void
@@ -142,7 +143,7 @@ class NetworkFirewallTest extends TestCase
             ->assertSuccessful()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('firewall/index')
-                ->count('managedNetworks', 0));
+                ->count('networkRules.data', 0));
     }
 
     public function test_server_level_firewall_change_reapplies_network_rules(): void
@@ -210,13 +211,10 @@ class NetworkFirewallTest extends TestCase
         $allowAll = $network->firewallRules()->whereNull('protocol')->whereNull('port')->firstOrFail();
         app(ManageNetworkFirewallRule::class)->delete($allowAll);
 
-        $specs = app(CompileServerFirewallRules::class)->forServer($this->server->fresh());
+        $rules = ServerNetworkRule::query()->where('server_id', $this->server->id);
 
-        $catchAll = $this->indexOf($specs, fn ($s) => $s->port === null && $s->protocol === null && $s->source === '100.64.0.0');
-        $handshake = $this->indexOf($specs, fn ($s) => $s->protocol === 'udp' && $s->port === '51820');
-
-        $this->assertNull($catchAll);
-        $this->assertNotNull($handshake);
+        $this->assertFalse((clone $rules)->where('kind', ServerNetworkRuleKind::RULE)->exists());
+        $this->assertTrue((clone $rules)->where('kind', ServerNetworkRuleKind::HANDSHAKE)->exists());
     }
 
     public function test_firewall_change_on_offline_server_marks_member_pending(): void
@@ -321,24 +319,43 @@ class NetworkFirewallTest extends TestCase
         SSH::assertExecutedContains('allow from 10.0.0.0/24 to any');
     }
 
-    public function test_server_with_zero_networks_emits_no_network_rules(): void
+    public function test_server_with_zero_networks_has_no_materialized_rules(): void
     {
-        $specs = app(CompileServerFirewallRules::class)->forServer($this->server);
-
-        $this->assertSame([], $specs);
+        $this->assertSame(0, ServerNetworkRule::query()->where('server_id', $this->server->id)->count());
     }
 
-    /**
-     * @param  array<int, \stdClass>  $specs
-     */
-    private function indexOf(array $specs, callable $matcher): ?int
+    public function test_network_create_materializes_handshake_and_catch_all_rows(): void
     {
-        foreach ($specs as $index => $spec) {
-            if ($matcher($spec)) {
-                return $index;
-            }
-        }
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
 
-        return null;
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $network = $this->wireguardNetwork([$this->server->id, $peer->id]);
+        $allowAll = $network->firewallRules()->whereNull('protocol')->whereNull('port')->firstOrFail();
+
+        $this->assertDatabaseHas('server_network_rules', [
+            'server_id' => $this->server->id,
+            'network_id' => $network->id,
+            'kind' => ServerNetworkRuleKind::HANDSHAKE->value,
+            'protocol' => 'udp',
+            'port' => (string) $network->port,
+            'source' => $peer->ip,
+            'network_firewall_rule_id' => null,
+        ]);
+
+        $this->assertDatabaseHas('server_network_rules', [
+            'server_id' => $this->server->id,
+            'network_id' => $network->id,
+            'kind' => ServerNetworkRuleKind::RULE->value,
+            'protocol' => null,
+            'port' => null,
+            'source' => '100.64.0.0',
+            'network_firewall_rule_id' => $allowAll->id,
+        ]);
     }
 }
