@@ -4,10 +4,15 @@ namespace App\Console\Commands;
 
 use App\Actions\Network\RecomputeNetworkStatus;
 use App\DTOs\SocketEventDTO;
+use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkStatus;
+use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
 use App\Events\SocketEvent;
+use App\Jobs\Network\PollPeerHandshakesJob;
 use App\Jobs\Network\SyncNetworkServerJob;
+use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\ServerLog;
 use Illuminate\Console\Command;
@@ -27,6 +32,17 @@ class ReconcileNetworksCommand extends Command
         $this->reconcileFailed();
         $this->reconcileStaleUpdating();
         $this->reconcileLeaving();
+        $this->pollHandshakes();
+    }
+
+    private function pollHandshakes(): void
+    {
+        Network::query()
+            ->where('type', NetworkType::WIREGUARD)
+            ->where('status', NetworkStatus::ACTIVE)
+            ->whereHas('peers', fn ($query) => $query->where('status', '!=', NetworkPeerStatus::DISABLED))
+            ->get()
+            ->each(fn (Network $network) => dispatch(new PollPeerHandshakesJob($network))->onQueue('ssh'));
     }
 
     private function reconcilePending(): void

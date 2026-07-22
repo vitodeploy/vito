@@ -31,6 +31,22 @@ export interface NetworkServer {
   updated_at: string;
 }
 
+export interface NetworkPeer {
+  id: number;
+  network_id: number;
+  name: string;
+  ip: string;
+  public_key: string;
+  status: string;
+  status_color: StatusColor;
+  last_handshake: string;
+  last_handshake_at: string | null;
+  byo: boolean;
+  can_show_config: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NetworkFirewallRule {
   id: number;
   network_id: number;

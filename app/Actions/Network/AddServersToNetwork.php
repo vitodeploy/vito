@@ -56,7 +56,13 @@ class AddServersToNetwork
      */
     private function addWireGuard(Network $network, array $input): array
     {
-        $used = $network->servers()->lockForUpdate()->pluck('ip')->filter()->values()->all();
+        Network::query()->whereKey($network->id)->lockForUpdate()->first();
+
+        $used = $network->servers()->lockForUpdate()->pluck('ip')
+            ->concat($network->peers()->lockForUpdate()->pluck('ip'))
+            ->filter()
+            ->values()
+            ->all();
 
         $servers = Server::query()
             ->where('project_id', $network->project_id)

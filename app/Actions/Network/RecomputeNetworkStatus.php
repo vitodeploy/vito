@@ -3,9 +3,11 @@
 namespace App\Actions\Network;
 
 use App\DTOs\SocketEventDTO;
+use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
 use App\Events\SocketEvent;
+use App\Http\Resources\NetworkPeerResource;
 use App\Http\Resources\NetworkResource;
 use App\Models\Network;
 
@@ -50,10 +52,30 @@ class RecomputeNetworkStatus
             $network->save();
         }
 
+        if ($computed === NetworkStatus::ACTIVE) {
+            $this->activatePendingPeers($network);
+        }
+
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $network->project_id,
             type: 'network.updated',
             data: new NetworkResource($network->loadCount('servers')),
         ));
+    }
+
+    private function activatePendingPeers(Network $network): void
+    {
+        $peers = $network->peers()->where('status', NetworkPeerStatus::PENDING)->get();
+
+        foreach ($peers as $peer) {
+            $peer->status = NetworkPeerStatus::ACTIVE;
+            $peer->save();
+
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $network->project_id,
+                type: 'network-peer.updated',
+                data: new NetworkPeerResource($peer),
+            ));
+        }
     }
 }

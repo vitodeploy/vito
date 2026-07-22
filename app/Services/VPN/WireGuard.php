@@ -2,10 +2,12 @@
 
 namespace App\Services\VPN;
 
+use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
 use App\Exceptions\SSHError;
 use App\Helpers\SSH;
 use App\Models\Network;
+use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
 use App\Services\AbstractService;
 use App\Support\Testing\SSHFake;
@@ -115,11 +117,13 @@ class WireGuard extends AbstractService implements VPN
     }
 
     /**
-     * @return array<int, array{public_key: string, allowed_ips: string, endpoint: string}>
+     * @return array<int, array{public_key: string, allowed_ips: string, endpoint: ?string}>
      */
     private function peers(NetworkServer $membership): array
     {
-        return $membership->network->servers()
+        $network = $membership->network;
+
+        $servers = $network->servers()
             ->where('id', '!=', $membership->id)
             ->where('status', '!=', NetworkServerStatus::LEAVING)
             ->whereNotNull('public_key')
@@ -130,10 +134,46 @@ class WireGuard extends AbstractService implements VPN
             ->map(fn (NetworkServer $peer): array => [
                 'public_key' => (string) $peer->public_key,
                 'allowed_ips' => $peer->ip.'/32',
-                'endpoint' => $peer->server->ip.':'.$membership->network->port,
-            ])
-            ->values()
-            ->all();
+                'endpoint' => $peer->server->ip.':'.$network->port,
+            ]);
+
+        $devices = $network->peers()
+            ->where('status', '!=', NetworkPeerStatus::DISABLED)
+            ->get()
+            ->map(fn (NetworkPeer $peer): array => [
+                'public_key' => $peer->public_key,
+                'allowed_ips' => $peer->ip.'/32',
+                'endpoint' => null,
+            ]);
+
+        return $servers->concat($devices)->values()->all();
+    }
+
+    /**
+     * @return array<string, int>
+     *
+     * @throws SSHError
+     */
+    public function latestHandshakes(Network $network): array
+    {
+        $output = $this->service->server->ssh()->exec(
+            view('ssh.wireguard.latest-handshakes', ['networkId' => $network->id]),
+            'wireguard-latest-handshakes'
+        );
+
+        $handshakes = [];
+
+        foreach (preg_split('/\r?\n/', trim($output)) ?: [] as $line) {
+            $parts = preg_split('/\s+/', trim($line));
+
+            if ($parts === false || count($parts) < 2 || $parts[0] === '') {
+                continue;
+            }
+
+            $handshakes[$parts[0]] = (int) $parts[1];
+        }
+
+        return $handshakes;
     }
 
     private function uploadConf(SSH|SSHFake $ssh, string $remote, string $content): void

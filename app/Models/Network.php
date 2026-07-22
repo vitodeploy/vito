@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Project $project
  * @property Collection<int, NetworkServer> $servers
  * @property Collection<int, NetworkFirewallRule> $firewallRules
+ * @property Collection<int, NetworkPeer> $peers
  */
 class Network extends AbstractModel
 {
@@ -79,5 +80,13 @@ class Network extends AbstractModel
     public function serverRules(): HasMany
     {
         return $this->hasMany(ServerNetworkRule::class);
+    }
+
+    /**
+     * @return HasMany<NetworkPeer, covariant $this>
+     */
+    public function peers(): HasMany
+    {
+        return $this->hasMany(NetworkPeer::class);
     }
 }

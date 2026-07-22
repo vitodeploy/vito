@@ -37,6 +37,8 @@ import CreateNetwork from '@/pages/networks/components/create-network';
 import AddNetworkServer from '@/pages/networks/components/add-server';
 import EditNetworkServer from '@/pages/networks/components/edit-network-server';
 import NetworkFirewallRuleForm from '@/pages/networks/components/firewall-rule-form';
+import AddNetworkPeer from '@/pages/networks/components/add-peer';
+import PeerConfigDialog from '@/pages/networks/components/peer-config';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -91,6 +93,8 @@ export const dialogs = {
   networkAddServer: AddNetworkServer,
   networkEditServer: EditNetworkServer,
   networkFirewallForm: NetworkFirewallRuleForm,
+  networkAddPeer: AddNetworkPeer,
+  networkPeerConfig: PeerConfigDialog,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

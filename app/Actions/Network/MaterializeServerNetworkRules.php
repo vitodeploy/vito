@@ -4,6 +4,7 @@ namespace App\Actions\Network;
 
 use App\DTOs\SocketEventDTO;
 use App\Enums\FirewallRuleStatus;
+use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerNetworkRuleKind;
@@ -132,6 +133,21 @@ class MaterializeServerNetworkRules
                         'mask' => 32,
                     ];
                     $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, $handshake['ip'], 32)] = $spec;
+                }
+
+                if ($network->peers()->where('status', '!=', NetworkPeerStatus::DISABLED)->exists()) {
+                    $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, null, null)] = [
+                        'network_id' => $network->id,
+                        'network_server_id' => $membership->id,
+                        'network_firewall_rule_id' => null,
+                        'kind' => ServerNetworkRuleKind::HANDSHAKE,
+                        'name' => 'WireGuard handshake (devices)',
+                        'type' => 'allow',
+                        'protocol' => 'udp',
+                        'port' => (string) $network->port,
+                        'source' => null,
+                        'mask' => null,
+                    ];
                 }
             }
 
