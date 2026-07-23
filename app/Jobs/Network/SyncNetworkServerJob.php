@@ -31,31 +31,35 @@ class SyncNetworkServerJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->member->server_id}", function (): void {
-            if ($this->teardown) {
-                $this->tearDown();
+            ServerLog::withNetwork($this->member->network_id, function (): void {
+                if ($this->teardown) {
+                    $this->tearDown();
 
-                return;
-            }
+                    return;
+                }
 
-            $this->syncToPresent();
+                $this->syncToPresent();
+            });
         });
     }
 
     public function failed(Exception $e): void
     {
-        if ($this->teardown) {
-            ServerLog::log($this->member->server, 'network-teardown-failed', $e->getMessage());
+        ServerLog::withNetwork($this->member->network_id, function () use ($e): void {
+            if ($this->teardown) {
+                ServerLog::log($this->member->server, 'network-teardown-failed', $e->getMessage());
 
-            return;
-        }
+                return;
+            }
 
-        $this->member->status = NetworkServerStatus::FAILED;
-        $this->member->save();
-        $this->broadcastMember();
+            $this->member->status = NetworkServerStatus::FAILED;
+            $this->member->save();
+            $this->broadcastMember();
 
-        ServerLog::log($this->member->server, 'network-sync-failed', $e->getMessage());
+            ServerLog::log($this->member->server, 'network-sync-failed', $e->getMessage());
 
-        app(RecomputeNetworkStatus::class)->handle($this->member->network);
+            app(RecomputeNetworkStatus::class)->handle($this->member->network);
+        });
     }
 
     private function syncToPresent(): void

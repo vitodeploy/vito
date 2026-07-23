@@ -31,6 +31,12 @@ export interface NetworkServer {
   updated_at: string;
 }
 
+export interface NetworkStats {
+  servers: number;
+  peers: number;
+  firewall_rules: number;
+}
+
 export interface NetworkPeer {
   id: number;
   network_id: number;

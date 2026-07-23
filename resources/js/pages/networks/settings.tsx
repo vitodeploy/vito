@@ -4,18 +4,21 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
 import NetworkLayout from '@/layouts/network/layout';
 import { useDialog } from '@/hooks/use-dialog';
+import { formatDateString } from '@/lib/utils';
 import { Network } from '@/types/network';
 
 export default function NetworkSettings() {
   const page = usePage<{ network: Network }>();
   const network = page.props.network;
   const dialog = useDialog();
+  const isProvider = network.type_value === 'provider';
 
   const [editMode, setEditMode] = useState<string | undefined>();
 
@@ -98,7 +101,36 @@ export default function NetworkSettings() {
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>Type</span>
-              <span className="text-muted-foreground">{network.type}</span>
+              <Badge variant={network.type_color}>{network.type}</Badge>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between p-4">
+              <span>Status</span>
+              <Badge variant={network.status_color}>{network.status}</Badge>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between p-4">
+              <span>CIDR</span>
+              <span className="text-muted-foreground">{network.cidr ?? '—'}</span>
+            </div>
+            {!isProvider && (
+              <>
+                <Separator />
+                <div className="flex items-center justify-between p-4">
+                  <span>Address pool</span>
+                  <span className="text-muted-foreground">{network.addressing_pool}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between p-4">
+                  <span>Listen port</span>
+                  <span className="text-muted-foreground">{network.port ?? '—'}</span>
+                </div>
+              </>
+            )}
+            <Separator />
+            <div className="flex items-center justify-between p-4">
+              <span>Created at</span>
+              <span className="text-muted-foreground">{formatDateString(network.created_at)}</span>
             </div>
           </CardContent>
         </Card>

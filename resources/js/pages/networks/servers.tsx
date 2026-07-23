@@ -30,10 +30,26 @@ export default function NetworkServers() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Servers" description="Servers connected to this network" />
-          <Button onClick={() => dialog.networkAddServer.open({ networkId: network.id, isProvider, servers: page.props.servers })}>
-            <PlusIcon />
-            <span className="hidden lg:block">Add server</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() =>
+                dialog.confirm.open({
+                  title: `Sync network [${network.name}]`,
+                  description: 'Re-apply configuration to every server in this network.',
+                  confirmLabel: 'Sync',
+                  method: 'post',
+                  url: route('networks.sync', { network: network.id }),
+                })
+              }
+            >
+              Sync
+            </Button>
+            <Button onClick={() => dialog.networkAddServer.open({ networkId: network.id, isProvider, servers: page.props.servers })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Add server</span>
+            </Button>
+          </div>
         </HeaderContainer>
 
         <VitoTable

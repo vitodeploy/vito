@@ -51,7 +51,10 @@ class PollPeerHandshakesJob implements ShouldQueue
     {
         $member = $this->reachableMember();
         if ($member instanceof NetworkServer) {
-            ServerLog::log($member->server, 'network-handshake-poll-failed', $e->getMessage());
+            ServerLog::withNetwork(
+                $this->network->id,
+                fn () => ServerLog::log($member->server, 'network-handshake-poll-failed', $e->getMessage()),
+            );
         }
     }
 

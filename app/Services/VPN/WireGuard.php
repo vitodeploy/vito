@@ -9,6 +9,7 @@ use App\Helpers\SSH;
 use App\Models\Network;
 use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
+use App\Models\ServerLog;
 use App\Services\AbstractService;
 use App\Support\Testing\SSHFake;
 use Illuminate\Support\Facades\Storage;
@@ -85,7 +86,10 @@ class WireGuard extends AbstractService implements VPN
             'peers' => $this->peers($membership),
         ])->render();
 
-        $ssh = $this->service->server->ssh()->setLog($this->service->log);
+        $log = ServerLog::newLog($this->service->server, "configure-wireguard-{$network->id}");
+        $log->save();
+
+        $ssh = $this->service->server->ssh()->setLog($log);
         $ssh->exec('sudo mkdir -p /etc/wireguard && sudo chmod 700 /etc/wireguard', 'configure-wireguard');
         $this->uploadConf($ssh, $this->confPath($network).'.tmp', $content);
 

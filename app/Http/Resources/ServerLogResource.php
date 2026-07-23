@@ -17,7 +17,9 @@ class ServerLogResource extends JsonResource
         return [
             'id' => $this->id,
             'server_id' => $this->server_id,
+            'server_name' => $this->whenLoaded('server', fn (): string => $this->server->name),
             'site_id' => $this->site_id,
+            'network_id' => $this->network_id,
             'type' => $this->type,
             'name' => $this->name,
             'disk' => $this->disk,

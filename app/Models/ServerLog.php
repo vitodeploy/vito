@@ -6,6 +6,7 @@ use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Http\Resources\ServerLogResource;
 use App\SSH\OS\OS;
+use Closure;
 use Database\Factories\ServerLogFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,21 +22,26 @@ use Throwable;
 /**
  * @property int $server_id
  * @property ?int $site_id
+ * @property ?int $network_id
  * @property string $type
  * @property string $name
  * @property string $disk
  * @property bool $is_remote
  * @property Server $server
  * @property ?Site $site
+ * @property ?Network $network
  */
 class ServerLog extends AbstractModel
 {
     /** @use HasFactory<ServerLogFactory> */
     use HasFactory;
 
+    private static ?int $networkContext = null;
+
     protected $fillable = [
         'server_id',
         'site_id',
+        'network_id',
         'type',
         'name',
         'disk',
@@ -45,8 +51,31 @@ class ServerLog extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'network_id' => 'integer',
         'is_remote' => 'boolean',
     ];
+
+    /**
+     * Associate every ServerLog created inside $callback with $networkId. Lets
+     * logs produced deep in the SSH/Service layers during a network sync be
+     * tagged without threading the network through every call site.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function withNetwork(?int $networkId, Closure $callback): mixed
+    {
+        $previous = self::$networkContext;
+        self::$networkContext = $networkId;
+
+        try {
+            return $callback();
+        } finally {
+            self::$networkContext = $previous;
+        }
+    }
 
     public static function boot(): void
     {
@@ -96,6 +125,14 @@ class ServerLog extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * @return BelongsTo<Network, $this>
+     */
+    public function network(): BelongsTo
+    {
+        return $this->belongsTo(Network::class);
     }
 
     /**
@@ -193,6 +230,7 @@ class ServerLog extends AbstractModel
         $log = new self([
             'server_id' => $server->id,
             'site_id' => $site?->id,
+            'network_id' => self::$networkContext,
             'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
             'type' => $type,
             'disk' => config('core.logs_disk'),
@@ -207,6 +245,7 @@ class ServerLog extends AbstractModel
     {
         return new self([
             'server_id' => $server->id,
+            'network_id' => self::$networkContext,
             'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
             'type' => $type,
             'disk' => config('core.logs_disk'),

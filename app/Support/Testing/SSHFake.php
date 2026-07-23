@@ -56,14 +56,12 @@ class SSHFake extends SSH
     public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
     {
         if (! $this->log instanceof ServerLog && $log) {
-            /** @var ServerLog $log */
-            $log = $this->server->logs()->create([
-                'site_id' => $siteId,
-                'name' => $this->server->id.'-'.strtotime('now').'-'.$log.'.log',
-                'type' => $log,
-                'disk' => config('core.logs_disk'),
-            ]);
-            $this->log = $log;
+            $serverLog = ServerLog::newLog($this->server, $log);
+            if ($siteId !== null && $siteId !== 0) {
+                $serverLog->forSite($siteId);
+            }
+            $serverLog->save();
+            $this->log = $serverLog;
         }
 
         $this->commands[] = $command;

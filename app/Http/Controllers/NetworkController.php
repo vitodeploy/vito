@@ -8,6 +8,8 @@ use App\Actions\Network\SyncNetwork;
 use App\Actions\Network\UpdateNetwork;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkType;
+use App\Helpers\QueryBuilder;
+use App\Http\Resources\ServerLogResource;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Project;
@@ -60,7 +62,22 @@ class NetworkController extends Controller
     {
         $this->authorize('view', $network);
 
-        return Inertia::render('networks/show');
+        $network->loadCount(['servers', 'peers', 'firewallRules']);
+
+        $logs = QueryBuilder::for($network->serverLogs()->with('server'))
+            ->searchableFields(['name'])
+            ->sortable('created_at', 'desc')
+            ->query()
+            ->simplePaginate(config('web.pagination_size'));
+
+        return Inertia::render('networks/show', [
+            'stats' => [
+                'servers' => $network->servers_count,
+                'peers' => $network->peers_count,
+                'firewall_rules' => $network->firewall_rules_count,
+            ],
+            'logs' => ServerLogResource::collection($logs),
+        ]);
     }
 
     #[Get('/{network}/servers', name: 'networks.servers')]

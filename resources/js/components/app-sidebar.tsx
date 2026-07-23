@@ -39,14 +39,14 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
 
   const mainNavItems: NavItem[] = [
     {
-      title: 'Servers',
-      href: route('servers'),
-      icon: ServerIcon,
-    },
-    {
       title: 'Networks',
       href: route('networks'),
       icon: NetworkIcon,
+    },
+    {
+      title: 'Servers',
+      href: route('servers'),
+      icon: ServerIcon,
     },
     {
       title: 'Sites',

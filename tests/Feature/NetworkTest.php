@@ -418,4 +418,52 @@ class NetworkTest extends TestCase
             'ip_addresses' => [$this->server->id => $ip->id],
         ])->assertSessionHasErrors('cidr');
     }
+
+    public function test_network_sync_logs_are_associated_to_the_network(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'network_id' => $network->id,
+            'type' => 'configure-wireguard-'.$network->id,
+        ]);
+        $this->assertDatabaseHas('server_logs', [
+            'network_id' => $network->id,
+            'type' => 'apply-rules',
+        ]);
+        $this->assertSame(0, DB::table('server_logs')->whereNull('network_id')->count());
+    }
+
+    public function test_overview_returns_stats_and_recent_logs(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('networks.show', $network))
+            ->assertSuccessful()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+                ->component('networks/show')
+                ->where('stats.servers', 1)
+                ->where('stats.peers', 0)
+                ->where('stats.firewall_rules', 1)
+                ->has('logs.data.0', fn (\Inertia\Testing\AssertableInertia $log) => $log
+                    ->where('network_id', $network->id)
+                    ->etc()));
+    }
 }

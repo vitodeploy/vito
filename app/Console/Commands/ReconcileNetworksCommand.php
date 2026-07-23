@@ -145,11 +145,11 @@ class ReconcileNetworksCommand extends Command
         $projectId = $network->project_id;
         $memberId = $member->id;
 
-        ServerLog::log(
+        ServerLog::withNetwork($network->id, fn () => ServerLog::log(
             $member->server,
             'network-leave-incomplete',
             'On-server cleanup could not complete after repeated attempts; membership force-removed.'
-        );
+        ));
 
         $member->delete();
 

@@ -26,15 +26,12 @@ export default function NetworkLayout({ children }: { children: ReactNode }) {
       href: route('networks.servers', { network: network.id }),
       icon: ServerIcon,
     },
-    ...(network.type_value !== 'provider'
-      ? [
-          {
-            title: 'Peers',
-            href: route('networks.peers', { network: network.id }),
-            icon: LaptopIcon,
-          },
-        ]
-      : []),
+    {
+      title: 'Peers',
+      href: route('networks.peers', { network: network.id }),
+      icon: LaptopIcon,
+      isDisabled: network.type_value === 'provider',
+    },
     {
       title: 'Firewall',
       href: route('networks.firewall', { network: network.id }),

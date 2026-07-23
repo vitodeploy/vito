@@ -23,14 +23,16 @@ class ApplyNetworkFirewallJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->member->server_id}", function (): void {
-            $service = $this->member->server->firewall();
-            if (! $service instanceof Service) {
-                return;
-            }
+            ServerLog::withNetwork($this->member->network_id, function (): void {
+                $service = $this->member->server->firewall();
+                if (! $service instanceof Service) {
+                    return;
+                }
 
-            /** @var Firewall $handler */
-            $handler = $service->handler();
-            $handler->applyRules();
+                /** @var Firewall $handler */
+                $handler = $service->handler();
+                $handler->applyRules();
+            });
         });
     }
 
@@ -41,7 +43,10 @@ class ApplyNetworkFirewallJob implements ShouldQueue
             ->where('status', NetworkServerStatus::ACTIVE)
             ->update(['status' => NetworkServerStatus::FAILED]);
 
-        ServerLog::log($this->member->server, 'apply-network-firewall-failed', $e->getMessage());
+        ServerLog::withNetwork(
+            $this->member->network_id,
+            fn () => ServerLog::log($this->member->server, 'apply-network-firewall-failed', $e->getMessage()),
+        );
 
         app(RecomputeNetworkStatus::class)->handle($this->member->network);
     }

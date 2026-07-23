@@ -89,4 +89,12 @@ class Network extends AbstractModel
     {
         return $this->hasMany(NetworkPeer::class);
     }
+
+    /**
+     * @return HasMany<ServerLog, covariant $this>
+     */
+    public function serverLogs(): HasMany
+    {
+        return $this->hasMany(ServerLog::class);
+    }
 }
