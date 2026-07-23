@@ -8,6 +8,7 @@ use App\Events\SocketEvent;
 use App\Http\Resources\BackupFileResource;
 use App\Jobs\Backup\DeleteFileJob;
 use App\Models\BackupFile;
+use App\Models\Server;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -21,7 +22,7 @@ class ManageBackupFile
      */
     public function download(BackupFile $file): StreamedResponse
     {
-        $server = $file->backup?->server;
+        $server = Server::find($file->backup->server_id);
         if ($server === null) {
             throw new RuntimeException('The backup server no longer exists.');
         }
@@ -36,9 +37,9 @@ class ManageBackupFile
 
     public function delete(BackupFile $file): void
     {
-        $projectId = $file->backup?->server?->project_id;
+        $server = Server::find($file->backup->server_id);
 
-        if ($projectId === null) {
+        if ($server === null) {
             Log::warning('Deleting orphaned backup file without a server', [
                 'backup_file_id' => $file->id,
                 'backup_id' => $file->backup_id,
@@ -53,7 +54,7 @@ class ManageBackupFile
         $file->save();
 
         SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $projectId,
+            projectId: $server->project_id,
             type: 'backup-file.updated',
             data: new BackupFileResource($file),
         ));
