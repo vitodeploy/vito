@@ -121,4 +121,15 @@ class RunBackupCommandTest extends TestCase
         $this->artisan('backups:run')
             ->expectsOutput('1 backups started');
     }
+
+    public function test_does_not_run_backups_whose_server_is_missing(): void
+    {
+        SSH::fake();
+        Carbon::setTestNow('2026-06-19 10:00:00');
+
+        $this->createBackup(['interval' => '0 * * * *', 'server_id' => 999999]);
+
+        $this->artisan('backups:run')
+            ->expectsOutput('0 backups started');
+    }
 }

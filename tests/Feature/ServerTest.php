@@ -9,9 +9,13 @@ use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
+use App\Models\Backup;
+use App\Models\BackupFile;
+use App\Models\Database;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
+use App\Models\StorageProvider;
 use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\ServerAutoUpdateCompleted;
@@ -83,6 +87,31 @@ class ServerTest extends TestCase
         $this->assertDatabaseMissing('servers', [
             'id' => $this->server->id,
         ]);
+    }
+
+    public function test_delete_server_cascades_backups(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $database = Database::factory()->create(['server_id' => $this->server->id]);
+        $storage = StorageProvider::factory()->dropbox()->create(['user_id' => $this->user->id]);
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+            'keep_backups' => 10,
+        ]);
+        $file = BackupFile::factory()->create(['backup_id' => $backup->id]);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('servers', ['id' => $this->server->id]);
+        $this->assertDatabaseMissing('backups', ['id' => $backup->id]);
+        $this->assertDatabaseMissing('backup_files', ['id' => $file->id]);
     }
 
     public function test_cannot_delete_on_provider(): void
