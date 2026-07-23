@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Actions\Backup\BroadcastBackupUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Events\SocketEvent;
@@ -24,7 +25,8 @@ class DeleteFileJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("backup-file-{$this->file->id}", function () {
-            $projectId = $this->file->backup->server->project_id;
+            $backup = $this->file->backup;
+            $projectId = $backup->server->project_id;
             $fileId = $this->file->id;
 
             $this->file->deleteFile();
@@ -35,15 +37,18 @@ class DeleteFileJob implements ShouldQueue
                     type: 'backup-file.updated',
                     data: new BackupFileResource($this->file),
                 ));
-
-                return;
+            } else {
+                SocketEvent::dispatch(new SocketEventDTO(
+                    projectId: $projectId,
+                    type: 'backup-file.deleted',
+                    data: ['id' => $fileId],
+                ));
             }
 
-            SocketEvent::dispatch(new SocketEventDTO(
-                projectId: $projectId,
-                type: 'backup-file.deleted',
-                data: ['id' => $fileId],
-            ));
+            $freshBackup = $backup->fresh();
+            if ($freshBackup) {
+                app(BroadcastBackupUpdate::class)->broadcast($freshBackup);
+            }
         });
     }
 
@@ -61,6 +66,8 @@ class DeleteFileJob implements ShouldQueue
                 type: 'backup-file.updated',
                 data: new BackupFileResource($this->file),
             ));
+
+            app(BroadcastBackupUpdate::class)->broadcast($this->file->backup);
         }
     }
 }

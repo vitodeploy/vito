@@ -3,8 +3,9 @@
 namespace App\Enums;
 
 use App\Contracts\VitoEnum;
+use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum BackupType: string implements VitoEnum
+enum BackupType: string implements HasTableDisplay, VitoEnum
 {
     case DATABASE = 'database';
     case FILE = 'file';

@@ -21,6 +21,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useSiteStats } from '@/pages/sites/components/use-site-stats';
 import { StatsChart } from '@/pages/sites/components/stats-chart';
 import { SiteStatsPanelRow, SiteStatsStatusCode } from '@/types/site-stats';
+import { formatBytes } from '@/lib/utils';
 
 type Page = {
   server: Server;
@@ -31,15 +32,6 @@ type Page = {
 
 function formatNumber(value: number): string {
   return value.toLocaleString();
-}
-
-function formatBytes(bytes: number): string {
-  if (!bytes) {
-    return '0 B';
-  }
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
 }
 
 function formatMonth(value: string): string {

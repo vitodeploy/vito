@@ -1,4 +1,5 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import { Server } from '@/types/server';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
@@ -22,6 +23,12 @@ type Page = {
 export default function Files() {
   const page = usePage<Page>();
   const [files] = useRealtime<BackupFile>(page.props.files, 'backup-file', { backup_id: page.props.backup.id });
+
+  const visibleColumns = useMemo(
+    () =>
+      page.props.backup.type === 'file' ? columns.filter((column) => !('accessorKey' in column && column.accessorKey === 'database_engine')) : columns,
+    [page.props.backup.type],
+  );
 
   const runBackupForm = useForm();
   const runBackup = () => {
@@ -50,7 +57,7 @@ export default function Files() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={files} />
+        <DataTable columns={visibleColumns} paginatedData={files} />
       </Container>
     </ServerLayout>
   );

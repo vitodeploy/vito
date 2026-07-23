@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Actions\Backup\BroadcastBackupUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Events\SocketEvent;
@@ -88,5 +89,7 @@ class RestoreFileJob implements ShouldQueue
             type: 'backup-file.updated',
             data: new BackupFileResource($this->backupFile),
         ));
+
+        app(BroadcastBackupUpdate::class)->broadcast($this->backupFile->backup);
     }
 }

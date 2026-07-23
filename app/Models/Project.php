@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property User $user
  * @property Collection<int, Server> $servers
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Backup> $backups
  * @property Collection<int, UserProject> $users
  * @property Collection<int, NotificationChannel> $notificationChannels
  * @property Collection<int, SourceControl> $sourceControls
@@ -64,6 +65,14 @@ class Project extends Model
     public function sites(): HasManyThrough
     {
         return $this->hasManyThrough(Site::class, Server::class);
+    }
+
+    /**
+     * @return HasManyThrough<Backup, Server, covariant $this>
+     */
+    public function backups(): HasManyThrough
+    {
+        return $this->hasManyThrough(Backup::class, Server::class);
     }
 
     /**

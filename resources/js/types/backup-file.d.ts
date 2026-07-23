@@ -7,6 +7,8 @@ export interface BackupFile {
   server_id: number;
   name: string;
   size: number | null;
+  database_engine: string | null;
+  database_version: string | null;
   restored_to: string | null;
   restored_at: string | null;
   status: string;
