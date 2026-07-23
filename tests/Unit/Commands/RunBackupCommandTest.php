@@ -134,7 +134,7 @@ class RunBackupCommandTest extends TestCase
         $this->artisan('backups:run')
             ->expectsOutput('0 backups started');
 
-        $this->assertDatabaseHas('backups', ['id' => $backup->id]);
+        $this->assertDatabaseHas('backups', ['id' => $backup->id, 'server_id' => 999999]);
         Bus::assertNothingDispatched();
     }
 }

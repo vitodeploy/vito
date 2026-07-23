@@ -28,7 +28,6 @@ use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
-use RuntimeException;
 use Tests\TestCase;
 
 class BackupTest extends TestCase
@@ -625,24 +624,6 @@ class BackupTest extends TestCase
 
         $this->assertDatabaseMissing('backup_files', ['id' => $file->id]);
         Bus::assertNotDispatched(DeleteFileJob::class);
-    }
-
-    public function test_download_orphaned_backup_file_throws(): void
-    {
-        $backup = Backup::factory()->create([
-            'type' => BackupType::DATABASE,
-            'server_id' => 999999,
-            'storage_id' => $this->storageProvider->id,
-            'status' => null,
-        ]);
-        $file = BackupFile::factory()->create([
-            'backup_id' => $backup->id,
-            'status' => BackupFileStatus::CREATED,
-        ]);
-
-        $this->expectException(RuntimeException::class);
-
-        app(ManageBackupFile::class)->download($file);
     }
 
     public function test_see_global_backups_list_scoped_to_current_project(): void

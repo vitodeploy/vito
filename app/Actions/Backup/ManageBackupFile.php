@@ -10,31 +10,9 @@ use App\Jobs\Backup\DeleteFileJob;
 use App\Models\BackupFile;
 use App\Models\Server;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use RuntimeException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Throwable;
 
 class ManageBackupFile
 {
-    /**
-     * @throws Throwable
-     */
-    public function download(BackupFile $file): StreamedResponse
-    {
-        $server = Server::find($file->backup->server_id);
-        if ($server === null) {
-            throw new RuntimeException('The backup server no longer exists.');
-        }
-
-        $server->ssh()->download(
-            Storage::disk('tmp')->path(basename($file->path())),
-            $file->path()
-        );
-
-        return Storage::disk('tmp')->download(basename($file->path()));
-    }
-
     public function delete(BackupFile $file): void
     {
         $server = Server::find($file->backup->server_id);
