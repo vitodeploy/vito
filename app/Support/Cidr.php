@@ -15,6 +15,10 @@ class Cidr
             return 0;
         }
 
+        if ($prefix >= 32) {
+            return 0xFFFFFFFF;
+        }
+
         return (0xFFFFFFFF << (32 - $prefix)) & 0xFFFFFFFF;
     }
 
@@ -31,8 +35,9 @@ class Cidr
     public static function split(string $cidr): array
     {
         $parts = explode('/', $cidr);
+        $prefix = $parts[1] ?? '';
 
-        return [$parts[0], (int) ($parts[1] ?? 32)];
+        return [$parts[0], ctype_digit($prefix) ? min(32, (int) $prefix) : 32];
     }
 
     public static function prefix(string $cidr): int

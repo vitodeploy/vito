@@ -523,8 +523,16 @@ class NetworkProviderSyncTest extends TestCase
         $otherUser = User::factory()->create();
         $otherUser->ensureHasDefaultProject();
 
+        $before = $other->only(['project_id', 'server_provider_id', 'external_id', 'name', 'status', 'cidr', 'last_synced_at']);
+
         app(SyncProviderNetworks::class)->forProject($otherUser->currentProject, $other);
 
         $this->assertDatabaseHas('networks', ['id' => $other->id]);
+        $this->assertSame(
+            $before,
+            $other->fresh()?->only(['project_id', 'server_provider_id', 'external_id', 'name', 'status', 'cidr', 'last_synced_at']),
+            'Syncing one project must not write to another project\'s network.'
+        );
+        $this->assertSame(0, $other->servers()->count());
     }
 }

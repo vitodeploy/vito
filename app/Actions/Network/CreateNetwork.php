@@ -210,6 +210,8 @@ class CreateNetwork
             ],
             'servers' => ['required', 'array', 'min:1'],
             'servers.*' => [
+                'integer',
+                'distinct',
                 Rule::exists('servers', 'id')->where('project_id', $project->id),
             ],
         ];

@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
@@ -18,7 +19,7 @@ export default function NetworkFirewall() {
     rules: InertiaTableData;
   }>();
   const dialog = useDialog();
-  const network = page.props.network;
+  const network = useRealtimeRecord<Network>(page.props.network, 'network')!;
 
   return (
     <NetworkLayout>
@@ -31,7 +32,7 @@ export default function NetworkFirewall() {
             description="Rules allow traffic from the network. The default 'Allow all' rule permits everything - delete it to lock the network down"
           />
           <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/networks/firewall" target="_blank">
+            <a href="https://vitodeploy.com/docs/networks/firewall" target="_blank" rel="noreferrer">
               <Button variant="outline">
                 <BookOpenIcon />
                 <span className="hidden lg:block">Docs</span>

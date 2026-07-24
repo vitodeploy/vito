@@ -5,6 +5,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
@@ -20,7 +21,7 @@ export default function NetworkServers() {
     memberIps: NetworkMemberIp[];
   }>();
   const dialog = useDialog();
-  const network = page.props.network;
+  const network = useRealtimeRecord<Network>(page.props.network, 'network')!;
   const isCustom = network.type_value === 'custom';
   const isWireGuard = network.type_value === 'wireguard';
   const isManaged = network.type_value === 'provider';
@@ -33,7 +34,7 @@ export default function NetworkServers() {
         <HeaderContainer>
           <Heading title="Servers" description="Servers connected to this network" />
           <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/networks/servers" target="_blank">
+            <a href="https://vitodeploy.com/docs/networks/servers" target="_blank" rel="noreferrer">
               <Button variant="outline">
                 <BookOpenIcon />
                 <span className="hidden lg:block">Docs</span>

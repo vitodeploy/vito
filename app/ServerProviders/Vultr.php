@@ -30,6 +30,11 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
         return 'instance_id';
     }
 
+    /**
+     * A server deleted upstream leaves a stale instance id behind, so a 404 for one instance is
+     * skipped rather than allowed to abort the connection's whole sync — which would also
+     * suppress pruning for every other network on it.
+     */
     public function privateNetworks(array $instanceIds, array $regions): array
     {
         $attachments = [];
@@ -38,9 +43,6 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
             try {
                 $attached = $this->fetchAll('/instances/'.$instanceId.'/vpcs', 'vpcs');
             } catch (PrivateNetworkSyncError $e) {
-                // A server deleted upstream leaves a stale instance id behind. Skip it rather
-                // than letting one 404 abort the connection's whole sync, which would also
-                // suppress pruning for every other network on it.
                 if ($e->status === 404) {
                     continue;
                 }

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Network\ApplyNetworkFirewall;
 use App\Actions\Network\RecomputeNetworkStatus;
 use App\DTOs\SocketEventDTO;
 use App\Enums\NetworkPeerStatus;
@@ -159,6 +160,7 @@ class ReconcileNetworksCommand extends Command
             data: ['id' => $memberId],
         ));
 
+        app(ApplyNetworkFirewall::class)->handle($network);
         app(RecomputeNetworkStatus::class)->handle($network);
     }
 

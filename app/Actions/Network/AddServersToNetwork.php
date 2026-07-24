@@ -126,6 +126,8 @@ class AddServersToNetwork
         $rules = [
             'servers' => ['required', 'array', 'min:1'],
             'servers.*' => [
+                'integer',
+                'distinct',
                 Rule::exists('servers', 'id')->where('project_id', $network->project_id),
                 Rule::unique('network_servers', 'server_id')->where('network_id', $network->id),
             ],

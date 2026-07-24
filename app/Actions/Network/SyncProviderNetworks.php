@@ -27,6 +27,10 @@ class SyncProviderNetworks
         private RemoveServerFromNetwork $remove,
     ) {}
 
+    /**
+     * A discovered network is recorded as seen before it is reconciled, so that a network the
+     * provider reported is never pruned just because persisting it failed.
+     */
     public function forProject(Project $project, ?Network $only = null): void
     {
         if ($only instanceof Network && $only->project_id !== $project->id) {
@@ -54,9 +58,9 @@ class SyncProviderNetworks
                     continue;
                 }
 
-                if ($this->reconcile($project, $connection, $dto, $context['servers'])) {
-                    $seen[] = $dto->externalId;
-                }
+                $seen[] = $dto->externalId;
+
+                $this->reconcile($project, $connection, $dto, $context['servers']);
             }
 
             $this->prune($project, $connection, $seen, $only);
@@ -64,13 +68,13 @@ class SyncProviderNetworks
     }
 
     /**
-     * Discovered networks are upserted on (project, connection, external id). Returns false
-     * when the network could not be reconciled, so a per-network DB failure never counts as a
-     * connection failure — that would wrongly suppress pruning for every other network.
+     * Discovered networks are upserted on (project, connection, external id). A per-network DB
+     * failure is logged and skipped rather than propagated, so it never counts as a connection
+     * failure — that would wrongly suppress pruning for every other network on the connection.
      *
      * @param  array<string, Server>  $servers
      */
-    private function reconcile(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto, array $servers): bool
+    private function reconcile(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto, array $servers): void
     {
         try {
             $network = DB::transaction(function () use ($project, $connection, $dto, $servers): Network {
@@ -88,13 +92,11 @@ class SyncProviderNetworks
                 'reason' => $e->getCode(),
             ]);
 
-            return false;
+            return;
         }
 
         $this->firewall->handle($network);
         $this->recompute->handle($network);
-
-        return true;
     }
 
     private function upsert(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto): Network
@@ -169,6 +171,9 @@ class SyncProviderNetworks
      * on-server provisioning beyond firewall rules. `ApplyNetworkFirewall` downgrades a member
      * to PENDING when its server is unreachable, and the reconciler drives it back up.
      *
+     * Departure is keyed on array_key_exists rather than isset, because a member the provider
+     * reports without an address is present with a null value.
+     *
      * @param  array<string, Server>  $servers
      */
     private function reconcileMembers(Network $network, PrivateNetworkDTO $dto, array $servers): void
@@ -213,7 +218,7 @@ class SyncProviderNetworks
         }
 
         foreach ($existing as $member) {
-            if (isset($desired[$member->server_id])) {
+            if (array_key_exists($member->server_id, $desired)) {
                 continue;
             }
 

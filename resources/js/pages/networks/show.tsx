@@ -66,7 +66,7 @@ export default function NetworkOverview() {
               )}
             </div>
           </div>
-          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank" rel="noreferrer">
             <Button variant="outline">
               <BookOpenIcon />
               <span className="hidden lg:block">Docs</span>

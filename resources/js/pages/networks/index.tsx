@@ -25,7 +25,7 @@ export default function Networks() {
         <HeaderContainer>
           <Heading title="Networks" description="Private networks connecting the servers in this project" />
           <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+            <a href="https://vitodeploy.com/docs/networks/overview" target="_blank" rel="noreferrer">
               <Button variant="outline">
                 <BookOpenIcon />
                 <span className="hidden lg:block">Docs</span>
@@ -58,11 +58,11 @@ export default function Networks() {
           tableData={page.props.networks}
           actions={(row: Row) => (
             <div className="flex items-center justify-end">
-              <Link href={route('networks.show', { network: row.id })} prefetch>
-                <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={route('networks.show', { network: row.id })} aria-label="View network" prefetch>
                   <EyeIcon />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           )}
         />

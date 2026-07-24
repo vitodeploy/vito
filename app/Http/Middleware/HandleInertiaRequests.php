@@ -87,6 +87,8 @@ class HandleInertiaRequests extends Middleware
                 if ($user->current_project_id !== $network->project_id) {
                     $user->current_project_id = $network->project_id;
                     $user->save();
+                    $user->unsetRelation('currentProject');
+                    $currentProject = $user->currentProject;
                 }
 
                 $data['network'] = fn () => NetworkResource::make($network->loadCount('servers'));

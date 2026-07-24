@@ -3,11 +3,14 @@
 namespace App\Traits;
 
 use Closure;
+use Illuminate\Database\DetectsConcurrencyErrors;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 trait UniqueQueue
 {
+    use DetectsConcurrencyErrors;
+
     public $tries = 120;
 
     public function retryUntil(): \DateTime
@@ -47,14 +50,6 @@ trait UniqueQueue
 
     protected function isTransientDatabaseError(Throwable $e): bool
     {
-        $message = strtolower($e->getMessage());
-
-        foreach (['database is locked', 'deadlock', 'lock wait timeout', 'try restarting transaction'] as $needle) {
-            if (str_contains($message, $needle)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->causedByConcurrencyError($e);
     }
 }

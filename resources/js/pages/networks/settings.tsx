@@ -9,7 +9,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import React, { useState } from 'react';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
 import NetworkLayout from '@/layouts/network/layout';
 import { useDialog } from '@/hooks/use-dialog';
 import { formatDateString } from '@/lib/utils';
@@ -17,7 +19,7 @@ import { Network } from '@/types/network';
 
 export default function NetworkSettings() {
   const page = usePage<{ network: Network }>();
-  const network = page.props.network;
+  const network = useRealtimeRecord<Network>(page.props.network, 'network')!;
   const dialog = useDialog();
   const isWireGuard = network.type_value === 'wireguard';
 
@@ -48,7 +50,7 @@ export default function NetworkSettings() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Settings" description="Manage this network's settings" />
-          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank" rel="noreferrer">
             <Button variant="outline">
               <BookOpenIcon />
               <span className="hidden lg:block">Docs</span>
@@ -91,14 +93,17 @@ export default function NetworkSettings() {
             <div className="flex items-center justify-between p-4">
               <span>Name</span>
               {editMode === 'name' ? (
-                <Input
-                  id="name"
-                  className="h-6 max-w-48"
-                  value={form.data.name}
-                  onChange={(e) => form.setData('name', e.target.value)}
-                  onKeyDown={handleEnterKey}
-                  autoFocus
-                />
+                <div className="flex max-w-48 flex-col items-end gap-1">
+                  <Input
+                    id="name"
+                    className="h-6"
+                    value={form.data.name}
+                    onChange={(e) => form.setData('name', e.target.value)}
+                    onKeyDown={handleEnterKey}
+                    autoFocus
+                  />
+                  <InputError message={form.errors.name} />
+                </div>
               ) : (
                 <button type="button" className="text-muted-foreground cursor-pointer underline" onClick={() => setEditMode('name')}>
                   {form.data.name}

@@ -42,19 +42,19 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
             try {
                 $client = $this->networkClient($region);
 
-                $reservations = $client->describeInstances([
+                $reservations = $this->paginate($client, 'DescribeInstances', [
                     'Filters' => [
                         ['Name' => 'instance-id', 'Values' => array_values($instanceIds)],
                     ],
-                ])->toArray()['Reservations'] ?? [];
+                ], 'Reservations');
 
                 $vpcIds = $this->vpcIdsFrom($reservations);
 
-                $vpcs = $vpcIds === [] ? [] : ($client->describeVpcs([
+                $vpcs = $vpcIds === [] ? [] : $this->paginate($client, 'DescribeVpcs', [
                     'Filters' => [
                         ['Name' => 'vpc-id', 'Values' => $vpcIds],
                     ],
-                ])->toArray()['Vpcs'] ?? []);
+                ], 'Vpcs');
             } catch (Throwable) {
                 throw $this->syncError(null, $region);
             }
@@ -121,15 +121,29 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * Prefers the primary network interface: an instance with several ENIs reports only one of
-     * them in the top-level VpcId/PrivateIpAddress fields, and both are optional.
+     * Reads the primary network interface (device index 0), falling back to the first usable
+     * one and then to the instance's top-level fields, both of which are optional. On a
+     * multi-ENI instance the interfaces are not returned in a guaranteed order, so taking the
+     * first would risk reporting a secondary interface's address.
      *
      * @param  array<string, mixed>  $instance
      * @return array{0: ?string, 1: ?string}
      */
     private function placementOf(array $instance): array
     {
-        foreach ($instance['NetworkInterfaces'] ?? [] as $interface) {
+        $interfaces = $instance['NetworkInterfaces'] ?? [];
+
+        $primary = null;
+
+        foreach ($interfaces as $interface) {
+            if ((int) ($interface['Attachment']['DeviceIndex'] ?? -1) === 0) {
+                $primary = $interface;
+
+                break;
+            }
+        }
+
+        foreach ($primary !== null ? [$primary] : $interfaces as $interface) {
             $vpcId = $interface['VpcId'] ?? null;
             $ip = $interface['PrivateIpAddress'] ?? null;
 
@@ -195,6 +209,26 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
         }
 
         return $fallback;
+    }
+
+    /**
+     * EC2 list calls are paged. Reading only the first page would make instances beyond it look
+     * detached, and sync would then remove them from their network.
+     *
+     * @param  array<string, mixed>  $args
+     * @return array<int, array<string, mixed>>
+     */
+    private function paginate(Ec2Client $client, string $operation, array $args, string $key): array
+    {
+        $items = [];
+
+        foreach ($client->getPaginator($operation, $args) as $page) {
+            /** @var array<int, array<string, mixed>> $batch */
+            $batch = $page->get($key) ?? [];
+            $items = array_merge($items, $batch);
+        }
+
+        return $items;
     }
 
     private function networkClient(string $region): Ec2Client

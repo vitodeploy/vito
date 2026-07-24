@@ -21,11 +21,22 @@ class NetworkServerFactory extends Factory
             'network_id' => Network::factory(),
             'server_id' => Server::factory(),
             'server_ip_address_id' => null,
-            'ip' => $this->faker->unique()->numerify('100.64.0.##'),
+            'ip' => $this->hostAddress(),
             'public_key' => base64_encode(random_bytes(32)),
             'private_key' => base64_encode(random_bytes(32)),
             'status' => NetworkServerStatus::ACTIVE,
             'sync_attempts' => 0,
         ];
+    }
+
+    /**
+     * A two-digit host pattern gives faker's unique() only 100 values, which it can exhaust
+     * across a long-running process and then throw. This spans the whole 100.64.0.0/16.
+     */
+    private function hostAddress(): string
+    {
+        $host = $this->faker->unique()->numberBetween(1, 64516);
+
+        return '100.64.'.intdiv($host - 1, 254).'.'.(($host - 1) % 254 + 1);
     }
 }
