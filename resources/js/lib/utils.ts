@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// current absolute URL without its query string or hash, for exact nav-active matching
+export function currentPath(): string {
+  return window.location.href.split(/[?#]/)[0];
+}
+
 // convert kb to gb
 export function kbToGb(kb: number | string): number {
   if (typeof kb === 'string') {

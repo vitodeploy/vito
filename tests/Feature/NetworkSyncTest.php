@@ -16,6 +16,7 @@ use App\Enums\NetworkStatus;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Jobs\Network\SyncNetworkServerJob;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Server;
@@ -192,6 +193,28 @@ class NetworkSyncTest extends TestCase
 
         $this->assertDatabaseMissing('networks', ['id' => $network->id]);
         $this->assertDatabaseMissing('network_servers', ['network_id' => $network->id]);
+    }
+
+    public function test_teardown_failure_recomputes_network_status(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+        $member = $network->servers()->firstOrFail();
+
+        NetworkServer::query()->whereKey($member->id)->update([
+            'status' => NetworkServerStatus::LEAVING,
+        ]);
+
+        (new SyncNetworkServerJob($member->fresh(), true))->failed(new \Exception('boom'));
+
+        $this->assertDatabaseHas('network_servers', ['id' => $member->id]);
+        $this->assertSame(NetworkStatus::SYNCING, $network->fresh()->status);
     }
 
     public function test_reconciler_force_converges_stuck_leaving_member(): void

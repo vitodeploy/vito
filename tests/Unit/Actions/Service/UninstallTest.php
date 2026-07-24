@@ -2,7 +2,9 @@
 
 namespace Tests\Unit\Actions\Service;
 
+use App\Actions\Network\CreateNetwork;
 use App\Actions\Service\Uninstall;
+use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Jobs\Service\UpdateVitoAgentConfigJob;
@@ -123,6 +125,39 @@ class UninstallTest extends TestCase
         $this->expectException(ValidationException::class);
 
         app(Uninstall::class)->uninstall($this->server->database());
+    }
+
+    public function test_cannot_uninstall_wireguard_when_server_is_network_member(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $this->expectException(ValidationException::class);
+
+        app(Uninstall::class)->uninstall($this->server->service('vpn'));
+    }
+
+    public function test_can_uninstall_wireguard_when_server_is_not_a_network_member(): void
+    {
+        SSH::fake();
+
+        $service = Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'wireguard',
+            'type' => 'vpn',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        app(Uninstall::class)->uninstall($service);
+
+        $this->assertDatabaseMissing('services', ['id' => $service->id]);
     }
 
     /**

@@ -48,6 +48,7 @@ class SyncNetworkServerJob implements ShouldQueue
         ServerLog::withNetwork($this->member->network_id, function () use ($e): void {
             if ($this->teardown) {
                 ServerLog::log($this->member->server, 'network-teardown-failed', $e->getMessage());
+                app(RecomputeNetworkStatus::class)->handle($this->member->network);
 
                 return;
             }

@@ -31,6 +31,13 @@ trait UniqueQueue
                 $callback();
             } catch (Throwable $e) {
                 $lock->release();
+
+                if ($this->isTransientDatabaseError($e) && $this->attempts() < $this->tries) {
+                    $this->release(min(30, $this->attempts() * 2));
+
+                    return;
+                }
+
                 $this->fail($e);
             } finally {
                 $lock->release();
@@ -38,5 +45,18 @@ trait UniqueQueue
         } else {
             $this->release(30);
         }
+    }
+
+    protected function isTransientDatabaseError(Throwable $e): bool
+    {
+        $message = strtolower($e->getMessage());
+
+        foreach (['database is locked', 'deadlock', 'lock wait timeout', 'try restarting transaction'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

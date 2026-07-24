@@ -1,4 +1,5 @@
 import { Server } from '@/types/server';
+import { currentPath } from '@/lib/utils';
 import { ReactNode } from 'react';
 import ServerLayout from '@/layouts/server/layout';
 import Container from '@/components/container';
@@ -37,7 +38,7 @@ export default function DatabaseLayout({ server, children }: { server: Server; c
                   key={item.title}
                   asChild
                   className={
-                    (item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href)) ? 'bg-muted' : ''
+                    (item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href)) ? 'bg-muted' : ''
                   }
                 >
                   <Link href={item.href}>

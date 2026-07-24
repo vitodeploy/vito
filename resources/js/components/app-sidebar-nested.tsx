@@ -1,4 +1,5 @@
 import { NavUser } from '@/components/nav-user';
+import { currentPath } from '@/lib/utils';
 import {
   Sidebar,
   SidebarContent,
@@ -237,7 +238,7 @@ export function AppSidebar() {
 
   const getMenuItems = (items: NavItem[]) => {
     return items.map((item) => {
-      const isActive = item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href);
+      const isActive = item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href);
 
       if (item.children && item.children.length > 0) {
         return (

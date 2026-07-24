@@ -1,4 +1,5 @@
 import { NavUser } from '@/components/nav-user';
+import { currentPath } from '@/lib/utils';
 import {
   Sidebar,
   SidebarContent,
@@ -142,7 +143,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                   <SidebarMenuItem key={`${item.title}-${item.href}`}>
                     <SidebarMenuButton
                       asChild
-                      isActive={item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href)}
+                      isActive={item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href)}
                       tooltip={{ children: item.title, hidden: false }}
                       hidden={item.hidden}
                     >
@@ -196,7 +197,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
               <SidebarGroupContent>
                 <SidebarMenu>
                   {secondNavItems.map((item) => {
-                    const isActive = item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href);
+                    const isActive = item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href);
 
                     if (item.children && item.children.length > 0) {
                       const groupActive =
@@ -205,7 +206,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                           childItem.hidden
                             ? false
                             : childItem.onlyActivePath
-                              ? window.location.href === childItem.onlyActivePath
+                              ? currentPath() === childItem.onlyActivePath
                               : window.location.href.startsWith(childItem.href),
                         );
 
@@ -227,7 +228,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                                       asChild
                                       isActive={
                                         childItem.onlyActivePath
-                                          ? window.location.href === childItem.href
+                                          ? currentPath() === childItem.href
                                           : window.location.href.startsWith(childItem.href)
                                       }
                                     >

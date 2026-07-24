@@ -1,4 +1,5 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { ColumnDef } from '@tanstack/react-table';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
@@ -12,6 +13,18 @@ import { columns } from '@/pages/server-logs/components/columns';
 import { PaginatedData } from '@/types';
 import { ServerLog } from '@/types/server-log';
 import { Network, NetworkStats } from '@/types/network';
+
+const serverColumn: ColumnDef<ServerLog> = {
+  accessorKey: 'server_name',
+  header: 'Server',
+  cell: ({ row }) => (
+    <Link href={route('servers.show', { server: row.original.server_id })} className="text-foreground" prefetch>
+      {row.original.server_name ?? `#${row.original.server_id}`}
+    </Link>
+  ),
+};
+
+const logColumns: ColumnDef<ServerLog>[] = [serverColumn, ...columns];
 
 function StatTile({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -74,7 +87,7 @@ export default function NetworkOverview() {
 
         <div className="space-y-4">
           <Heading title="Recent activity" description="Logs from this network's servers" />
-          <DataTable columns={columns} paginatedData={logs} searchable sortable />
+          <DataTable columns={logColumns} paginatedData={logs} searchable sortable />
         </div>
       </Container>
     </NetworkLayout>

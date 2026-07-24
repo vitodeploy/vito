@@ -23,6 +23,8 @@ class NetworkTable extends Table
         return [
             TextColumn::make('name', 'Name')->sortable(),
             EnumColumn::make('type', 'Type'),
+            TextColumn::make('cidr', 'CIDR'),
+            TextColumn::make('port', 'Port')->fallback('—'),
             TextColumn::make('servers_count', 'Servers'),
             EnumColumn::make('status', 'Status')->sortable(),
             Column::data('id'),

@@ -21,7 +21,7 @@ enum NetworkType: string implements HasTableDisplay, VitoEnum
     public function getText(): string
     {
         return match ($this) {
-            self::PROVIDER => 'provider managed',
+            self::PROVIDER => 'provider',
             self::WIREGUARD => 'wireguard',
         };
     }

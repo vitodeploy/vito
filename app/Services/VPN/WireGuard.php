@@ -4,6 +4,7 @@ namespace App\Services\VPN;
 
 use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkType;
 use App\Exceptions\SSHError;
 use App\Helpers\SSH;
 use App\Models\Network;
@@ -12,6 +13,7 @@ use App\Models\NetworkServer;
 use App\Models\ServerLog;
 use App\Services\AbstractService;
 use App\Support\Testing\SSHFake;
+use Closure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -25,6 +27,28 @@ class WireGuard extends AbstractService implements VPN
     public static function type(): string
     {
         return 'vpn';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $isMember = NetworkServer::query()
+                        ->where('server_id', $this->service->server->id)
+                        ->where('status', '!=', NetworkServerStatus::LEAVING)
+                        ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
+                        ->exists();
+
+                    if ($isMember) {
+                        $fail(__('This server is a member of one or more WireGuard networks. Remove it from those networks before uninstalling WireGuard.'));
+                    }
+                },
+            ],
+        ];
     }
 
     public function unit(): string
