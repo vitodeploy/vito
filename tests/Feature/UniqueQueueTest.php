@@ -14,7 +14,6 @@ class UniqueQueueTest extends TestCase
 {
     use RefreshDatabase;
 
-
     private function makeJob(callable $callback): object
     {
         return new class($callback)
