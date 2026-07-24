@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FirewallRuleStatus;
 use Database\Factories\NetworkFirewallRuleFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $port
  * @property FirewallRuleStatus $status
  * @property Network $network
+ * @property Collection<int, ServerNetworkRule> $serverRules
  */
 class NetworkFirewallRule extends AbstractModel
 {
