@@ -5,12 +5,16 @@ namespace Tests\Feature;
 use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use RuntimeException;
 use Tests\TestCase;
 
 class UniqueQueueTest extends TestCase
 {
+    use RefreshDatabase;
+
+
     private function makeJob(callable $callback): object
     {
         return new class($callback)

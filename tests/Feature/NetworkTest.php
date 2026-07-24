@@ -297,6 +297,29 @@ class NetworkTest extends TestCase
         $this->assertDatabaseHas('network_firewall_rules', ['id' => $rule->id, 'name' => 'updated', 'port' => '443']);
     }
 
+    public function test_empty_cidr_is_stored_as_null_not_canonicalised(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $ip = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);
+
+        // The create dialog posts an empty string when the optional CIDR is left blank.
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'no-cidr-net',
+            'type' => 'custom',
+            'cidr' => '',
+            'servers' => [$this->server->id],
+            'ip_addresses' => [$this->server->id => $ip->id],
+        ]);
+
+        $this->assertDatabaseHas('networks', [
+            'id' => $network->id,
+            'cidr' => null,
+            'cidr_canonical' => null,
+        ]);
+    }
+
     public function test_update_provider_network_server_ip_via_http(): void
     {
         SSH::fake();

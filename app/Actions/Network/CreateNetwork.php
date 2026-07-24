@@ -134,13 +134,15 @@ class CreateNetwork
             }
         }
 
+        $cidr = ($input['cidr'] ?? '') !== '' ? $input['cidr'] : null;
+
         $network = Network::create([
             'project_id' => $project->id,
             'name' => $input['name'],
             'type' => NetworkType::CUSTOM,
             'status' => NetworkStatus::ACTIVE,
-            'cidr' => $input['cidr'] ?? null,
-            'cidr_canonical' => isset($input['cidr']) ? Cidr::canonical($input['cidr']) : null,
+            'cidr' => $cidr,
+            'cidr_canonical' => $cidr !== null ? Cidr::canonical($cidr) : null,
         ]);
 
         foreach ($input['servers'] as $serverId) {

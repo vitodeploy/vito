@@ -30,8 +30,6 @@ trait UniqueQueue
             try {
                 $callback();
             } catch (Throwable $e) {
-                $lock->release();
-
                 if ($this->isTransientDatabaseError($e) && $this->attempts() < $this->tries) {
                     $this->release(min(30, $this->attempts() * 2));
 
