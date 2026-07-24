@@ -21,6 +21,8 @@ class BackupFileResource extends JsonResource
             'server_id' => $this->backup->server_id,
             'name' => $this->name,
             'size' => $this->size,
+            'database_engine' => $this->database_engine,
+            'database_version' => $this->database_version,
             'restored_to' => $this->restored_to,
             'restored_at' => $this->restored_at,
             'status' => $this->status->getText(),

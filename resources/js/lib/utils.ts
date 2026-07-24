@@ -21,6 +21,15 @@ export function mbToGb(mb: number | string): number {
   return Math.round((mb / 1024) * 100) / 100;
 }
 
+export function formatBytes(bytes: number, decimals = 1): string {
+  if (!bytes) {
+    return '0 B';
+  }
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, i)).toFixed(i ? decimals : 0)} ${units[i]}`;
+}
+
 export function formatDateString(dateString: string | Date): string {
   const date = new Date(dateString);
 

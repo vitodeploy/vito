@@ -6,7 +6,7 @@ else
     echo "Using gzip (pigz not installed, install pigz for faster parallel compression)"
 fi
 START=$SECONDS
-sudo -u postgres pg_dump -d "$1" | $GZIP > "$2"
+sudo -u postgres pg_dump --clean --if-exists --no-owner --no-privileges -d "$1" | $GZIP > "$2"
 STATUS=$?
 echo "Backup completed in $((SECONDS - START))s"
 exit $STATUS' _ {!! escapeshellarg($database) !!} {!! escapeshellarg($path) !!}; then

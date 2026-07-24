@@ -8,9 +8,11 @@ use App\Exceptions\SSHError;
 use App\Models\BackupFile;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\ServerLog;
 use App\Services\AbstractService;
 use Closure;
 use Illuminate\Contracts\View\View;
+use Throwable;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
@@ -238,6 +240,15 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function runBackup(BackupFile $backupFile): void
     {
+        $backupFile->database_engine = $this->service->name;
+
+        try {
+            $backupFile->database_version = BackupFile::normalizeVersion($this->version());
+        } catch (Throwable $e) {
+            ServerLog::log($this->service->server, 'backup-database-version-capture-failed', $e->getMessage());
+            $backupFile->database_version = null;
+        }
+
         $this->service->server->ssh()->exec(
             view($this->getScriptView('backup'), [
                 'path' => $backupFile->tempPath(),
@@ -247,7 +258,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
 
         $size = trim($this->service->server->ssh()->exec(
-            'stat -c%s '.escapeshellarg($backupFile->tempPath()),
+            'stat -c%s '.escapeshellarg($backupFile->tempPath()).' || true',
             'backup-size'
         ));
 
@@ -267,15 +278,17 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     public function restoreBackup(BackupFile $backupFile, string $database): void
     {
+        $tempPath = $backupFile->tempPath($this->service->server);
+
         $backupFile->backup->storage->provider()->ssh($this->service->server)->download(
             $backupFile->path(),
-            $backupFile->tempPath(),
+            $tempPath,
         );
 
         $this->service->server->ssh()->exec(
             view($this->getScriptView('restore'), [
                 'database' => $database,
-                'path' => $backupFile->tempPath(),
+                'path' => $tempPath,
             ]),
             'restore-database'
         );

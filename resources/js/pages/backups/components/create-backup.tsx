@@ -1,5 +1,5 @@
 import { Server } from '@/types/server';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
@@ -12,9 +12,12 @@ import { Input } from '@/components/ui/input';
 import { useConfigs } from '@/stores/bootstrap-store';
 import StorageProviderSelect from '@/pages/storage-providers/components/storage-provider-select';
 import DatabaseSelect from '@/pages/databases/components/database-select';
+import ServerSelect from '@/pages/servers/components/server-select';
 
-export default function CreateBackup({ open, onOpenChange, server }: { open: boolean; onOpenChange: (open: boolean) => void; server: Server }) {
+export default function CreateBackup({ open, onOpenChange, server }: { open: boolean; onOpenChange: (open: boolean) => void; server?: Server }) {
   const configs = useConfigs()!;
+  const [selectedServer, setSelectedServer] = useState<Server | undefined>(undefined);
+  const activeServer = server ?? selectedServer;
 
   const form = useForm<{
     type: string;
@@ -36,7 +39,10 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('backups.store', { server: server.id }), {
+    if (!activeServer) {
+      return;
+    }
+    form.post(route('backups.store', { server: activeServer.id }), {
       onSuccess: () => onOpenChange(false),
     });
   };
@@ -50,6 +56,24 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
         </SheetHeader>
         <Form id="create-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
+            {/*server - only when not opened from a server page*/}
+            {!server && (
+              <FormField>
+                <Label htmlFor="server">Server</Label>
+                <ServerSelect
+                  id="server"
+                  value={selectedServer ? String(selectedServer.id) : ''}
+                  onValueChange={(value) => {
+                    setSelectedServer(value);
+                    if (!value?.services?.database) {
+                      form.setData('type', 'file');
+                    }
+                    form.setData('database', '');
+                  }}
+                />
+              </FormField>
+            )}
+
             {/*backup type*/}
             <FormField>
               <Label htmlFor="type">Backup Type</Label>
@@ -60,7 +84,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
                 <SelectContent>
                   <SelectGroup>
                     <SelectItem value="file">File Backup</SelectItem>
-                    {server.services?.database && <SelectItem value="database">Database Backup</SelectItem>}
+                    {activeServer?.services?.database && <SelectItem value="database">Database Backup</SelectItem>}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -68,13 +92,13 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
             </FormField>
 
             {/*database - only show for database backups*/}
-            {form.data.type === 'database' && (
+            {form.data.type === 'database' && activeServer && (
               <FormField>
                 <Label htmlFor="database">Database</Label>
                 <DatabaseSelect
                   id="database"
                   name="database"
-                  serverId={server.id}
+                  serverId={activeServer.id}
                   value={form.data.database}
                   onValueChange={(value) => form.setData('database', value)}
                 />
@@ -155,7 +179,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
         </Form>
         <SheetFooter>
           <div className="flex items-center gap-2">
-            <Button form="create-backup-form" type="submit" disabled={form.processing}>
+            <Button form="create-backup-form" type="submit" disabled={form.processing || !activeServer}>
               {form.processing && <LoaderCircle className="animate-spin" />}
               Create
             </Button>

@@ -7,10 +7,14 @@ use App\Actions\Backup\RunBackup;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
+use App\Enums\DatabaseStatus;
+use App\Enums\ServerStatus;
 use App\Facades\SSH;
+use App\Jobs\Backup\RestoreDatabaseJob;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\StorageProvider;
 use App\Models\User;
@@ -18,7 +22,9 @@ use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
+use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -594,6 +600,510 @@ class BackupTest extends TestCase
             'id' => $backup->id,
             'enabled' => false,
             'status' => BackupStatus::DELETING->value,
+        ]);
+    }
+
+    public function test_see_global_backups_list_scoped_to_current_project(): void
+    {
+        $this->actingAs($this->user);
+
+        $secondServer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+        ]);
+        $secondBackup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $secondServer->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/y.com',
+            'status' => null,
+        ]);
+
+        $otherProject = Project::factory()->create();
+        $otherServer = Server::factory()->create([
+            'project_id' => $otherProject->id,
+            'user_id' => $this->user->id,
+        ]);
+        $otherBackup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $otherServer->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/z.com',
+            'status' => null,
+        ]);
+
+        $this->get(route('backups.all'))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('backups/index')
+                ->where('backups.data', function ($rows) use ($secondBackup, $otherBackup): bool {
+                    $ids = collect($rows)->pluck('id');
+
+                    return $ids->contains($this->backup->id)
+                        && $ids->contains($secondBackup->id)
+                        && ! $ids->contains($otherBackup->id);
+                })
+            );
+    }
+
+    public function test_per_server_backups_list_is_filtered_to_server(): void
+    {
+        $this->actingAs($this->user);
+
+        $secondServer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+        ]);
+        $secondBackup = Backup::factory()->create([
+            'type' => BackupType::FILE,
+            'server_id' => $secondServer->id,
+            'storage_id' => $this->storageProvider->id,
+            'path' => '/home/vito/y.com',
+            'status' => null,
+        ]);
+
+        $this->get(route('backups', ['server' => $secondServer]))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('backups/index')
+                ->where('backups.data', function ($rows) use ($secondBackup): bool {
+                    $ids = collect($rows)->pluck('id');
+
+                    return $ids->contains($secondBackup->id) && ! $ids->contains($this->backup->id);
+                })
+            );
+    }
+
+    public function test_backup_run_captures_database_engine_and_version(): void
+    {
+        Http::fake();
+        SSH::fake('8.0.36');
+
+        $this->setupDatabase('mysql', '8.4');
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Local::id(),
+            'credentials' => ['path' => '/home/vito/backups'],
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $backupFile->id,
+            'status' => BackupFileStatus::CREATED,
+            'database_engine' => 'mysql',
+            'database_version' => '8.0.36',
+        ]);
+    }
+
+    public function test_backup_run_succeeds_with_null_version_when_version_query_yields_nothing(): void
+    {
+        Http::fake();
+        SSH::fake();
+
+        $this->setupDatabase('mysql', '8.4');
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Local::id(),
+            'credentials' => ['path' => '/home/vito/backups'],
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+        ]);
+
+        $backupFile = app(RunBackup::class)->run($backup);
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $backupFile->id,
+            'status' => BackupFileStatus::CREATED,
+            'database_engine' => 'mysql',
+            'database_version' => null,
+        ]);
+    }
+
+    public function test_restore_to_database_on_same_server_without_metadata_is_allowed(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile();
+        $targetDatabase = Database::factory()->create(['server_id' => $this->server->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionDoesntHaveErrors();
+
+        Bus::assertDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_compatible_server_is_allowed(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionDoesntHaveErrors();
+
+        Bus::assertDispatched(RestoreDatabaseJob::class);
+
+        $this->assertEquals(
+            "{$targetDatabase->name} ({$targetServer->name})",
+            $backupFile->refresh()->restored_to,
+        );
+    }
+
+    public function test_restore_to_server_with_lower_version_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '5.7');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_server_with_different_engine_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mariadb', '11.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_without_metadata_to_another_server_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile();
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_from_local_storage_to_another_server_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $localStorage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Local::id(),
+            'credentials' => ['path' => '/home/vito/backups'],
+        ]);
+        $backupFile = $this->databaseBackupFile(
+            ['database_engine' => 'mysql', 'database_version' => '8.0.36'],
+            $localStorage,
+        );
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_database_in_another_project_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $otherProject = Project::factory()->create();
+        $targetServer = $this->createTargetServer('mysql', '8.4', $otherProject->id);
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_not_ready_server_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetServer->update(['status' => ServerStatus::INSTALLING]);
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_not_ready_database_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create([
+            'server_id' => $targetServer->id,
+            'status' => DatabaseStatus::DELETING,
+        ]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_to_soft_deleted_database_is_rejected(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+        $targetDatabase->delete();
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_is_rejected_when_target_version_cannot_be_determined(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', 'latest');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionHasErrors('database');
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_allows_less_precise_target_version(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.39']);
+        $targetServer = $this->createTargetServer('mysql', '8.0');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionDoesntHaveErrors();
+
+        Bus::assertDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_restore_with_foreign_backup_file_returns_404(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile();
+        $foreignFile = $this->databaseBackupFile();
+        $targetDatabase = Database::factory()->create(['server_id' => $this->server->id]);
+
+        $this->post(route('backup-files.restore', [
+            'server' => $this->server,
+            'backup' => $backupFile->backup,
+            'backupFile' => $foreignFile,
+        ]), [
+            'database' => $targetDatabase->id,
+        ])->assertNotFound();
+
+        Bus::assertNotDispatched(RestoreDatabaseJob::class);
+    }
+
+    public function test_delete_with_foreign_backup_file_returns_404(): void
+    {
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile();
+        $foreignFile = $this->databaseBackupFile();
+
+        $this->delete(route('backup-files.destroy', [
+            'server' => $this->server,
+            'backup' => $backupFile->backup,
+            'backupFile' => $foreignFile,
+        ]))->assertNotFound();
+
+        $this->assertDatabaseHas('backup_files', [
+            'id' => $foreignFile->id,
+            'status' => BackupFileStatus::CREATED,
+        ]);
+    }
+
+    public function test_restore_backup_on_another_server(): void
+    {
+        Http::fake([
+            '*oauth2/token' => Http::response([
+                'access_token' => 'fresh-access',
+                'expires_in' => 14400,
+            ]),
+            '*' => Http::response([], 200),
+        ]);
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $backupFile = $this->databaseBackupFile(['database_engine' => 'mysql', 'database_version' => '8.0.36']);
+        $targetServer = $this->createTargetServer('mysql', '8.4');
+        $targetDatabase = Database::factory()->create(['server_id' => $targetServer->id]);
+
+        $this->postRestore($backupFile, $targetDatabase)
+            ->assertSessionDoesntHaveErrors();
+
+        $backupFile->refresh();
+
+        $this->assertEquals(BackupFileStatus::RESTORED, $backupFile->status);
+        $this->assertEquals("{$targetDatabase->name} ({$targetServer->name})", $backupFile->restored_to);
+    }
+
+    public function test_temp_path_uses_target_server_ssh_user(): void
+    {
+        $targetServer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'ssh_user' => 'other-user',
+        ]);
+
+        $this->assertStringStartsWith('/home/vito/', $this->backupFile->tempPath());
+        $this->assertStringStartsWith('/home/other-user/', $this->backupFile->tempPath($targetServer));
+    }
+
+    #[DataProvider('versionComparisons')]
+    public function test_version_gte(string $target, string $source, bool $expected): void
+    {
+        $this->assertSame($expected, BackupFile::versionGte($target, $source));
+    }
+
+    /**
+     * @return array<int, array<int, string|bool>>
+     */
+    public static function versionComparisons(): array
+    {
+        return [
+            ['8.4', '8.0.36', true],
+            ['8.0', '8.0.39', true],
+            ['16', '16.4', true],
+            ['15', '16.1', false],
+            ['5.7', '8.0.36', false],
+            ['10.11.6', '10.11.6', true],
+            ['11.4', '10.11.6', true],
+        ];
+    }
+
+    public function test_normalize_version(): void
+    {
+        $this->assertSame('8.0.42', BackupFile::normalizeVersion("8.0.42\n0.24.04"));
+        $this->assertSame('16', BackupFile::normalizeVersion('16'));
+        $this->assertSame('10.11.6', BackupFile::normalizeVersion('10.11.6-MariaDB'));
+        $this->assertNull(BackupFile::normalizeVersion('latest'));
+        $this->assertNull(BackupFile::normalizeVersion(''));
+        $this->assertNull(BackupFile::normalizeVersion(null));
+    }
+
+    /**
+     * @param  array<string, mixed>  $fileAttributes
+     */
+    private function databaseBackupFile(array $fileAttributes = [], ?StorageProvider $storage = null): BackupFile
+    {
+        $database = Database::factory()->create(['server_id' => $this->server->id]);
+        $backup = Backup::factory()->create([
+            'type' => BackupType::DATABASE,
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => ($storage ?? StorageProvider::factory()->dropbox()->create(['user_id' => $this->user->id]))->id,
+            'status' => null,
+        ]);
+
+        return BackupFile::factory()->create([
+            'backup_id' => $backup->id,
+            'status' => BackupFileStatus::CREATED,
+            ...$fileAttributes,
+        ]);
+    }
+
+    private function createTargetServer(string $engine, string $version, ?int $projectId = null): Server
+    {
+        $server = Server::factory()->create([
+            'project_id' => $projectId ?? $this->server->project_id,
+            'user_id' => $this->user->id,
+        ]);
+        $server->services()->create([
+            'type' => 'database',
+            'name' => $engine,
+            'version' => $version,
+        ]);
+
+        return $server;
+    }
+
+    private function postRestore(BackupFile $backupFile, Database $targetDatabase): TestResponse
+    {
+        return $this->post(route('backup-files.restore', [
+            'server' => $backupFile->backup->server_id,
+            'backup' => $backupFile->backup_id,
+            'backupFile' => $backupFile,
+        ]), [
+            'database' => $targetDatabase->id,
         ]);
     }
 
