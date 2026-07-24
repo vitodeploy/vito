@@ -55,7 +55,7 @@ class ServerIpAddress extends AbstractModel
         static::deleting(function (ServerIpAddress $address): void {
             $address->reapplyNetworkIds = NetworkServer::query()
                 ->where('server_ip_address_id', $address->id)
-                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::PROVIDER))
+                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::CUSTOM))
                 ->pluck('network_id')
                 ->unique()
                 ->values()

@@ -10,6 +10,11 @@ export interface Network {
   addressing_pool: string;
   cidr: string | null;
   port: number | null;
+  region: string | null;
+  is_managed: boolean;
+  is_orphaned: boolean;
+  provider?: string | null;
+  last_synced_at: string | null;
   status: string;
   status_color: StatusColor;
   servers_count?: number;

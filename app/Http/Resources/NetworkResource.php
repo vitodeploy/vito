@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\NetworkType;
 use App\Models\Network;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -24,6 +25,11 @@ class NetworkResource extends JsonResource
             'addressing_pool' => $this->addressing_pool->getText(),
             'cidr' => $this->cidr,
             'port' => $this->port,
+            'region' => $this->region,
+            'is_managed' => $this->type === NetworkType::PROVIDER,
+            'is_orphaned' => $this->type === NetworkType::PROVIDER && $this->server_provider_id === null,
+            'provider' => $this->whenLoaded('serverProvider', fn (): ?string => $this->serverProvider?->provider),
+            'last_synced_at' => $this->last_synced_at,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
             'servers_count' => $this->whenCounted('servers'),

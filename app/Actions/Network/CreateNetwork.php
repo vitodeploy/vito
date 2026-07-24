@@ -39,7 +39,7 @@ class CreateNetwork
         $network = DB::transaction(function () use ($type, $project, $input): Network {
             $network = $type === NetworkType::WIREGUARD
                 ? $this->buildWireGuard($project, $input)
-                : $this->buildProvider($project, $input);
+                : $this->buildCustom($project, $input);
 
             $this->seedDefaultFirewallRule($network);
 
@@ -117,13 +117,16 @@ class CreateNetwork
     /**
      * @param  array<string, mixed>  $input
      */
-    private function buildProvider(Project $project, array $input): Network
+    private function buildCustom(Project $project, array $input): Network
     {
         Project::query()->whereKey($project->id)->lockForUpdate()->first();
 
         if (isset($input['cidr']) && $input['cidr'] !== '') {
             $canonical = Cidr::canonical($input['cidr']);
-            if ($project->networks()->where('cidr_canonical', $canonical)->exists()) {
+            if ($project->networks()
+                ->whereIn('type', [NetworkType::CUSTOM, NetworkType::WIREGUARD])
+                ->where('cidr_canonical', $canonical)
+                ->exists()) {
                 throw ValidationException::withMessages([
                     'cidr' => __('This CIDR is already used by another network in this project.'),
                 ]);
@@ -133,7 +136,7 @@ class CreateNetwork
         $network = Network::create([
             'project_id' => $project->id,
             'name' => $input['name'],
-            'type' => NetworkType::PROVIDER,
+            'type' => NetworkType::CUSTOM,
             'status' => NetworkStatus::ACTIVE,
             'cidr' => $input['cidr'] ?? null,
             'cidr_canonical' => isset($input['cidr']) ? Cidr::canonical($input['cidr']) : null,
@@ -200,7 +203,7 @@ class CreateNetwork
             ],
             'type' => [
                 'required',
-                Rule::in([NetworkType::PROVIDER->value, NetworkType::WIREGUARD->value]),
+                Rule::in([NetworkType::CUSTOM->value, NetworkType::WIREGUARD->value]),
             ],
             'servers' => ['required', 'array', 'min:1'],
             'servers.*' => [
@@ -217,7 +220,7 @@ class CreateNetwork
             $rules['port'] = ['nullable', 'integer', 'min:1024', 'max:65535'];
         }
 
-        if (($input['type'] ?? null) === NetworkType::PROVIDER->value) {
+        if (($input['type'] ?? null) === NetworkType::CUSTOM->value) {
             $rules['cidr'] = ['nullable', 'string', $this->ipv4CidrRule()];
             $rules['ip_addresses'] = ['required', 'array'];
             foreach ($input['servers'] ?? [] as $serverId) {

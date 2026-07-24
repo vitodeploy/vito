@@ -2,8 +2,11 @@
 
 namespace App\ServerProviders;
 
+use App\DTOs\PrivateNetworkDTO;
+use App\DTOs\PrivateNetworkMemberDTO;
 use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
@@ -12,13 +15,201 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-class AWS extends AbstractProvider
+class AWS extends AbstractProvider implements ProvidesPrivateNetworks
 {
     protected Ec2Client $ec2Client;
 
     public static function id(): string
     {
         return 'aws';
+    }
+
+    public function instanceIdKey(): string
+    {
+        return 'instance_id';
+    }
+
+    /**
+     * EC2 is regional, so each region is queried with its own client. A region failure aborts
+     * the whole connection rather than returning partial results: the caller only skips
+     * pruning per connection, and returning a partial view would let it delete networks that
+     * live in the region that failed.
+     */
+    public function privateNetworks(array $instanceIds, array $regions): array
+    {
+        $result = [];
+
+        foreach ($regions as $region) {
+            try {
+                $client = $this->networkClient($region);
+
+                $reservations = $client->describeInstances([
+                    'Filters' => [
+                        ['Name' => 'instance-id', 'Values' => array_values($instanceIds)],
+                    ],
+                ])->toArray()['Reservations'] ?? [];
+
+                $vpcIds = $this->vpcIdsFrom($reservations);
+
+                $vpcs = $vpcIds === [] ? [] : ($client->describeVpcs([
+                    'Filters' => [
+                        ['Name' => 'vpc-id', 'Values' => $vpcIds],
+                    ],
+                ])->toArray()['Vpcs'] ?? []);
+            } catch (Throwable) {
+                throw $this->syncError(null, $region);
+            }
+
+            foreach ($this->mapPrivateNetworks($reservations, $vpcs, $instanceIds, $region) as $network) {
+                $result[] = $network;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Public so it can be exercised without an EC2 client — the SDK has no HTTP-level fake
+     * equivalent to `Http::fake()` in this codebase. Not part of the provider contract.
+     *
+     * @internal
+     *
+     * @param  array<int, array<string, mixed>>  $reservations
+     * @param  array<int, array<string, mixed>>  $vpcs
+     * @param  array<int, string>  $instanceIds
+     * @return array<int, PrivateNetworkDTO>
+     */
+    public function mapPrivateNetworks(array $reservations, array $vpcs, array $instanceIds, ?string $region = null): array
+    {
+        $wanted = array_flip($instanceIds);
+        $members = [];
+
+        foreach ($this->instancesFrom($reservations) as $instance) {
+            $instanceId = (string) ($instance['InstanceId'] ?? '');
+
+            if ($instanceId === '' || ! isset($wanted[$instanceId])) {
+                continue;
+            }
+
+            [$vpcId, $ip] = $this->placementOf($instance);
+
+            if ($vpcId === null) {
+                continue;
+            }
+
+            $members[$vpcId][] = new PrivateNetworkMemberDTO(instanceId: $instanceId, ip: $ip);
+        }
+
+        $result = [];
+
+        foreach ($vpcs as $vpc) {
+            $vpcId = (string) ($vpc['VpcId'] ?? '');
+
+            if (! isset($members[$vpcId])) {
+                continue;
+            }
+
+            $result[] = new PrivateNetworkDTO(
+                externalId: $vpcId,
+                name: $this->nameOf($vpc, $vpcId),
+                cidr: isset($vpc['CidrBlock']) ? (string) $vpc['CidrBlock'] : null,
+                region: $region,
+                members: $members[$vpcId],
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Prefers the primary network interface: an instance with several ENIs reports only one of
+     * them in the top-level VpcId/PrivateIpAddress fields, and both are optional.
+     *
+     * @param  array<string, mixed>  $instance
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function placementOf(array $instance): array
+    {
+        foreach ($instance['NetworkInterfaces'] ?? [] as $interface) {
+            $vpcId = $interface['VpcId'] ?? null;
+            $ip = $interface['PrivateIpAddress'] ?? null;
+
+            if (is_string($vpcId) && $vpcId !== '') {
+                return [$vpcId, is_string($ip) && $ip !== '' ? $ip : null];
+            }
+        }
+
+        $vpcId = $instance['VpcId'] ?? null;
+        $ip = $instance['PrivateIpAddress'] ?? null;
+
+        return [
+            is_string($vpcId) && $vpcId !== '' ? $vpcId : null,
+            is_string($ip) && $ip !== '' ? $ip : null,
+        ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $reservations
+     * @return array<int, array<string, mixed>>
+     */
+    private function instancesFrom(array $reservations): array
+    {
+        $instances = [];
+
+        foreach ($reservations as $reservation) {
+            /** @var array<int, array<string, mixed>> $batch */
+            $batch = $reservation['Instances'] ?? [];
+            $instances = array_merge($instances, $batch);
+        }
+
+        return $instances;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $reservations
+     * @return array<int, string>
+     */
+    private function vpcIdsFrom(array $reservations): array
+    {
+        $ids = [];
+
+        foreach ($this->instancesFrom($reservations) as $instance) {
+            [$vpcId] = $this->placementOf($instance);
+
+            if ($vpcId !== null && ! in_array($vpcId, $ids, true)) {
+                $ids[] = $vpcId;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param  array<string, mixed>  $vpc
+     */
+    private function nameOf(array $vpc, string $fallback): string
+    {
+        foreach ($vpc['Tags'] ?? [] as $tag) {
+            if (($tag['Key'] ?? null) === 'Name' && is_string($tag['Value'] ?? null) && $tag['Value'] !== '') {
+                return $tag['Value'];
+            }
+        }
+
+        return $fallback;
+    }
+
+    private function networkClient(string $region): Ec2Client
+    {
+        $credentials = $this->serverProvider->getCredentials();
+
+        return new Ec2Client([
+            'region' => $region,
+            'version' => '2016-11-15',
+            'credentials' => [
+                'key' => $credentials['key'],
+                'secret' => $credentials['secret'],
+            ],
+        ]);
     }
 
     public function createRules(array $input): array

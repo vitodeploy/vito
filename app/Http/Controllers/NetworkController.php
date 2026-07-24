@@ -10,6 +10,7 @@ use App\Enums\IpAddressType;
 use App\Enums\NetworkType;
 use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
+use App\Jobs\Network\SyncProviderNetworksJob;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Project;
@@ -90,7 +91,7 @@ class NetworkController extends Controller
         return Inertia::render('networks/servers', [
             'members' => NetworkServerTable::make($network->servers())->identifier('members')->simplePaginate(),
             'servers' => $this->serversPayload($network->project, $memberServerIds),
-            'memberIps' => $network->type === NetworkType::PROVIDER ? $this->memberIpsPayload($network) : [],
+            'memberIps' => $network->type === NetworkType::CUSTOM ? $this->memberIpsPayload($network) : [],
         ]);
     }
 
@@ -142,6 +143,20 @@ class NetworkController extends Controller
         app(DeleteNetwork::class)->delete($network);
 
         return redirect()->route('networks')->with('success', 'Network deleted!');
+    }
+
+    #[Post('/sync', name: 'networks.sync-providers')]
+    public function syncProviders(): RedirectResponse
+    {
+        $project = user()->currentProject;
+
+        $this->authorize('create', [Network::class, $project]);
+
+        if (! SyncProviderNetworksJob::dispatchUnlessRecent($project)) {
+            return back()->with('info', 'A provider sync is already in progress.');
+        }
+
+        return back()->with('info', 'Syncing networks from your cloud providers.');
     }
 
     #[Post('/{network}/sync', name: 'networks.sync')]

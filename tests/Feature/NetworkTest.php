@@ -306,7 +306,7 @@ class NetworkTest extends TestCase
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'cidr' => '10.0.0.0/24',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip1->id],
@@ -403,7 +403,7 @@ class NetworkTest extends TestCase
         $ip = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);
         Network::factory()->create([
             'project_id' => $this->server->project_id,
-            'type' => NetworkType::PROVIDER,
+            'type' => NetworkType::CUSTOM,
             'cidr' => '10.0.0.0/24',
             'cidr_canonical' => '10.0.0.0/24',
         ]);
@@ -412,7 +412,7 @@ class NetworkTest extends TestCase
 
         $this->post(route('networks.store'), [
             'name' => 'dup',
-            'type' => 'provider',
+            'type' => 'custom',
             'cidr' => '10.0.0.5/24',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],

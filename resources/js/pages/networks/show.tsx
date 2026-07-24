@@ -51,7 +51,7 @@ export default function NetworkOverview() {
   const network = useRealtimeRecord<Network>(page.props.network, 'network')!;
   const { stats } = page.props;
   const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log', { network_id: network.id });
-  const isProvider = network.type_value === 'provider';
+  const isWireGuard = network.type_value === 'wireguard';
 
   return (
     <NetworkLayout>
@@ -69,8 +69,8 @@ export default function NetworkOverview() {
                   <span className="font-mono">{network.cidr}</span>
                 </MetaChip>
               )}
-              {!isProvider && <MetaChip label="Pool">{network.addressing_pool}</MetaChip>}
-              {!isProvider && network.port && (
+              {isWireGuard && <MetaChip label="Pool">{network.addressing_pool}</MetaChip>}
+              {isWireGuard && network.port && (
                 <MetaChip label="Port">
                   <span className="font-mono">{network.port}</span>
                 </MetaChip>
@@ -79,9 +79,9 @@ export default function NetworkOverview() {
           </div>
         </HeaderContainer>
 
-        <div className={`grid grid-cols-2 gap-4 ${isProvider ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+        <div className={`grid grid-cols-2 gap-4 ${isWireGuard ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
           <StatTile label="Servers">{stats.servers}</StatTile>
-          {!isProvider && <StatTile label="Peers">{stats.peers}</StatTile>}
+          {isWireGuard && <StatTile label="Peers">{stats.peers}</StatTile>}
           <StatTile label="Firewall rules">{stats.firewall_rules}</StatTile>
         </div>
 

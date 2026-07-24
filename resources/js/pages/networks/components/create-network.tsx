@@ -45,7 +45,7 @@ export default function CreateNetwork({
     ip_addresses: {},
   });
 
-  const isProvider = form.data.type === 'provider';
+  const isCustom = form.data.type === 'custom';
 
   const selectPrimaryServer = (id: number) => {
     form.setData((prev) => ({ ...prev, servers: [id], ip_addresses: {} }));
@@ -91,15 +91,15 @@ export default function CreateNetwork({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="wireguard">WireGuard (Custom)</SelectItem>
-                    <SelectItem value="provider">Provider Managed</SelectItem>
+                    <SelectItem value="wireguard">WireGuard</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
               <InputError message={form.errors.type} />
             </FormField>
 
-            {!isProvider && (
+            {!isCustom && (
               <>
                 <FormField>
                   <Label htmlFor="addressing_pool">Address pool</Label>
@@ -125,7 +125,7 @@ export default function CreateNetwork({
               </>
             )}
 
-            {isProvider && (
+            {isCustom && (
               <FormField>
                 <Label htmlFor="cidr">CIDR (optional)</Label>
                 <Input id="cidr" placeholder="e.g. 10.0.0.0/24" value={form.data.cidr} onChange={(e) => form.setData('cidr', e.target.value)} />
@@ -151,7 +151,7 @@ export default function CreateNetwork({
               <InputError message={form.errors.servers} />
             </FormField>
 
-            {isProvider && (
+            {isCustom && (
               <FormField>
                 <Label htmlFor="primary-server-ip">Private IP</Label>
                 <PrivateIpSelect

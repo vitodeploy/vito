@@ -2,6 +2,7 @@
 
 namespace App\Tables;
 
+use App\Models\Network;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
@@ -15,7 +16,7 @@ class NetworkTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->withCount('servers')->latest();
+        $this->query->with('serverProvider')->withCount('servers')->latest();
     }
 
     protected function columns(): array
@@ -23,6 +24,10 @@ class NetworkTable extends Table
         return [
             TextColumn::make('name', 'Name')->sortable(),
             EnumColumn::make('type', 'Type'),
+            Column::make('provider', 'Provider')
+                ->value(fn (Network $network): string => $network->server_provider_id !== null
+                    ? $network->serverProvider->provider
+                    : '—'),
             TextColumn::make('cidr', 'CIDR'),
             TextColumn::make('port', 'Port')->fallback('—'),
             TextColumn::make('servers_count', 'Servers'),

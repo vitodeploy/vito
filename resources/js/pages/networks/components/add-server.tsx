@@ -19,13 +19,13 @@ export default function AddServer({
   open,
   onOpenChange,
   networkId,
-  isProvider,
+  isCustom,
   servers: initialServers,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   networkId: number;
-  isProvider: boolean;
+  isCustom: boolean;
   servers: NetworkServerOption[];
 }) {
   const [servers, setServers] = useState<NetworkServerOption[]>(initialServers);
@@ -83,7 +83,7 @@ export default function AddServer({
               <InputError message={form.errors.servers} />
             </FormField>
 
-            {isProvider && (
+            {isCustom && (
               <FormField>
                 <Label htmlFor="add-server-ip">Private IP</Label>
                 <PrivateIpSelect

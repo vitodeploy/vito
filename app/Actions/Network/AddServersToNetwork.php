@@ -27,12 +27,18 @@ class AddServersToNetwork
      */
     public function add(Network $network, array $input): void
     {
+        if ($network->type === NetworkType::PROVIDER) {
+            throw ValidationException::withMessages([
+                'servers' => __('Members of a provider-managed network are synced from the provider.'),
+            ]);
+        }
+
         $this->validate($network, $input);
 
         $newMemberIds = DB::transaction(function () use ($network, $input): array {
             return $network->type === NetworkType::WIREGUARD
                 ? $this->addWireGuard($network, $input)
-                : $this->addProvider($network, $input);
+                : $this->addCustom($network, $input);
         });
 
         if ($network->type === NetworkType::WIREGUARD) {
@@ -97,7 +103,7 @@ class AddServersToNetwork
      * @param  array<string, mixed>  $input
      * @return array<int, int>
      */
-    private function addProvider(Network $network, array $input): array
+    private function addCustom(Network $network, array $input): array
     {
         $ids = [];
         foreach ($input['servers'] as $serverId) {
@@ -125,7 +131,7 @@ class AddServersToNetwork
             ],
         ];
 
-        if ($network->type === NetworkType::PROVIDER) {
+        if ($network->type === NetworkType::CUSTOM) {
             $rules['ip_addresses'] = ['required', 'array'];
             foreach ($input['servers'] ?? [] as $serverId) {
                 $rules["ip_addresses.$serverId"] = [

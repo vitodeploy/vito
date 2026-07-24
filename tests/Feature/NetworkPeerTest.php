@@ -17,6 +17,7 @@ use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class NetworkPeerTest extends TestCase
@@ -79,11 +80,23 @@ class NetworkPeerTest extends TestCase
         ]);
     }
 
-    public function test_peer_routes_404_on_provider_network(): void
+    /**
+     * @return array<string, array{0: NetworkType}>
+     */
+    public static function nonWireGuardTypes(): array
+    {
+        return [
+            'custom' => [NetworkType::CUSTOM],
+            'provider' => [NetworkType::PROVIDER],
+        ];
+    }
+
+    #[DataProvider('nonWireGuardTypes')]
+    public function test_peer_routes_404_on_non_wireguard_network(NetworkType $type): void
     {
         $network = Network::factory()->create([
             'project_id' => $this->server->project_id,
-            'type' => NetworkType::PROVIDER,
+            'type' => $type,
         ]);
 
         $this->actingAs($this->user);

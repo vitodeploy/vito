@@ -30,7 +30,7 @@ export default function NetworkLayout({ children }: { children: ReactNode }) {
       title: 'Peers',
       href: route('networks.peers', { network: network.id }),
       icon: LaptopIcon,
-      isDisabled: network.type_value === 'provider',
+      isDisabled: network.type_value !== 'wireguard',
     },
     {
       title: 'Firewall',

@@ -3,6 +3,8 @@
 namespace App\Actions\Network;
 
 use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkType;
+use App\Jobs\Network\SyncProviderNetworksJob;
 use App\Models\Network;
 use App\Models\NetworkServer;
 
@@ -15,6 +17,12 @@ class SyncNetwork
 
     public function network(Network $network): void
     {
+        if ($network->type === NetworkType::PROVIDER) {
+            SyncProviderNetworksJob::dispatchUnlessRecent($network->project, $network);
+
+            return;
+        }
+
         $network->load('servers.server');
         foreach ($network->servers as $member) {
             if ($member->status !== NetworkServerStatus::LEAVING) {

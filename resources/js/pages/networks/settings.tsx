@@ -3,8 +3,9 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ export default function NetworkSettings() {
   const page = usePage<{ network: Network }>();
   const network = page.props.network;
   const dialog = useDialog();
-  const isProvider = network.type_value === 'provider';
+  const isWireGuard = network.type_value === 'wireguard';
 
   const [editMode, setEditMode] = useState<string | undefined>();
 
@@ -113,7 +114,7 @@ export default function NetworkSettings() {
               <span>CIDR</span>
               <span className="text-muted-foreground">{network.cidr ?? '—'}</span>
             </div>
-            {!isProvider && (
+            {isWireGuard && (
               <>
                 <Separator />
                 <div className="flex items-center justify-between p-4">
@@ -135,31 +136,74 @@ export default function NetworkSettings() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/30 overflow-hidden">
-          <CardHeader>
-            <CardTitle>Delete network</CardTitle>
-            <CardDescription>Tear this network down on all of its servers and remove it. This action cannot be undone.</CardDescription>
-          </CardHeader>
-          <CardContent className="bg-background">
-            <div className="p-4">
-              <Button
-                variant="destructive"
-                onClick={() =>
-                  dialog.confirm.open({
-                    title: `Delete network [${network.name}]`,
-                    description: `Are you sure you want to delete ${network.name}? This tears the network down on all of its servers.`,
-                    variant: 'destructive',
-                    confirmLabel: 'Delete',
-                    method: 'delete',
-                    url: route('networks.destroy', { network: network.id }),
-                  })
-                }
-              >
-                Delete network
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {network.is_managed && !network.is_orphaned && (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>Provider managed</CardTitle>
+              <CardDescription>
+                This network mirrors a private network at your cloud provider. Its members are synced automatically, and it is removed
+                from Vito when the network no longer exists at the provider.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="bg-background p-0">
+              <div className="flex items-center justify-between p-4">
+                <span>Provider</span>
+                <span className="text-muted-foreground">{network.provider ?? '—'}</span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between p-4">
+                <span>Region</span>
+                <span className="text-muted-foreground">{network.region ?? '—'}</span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between p-4">
+                <span>Last synced</span>
+                <span className="text-muted-foreground">
+                  {network.last_synced_at ? formatDateString(network.last_synced_at) : 'Never'}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {network.is_orphaned && (
+          <Alert>
+            <TriangleAlertIcon className="size-4" />
+            <AlertTitle>Provider connection removed</AlertTitle>
+            <AlertDescription>
+              The cloud provider connection this network came from no longer exists, so it can no longer be synced or removed
+              automatically. Deleting it here is the only way to clear it.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {(!network.is_managed || network.is_orphaned) && (
+          <Card className="border-destructive/30 overflow-hidden">
+            <CardHeader>
+              <CardTitle>Delete network</CardTitle>
+              <CardDescription>Tear this network down on all of its servers and remove it. This action cannot be undone.</CardDescription>
+            </CardHeader>
+            <CardContent className="bg-background">
+              <div className="p-4">
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    dialog.confirm.open({
+                      title: `Delete network [${network.name}]`,
+                      description: `Are you sure you want to delete ${network.name}? This tears the network down on all of its servers.`,
+                      variant: 'destructive',
+                      confirmLabel: 'Delete',
+                      method: 'delete',
+                      url: route('networks.destroy', { network: network.id }),
+                    })
+                  }
+                >
+                  Delete network
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </Container>
     </NetworkLayout>
   );

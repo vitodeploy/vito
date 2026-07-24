@@ -21,7 +21,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $cidr
  * @property ?string $cidr_canonical
  * @property ?int $port
+ * @property ?int $server_provider_id
+ * @property ?string $external_id
+ * @property ?string $region
+ * @property ?\Illuminate\Support\Carbon $last_synced_at
  * @property Project $project
+ * @property ?ServerProvider $serverProvider
  * @property Collection<int, NetworkServer> $servers
  * @property Collection<int, NetworkFirewallRule> $firewallRules
  * @property Collection<int, NetworkPeer> $peers
@@ -40,11 +45,14 @@ class Network extends AbstractModel
         'cidr',
         'cidr_canonical',
         'port',
+        'region',
     ];
 
     protected $casts = [
         'project_id' => 'integer',
         'port' => 'integer',
+        'server_provider_id' => 'integer',
+        'last_synced_at' => 'datetime',
         'type' => NetworkType::class,
         'status' => NetworkStatus::class,
         'addressing_pool' => NetworkAddressingPool::class,
@@ -56,6 +64,14 @@ class Network extends AbstractModel
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<ServerProvider, covariant $this>
+     */
+    public function serverProvider(): BelongsTo
+    {
+        return $this->belongsTo(ServerProvider::class);
     }
 
     /**

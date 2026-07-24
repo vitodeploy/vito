@@ -13,6 +13,7 @@ return new class extends Migration
         Schema::create('networks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('server_provider_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('type');
             $table->string('status')->default(NetworkStatus::CREATING->value);
@@ -20,10 +21,13 @@ return new class extends Migration
             $table->string('cidr')->nullable();
             $table->string('cidr_canonical')->nullable();
             $table->unsignedInteger('port')->nullable();
+            $table->string('external_id')->nullable();
+            $table->string('region')->nullable();
+            $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();
 
             $table->unique(['project_id', 'name']);
-            $table->unique(['project_id', 'cidr_canonical'], 'networks_project_cidr_unique');
+            $table->unique(['project_id', 'server_provider_id', 'external_id'], 'networks_project_external_unique');
         });
     }
 

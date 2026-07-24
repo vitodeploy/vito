@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon, PlusIcon } from 'lucide-react';
+import { MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -21,7 +21,9 @@ export default function NetworkServers() {
   }>();
   const dialog = useDialog();
   const network = page.props.network;
-  const isProvider = network.type_value === 'provider';
+  const isCustom = network.type_value === 'custom';
+  const isWireGuard = network.type_value === 'wireguard';
+  const isManaged = network.type_value === 'provider';
 
   return (
     <NetworkLayout>
@@ -36,19 +38,24 @@ export default function NetworkServers() {
               onClick={() =>
                 dialog.confirm.open({
                   title: `Sync network [${network.name}]`,
-                  description: 'Re-apply configuration to every server in this network.',
+                  description: isManaged
+                    ? 'Query the provider and update this network’s members to match. The network is removed if it no longer exists at the provider.'
+                    : 'Re-apply configuration to every server in this network.',
                   confirmLabel: 'Sync',
                   method: 'post',
                   url: route('networks.sync', { network: network.id }),
                 })
               }
             >
-              Sync
+              <RefreshCwIcon />
+              <span className="hidden lg:block">Sync</span>
             </Button>
-            <Button onClick={() => dialog.networkAddServer.open({ networkId: network.id, isProvider, servers: page.props.servers })}>
-              <PlusIcon />
-              <span className="hidden lg:block">Add server</span>
-            </Button>
+            {!isManaged && (
+              <Button onClick={() => dialog.networkAddServer.open({ networkId: network.id, isCustom, servers: page.props.servers })}>
+                <PlusIcon />
+                <span className="hidden lg:block">Add server</span>
+              </Button>
+            )}
           </div>
         </HeaderContainer>
 
@@ -56,6 +63,12 @@ export default function NetworkServers() {
           tableData={page.props.members}
           actions={(row: Row) => {
             const member = asRow<NetworkServer>(row, ['id', 'server_id']);
+
+            // Every action here is rejected server-side on a provider-managed network.
+            if (isManaged) {
+              return null;
+            }
+
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>
@@ -66,7 +79,7 @@ export default function NetworkServers() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {isProvider && (
+                    {isCustom && (
                       <DropdownMenuItem
                         onSelect={() => {
                           const memberIp = page.props.memberIps.find((m) => m.id === member.id);
@@ -78,7 +91,7 @@ export default function NetworkServers() {
                         Edit
                       </DropdownMenuItem>
                     )}
-                    {!isProvider && (
+                    {isWireGuard && (
                       <DropdownMenuItem
                         onSelect={() =>
                           dialog.confirm.open({

@@ -25,6 +25,7 @@ class NetworkServerController extends Controller
     public function store(Request $request, Network $network): RedirectResponse
     {
         $this->authorize('update', $network);
+        $this->ensureNotProviderManaged($network);
 
         app(AddServersToNetwork::class)->add($network, $request->all());
 
@@ -36,6 +37,7 @@ class NetworkServerController extends Controller
     {
         $this->authorize('update', $network);
         $this->ensureBelongsToNetwork($network, $networkServer);
+        $this->ensureNotProviderManaged($network);
 
         app(SyncNetwork::class)->member($networkServer);
 
@@ -47,7 +49,7 @@ class NetworkServerController extends Controller
     {
         $this->authorize('update', $network);
         $this->ensureBelongsToNetwork($network, $networkServer);
-        abort_unless($network->type === NetworkType::PROVIDER, 404);
+        abort_unless($network->type === NetworkType::CUSTOM, 404);
 
         app(UpdateNetworkServerIp::class)->update($networkServer, $request->only('server_ip_address_id'));
 
@@ -59,6 +61,7 @@ class NetworkServerController extends Controller
     {
         $this->authorize('update', $network);
         $this->ensureBelongsToNetwork($network, $networkServer);
+        $this->ensureNotProviderManaged($network);
 
         app(RemoveServerFromNetwork::class)->remove($networkServer);
 
@@ -68,5 +71,10 @@ class NetworkServerController extends Controller
     private function ensureBelongsToNetwork(Network $network, NetworkServer $networkServer): void
     {
         abort_unless($networkServer->network_id === $network->id, 404);
+    }
+
+    private function ensureNotProviderManaged(Network $network): void
+    {
+        abort_if($network->type === NetworkType::PROVIDER, 404);
     }
 }

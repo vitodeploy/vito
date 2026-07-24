@@ -192,21 +192,26 @@ class MaterializeServerNetworkRules
      */
     private function sources(Network $network, Server $server): array
     {
-        if ($network->cidr !== null && $network->cidr !== '') {
+        if ($network->type !== NetworkType::PROVIDER && $network->cidr !== null && $network->cidr !== '') {
             return [[
                 'ip' => long2ip(Cidr::base($network->cidr)),
                 'mask' => Cidr::prefix($network->cidr),
             ]];
         }
 
-        return $this->peers($network, $server)
-            ->filter(fn (NetworkServer $peer): bool => $peer->serverIpAddress !== null)
-            ->map(fn (NetworkServer $peer): array => [
-                'ip' => (string) $peer->serverIpAddress->ip,
-                'mask' => 32,
-            ])
-            ->values()
-            ->all();
+        $sources = [];
+
+        foreach ($this->peers($network, $server) as $peer) {
+            $ip = $peer->server_ip_address_id !== null ? $peer->serverIpAddress->ip : $peer->ip;
+
+            if ($ip === null || $ip === '') {
+                continue;
+            }
+
+            $sources[] = ['ip' => $ip, 'mask' => 32];
+        }
+
+        return $sources;
     }
 
     /**

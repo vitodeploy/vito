@@ -116,7 +116,7 @@ class NetworkSyncTest extends TestCase
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
         ]);
@@ -152,7 +152,7 @@ class NetworkSyncTest extends TestCase
 
         app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
         ]);
@@ -482,7 +482,7 @@ class NetworkSyncTest extends TestCase
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov',
-            'type' => 'provider',
+            'type' => 'custom',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip1->id],
         ]);

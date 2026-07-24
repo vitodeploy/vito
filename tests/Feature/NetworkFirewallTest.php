@@ -8,6 +8,7 @@ use App\Actions\Network\ManageNetworkFirewallRule;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
+use App\Enums\NetworkType;
 use App\Enums\ServerNetworkRuleKind;
 use App\Enums\ServerStatus;
 use App\Facades\SSH;
@@ -249,7 +250,7 @@ class NetworkFirewallTest extends TestCase
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'cidr' => '10.0.0.0/24',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
@@ -288,7 +289,7 @@ class NetworkFirewallTest extends TestCase
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'servers' => [$this->server->id, $peer->id],
             'ip_addresses' => [$this->server->id => $ip1->id, $peer->id => $ip2->id],
         ]);
@@ -310,13 +311,68 @@ class NetworkFirewallTest extends TestCase
 
         app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'prov-net',
-            'type' => 'provider',
+            'type' => 'custom',
             'cidr' => '10.0.0.0/24',
             'servers' => [$this->server->id],
             'ip_addresses' => [$this->server->id => $ip->id],
         ]);
 
         SSH::assertExecutedContains('allow from 10.0.0.0/24 to any');
+    }
+
+    public function test_provider_network_never_uses_the_vpc_cidr_as_a_rule_source(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $network = \App\Models\Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::PROVIDER,
+            'status' => NetworkStatus::ACTIVE,
+            'cidr' => '172.31.0.0/16',
+            'cidr_canonical' => '172.31.0.0/16',
+        ]);
+
+        $network->servers()->create([
+            'server_id' => $this->server->id,
+            'ip' => '172.31.0.5',
+            'status' => NetworkServerStatus::ACTIVE,
+        ]);
+        $network->servers()->create([
+            'server_id' => $peer->id,
+            'ip' => '172.31.0.6',
+            'status' => NetworkServerStatus::ACTIVE,
+        ]);
+
+        app(ManageNetworkFirewallRule::class)->create($network, [
+            'name' => 'mysql',
+            'protocol' => 'tcp',
+            'port' => '3306',
+        ]);
+
+        $sources = ServerNetworkRule::query()
+            ->where('server_id', $this->server->id)
+            ->where('network_id', $network->id)
+            ->pluck('source')
+            ->all();
+
+        $this->assertContains('172.31.0.6', $sources);
+        $this->assertNotContains('172.31.0.0', $sources, 'Provider networks must never widen the firewall to the whole VPC CIDR.');
+
+        $this->assertSame(
+            0,
+            ServerNetworkRule::query()
+                ->where('network_id', $network->id)
+                ->where('mask', 16)
+                ->count(),
+            'Provider network rules must be per-member /32s.'
+        );
     }
 
     public function test_server_with_zero_networks_has_no_materialized_rules(): void
