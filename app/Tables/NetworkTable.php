@@ -27,9 +27,9 @@ class NetworkTable extends Table
             Column::make('provider', 'Provider')
                 ->value(fn (Network $network): string => $network->server_provider_id !== null
                     ? $network->serverProvider->provider
-                    : '—'),
+                    : '-'),
             TextColumn::make('cidr', 'CIDR'),
-            TextColumn::make('port', 'Port')->fallback('—'),
+            TextColumn::make('port', 'Port')->fallback('-'),
             TextColumn::make('servers_count', 'Servers'),
             EnumColumn::make('status', 'Status')->sortable(),
             Column::data('id'),

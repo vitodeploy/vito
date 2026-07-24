@@ -24,7 +24,7 @@ class NetworkPeerResource extends JsonResource
             'status_color' => $this->status->getColor(),
             'last_handshake_at' => $this->last_handshake_at,
             'byo' => $this->byo,
-            'can_show_config' => $this->canShowConfig(),
+            'has_private_key' => $this->hasPrivateKey(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

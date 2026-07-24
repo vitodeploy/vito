@@ -118,7 +118,7 @@ export default function NetworkSettings() {
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>CIDR</span>
-              <span className="text-muted-foreground">{network.cidr ?? '—'}</span>
+              <span className="text-muted-foreground">{network.cidr ?? '-'}</span>
             </div>
             {isWireGuard && (
               <>
@@ -130,7 +130,7 @@ export default function NetworkSettings() {
                 <Separator />
                 <div className="flex items-center justify-between p-4">
                   <span>Listen port</span>
-                  <span className="text-muted-foreground">{network.port ?? '—'}</span>
+                  <span className="text-muted-foreground">{network.port ?? '-'}</span>
                 </div>
               </>
             )}
@@ -154,12 +154,12 @@ export default function NetworkSettings() {
             <CardContent className="bg-background p-0">
               <div className="flex items-center justify-between p-4">
                 <span>Provider</span>
-                <span className="text-muted-foreground">{network.provider ?? '—'}</span>
+                <span className="text-muted-foreground">{network.provider ?? '-'}</span>
               </div>
               <Separator />
               <div className="flex items-center justify-between p-4">
                 <span>Region</span>
-                <span className="text-muted-foreground">{network.region ?? '—'}</span>
+                <span className="text-muted-foreground">{network.region ?? '-'}</span>
               </div>
               <Separator />
               <div className="flex items-center justify-between p-4">

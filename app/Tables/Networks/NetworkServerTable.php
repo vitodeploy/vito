@@ -27,7 +27,7 @@ class NetworkServerTable extends Table
             LinkColumn::make('server.name', 'Server')->sortable()->route('servers.show', ['server' => ':server_id']),
             TextColumn::make('ip', 'IP address')
                 ->value(fn (NetworkServer $member) => $member->ip ?? $member->serverIpAddress?->ip)
-                ->fallback('—'),
+                ->fallback('-'),
             Column::make('firewall', 'Firewall')
                 ->value(fn (NetworkServer $member): string => $this->hasFirewall($member) ? 'Yes' : 'No')
                 ->badge(colorField: '_firewall_color'),

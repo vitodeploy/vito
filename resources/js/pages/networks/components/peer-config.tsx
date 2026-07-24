@@ -1,11 +1,23 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
-import { CopyIcon, DownloadIcon, LoaderCircleIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, DownloadIcon, LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import axios from 'axios';
+
+function SectionHeader({ title, hint, children }: { title: string; hint: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="space-y-0.5">
+        <p className="text-sm leading-none font-medium">{title}</p>
+        <p className="text-muted-foreground text-xs">{hint}</p>
+      </div>
+      {children && <div className="flex shrink-0 items-center gap-1">{children}</div>}
+    </div>
+  );
+}
 
 export default function PeerConfigDialog({
   open,
@@ -23,34 +35,49 @@ export default function PeerConfigDialog({
   name: string;
 }) {
   const [config, setConfig] = useState<string>('');
+  const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [concealing, setConcealing] = useState(false);
+  const [copied, setCopied] = useState<string>('');
+
+  const load = useCallback(
+    (signal?: AbortSignal) => {
+      setLoading(true);
+      setError('');
+
+      return axios
+        .get(route('networks.peers.config', { network: networkId, networkPeer: peerId }), { signal })
+        .then((response) => {
+          setConfig(response.data.config);
+          setPrivateKey(response.data.private_key ?? null);
+        })
+        .catch((e) => {
+          if (axios.isCancel(e)) return;
+          setError('Could not load the peer configuration.');
+        })
+        .finally(() => setLoading(false));
+    },
+    [networkId, peerId],
+  );
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
-    setLoading(true);
-    setError('');
-    axios
-      .get(route('networks.peers.config', { network: networkId, networkPeer: peerId }))
-      .then((response) => setConfig(response.data.config))
-      .catch((e) => {
-        setError(
-          e?.response?.status === 410
-            ? 'This config has already been concealed. Regenerate the keys to view it again.'
-            : 'Could not load the peer configuration.',
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [open, networkId, peerId]);
+    const controller = new AbortController();
+    load(controller.signal);
 
-  const copy = () => {
+    return () => controller.abort();
+  }, [open, load]);
+
+  const copy = (value: string, key: string, label: string) => {
     navigator.clipboard
-      .writeText(config)
-      .then(() => toast.success('Copied to clipboard'))
+      .writeText(value)
+      .then(() => {
+        setCopied(key);
+        toast.success(`${label} copied`);
+        setTimeout(() => setCopied(''), 2000);
+      })
       .catch(() => toast.error('Could not copy to clipboard'));
   };
 
@@ -71,7 +98,9 @@ export default function PeerConfigDialog({
       {},
       {
         preserveScroll: true,
-        onSuccess: () => onOpenChange(false),
+        // Reload rather than close: the configuration stays available, so show the user
+        // what it looks like now that the private key is gone.
+        onSuccess: () => load(),
         onFinish: () => setConcealing(false),
       },
     );
@@ -79,15 +108,15 @@ export default function PeerConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Peer configuration</DialogTitle>
           <DialogDescription>Import this into the WireGuard client on {name}.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 p-4">
+        <div className="max-h-[65vh] space-y-6 overflow-y-auto p-4">
           {loading && (
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
               <LoaderCircleIcon className="size-4 animate-spin" />
               Loading configuration…
             </div>
@@ -95,47 +124,68 @@ export default function PeerConfigDialog({
 
           {!loading && error && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <TriangleAlertIcon />
+              <AlertDescription>
+                <p>{error}</p>
+              </AlertDescription>
             </Alert>
           )}
 
           {!loading && !error && (
             <>
-              {byo && (
+              {privateKey && (
+                <section className="space-y-2">
+                  <SectionHeader title="Private key" hint="Shown once - Vito deletes it when you confirm below.">
+                    <Button type="button" variant="outline" size="sm" onClick={() => copy(privateKey, 'key', 'Private key')}>
+                      {copied === 'key' ? <CheckIcon /> : <CopyIcon />}
+                      Copy
+                    </Button>
+                  </SectionHeader>
+                  <pre className="bg-muted/50 overflow-x-auto rounded-md border p-3 font-mono text-xs">{privateKey}</pre>
+                </section>
+              )}
+
+              {!privateKey && (
                 <Alert>
+                  <TriangleAlertIcon />
                   <AlertDescription>
-                    Replace <code>REPLACE_WITH_YOUR_PRIVATE_KEY</code> with the private key belonging to the public key you provided.
+                    <p>
+                      {byo
+                        ? 'This peer uses a key you provided, so Vito never had its private key.'
+                        : 'This private key was concealed and cannot be shown again.'}{' '}
+                      Set the <span className="font-mono">PrivateKey</span> line below to the peer's own private key
+                      {byo ? '.' : ', or regenerate the peer keys to issue a new one.'}
+                    </p>
                   </AlertDescription>
                 </Alert>
               )}
-              <pre className="bg-muted/50 max-h-72 overflow-auto rounded-md border p-3 font-mono text-xs whitespace-pre-wrap">{config}</pre>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={copy}>
-                  <CopyIcon /> Copy
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={download}>
-                  <DownloadIcon /> Download .conf
-                </Button>
-              </div>
+
+              <section className="space-y-2">
+                <SectionHeader title="Configuration" hint="Updates as servers join or leave - reopen this any time.">
+                  <Button type="button" variant="outline" size="sm" onClick={() => copy(config, 'config', 'Configuration')}>
+                    {copied === 'config' ? <CheckIcon /> : <CopyIcon />}
+                    Copy
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={download}>
+                    <DownloadIcon />
+                    .conf
+                  </Button>
+                </SectionHeader>
+                <pre className="bg-muted/50 max-h-64 overflow-auto rounded-md border p-3 font-mono text-xs leading-relaxed">{config}</pre>
+              </section>
             </>
           )}
         </div>
 
         <DialogFooter>
-          {byo || error ? (
-            <DialogClose asChild>
-              <Button variant="outline">Close</Button>
-            </DialogClose>
-          ) : (
-            <>
-              <DialogClose asChild>
-                <Button variant="outline">Close</Button>
-              </DialogClose>
-              <Button variant="destructive" disabled={loading || concealing} onClick={conceal}>
-                {concealing && <LoaderCircleIcon className="animate-spin" />}
-                I've saved this config
-              </Button>
-            </>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
+          {privateKey && !error && (
+            <Button disabled={loading || concealing} onClick={conceal}>
+              {concealing && <LoaderCircleIcon className="animate-spin" />}
+              I've saved the private key
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

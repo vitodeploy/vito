@@ -53,7 +53,7 @@ export interface NetworkPeer {
   last_handshake: string;
   last_handshake_at: string | null;
   byo: boolean;
-  can_show_config: boolean;
+  has_private_key: boolean;
   created_at: string;
   updated_at: string;
 }

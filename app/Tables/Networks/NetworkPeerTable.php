@@ -33,7 +33,7 @@ class NetworkPeerTable extends Table
             Column::data('_connected_color', fn (NetworkPeer $peer): string => $this->connected($peer) ? 'success' : 'gray'),
             Column::data('id'),
             Column::data('byo'),
-            Column::data('can_show_config', fn (NetworkPeer $peer): bool => $peer->canShowConfig()),
+            Column::data('has_private_key', fn (NetworkPeer $peer): bool => $peer->hasPrivateKey()),
             ActionsColumn::make(),
         ];
     }

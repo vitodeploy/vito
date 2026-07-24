@@ -46,9 +46,13 @@ class NetworkPeer extends AbstractModel
         'sync_attempts' => 'integer',
     ];
 
-    public function canShowConfig(): bool
+    /**
+     * Whether Vito still holds this peer's private key. False once the key has been revealed
+     * and concealed, and always false for peers that brought their own key.
+     */
+    public function hasPrivateKey(): bool
     {
-        return $this->byo || $this->private_key !== null;
+        return ! $this->byo && $this->private_key !== null;
     }
 
     /**

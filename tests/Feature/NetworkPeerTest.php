@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Network\AddServersToNetwork;
+use App\Actions\Network\ConcealNetworkPeerKey;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\CreateNetworkPeer;
 use App\Actions\Network\DeleteNetworkPeer;
@@ -164,7 +165,7 @@ class NetworkPeerTest extends TestCase
         $this->assertMatchesRegularExpression('/^PersistentKeepalive = 25$/m', $config);
     }
 
-    public function test_managed_peer_one_time_reveal(): void
+    public function test_private_key_is_revealed_once_but_config_remains_available(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
@@ -173,17 +174,46 @@ class NetworkPeerTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->getJson(route('networks.peers.config', ['network' => $network->id, 'networkPeer' => $peer->id]))
+        $url = route('networks.peers.config', ['network' => $network->id, 'networkPeer' => $peer->id]);
+
+        $this->getJson($url)
             ->assertOk()
-            ->assertJsonPath('config', fn (string $config): bool => str_contains($config, '[Interface]'));
+            ->assertJsonPath('private_key', fn (?string $key): bool => filled($key))
+            ->assertJsonPath('config', fn (string $config): bool => str_contains($config, '[Interface]')
+                && ! str_contains($config, 'REPLACE_WITH_YOUR_PRIVATE_KEY'));
 
         $this->post(route('networks.peers.conceal', ['network' => $network->id, 'networkPeer' => $peer->id]))
             ->assertRedirect();
 
         $this->assertDatabaseHas('network_peers', ['id' => $peer->id, 'private_key' => null]);
 
-        $this->getJson(route('networks.peers.config', ['network' => $network->id, 'networkPeer' => $peer->id]))
-            ->assertStatus(410);
+        // The config is not a secret — it must stay available so it can be regenerated.
+        $this->getJson($url)
+            ->assertOk()
+            ->assertJsonPath('private_key', null)
+            ->assertJsonPath('config', fn (string $config): bool => str_contains($config, 'REPLACE_WITH_YOUR_PRIVATE_KEY'));
+    }
+
+    public function test_config_reflects_servers_added_after_the_key_was_concealed(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+        $network = $this->wireguardNetwork([$this->server->id]);
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+
+        app(ConcealNetworkPeerKey::class)->conceal($peer);
+
+        $newServer = $this->readyPeerServer();
+        app(AddServersToNetwork::class)->add($network, ['servers' => [$newServer->id]]);
+
+        $config = app(GetNetworkPeerConfig::class)->config($peer->fresh());
+
+        $this->assertNull($config['private_key']);
+        $this->assertStringContainsString(
+            (string) $newServer->ip,
+            $config['config'],
+            'A peer must be able to regenerate its config to reach servers added after concealment.'
+        );
     }
 
     public function test_byo_peer_keeps_config_and_rejects_conceal(): void
@@ -243,7 +273,7 @@ class NetworkPeerTest extends TestCase
         $peer->refresh();
         $this->assertNotSame($original, $peer->public_key);
         $this->assertFalse($peer->byo);
-        $this->assertTrue($peer->canShowConfig());
+        $this->assertTrue($peer->hasPrivateKey());
     }
 
     public function test_disable_removes_peer_from_config_and_enable_restores(): void

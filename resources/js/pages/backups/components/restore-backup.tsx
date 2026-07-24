@@ -64,7 +64,7 @@ export default function RestoreBackup({
                 <div className="text-muted-foreground text-sm">
                   {file.database_engine
                     ? `Source: ${file.database_engine} ${file.database_version ?? ''}`.trim()
-                    : 'Source database engine/version unknown — this file can only be restored to its original server.'}
+                    : 'Source database engine/version unknown - this file can only be restored to its original server.'}
                 </div>
                 <FormField>
                   <Label htmlFor="target-server">To server</Label>

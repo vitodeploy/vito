@@ -11,21 +11,26 @@ class GetNetworkPeerConfig
     private const PRIVATE_KEY_PLACEHOLDER = 'REPLACE_WITH_YOUR_PRIVATE_KEY';
 
     /**
-     * @return array{config: string}
+     * The configuration is always available so it can be regenerated after the network's
+     * membership changes. The private key is returned separately and only while Vito still
+     * holds it — once concealed, the config renders a placeholder in its place.
+     *
+     * @return array{config: string, private_key: ?string}
      */
     public function config(NetworkPeer $peer): array
     {
-        abort_unless($peer->canShowConfig(), 410);
-
-        $network = $peer->network;
+        $hasKey = $peer->hasPrivateKey();
 
         $config = view('wireguard.peer-conf', [
             'address' => $peer->ip,
-            'privateKey' => $peer->byo ? self::PRIVATE_KEY_PLACEHOLDER : $peer->private_key,
+            'privateKey' => $hasKey ? $peer->private_key : self::PRIVATE_KEY_PLACEHOLDER,
             'peers' => $this->peers($peer),
         ])->render();
 
-        return ['config' => $config];
+        return [
+            'config' => $config,
+            'private_key' => $hasKey ? $peer->private_key : null,
+        ];
     }
 
     /**

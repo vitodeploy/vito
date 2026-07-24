@@ -44,7 +44,7 @@ export default function NetworkPeers() {
         <VitoTable
           tableData={page.props.peers}
           actions={(row: Row) => {
-            const peer = asRow<NetworkPeer>(row, ['id', 'name', 'status', 'byo', 'can_show_config']);
+            const peer = asRow<NetworkPeer>(row, ['id', 'name', 'status', 'byo', 'has_private_key']);
             const disabled = peer.status === 'disabled';
             return (
               <div className="flex items-center justify-end">
@@ -56,13 +56,11 @@ export default function NetworkPeers() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {peer.can_show_config && (
-                      <DropdownMenuItem
-                        onSelect={() => dialog.networkPeerConfig.open({ networkId: network.id, peerId: peer.id, byo: peer.byo, name: peer.name })}
-                      >
-                        Show config
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem
+                      onSelect={() => dialog.networkPeerConfig.open({ networkId: network.id, peerId: peer.id, byo: peer.byo, name: peer.name })}
+                    >
+                      Show config
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={() =>
                         dialog.confirm.open({
