@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon, PlusIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -30,10 +30,18 @@ export default function NetworkFirewall() {
             title="Firewall"
             description="Rules allow traffic from the network. The default 'Allow all' rule permits everything - delete it to lock the network down"
           />
-          <Button onClick={() => dialog.networkFirewallForm.open({ networkId: network.id })}>
-            <PlusIcon />
-            <span className="hidden lg:block">Rule</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/networks/firewall" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
+            <Button onClick={() => dialog.networkFirewallForm.open({ networkId: network.id })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Rule</span>
+            </Button>
+          </div>
         </HeaderContainer>
 
         <VitoTable

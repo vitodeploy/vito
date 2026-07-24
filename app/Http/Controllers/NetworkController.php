@@ -17,6 +17,8 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Tables\Networks\NetworkServerTable;
 use App\Tables\NetworkTable;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,20 +67,26 @@ class NetworkController extends Controller
 
         $network->loadCount(['servers', 'peers', 'firewallRules']);
 
-        $logs = QueryBuilder::for($network->serverLogs()->with('server'))
-            ->searchableFields(['name'])
-            ->sortable('created_at', 'desc')
-            ->query()
-            ->simplePaginate(config('web.pagination_size'));
-
         return Inertia::render('networks/show', [
             'stats' => [
                 'servers' => $network->servers_count,
                 'peers' => $network->peers_count,
                 'firewall_rules' => $network->firewall_rules_count,
             ],
-            'logs' => ServerLogResource::collection($logs),
+            'logs' => ServerLogResource::collection($this->logsQuery($network)),
         ]);
+    }
+
+    /**
+     * @return Paginator<int, Model>
+     */
+    private function logsQuery(Network $network): Paginator
+    {
+        return QueryBuilder::for($network->serverLogs()->with('server'))
+            ->searchableFields(['name'])
+            ->sortable('created_at', 'desc')
+            ->query()
+            ->simplePaginate(config('web.pagination_size'));
     }
 
     #[Get('/{network}/servers', name: 'networks.servers')]
@@ -115,6 +123,16 @@ class NetworkController extends Controller
                 ])->values(),
             ])
             ->all();
+    }
+
+    #[Get('/{network}/logs', name: 'networks.logs')]
+    public function logs(Network $network): Response
+    {
+        $this->authorize('view', $network);
+
+        return Inertia::render('networks/logs', [
+            'logs' => ServerLogResource::collection($this->logsQuery($network)),
+        ]);
     }
 
     #[Get('/{network}/settings', name: 'networks.settings')]

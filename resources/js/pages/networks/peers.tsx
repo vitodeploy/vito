@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon, PlusIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -27,10 +27,18 @@ export default function NetworkPeers() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Peers" description="Devices that connect to this network, such as laptops or CI runners" />
-          <Button onClick={() => dialog.networkAddPeer.open({ networkId: network.id })}>
-            <PlusIcon />
-            <span className="hidden lg:block">Add peer</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/networks/peers" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
+            <Button onClick={() => dialog.networkAddPeer.open({ networkId: network.id })}>
+              <PlusIcon />
+              <span className="hidden lg:block">Add peer</span>
+            </Button>
+          </div>
         </HeaderContainer>
 
         <VitoTable
@@ -50,9 +58,7 @@ export default function NetworkPeers() {
                   <DropdownMenuContent align="end">
                     {peer.can_show_config && (
                       <DropdownMenuItem
-                        onSelect={() =>
-                          dialog.networkPeerConfig.open({ networkId: network.id, peerId: peer.id, byo: peer.byo, name: peer.name })
-                        }
+                        onSelect={() => dialog.networkPeerConfig.open({ networkId: network.id, peerId: peer.id, byo: peer.byo, name: peer.name })}
                       >
                         Show config
                       </DropdownMenuItem>
@@ -61,7 +67,8 @@ export default function NetworkPeers() {
                       onSelect={() =>
                         dialog.confirm.open({
                           title: 'Regenerate keys',
-                          description: 'Generate a new key pair for this peer. Its current configuration will stop working until the peer is reconfigured.',
+                          description:
+                            'Generate a new key pair for this peer. Its current configuration will stop working until the peer is reconfigured.',
                           confirmLabel: 'Regenerate',
                           method: 'post',
                           url: route('networks.peers.regenerate', { network: network.id, networkPeer: peer.id }),

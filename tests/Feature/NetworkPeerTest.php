@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use App\Actions\Network\AddServersToNetwork;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\CreateNetworkPeer;
+use App\Actions\Network\DeleteNetworkPeer;
+use App\Actions\Network\GetNetworkPeerConfig;
+use App\Actions\Network\RecomputeNetworkStatus;
+use App\Actions\Network\UpdateNetworkPeer;
 use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
@@ -13,7 +17,6 @@ use App\Facades\SSH;
 use App\Jobs\Network\PollPeerHandshakesJob;
 use App\Models\Network;
 use App\Models\NetworkPeer;
-use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,12 +136,32 @@ class NetworkPeerTest extends TestCase
             'source' => null,
         ]);
 
-        app(\App\Actions\Network\DeleteNetworkPeer::class)->delete($peer);
+        app(DeleteNetworkPeer::class)->delete($peer);
 
         $this->assertDatabaseMissing('server_network_rules', [
             'network_id' => $network->id,
             'name' => 'WireGuard handshake (devices)',
         ]);
+    }
+
+    public function test_peer_config_is_valid_wireguard_ini_format(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+        $network = $this->wireguardNetwork([$this->server->id]);
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+
+        $config = app(GetNetworkPeerConfig::class)->config($peer)['config'];
+
+        // WireGuard requires one directive per line — a reformatted blade template that
+        // collapses these onto a single line produces a config no client can parse.
+        $this->assertMatchesRegularExpression('/^\[Interface\]$/m', $config);
+        $this->assertMatchesRegularExpression('/^Address = '.preg_quote((string) $peer->ip, '/').'\/32$/m', $config);
+        $this->assertMatchesRegularExpression('/^PrivateKey = \S+$/m', $config);
+        $this->assertMatchesRegularExpression('/^\[Peer\]$/m', $config);
+        $this->assertMatchesRegularExpression('/^PublicKey = \S+$/m', $config);
+        $this->assertMatchesRegularExpression('/^AllowedIPs = \S+$/m', $config);
+        $this->assertMatchesRegularExpression('/^PersistentKeepalive = 25$/m', $config);
     }
 
     public function test_managed_peer_one_time_reveal(): void
@@ -230,11 +253,11 @@ class NetworkPeerTest extends TestCase
         $network = $this->wireguardNetwork([$this->server->id]);
         $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
 
-        app(\App\Actions\Network\UpdateNetworkPeer::class)->update($peer, ['name' => 'laptop', 'enabled' => false]);
+        app(UpdateNetworkPeer::class)->update($peer, ['name' => 'laptop', 'enabled' => false]);
         $this->assertSame(NetworkPeerStatus::DISABLED, $peer->refresh()->status);
         $this->assertStringNotContainsString($peer->public_key, SSH::getUploadedContent());
 
-        app(\App\Actions\Network\UpdateNetworkPeer::class)->update($peer, ['name' => 'laptop', 'enabled' => true]);
+        app(UpdateNetworkPeer::class)->update($peer, ['name' => 'laptop', 'enabled' => true]);
         $this->assertStringContainsString($peer->public_key, SSH::getUploadedContent());
     }
 
@@ -317,7 +340,7 @@ class NetworkPeerTest extends TestCase
             'status' => NetworkPeerStatus::PENDING,
         ]);
 
-        app(\App\Actions\Network\RecomputeNetworkStatus::class)->handle($network);
+        app(RecomputeNetworkStatus::class)->handle($network);
 
         $this->assertSame(NetworkPeerStatus::ACTIVE, $peer->refresh()->status);
     }

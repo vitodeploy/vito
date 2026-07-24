@@ -35,6 +35,10 @@ export function formatBytes(bytes: number, decimals = 1): string {
   return `${(bytes / Math.pow(1024, i)).toFixed(i ? decimals : 0)} ${units[i]}`;
 }
 
+export function truncate(value: string, limit: number): string {
+  return value.length > limit ? `${value.slice(0, limit)}...` : value;
+}
+
 export function formatDateString(dateString: string | Date): string {
   const date = new Date(dateString);
 

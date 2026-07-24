@@ -1,30 +1,19 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ColumnDef } from '@tanstack/react-table';
+import { Head, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { BookOpenIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ReactNode } from 'react';
 import NetworkLayout from '@/layouts/network/layout';
 import { useRealtime, useRealtimeRecord } from '@/hooks/use-socket-events';
 import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/server-logs/components/columns';
+import { networkLogColumns } from '@/pages/networks/components/log-columns';
 import { PaginatedData } from '@/types';
 import { ServerLog } from '@/types/server-log';
 import { Network, NetworkStats } from '@/types/network';
-
-const serverColumn: ColumnDef<ServerLog> = {
-  accessorKey: 'server_name',
-  header: 'Server',
-  cell: ({ row }) => (
-    <Link href={route('servers.show', { server: row.original.server_id })} className="text-foreground" prefetch>
-      {row.original.server_name ?? `#${row.original.server_id}`}
-    </Link>
-  ),
-};
-
-const logColumns: ColumnDef<ServerLog>[] = [serverColumn, ...columns];
 
 function StatTile({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -77,17 +66,23 @@ export default function NetworkOverview() {
               )}
             </div>
           </div>
+          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+            <Button variant="outline">
+              <BookOpenIcon />
+              <span className="hidden lg:block">Docs</span>
+            </Button>
+          </a>
         </HeaderContainer>
 
-        <div className={`grid grid-cols-2 gap-4 ${isWireGuard ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           <StatTile label="Servers">{stats.servers}</StatTile>
-          {isWireGuard && <StatTile label="Peers">{stats.peers}</StatTile>}
+          <StatTile label="Peers">{isWireGuard ? stats.peers : 'N/A'}</StatTile>
           <StatTile label="Firewall rules">{stats.firewall_rules}</StatTile>
         </div>
 
         <div className="space-y-4">
           <Heading title="Recent activity" description="Logs from this network's servers" />
-          <DataTable columns={logColumns} paginatedData={logs} searchable sortable />
+          <DataTable columns={networkLogColumns} paginatedData={logs} searchable sortable />
         </div>
       </Container>
     </NetworkLayout>

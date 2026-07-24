@@ -22,6 +22,7 @@ use App\Models\User;
 use App\Services\VPN\WireGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class NetworkTest extends TestCase
@@ -457,13 +458,52 @@ class NetworkTest extends TestCase
 
         $this->get(route('networks.show', $network))
             ->assertSuccessful()
-            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+            ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('networks/show')
                 ->where('stats.servers', 1)
                 ->where('stats.peers', 0)
                 ->where('stats.firewall_rules', 1)
-                ->has('logs.data.0', fn (\Inertia\Testing\AssertableInertia $log) => $log
+                ->has('logs.data.0', fn (AssertableInertia $log) => $log
                     ->where('network_id', $network->id)
                     ->etc()));
+    }
+
+    public function test_logs_page_returns_network_logs_with_their_server(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('networks.logs', $network))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('networks/logs')
+                ->has('logs.data.0', fn (AssertableInertia $log) => $log
+                    ->where('network_id', $network->id)
+                    ->where('server_id', $this->server->id)
+                    ->where('server_name', $this->server->name)
+                    ->etc()));
+    }
+
+    public function test_logs_page_is_not_visible_to_other_projects(): void
+    {
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::CUSTOM,
+        ]);
+
+        $outsider = User::factory()->create();
+        $outsider->ensureHasDefaultProject();
+
+        $this->actingAs($outsider)
+            ->get(route('networks.logs', $network))
+            ->assertForbidden();
     }
 }

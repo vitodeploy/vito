@@ -13,6 +13,7 @@ use App\Enums\ServerNetworkRuleKind;
 use App\Enums\ServerStatus;
 use App\Facades\SSH;
 use App\Jobs\Network\ApplyNetworkFirewallJob;
+use App\Models\Network;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
 use App\Models\ServerNetworkRule;
@@ -27,7 +28,7 @@ class NetworkFirewallTest extends TestCase
     /**
      * @param  array<int, int>  $servers
      */
-    private function wireguardNetwork(array $servers): \App\Models\Network
+    private function wireguardNetwork(array $servers): Network
     {
         return app(CreateNetwork::class)->create($this->server->project, [
             'name' => 'wg-net',
@@ -331,7 +332,7 @@ class NetworkFirewallTest extends TestCase
             'status' => ServerStatus::READY,
         ]);
 
-        $network = \App\Models\Network::factory()->create([
+        $network = Network::factory()->create([
             'project_id' => $this->server->project_id,
             'type' => NetworkType::PROVIDER,
             'status' => NetworkStatus::ACTIVE,

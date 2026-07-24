@@ -26,7 +26,9 @@ export default function Files() {
 
   const visibleColumns = useMemo(
     () =>
-      page.props.backup.type === 'file' ? columns.filter((column) => !('accessorKey' in column && column.accessorKey === 'database_engine')) : columns,
+      page.props.backup.type === 'file'
+        ? columns.filter((column) => !('accessorKey' in column && column.accessorKey === 'database_engine'))
+        : columns,
     [page.props.backup.type],
   );
 

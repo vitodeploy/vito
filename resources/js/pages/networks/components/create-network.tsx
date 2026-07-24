@@ -85,7 +85,10 @@ export default function CreateNetwork({
 
             <FormField>
               <Label htmlFor="type">Type</Label>
-              <Select value={form.data.type} onValueChange={(value) => form.setData((prev) => ({ ...prev, type: value, servers: [], ip_addresses: {} }))}>
+              <Select
+                value={form.data.type}
+                onValueChange={(value) => form.setData((prev) => ({ ...prev, type: value, servers: [], ip_addresses: {} }))}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

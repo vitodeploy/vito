@@ -6,7 +6,6 @@ use App\DTOs\PrivateNetworkDTO;
 use App\DTOs\PrivateNetworkMemberDTO;
 use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
-use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;

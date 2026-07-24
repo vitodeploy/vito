@@ -24,6 +24,17 @@ databases, deploy sites, and more — all from a clean dashboard.
 | [Configuration](getting-started/configuration.md) | Configure your Vito instance |
 | [Update](getting-started/update.md) | Keep your instance up to date |
 
+## Networks
+
+| Page | What's in it |
+| --- | --- |
+| [Overview](networks/overview.md) | Private networking between your servers |
+| [Creating a Network](networks/create.md) | Create a WireGuard or custom network |
+| [Provider Networks](networks/provider-networks.md) | Discover and sync VPCs from your cloud provider |
+| [Network Servers](networks/servers.md) | Manage the servers in a network |
+| [Peers](networks/peers.md) | Connect laptops and other devices |
+| [Network Firewall](networks/firewall.md) | Control traffic between members |
+
 ## Servers
 
 | Page | What's in it |

@@ -9,7 +9,6 @@ use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
 use App\Http\Resources\NetworkPeerResource;
 use App\Models\Network;
-use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
 use App\Models\ServerLog;
 use App\Models\Service;

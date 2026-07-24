@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?int $server_provider_id
  * @property ?string $external_id
  * @property ?string $region
- * @property ?\Illuminate\Support\Carbon $last_synced_at
+ * @property ?Carbon $last_synced_at
  * @property Project $project
  * @property ?ServerProvider $serverProvider
  * @property Collection<int, NetworkServer> $servers

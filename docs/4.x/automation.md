@@ -20,7 +20,12 @@ These tasks are driven by Vito's own scheduler, which runs on your Vito instance
 | Wildcard SSL renewal | Daily | Renews wildcard Let's Encrypt [certificates](./servers/ssl.md) within 30 days of expiry. |
 | SSL expiry check | Daily | Flags certificates that are expiring soon and notifies you. |
 | GitHub App sync | Every 4 hours | Syncs [GitHub App](./admin/github-app.md) installations as a fallback to webhooks. |
+| Network reconciliation | Every 3 minutes | Re-applies [network](./networks/overview.md) configuration to servers that are pending or failed, and checks peer connectivity. |
 | Database maintenance | Daily | Vacuums Vito's own database to keep it fast. |
+
+:::info
+[Provider networks](./networks/provider-networks.md) are **not** on this list. Vito only queries your cloud provider for private networks when you click **Sync**, so it never calls provider APIs in the background.
+:::
 
 ## Per-Server Automatic Updates
 

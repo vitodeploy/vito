@@ -227,9 +227,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                                     <SidebarMenuButton
                                       asChild
                                       isActive={
-                                        childItem.onlyActivePath
-                                          ? currentPath() === childItem.href
-                                          : window.location.href.startsWith(childItem.href)
+                                        childItem.onlyActivePath ? currentPath() === childItem.href : window.location.href.startsWith(childItem.href)
                                       }
                                     >
                                       {childItem.external ? (

@@ -61,7 +61,7 @@ class ServerNetworkRule extends AbstractModel
     public function scopeOrdered(Builder $query): void
     {
         $query
-            ->orderByRaw("case when kind = ? then 0 else 1 end", [ServerNetworkRuleKind::HANDSHAKE->value])
+            ->orderByRaw('case when kind = ? then 0 else 1 end', [ServerNetworkRuleKind::HANDSHAKE->value])
             ->orderBy('network_id')
             ->orderBy('id');
     }

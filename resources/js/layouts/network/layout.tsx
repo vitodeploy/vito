@@ -1,5 +1,5 @@
 import { type NavItem } from '@/types';
-import { FlameIcon, HomeIcon, LaptopIcon, ServerIcon, Settings2Icon } from 'lucide-react';
+import { FlameIcon, HomeIcon, LaptopIcon, LogsIcon, ServerIcon, Settings2Icon } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Network } from '@/types/network';
 import Layout from '@/layouts/app/layout';
@@ -36,6 +36,11 @@ export default function NetworkLayout({ children }: { children: ReactNode }) {
       title: 'Firewall',
       href: route('networks.firewall', { network: network.id }),
       icon: FlameIcon,
+    },
+    {
+      title: 'Logs',
+      href: route('networks.logs', { network: network.id }),
+      icon: LogsIcon,
     },
     {
       title: 'Settings',

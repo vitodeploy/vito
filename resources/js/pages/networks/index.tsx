@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { BookOpenIcon, EyeIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
 import Layout from '@/layouts/app/layout';
 import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
@@ -25,6 +25,12 @@ export default function Networks() {
         <HeaderContainer>
           <Heading title="Networks" description="Private networks connecting the servers in this project" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <Button
               variant="outline"
               onClick={() =>

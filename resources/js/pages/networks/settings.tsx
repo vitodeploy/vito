@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
+import { BookOpenIcon, LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +48,12 @@ export default function NetworkSettings() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Settings" description="Manage this network's settings" />
+          <a href="https://vitodeploy.com/docs/networks/overview" target="_blank">
+            <Button variant="outline">
+              <BookOpenIcon />
+              <span className="hidden lg:block">Docs</span>
+            </Button>
+          </a>
         </HeaderContainer>
 
         <Card className="overflow-hidden">
@@ -141,8 +147,8 @@ export default function NetworkSettings() {
             <CardHeader>
               <CardTitle>Provider managed</CardTitle>
               <CardDescription>
-                This network mirrors a private network at your cloud provider. Its members are synced automatically, and it is removed
-                from Vito when the network no longer exists at the provider.
+                This network mirrors a private network at your cloud provider. Its members are synced automatically, and it is removed from Vito when
+                the network no longer exists at the provider.
               </CardDescription>
             </CardHeader>
             <CardContent className="bg-background p-0">
@@ -158,9 +164,7 @@ export default function NetworkSettings() {
               <Separator />
               <div className="flex items-center justify-between p-4">
                 <span>Last synced</span>
-                <span className="text-muted-foreground">
-                  {network.last_synced_at ? formatDateString(network.last_synced_at) : 'Never'}
-                </span>
+                <span className="text-muted-foreground">{network.last_synced_at ? formatDateString(network.last_synced_at) : 'Never'}</span>
               </div>
             </CardContent>
           </Card>
@@ -171,8 +175,8 @@ export default function NetworkSettings() {
             <TriangleAlertIcon className="size-4" />
             <AlertTitle>Provider connection removed</AlertTitle>
             <AlertDescription>
-              The cloud provider connection this network came from no longer exists, so it can no longer be synced or removed
-              automatically. Deleting it here is the only way to clear it.
+              The cloud provider connection this network came from no longer exists, so it can no longer be synced or removed automatically. Deleting
+              it here is the only way to clear it.
             </AlertDescription>
           </Alert>
         )}

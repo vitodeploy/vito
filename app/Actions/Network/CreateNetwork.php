@@ -12,6 +12,7 @@ use App\Models\Network;
 use App\Models\Project;
 use App\Models\Server;
 use App\Support\Cidr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -70,7 +71,7 @@ class CreateNetwork
 
         Project::query()->whereKey($project->id)->lockForUpdate()->first();
 
-        /** @var \Illuminate\Support\Collection<int, Server> $members */
+        /** @var Collection<int, Server> $members */
         $members = Server::query()
             ->where('project_id', $project->id)
             ->whereIn('id', $input['servers'])

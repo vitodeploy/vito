@@ -53,7 +53,8 @@ export default function EditNetworkServer({
                 onRefreshed={(_serverId, refreshed) => setIps(refreshed)}
                 refreshSource={{
                   only: ['memberIps', 'flash'],
-                  resolve: (props, serverId) => (props.memberIps as NetworkMemberIp[] | undefined)?.find((m) => m.server_id === serverId)?.private_ips,
+                  resolve: (props, serverId) =>
+                    (props.memberIps as NetworkMemberIp[] | undefined)?.find((m) => m.server_id === serverId)?.private_ips,
                 }}
               />
               <InputError message={form.errors.server_ip_address_id} />

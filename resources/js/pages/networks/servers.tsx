@@ -3,7 +3,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { VitoTable } from '@/components/vito-table';
 import NetworkLayout from '@/layouts/network/layout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -33,6 +33,12 @@ export default function NetworkServers() {
         <HeaderContainer>
           <Heading title="Servers" description="Servers connected to this network" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/networks/servers" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <Button
               variant="outline"
               onClick={() =>

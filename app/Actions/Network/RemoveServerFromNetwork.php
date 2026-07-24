@@ -4,7 +4,6 @@ namespace App\Actions\Network;
 
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkType;
-use App\Models\Network;
 use App\Models\NetworkServer;
 
 class RemoveServerFromNetwork
