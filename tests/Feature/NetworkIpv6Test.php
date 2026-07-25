@@ -10,6 +10,7 @@ use App\Actions\Network\UpdateNetworkServerIp;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressType;
 use App\Enums\ServerStatus;
+use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Network;
 use App\Models\Server;
@@ -170,7 +171,7 @@ class NetworkIpv6Test extends TestCase
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',
-            'status' => \App\Enums\ServiceStatus::INSTALLING,
+            'status' => ServiceStatus::INSTALLING,
         ]);
 
         $service->handler()->install();
@@ -194,7 +195,7 @@ class NetworkIpv6Test extends TestCase
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',
-            'status' => \App\Enums\ServiceStatus::INSTALLING,
+            'status' => ServiceStatus::INSTALLING,
         ]);
 
         $service->handler()->install();

@@ -147,7 +147,7 @@ class Cidr
         $network = self::mask($bytes, $prefix);
         $used = array_flip($used);
 
-        for ($index = 2;; $index++) {
+        for ($index = 2; ; $index++) {
             $candidate = self::add($network, $index);
 
             if ($candidate === null || self::mask($candidate, $prefix) !== $network) {
