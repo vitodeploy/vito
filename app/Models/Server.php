@@ -127,8 +127,8 @@ class Server extends AbstractModel
 
     public bool $deleteFromProvider = true;
 
-    /** @var array<int, array<int, int>> */
-    protected static array $networkSiblingsToResync = [];
+    /** @var array<int, int> */
+    public array $networkSiblingsToResync = [];
 
     public static function boot(): void
     {
@@ -150,12 +150,11 @@ class Server extends AbstractModel
                             $siblings[$id] = true;
                         });
                 });
-            static::$networkSiblingsToResync[$server->id] = array_keys($siblings);
+            $server->networkSiblingsToResync = array_keys($siblings);
         });
 
         static::deleted(function (Server $server): void {
-            $ids = static::$networkSiblingsToResync[$server->id] ?? [];
-            unset(static::$networkSiblingsToResync[$server->id]);
+            $ids = $server->networkSiblingsToResync;
 
             if ($ids === []) {
                 return;
