@@ -3,14 +3,16 @@
 namespace App\Jobs\Network;
 
 use App\Actions\Network\SyncProviderNetworks;
+use App\Facades\Notifier;
 use App\Models\Network;
 use App\Models\Project;
+use App\Notifications\GenericNotification;
 use App\Traits\UniqueQueue;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SyncProviderNetworksJob implements ShouldQueue
 {
@@ -62,11 +64,20 @@ class SyncProviderNetworksJob implements ShouldQueue
         });
     }
 
-    public function failed(Exception $e): void
+    /**
+     * The sweep is user-triggered from a button that only flashes "syncing", so a failure has
+     * to be surfaced somewhere the user will see it rather than only in the job log.
+     */
+    public function failed(Throwable $e): void
     {
         Log::warning('Provider network sync job failed.', [
             'project_id' => $this->project->id,
             'network_id' => $this->network?->id,
+            'reason' => $e->getMessage(),
         ]);
+
+        Notifier::send($this->project, new GenericNotification(
+            __('Could not sync private networks from your cloud providers. Check the provider connection and its permissions.')
+        ));
     }
 }

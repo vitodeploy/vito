@@ -90,8 +90,8 @@ class ManageNetworkFirewallRule
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'protocol' => ['nullable', 'in:tcp,udp', 'required_with:port'],
-            'port' => ['nullable', 'required_with:protocol', new PortOrPortRangeRule],
+            'protocol' => ['nullable', 'in:tcp,udp'],
+            'port' => ['nullable', new PortOrPortRangeRule],
         ])->validate();
     }
 }

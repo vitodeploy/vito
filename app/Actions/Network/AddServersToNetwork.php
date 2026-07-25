@@ -8,6 +8,7 @@ use App\Enums\NetworkType;
 use App\Models\Network;
 use App\Models\Project;
 use App\Models\Server;
+use App\ValidationRules\WithinCidrRule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -124,6 +125,7 @@ class AddServersToNetwork
                         ->where('server_id', $serverId)
                         ->where('type', IpAddressType::PRIVATE->value),
                     Rule::unique('network_servers', 'server_ip_address_id'),
+                    new WithinCidrRule($network->cidr),
                 ];
             }
         }

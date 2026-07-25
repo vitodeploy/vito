@@ -18,19 +18,18 @@ fi
         $source = isset($rule->source) && $rule->source !== null
             ? $rule->source . (isset($rule->mask) && $rule->mask !== null ? '/' . $rule->mask : '')
             : 'any';
+        $protocol = isset($rule->protocol) && $rule->protocol !== null && $rule->protocol !== ''
+            ? ' proto ' . $rule->protocol
+            : '';
+        $port = isset($rule->port) && $rule->port !== null && $rule->port !== ''
+            ? ' port ' . $rule->port
+            : '';
     @endphp
 
-    @if(isset($rule->port) && $rule->port !== null && $rule->port !== '')
-    if ! sudo ufw {{ $rule->type }} from {{ $source }} to any proto {{ $rule->protocol }} port {{ $rule->port }}; then
+    if ! sudo ufw {{ $rule->type }} from {{ $source }} to any{{ $protocol }}{{ $port }}; then
         @include('ssh.services.firewall.ufw.restore-rules')
         echo 'VITO_SSH_ERROR' && exit 1
     fi
-    @else
-    if ! sudo ufw {{ $rule->type }} from {{ $source }} to any; then
-        @include('ssh.services.firewall.ufw.restore-rules')
-        echo 'VITO_SSH_ERROR' && exit 1
-    fi
-    @endif
 @endforeach
 
 if ! sudo ufw --force enable; then

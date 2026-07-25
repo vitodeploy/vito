@@ -85,12 +85,14 @@ class EditServer
             ],
             'ip' => [
                 'string',
+                'ip',
                 new RestrictedIPAddressesRule,
                 Rule::unique('servers')->where('project_id', $server->project_id)->ignore($server->id),
             ],
             'local_ip' => [
                 'nullable',
                 'string',
+                'ip',
                 Rule::unique('servers')->where('project_id', $server->project_id)->ignore($server->id),
             ],
             'port' => [

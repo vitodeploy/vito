@@ -2,6 +2,8 @@
 
 namespace App\DTOs;
 
+use App\Support\Cidr;
+
 final readonly class PrivateNetworkMemberDTO
 {
     public ?string $ip;
@@ -16,8 +18,8 @@ final readonly class PrivateNetworkMemberDTO
     /**
      * Member addresses reach `ServerNetworkRule.source` and are interpolated into the `ufw`
      * blade template, which is a shell script — Blade's escaping is HTML escaping and offers
-     * no protection there. Anything that is not a plain IPv4 address is dropped, matching how
-     * `PrivateNetworkDTO` treats provider-reported CIDRs.
+     * no protection there. Both families are accepted, but only a literal address: anything
+     * carrying whitespace, a prefix or shell metacharacters is dropped.
      */
     private static function normalizeIp(?string $ip): ?string
     {
@@ -25,6 +27,6 @@ final readonly class PrivateNetworkMemberDTO
             return null;
         }
 
-        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false ? null : $ip;
+        return Cidr::isValidAddress($ip) ? $ip : null;
     }
 }

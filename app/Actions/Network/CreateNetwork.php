@@ -12,6 +12,8 @@ use App\Models\Network;
 use App\Models\Project;
 use App\Models\Server;
 use App\Support\Cidr;
+use App\ValidationRules\CidrRule;
+use App\ValidationRules\WithinCidrRule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -208,7 +210,7 @@ class CreateNetwork
         }
 
         if (($input['type'] ?? null) === NetworkType::CUSTOM->value) {
-            $rules['cidr'] = ['nullable', 'string', $this->ipv4CidrRule()];
+            $rules['cidr'] = ['nullable', 'string', new CidrRule];
             $rules['ip_addresses'] = ['required', 'array'];
             foreach ($input['servers'] ?? [] as $serverId) {
                 $rules["ip_addresses.$serverId"] = [
@@ -217,27 +219,11 @@ class CreateNetwork
                         ->where('server_id', $serverId)
                         ->where('type', IpAddressType::PRIVATE->value),
                     Rule::unique('network_servers', 'server_ip_address_id'),
+                    new WithinCidrRule($input['cidr'] ?? null),
                 ];
             }
         }
 
         Validator::make($input, $rules)->validate();
-    }
-
-    private function ipv4CidrRule(): \Closure
-    {
-        return function (string $attribute, mixed $value, \Closure $fail): void {
-            if ($value === null || $value === '') {
-                return;
-            }
-
-            $parts = explode('/', (string) $value);
-            $validPrefix = isset($parts[1]) && ctype_digit($parts[1]) && (int) $parts[1] >= 0 && (int) $parts[1] <= 32;
-
-            if (count($parts) !== 2 || ! $validPrefix
-                || filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-                $fail(__('The :attribute must be a valid IPv4 CIDR.'));
-            }
-        };
     }
 }

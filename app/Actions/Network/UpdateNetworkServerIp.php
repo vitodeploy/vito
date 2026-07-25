@@ -4,6 +4,7 @@ namespace App\Actions\Network;
 
 use App\Enums\IpAddressType;
 use App\Models\NetworkServer;
+use App\ValidationRules\WithinCidrRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -37,6 +38,7 @@ class UpdateNetworkServerIp
                     ->where('server_id', $member->server_id)
                     ->where('type', IpAddressType::PRIVATE->value),
                 Rule::unique('network_servers', 'server_ip_address_id')->ignore($member->id),
+                new WithinCidrRule($member->network->cidr),
             ],
         ])->validate();
     }

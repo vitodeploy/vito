@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Actions\FirewallRule\ManageRule;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\ManageNetworkFirewallRule;
+use App\Actions\Network\MaterializeServerNetworkRules;
+use App\Actions\Server\EditServer;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
@@ -18,7 +20,9 @@ use App\Models\Server;
 use App\Models\ServerIpAddress;
 use App\Models\ServerNetworkRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class NetworkFirewallTest extends TestCase
@@ -414,5 +418,169 @@ class NetworkFirewallTest extends TestCase
             'source' => '100.64.0.0',
             'network_firewall_rule_id' => $allowAll->id,
         ]);
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: ?string, 2: string}>
+     */
+    public static function protocolAndPortCombinations(): array
+    {
+        return [
+            'both' => ['tcp', '3306', 'to any proto tcp port 3306'],
+            'port only' => [null, '3306', 'to any port 3306'],
+            'protocol only' => ['udp', null, 'to any proto udp'],
+            'neither' => [null, null, 'to any'],
+        ];
+    }
+
+    /**
+     * Protocol and port are documented as independently optional, so all four combinations
+     * must validate and each must render a command `ufw` actually accepts — an empty `proto`
+     * or a silently dropped protocol are both wrong.
+     */
+    #[DataProvider('protocolAndPortCombinations')]
+    public function test_protocol_and_port_are_independently_optional(?string $protocol, ?string $port, string $expected): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $network = $this->wireguardNetwork([$this->server->id, $peer->id]);
+        $network->firewallRules()->delete();
+
+        SSH::fake();
+        app(ManageNetworkFirewallRule::class)->create($network, [
+            'name' => 'combo',
+            'protocol' => $protocol,
+            'port' => $port,
+        ]);
+
+        $this->assertDatabaseHas('network_firewall_rules', [
+            'network_id' => $network->id,
+            'name' => 'combo',
+            'protocol' => $protocol,
+            'port' => $port,
+        ]);
+
+        SSH::assertExecutedContains('allow from 100.64.0.0/24 '.$expected);
+    }
+
+    /**
+     * Every network type derives rules that name the other members, so deleting a server must
+     * clear its address from the remaining members' rules — a provider address in particular
+     * can be reassigned to an unrelated host later.
+     */
+    public function test_deleting_a_server_clears_its_rules_from_remaining_members_of_a_custom_network(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $mine = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.40.0.2',
+            'type' => IpAddressType::PRIVATE,
+        ]);
+        $theirs = ServerIpAddress::factory()->create([
+            'server_id' => $peer->id,
+            'ip' => '10.40.0.3',
+            'type' => IpAddressType::PRIVATE,
+        ]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'no-cidr-custom',
+            'type' => 'custom',
+            'servers' => [$this->server->id, $peer->id],
+            'ip_addresses' => [$this->server->id => $mine->id, $peer->id => $theirs->id],
+        ]);
+
+        $this->assertDatabaseHas('server_network_rules', [
+            'server_id' => $this->server->id,
+            'network_id' => $network->id,
+            'source' => '10.40.0.3',
+        ]);
+
+        $peer->delete();
+
+        $this->assertDatabaseMissing('server_network_rules', [
+            'server_id' => $this->server->id,
+            'network_id' => $network->id,
+            'source' => '10.40.0.3',
+        ]);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function untrustedServerAddresses(): array
+    {
+        return [
+            'command chaining' => ['10.0.0.9; sudo ufw disable'],
+            'command substitution' => ['10.0.0.9 $(id)'],
+            'backticks' => ['`whoami`'],
+            'newline' => ["10.0.0.9\nsudo ufw disable"],
+            'not an address' => ['not-an-ip'],
+            'cidr not address' => ['10.0.0.0/24'],
+        ];
+    }
+
+    /**
+     * A server's public address becomes an unquoted `ufw` source on every WireGuard sibling,
+     * and Blade escapes HTML rather than shell metacharacters — so it must be rejected at the
+     * edge rather than reaching the template.
+     */
+    #[DataProvider('untrustedServerAddresses')]
+    public function test_server_address_that_is_not_an_ip_is_rejected(string $ip): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $this->expectException(ValidationException::class);
+
+        app(EditServer::class)->edit($this->server, [
+            'name' => $this->server->name,
+            'ip' => $ip,
+            'port' => 22,
+        ]);
+    }
+
+    public function test_untrusted_address_never_reaches_the_firewall_template(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $peer = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $network = $this->wireguardNetwork([$this->server->id, $peer->id]);
+
+        Server::query()->whereKey($peer->id)->update(['ip' => '10.0.0.9; sudo ufw disable']);
+
+        SSH::fake();
+        app(MaterializeServerNetworkRules::class)->forServer($this->server->refresh());
+        $this->server->firewall()?->handler()->applyRules();
+
+        $this->assertDatabaseMissing('server_network_rules', [
+            'network_id' => $network->id,
+            'source' => '10.0.0.9; sudo ufw disable',
+        ]);
+
+        SSH::assertNotExecutedContains(
+            'sudo ufw disable',
+            'A non-address value must never be interpolated into the firewall script.'
+        );
     }
 }

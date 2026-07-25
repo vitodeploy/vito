@@ -84,7 +84,7 @@ class AllocateNetworkBlock
             return null;
         }
 
-        $base = Cidr::base($supernet);
+        $base = Cidr::toLong(Cidr::network($supernet));
         $blockSize = Cidr::size($blockPrefix);
         $count = 2 ** ($blockPrefix - $supernetPrefix);
 

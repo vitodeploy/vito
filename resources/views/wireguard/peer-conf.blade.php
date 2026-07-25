@@ -1,5 +1,5 @@
 [Interface]
-Address = {{ $address }}/32
+Address = {{ $address }}/{{ $prefix }}
 PrivateKey = {{ $privateKey }}
 @foreach ($peers as $peer)
 

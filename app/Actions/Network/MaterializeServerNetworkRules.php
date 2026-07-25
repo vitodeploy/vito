@@ -144,6 +144,7 @@ class MaterializeServerNetworkRules
 
             if ($network->type === NetworkType::WIREGUARD) {
                 foreach ($this->handshakes($network, $server) as $handshake) {
+                    $mask = Cidr::hostPrefix($handshake['ip']);
                     $spec = [
                         'network_id' => $network->id,
                         'network_server_id' => $membership->id,
@@ -154,9 +155,9 @@ class MaterializeServerNetworkRules
                         'protocol' => 'udp',
                         'port' => (string) $network->port,
                         'source' => $handshake['ip'],
-                        'mask' => 32,
+                        'mask' => $mask,
                     ];
-                    $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, $handshake['ip'], 32)] = $spec;
+                    $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, $handshake['ip'], $mask)] = $spec;
                 }
 
                 if ($this->hasDevices($network)) {
@@ -200,12 +201,16 @@ class MaterializeServerNetworkRules
     }
 
     /**
+     * Sources are interpolated unquoted into the `ufw` blade template, which is a shell
+     * script — Blade escapes HTML, not shell metacharacters. Every address is re-checked
+     * here so nothing but a literal IP can reach it, whatever wrote the column.
+     *
      * @return array<int, array{ip: string, name: string}>
      */
     private function handshakes(Network $network, Server $server): array
     {
         return $this->peers($network, $server)
-            ->filter(fn (NetworkServer $peer): bool => filled($peer->server->ip))
+            ->filter(fn (NetworkServer $peer): bool => Cidr::isValidAddress((string) $peer->server->ip))
             ->map(fn (NetworkServer $peer): array => ['ip' => (string) $peer->server->ip, 'name' => $peer->server->name])
             ->values()
             ->all();
@@ -217,8 +222,12 @@ class MaterializeServerNetworkRules
     private function sources(Network $network, Server $server): array
     {
         if ($network->type !== NetworkType::PROVIDER && $network->cidr !== null && $network->cidr !== '') {
+            if (! Cidr::isValid($network->cidr)) {
+                return [];
+            }
+
             return [[
-                'ip' => long2ip(Cidr::base($network->cidr)),
+                'ip' => Cidr::network($network->cidr),
                 'mask' => Cidr::prefix($network->cidr),
             ]];
         }
@@ -228,11 +237,11 @@ class MaterializeServerNetworkRules
         foreach ($this->peers($network, $server) as $peer) {
             $ip = $peer->server_ip_address_id !== null ? $peer->serverIpAddress?->ip : $peer->ip;
 
-            if ($ip === null || $ip === '') {
+            if ($ip === null || ! Cidr::isValidAddress($ip)) {
                 continue;
             }
 
-            $sources[] = ['ip' => $ip, 'mask' => 32];
+            $sources[] = ['ip' => $ip, 'mask' => Cidr::hostPrefix($ip)];
         }
 
         return $sources;

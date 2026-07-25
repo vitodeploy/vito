@@ -24,7 +24,16 @@ The protocol to allow — TCP or UDP. Leave it empty to allow any protocol.
 
 ### Port
 
-The port to allow, for example `3306`. Leave it empty to allow any port.
+The port to allow, for example `3306`, or a range such as `3000:3010`. Leave it empty to allow any port.
+
+Protocol and port are independent — all four combinations are valid:
+
+| Protocol | Port | Allows |
+| --- | --- | --- |
+| TCP | `3306` | TCP on port 3306 |
+| empty | `3306` | any protocol on port 3306 |
+| UDP | empty | UDP on any port |
+| empty | empty | all traffic from the network |
 
 ## How Rules Are Applied
 

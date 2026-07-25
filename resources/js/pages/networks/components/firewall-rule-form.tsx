@@ -87,7 +87,9 @@ export default function NetworkFirewallRuleForm({
                 value={form.data.port}
                 onChange={(e) => form.setData('port', e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">Leave protocol and port empty to match all traffic from the network.</p>
+              <p className="text-muted-foreground text-xs">
+                Protocol and port are independent — leave either empty to match all of it, or both to match all traffic from the network.
+              </p>
               <InputError message={form.errors.port} />
             </FormField>
           </FormFields>

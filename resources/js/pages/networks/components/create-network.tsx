@@ -130,7 +130,12 @@ export default function CreateNetwork({
             {isCustom && (
               <FormField>
                 <Label htmlFor="cidr">CIDR (optional)</Label>
-                <Input id="cidr" placeholder="e.g. 10.0.0.0/24" value={form.data.cidr} onChange={(e) => form.setData('cidr', e.target.value)} />
+                <Input
+                  id="cidr"
+                  placeholder="e.g. 10.0.0.0/24 or fd00:1::/64"
+                  value={form.data.cidr}
+                  onChange={(e) => form.setData('cidr', e.target.value)}
+                />
                 <InputError message={form.errors.cidr} />
               </FormField>
             )}

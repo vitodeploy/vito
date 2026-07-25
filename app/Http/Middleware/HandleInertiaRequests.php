@@ -91,7 +91,9 @@ class HandleInertiaRequests extends Middleware
                     $currentProject = $user->currentProject;
                 }
 
-                $data['network'] = fn () => NetworkResource::make($network->loadCount('servers'));
+                $data['network'] = fn () => NetworkResource::make(
+                    $network->load('serverProvider')->loadCount('servers')
+                );
             }
         }
 

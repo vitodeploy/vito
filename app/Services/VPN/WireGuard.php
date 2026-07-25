@@ -12,6 +12,7 @@ use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
 use App\Models\ServerLog;
 use App\Services\AbstractService;
+use App\Support\Cidr;
 use App\Support\Testing\SSHFake;
 use Closure;
 use Illuminate\Support\Facades\Storage;
@@ -142,7 +143,7 @@ class WireGuard extends AbstractService implements VPN
 
     private function prefix(Network $network): int
     {
-        return (int) (explode('/', (string) $network->cidr)[1] ?? 32);
+        return Cidr::prefix((string) $network->cidr);
     }
 
     /**
@@ -159,11 +160,11 @@ class WireGuard extends AbstractService implements VPN
             ->whereNotNull('ip')
             ->with('server')
             ->get()
-            ->filter(fn (NetworkServer $peer): bool => filled($peer->server->ip))
+            ->filter(fn (NetworkServer $peer): bool => Cidr::isValidAddress((string) $peer->server->ip))
             ->map(fn (NetworkServer $peer): array => [
                 'public_key' => (string) $peer->public_key,
-                'allowed_ips' => $peer->ip.'/32',
-                'endpoint' => $peer->server->ip.':'.$network->port,
+                'allowed_ips' => $peer->ip.'/'.Cidr::hostPrefix((string) $peer->ip),
+                'endpoint' => Cidr::endpoint((string) $peer->server->ip, (int) $network->port),
             ]);
 
         $devices = $network->peers()
@@ -171,7 +172,7 @@ class WireGuard extends AbstractService implements VPN
             ->get()
             ->map(fn (NetworkPeer $peer): array => [
                 'public_key' => $peer->public_key,
-                'allowed_ips' => $peer->ip.'/32',
+                'allowed_ips' => $peer->ip.'/'.Cidr::hostPrefix($peer->ip),
                 'endpoint' => null,
             ]);
 

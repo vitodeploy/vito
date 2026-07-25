@@ -5,6 +5,7 @@ namespace App\Actions\Network;
 use App\Enums\NetworkServerStatus;
 use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
+use App\Support\Cidr;
 
 class GetNetworkPeerConfig
 {
@@ -23,6 +24,7 @@ class GetNetworkPeerConfig
 
         $config = view('wireguard.peer-conf', [
             'address' => $peer->ip,
+            'prefix' => Cidr::hostPrefix($peer->ip),
             'privateKey' => $hasKey ? $peer->private_key : self::PRIVATE_KEY_PLACEHOLDER,
             'peers' => $this->peers($peer),
         ])->render();
@@ -46,14 +48,16 @@ class GetNetworkPeerConfig
             ->whereNotNull('ip')
             ->with('server')
             ->get()
-            ->filter(fn (NetworkServer $member): bool => filled($member->server->ip))
+            ->filter(fn (NetworkServer $member): bool => Cidr::isValidAddress((string) $member->server->ip))
             ->values();
 
         return $members
             ->map(fn (NetworkServer $member, int $index): array => [
                 'public_key' => (string) $member->public_key,
-                'allowed_ips' => $index === 0 ? (string) $network->cidr : $member->ip.'/32',
-                'endpoint' => $member->server->ip.':'.$network->port,
+                'allowed_ips' => $index === 0
+                    ? (string) $network->cidr
+                    : $member->ip.'/'.Cidr::hostPrefix((string) $member->ip),
+                'endpoint' => Cidr::endpoint((string) $member->server->ip, (int) $network->port),
             ])
             ->all();
     }

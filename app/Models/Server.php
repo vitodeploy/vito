@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Actions\Network\DispatchNetworkServerSync;
 use App\Actions\Server\CheckConnection;
 use App\Enums\NetworkServerStatus;
-use App\Enums\NetworkType;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
@@ -127,7 +126,15 @@ class Server extends AbstractModel
 
     public bool $deleteFromProvider = true;
 
-    /** @var array<int, int> */
+    /**
+     * Members of every network this server belongs to, collected before the membership rows
+     * cascade away. Every network type needs this, not just WireGuard: a network without a
+     * CIDR — and every provider network — derives per-member host rules, so the remaining
+     * members keep an allow rule for a departed server's address until they re-materialise,
+     * and that address can later be reassigned to an unrelated host.
+     *
+     * @var array<int, int>
+     */
     public array $networkSiblingsToResync = [];
 
     public static function boot(): void
@@ -138,7 +145,6 @@ class Server extends AbstractModel
             $siblings = [];
             NetworkServer::query()
                 ->where('server_id', $server->id)
-                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
                 ->pluck('network_id')
                 ->each(function (int $networkId) use ($server, &$siblings): void {
                     NetworkServer::query()

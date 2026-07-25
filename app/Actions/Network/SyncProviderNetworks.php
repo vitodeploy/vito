@@ -30,6 +30,12 @@ class SyncProviderNetworks
     /**
      * A discovered network is recorded as seen before it is reconciled, so that a network the
      * provider reported is never pruned just because persisting it failed.
+     *
+     * One connection's failure must not suppress pruning for the others, so failures are
+     * collected and rethrown once every healthy connection has been processed — the caller
+     * still sees the error instead of a silent success.
+     *
+     * @throws PrivateNetworkSyncError
      */
     public function forProject(Project $project, ?Network $only = null): void
     {
@@ -37,16 +43,23 @@ class SyncProviderNetworks
             return;
         }
 
+        $failure = null;
+
         foreach ($this->connections($project, $only) as $context) {
             $connection = $context['connection'];
 
+            $asked = $context['servers'] !== [];
+
             try {
-                $discovered = $context['provider']->privateNetworks(
-                    array_map('strval', array_keys($context['servers'])),
-                    $context['regions'],
-                );
+                $discovered = $asked
+                    ? $context['provider']->privateNetworks(
+                        array_map('strval', array_keys($context['servers'])),
+                        $context['regions'],
+                    )
+                    : [];
             } catch (PrivateNetworkSyncError $e) {
                 $this->logFailure($e);
+                $failure ??= $e;
 
                 continue;
             }
@@ -63,7 +76,11 @@ class SyncProviderNetworks
                 $this->reconcile($project, $connection, $dto, $context['servers']);
             }
 
-            $this->prune($project, $connection, $seen, $only);
+            $this->prune($project, $connection, $seen, $only, $asked);
+        }
+
+        if ($failure instanceof PrivateNetworkSyncError) {
+            throw $failure;
         }
     }
 
@@ -251,9 +268,14 @@ class SyncProviderNetworks
     }
 
     /**
+     * `$asked` is false when the connection had no instance ids to query, so `$seen` being
+     * empty carries no information about what still exists at the provider. Only a network
+     * with no members left may be reaped in that case — anything else has to wait for a run
+     * that could actually ask.
+     *
      * @param  array<int, string>  $seen
      */
-    private function prune(Project $project, ServerProvider $connection, array $seen, ?Network $only): void
+    private function prune(Project $project, ServerProvider $connection, array $seen, ?Network $only, bool $asked): void
     {
         $project->networks()
             ->where('type', NetworkType::PROVIDER)
@@ -261,7 +283,17 @@ class SyncProviderNetworks
             ->where('status', '!=', NetworkStatus::DELETING)
             ->when($only instanceof Network, fn ($query) => $query->whereKey($only?->id))
             ->get()
-            ->each(function (Network $network) use ($seen): void {
+            ->each(function (Network $network) use ($seen, $asked): void {
+                if (! $asked) {
+                    if ($this->hasLiveMembers($network)) {
+                        return;
+                    }
+
+                    app(DeleteNetwork::class)->delete($network);
+
+                    return;
+                }
+
                 $stillPresent = in_array($network->external_id, $seen, true);
 
                 if ($stillPresent && $this->hasLiveMembers($network)) {
@@ -344,10 +376,53 @@ class SyncProviderNetworks
             }
         }
 
-        return array_values(array_filter(
-            $contexts,
-            fn (array $context): bool => $context['servers'] !== []
-        ));
+        foreach ($this->orphanedConnections($project, $only, array_keys($contexts)) as $connection) {
+            $provider = $connection->provider();
+
+            if (! $provider instanceof ProvidesPrivateNetworks) {
+                continue;
+            }
+
+            $contexts[$connection->id] = [
+                'connection' => $connection,
+                'provider' => $provider,
+                'key' => $provider->instanceIdKey(),
+                'servers' => [],
+                'regions' => [],
+            ];
+        }
+
+        return array_values($contexts);
+    }
+
+    /**
+     * A connection whose last managed server has been deleted still needs a pass. Its provider
+     * networks have no members left, so nothing can reconcile them, and because they are
+     * provider-managed the policy also refuses a manual delete — without this they would be
+     * stranded permanently. There is nothing to ask the provider in that case, so the context
+     * carries no servers and `forProject()` goes straight to pruning.
+     *
+     * @param  array<int, int>  $known
+     * @return Collection<int, ServerProvider>
+     */
+    private function orphanedConnections(Project $project, ?Network $only, array $known): Collection
+    {
+        $ids = $project->networks()
+            ->where('type', NetworkType::PROVIDER)
+            ->where('status', '!=', NetworkStatus::DELETING)
+            ->whereNotNull('server_provider_id')
+            ->when($only instanceof Network, fn ($query) => $query->whereKey($only?->id))
+            ->pluck('server_provider_id')
+            ->unique()
+            ->reject(fn (int $id): bool => in_array($id, $known, true))
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return new Collection;
+        }
+
+        return ServerProvider::query()->whereIn('id', $ids)->get();
     }
 
     private function logFailure(PrivateNetworkSyncError $e): void

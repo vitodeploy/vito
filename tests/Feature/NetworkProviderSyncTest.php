@@ -8,6 +8,7 @@ use App\Enums\NetworkStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
 use App\Enums\UserRole;
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\SSH;
 use App\Jobs\Network\SyncProviderNetworksJob;
 use App\Models\Network;
@@ -292,7 +293,11 @@ class NetworkProviderSyncTest extends TestCase
         );
     }
 
-    public function test_provider_failure_never_prunes(): void
+    /**
+     * A failed connection must leave its networks untouched rather than pruning them, and the
+     * error must still reach the caller so the sync is not reported as a success.
+     */
+    public function test_provider_failure_never_prunes_and_is_rethrown(): void
     {
         $this->fakeProvider(
             [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101]]],
@@ -303,10 +308,79 @@ class NetworkProviderSyncTest extends TestCase
         $network = Network::query()->where('external_id', '4711')->firstOrFail();
 
         $this->failStatus = 500;
-        $this->sync();
+
+        $threw = false;
+        try {
+            $this->sync();
+        } catch (PrivateNetworkSyncError) {
+            $threw = true;
+        }
+
+        $this->assertTrue($threw, 'A provider failure must not be reported as a successful sync.');
 
         $network->refresh();
         $this->assertSame(NetworkStatus::ACTIVE, $network->status);
+        $this->assertSame(1, $network->servers()->count());
+    }
+
+    /**
+     * Deleting the last server on a connection leaves its provider networks with no members,
+     * so nothing can reconcile them — and the policy refuses a manual delete while the network
+     * is provider-managed. The sweep therefore still has to visit the connection and prune.
+     */
+    public function test_provider_network_is_pruned_after_its_last_managed_server_is_deleted(): void
+    {
+        $other = $this->otherServer();
+
+        $this->fakeProvider(
+            [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101, 102]]],
+            [
+                ['id' => 101, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]],
+                ['id' => 102, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.3']]],
+            ],
+        );
+        $this->sync();
+
+        $network = Network::query()->where('external_id', '4711')->firstOrFail();
+        $this->assertSame(2, $network->servers()->count());
+
+        $other->delete();
+        $this->server->delete();
+
+        $this->assertSame(0, $network->servers()->count());
+
+        $this->sync();
+
+        $this->assertNull(
+            Network::query()->find($network->id),
+            'A provider network with no managed servers left must be pruned, not stranded.'
+        );
+    }
+
+    /**
+     * A connection can yield no instance ids while its servers still exist — for example when
+     * `provider_data` is missing the id key. An empty result then says nothing about what is
+     * still at the provider, so a network that has members must survive rather than be reaped.
+     */
+    public function test_network_with_live_members_survives_when_no_instance_ids_can_be_queried(): void
+    {
+        $this->fakeProvider(
+            [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101]]],
+            [['id' => 101, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]]],
+        );
+        $this->sync();
+
+        $network = Network::query()->where('external_id', '4711')->firstOrFail();
+        $this->assertSame(1, $network->servers()->count());
+
+        $this->server->update(['provider_data' => ['region' => 'nbg1']]);
+
+        $this->sync();
+
+        $this->assertNotNull(
+            Network::query()->find($network->id),
+            'A network with live members must not be pruned when the provider could not be queried.'
+        );
         $this->assertSame(1, $network->servers()->count());
     }
 

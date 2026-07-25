@@ -45,9 +45,13 @@ Choose **Custom** as the type. Custom networks describe connectivity that alread
 
 ### CIDR
 
-Optional. The address range of the existing private network, for example `10.0.0.0/24`.
+Optional. The address range of the existing private network — IPv4 or IPv6, for example `10.0.0.0/24` or `fd00:1::/64`.
 
 If you provide it, [firewall rules](firewall.md) are scoped to the whole range. If you leave it empty, rules are scoped to each member's individual address instead, which is tighter.
+
+:::warning
+Every member's address must fall inside the range you declare. Vito rejects a member whose address sits outside it, because the rules derived from the range would not cover that member while still opening the whole range.
+:::
 
 ### Primary Server and Private IP
 
@@ -71,3 +75,13 @@ Every new network is seeded with a single **Allow all** firewall rule so members
 :::info
 If a server is offline when you create the network, its member stays `pending` and Vito configures it automatically once the server is reachable again.
 :::
+
+## IPv6
+
+Vito handles IPv6 wherever an address is given to it:
+
+- A server reachable only over IPv6 works as a WireGuard endpoint — the address is bracketed as `[2001:db8::1]:51820` in every generated config, and the handshake firewall rule uses a `/128` host prefix.
+- **Custom** networks can be built from IPv6 private addresses and can declare an IPv6 range.
+- **Provider** networks with IPv6 ranges are discovered and synced like IPv4 ones.
+
+The address block a **WireGuard** network hands out to its own members and peers is always IPv4, from the CGNAT or RFC1918 pool above. That is the address space inside the tunnel; it is independent of whether the servers reach each other over IPv4 or IPv6.

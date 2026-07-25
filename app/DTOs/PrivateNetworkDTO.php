@@ -26,8 +26,9 @@ final readonly class PrivateNetworkDTO
     }
 
     /**
-     * Providers may report IPv6 or malformed ranges. `App\Support\Cidr` is IPv4-only
-     * (`ip2long`), so anything else is dropped rather than silently stored as 0.0.0.0/x.
+     * Ranges reach a shell template via the firewall rules derived from them, so a malformed
+     * value is dropped rather than stored. Both families are accepted; the prefix must be
+     * explicit and within range for the family it belongs to.
      */
     private static function normalizeCidr(?string $cidr): ?string
     {
@@ -35,22 +36,6 @@ final readonly class PrivateNetworkDTO
             return null;
         }
 
-        $parts = explode('/', $cidr);
-
-        if (count($parts) !== 2 || ! ctype_digit($parts[1])) {
-            return null;
-        }
-
-        $prefix = (int) $parts[1];
-
-        if ($prefix < 0 || $prefix > 32) {
-            return null;
-        }
-
-        if (filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-            return null;
-        }
-
-        return Cidr::canonical($cidr);
+        return Cidr::isValid($cidr) ? Cidr::canonical($cidr) : null;
     }
 }

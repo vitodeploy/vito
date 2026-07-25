@@ -415,14 +415,15 @@ class ProviderPrivateNetworkTest extends TestCase
             'command chaining' => ['10.0.0.2; rm -rf /'],
             'backticks' => ['`whoami`'],
             'newline injection' => ["10.0.0.2\nsudo ufw disable"],
-            'ipv6' => ['fd00::1'],
+            'ipv6 with metacharacters' => ['fd00::1; id'],
+            'ipv6 with prefix' => ['fd00::1/64'],
             'not an address' => ['not-an-ip'],
             'empty' => [''],
         ];
     }
 
     #[DataProvider('untrustedAddresses')]
-    public function test_member_addresses_that_are_not_plain_ipv4_are_dropped(?string $address): void
+    public function test_member_addresses_that_are_not_literal_addresses_are_dropped(?string $address): void
     {
         Http::fake([
             'api.hetzner.cloud/v1/networks*' => Http::response([
@@ -465,7 +466,12 @@ class ProviderPrivateNetworkTest extends TestCase
         $this->assertSame('10.0.0.42', $provider->privateNetworks(['101'], [])[0]->members[0]->ip);
     }
 
-    public function test_ipv6_and_malformed_cidrs_are_dropped_rather_than_stored_as_zero(): void
+    /**
+     * IPv6 ranges are supported and canonicalised like IPv4 ones; only ranges that are
+     * malformed — no prefix, out-of-range prefix, or not an address — are dropped, because
+     * they reach a shell template through the rules derived from them.
+     */
+    public function test_ipv6_ranges_are_kept_and_malformed_ranges_are_dropped(): void
     {
         Http::fake([
             'api.hetzner.cloud/v1/networks*' => Http::response([
@@ -474,6 +480,9 @@ class ProviderPrivateNetworkTest extends TestCase
                     ['id' => 2, 'name' => 'junk', 'ip_range' => 'not-a-cidr', 'servers' => [101]],
                     ['id' => 3, 'name' => 'noprefix', 'ip_range' => '10.0.0.0', 'servers' => [101]],
                     ['id' => 4, 'name' => 'ok', 'ip_range' => '10.5.0.0/16', 'servers' => [101]],
+                    ['id' => 5, 'name' => 'v6noncanonical', 'ip_range' => 'fd00:1:2:3:4::5/48', 'servers' => [101]],
+                    ['id' => 6, 'name' => 'v6overlong', 'ip_range' => 'fd00::/129', 'servers' => [101]],
+                    ['id' => 7, 'name' => 'v4overlong', 'ip_range' => '10.0.0.0/33', 'servers' => [101]],
                 ],
                 'meta' => ['pagination' => ['next_page' => null]],
             ]),
@@ -488,6 +497,30 @@ class ProviderPrivateNetworkTest extends TestCase
 
         $cidrs = array_map(fn ($n): ?string => $n->cidr, $provider->privateNetworks(['101'], []));
 
-        $this->assertSame([null, null, null, '10.5.0.0/16'], $cidrs);
+        $this->assertSame(
+            ['fd00::/64', null, null, '10.5.0.0/16', 'fd00:1:2::/48', null, null],
+            $cidrs
+        );
+    }
+
+    public function test_ipv6_member_address_survives_normalisation(): void
+    {
+        Http::fake([
+            'api.hetzner.cloud/v1/networks*' => Http::response([
+                'networks' => [['id' => 1, 'name' => 'n', 'ip_range' => 'fd00::/64', 'servers' => [101]]],
+                'meta' => ['pagination' => ['next_page' => null]],
+            ]),
+            'api.hetzner.cloud/v1/servers*' => Http::response([
+                'servers' => [['id' => 101, 'private_net' => [['network' => 1, 'ip' => 'fd00::5']]]],
+                'meta' => ['pagination' => ['next_page' => null]],
+            ]),
+        ]);
+
+        /** @var Hetzner $provider */
+        $provider = $this->hetznerConnection()->provider();
+
+        $networks = $provider->privateNetworks(['101'], []);
+
+        $this->assertSame('fd00::5', $networks[0]->members[0]->ip);
     }
 }
