@@ -161,7 +161,7 @@ export default function NetworkSettings() {
           </CardContent>
         </Card>
 
-        {network.is_managed && !network.is_orphaned && (
+        {network.is_managed && !network.is_orphaned && !network.is_stranded && (
           <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Provider managed</CardTitle>
@@ -200,7 +200,18 @@ export default function NetworkSettings() {
           </Alert>
         )}
 
-        {(!network.is_managed || network.is_orphaned) && (
+        {network.is_stranded && (
+          <Alert>
+            <TriangleAlertIcon className="size-4" />
+            <AlertTitle>Cannot be synced</AlertTitle>
+            <AlertDescription>
+              None of this network's servers still carries the identifier its cloud provider knows them by, so Vito can no longer sync it or remove it
+              automatically. Deleting it here is the only way to clear it.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {(!network.is_managed || network.is_orphaned || network.is_stranded) && (
           <Card className="border-destructive/30 overflow-hidden">
             <CardHeader>
               <CardTitle>Delete network</CardTitle>

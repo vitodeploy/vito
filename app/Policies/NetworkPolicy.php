@@ -36,12 +36,14 @@ class NetworkPolicy
 
     /**
      * Provider-managed networks mirror the cloud provider and are removed by sync when the
-     * VPC disappears. An orphaned one — whose connection has since been deleted — can never
-     * be pruned again, so it stays deletable to avoid stranding the row.
+     * VPC disappears. One that sync can never reach again — its connection deleted, or no
+     * member still identifiable at the provider — stays deletable to avoid stranding the row.
      */
     public function delete(User $user, Network $network): bool
     {
-        if ($network->type === NetworkType::PROVIDER && $network->server_provider_id !== null) {
+        if ($network->type === NetworkType::PROVIDER
+            && $network->server_provider_id !== null
+            && ! $network->isStrandedFromProvider()) {
             return false;
         }
 

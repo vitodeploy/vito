@@ -35,7 +35,7 @@ The first server to join the network. You can add more from the [Servers](server
 
 ### Listen Port
 
-The UDP port WireGuard listens on, `51820` by default. If a selected server is already in another WireGuard network using that port, Vito picks the next free one.
+The UDP port WireGuard listens on, `51820` by default. If a selected server is already in another WireGuard network using that port, Vito picks the next free one. This also applies later: adding such a server from the [Servers](servers.md) tab moves the network to a free port. Members follow automatically, but [peers](peers.md) must download their configuration again.
 
 Vito opens this port in the server's firewall automatically, restricted to the other members of the network.
 

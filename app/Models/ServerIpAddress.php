@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use App\Actions\Network\RemoveServerFromNetwork;
+use App\Actions\Network\RemoveMembershipsForAddress;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
-use App\Enums\NetworkType;
 use Database\Factories\ServerIpAddressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $server_id
@@ -48,38 +46,22 @@ class ServerIpAddress extends AbstractModel
         'status' => IpAddressStatus::class,
     ];
 
-    /** @var array<int, int> */
+    /**
+     * Carried between the two events because the foreign key is nullOnDelete, so by the second
+     * nothing records which memberships this address backed.
+     *
+     * @var array<int, int>
+     */
     protected array $reapplyNetworkIds = [];
 
-    /**
-     * A CUSTOM membership is addressed solely by this row, and the foreign key is
-     * nullOnDelete — losing the address leaves the membership with nothing to
-     * announce, so it is removed rather than re-applied with an incomplete source.
-     */
     protected static function booted(): void
     {
         static::deleting(function (ServerIpAddress $address): void {
-            $address->reapplyNetworkIds = NetworkServer::query()
-                ->where('server_ip_address_id', $address->id)
-                ->whereHas('network', fn ($query) => $query->where('type', NetworkType::CUSTOM))
-                ->pluck('network_id')
-                ->unique()
-                ->values()
-                ->all();
+            $address->reapplyNetworkIds = app(RemoveMembershipsForAddress::class)->capture($address);
         });
 
         static::deleted(function (ServerIpAddress $address): void {
-            if ($address->reapplyNetworkIds === []) {
-                return;
-            }
-
-            DB::afterCommit(function () use ($address): void {
-                NetworkServer::query()
-                    ->whereIn('network_id', $address->reapplyNetworkIds)
-                    ->where('server_id', $address->server_id)
-                    ->get()
-                    ->each(fn (NetworkServer $member) => app(RemoveServerFromNetwork::class)->remove($member));
-            });
+            app(RemoveMembershipsForAddress::class)->handle($address->server_id, $address->reapplyNetworkIds);
         });
     }
 

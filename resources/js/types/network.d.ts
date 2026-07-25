@@ -13,6 +13,7 @@ export interface Network {
   region: string | null;
   is_managed: boolean;
   is_orphaned: boolean;
+  is_stranded: boolean;
   provider?: string | null;
   last_synced_at: string | null;
   status: string;

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\NetworkAddressingPool;
 use App\Enums\NetworkStatus;
 use App\Enums\NetworkType;
+use App\ServerProviders\ProvidesPrivateNetworks;
 use Database\Factories\NetworkFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -115,5 +116,37 @@ class Network extends AbstractModel
     public function serverLogs(): HasMany
     {
         return $this->hasMany(ServerLog::class);
+    }
+
+    /**
+     * A provider network the provider can no longer be asked about: its connection cannot
+     * discover private networks, or none of its members still carries the instance id the
+     * provider identifies servers by. Sync can neither reconcile nor prune it again.
+     *
+     * A network with no members at all is not stranded — sync reaps that one on its own.
+     */
+    public function isStrandedFromProvider(): bool
+    {
+        if ($this->type !== NetworkType::PROVIDER) {
+            return false;
+        }
+
+        $provider = $this->serverProvider?->provider();
+
+        if (! $provider instanceof ProvidesPrivateNetworks) {
+            return true;
+        }
+
+        $members = $this->servers()->with('server')->get();
+
+        if ($members->isEmpty()) {
+            return false;
+        }
+
+        $key = $provider->instanceIdKey();
+
+        return ! $members->contains(
+            fn (NetworkServer $member): bool => ($member->server->provider_data[$key] ?? '') !== ''
+        );
     }
 }

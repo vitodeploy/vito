@@ -24,9 +24,12 @@ interface ProvidesPrivateNetworks
      * Whether a complete query is possible with the given regions. A provider that returns
      * false cannot be asked, so an empty result must not be read as "these networks are gone".
      *
+     * `$serversWithoutRegion` counts the connection's servers that carry an instance id but no
+     * region, whose networks a regional provider would therefore never see.
+     *
      * @param  array<int, string>  $regions
      */
-    public function canDiscoverPrivateNetworks(array $regions): bool;
+    public function canDiscoverPrivateNetworks(array $regions, int $serversWithoutRegion): bool;
 
     /**
      * Private networks that at least one of $instanceIds is attached to. Members are

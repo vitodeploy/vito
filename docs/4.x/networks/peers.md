@@ -99,7 +99,7 @@ Give Vito the contents of `publickey` when adding the peer, then paste the conte
 
 - **The tunnel activates but nothing is reachable.** Check that the servers you want to reach are `active` on the network's [Servers](servers.md) tab, and that the network's [firewall rules](firewall.md) allow the port you're using.
 - **No handshake at all.** The peer needs to reach the server's `Endpoint` address and UDP port from wherever you are. Some restrictive networks block outbound UDP.
-- **It worked and then stopped.** If the peer's keys were regenerated in Vito, the old configuration is dead — copy the new one.
+- **It worked and then stopped.** If the peer's keys were regenerated in Vito, the old configuration is dead — copy the new one. The same applies if the network's listen port moved: adding a server that already uses the port for another network shifts this one to the next free port, and the `Endpoint` line in an already-imported configuration still points at the old one. Vito warns when this happens; download the configuration again.
 
 For anything deeper — split tunnelling, routing all traffic through the network, or running WireGuard from the command line — see the [official WireGuard documentation](https://www.wireguard.com/quickstart/).
 

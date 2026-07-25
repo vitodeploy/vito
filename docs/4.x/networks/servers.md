@@ -30,7 +30,7 @@ Each member shows its own status:
 | `failed` | Configuration failed; Vito retries automatically |
 | `leaving` | Being removed from the network |
 
-Vito re-checks pending and failed members every three minutes, so a server that was unreachable is picked up once it is back. That interval is how often a retry is attempted, not a deadline - a member that keeps failing is retried across several passes before it converges.
+Vito re-checks pending and failed members every three minutes, so a server that was unreachable is picked up once it is back. That interval is how often a retry is attempted, not a deadline - a member that keeps failing is retried across several passes before it converges. After several consecutive failures the member drops to an hourly retry instead, so a server that stays broken for a long time no longer costs a sync attempt every three minutes, and still recovers on its own once it is fixed. **Sync** on the member forces an immediate attempt at any point.
 
 ## Changing a Server's IP
 

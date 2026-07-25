@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use App\Actions\Network\DispatchNetworkServerSync;
+use App\Actions\Network\ResyncNetworkSiblings;
 use App\Actions\Server\CheckConnection;
-use App\Enums\NetworkServerStatus;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
@@ -127,11 +126,7 @@ class Server extends AbstractModel
     public bool $deleteFromProvider = true;
 
     /**
-     * Members of every network this server belongs to, collected before the membership rows
-     * cascade away. Every network type needs this, not just WireGuard: a network without a
-     * CIDR — and every provider network — derives per-member host rules, so the remaining
-     * members keep an allow rule for a departed server's address until they re-materialise,
-     * and that address can later be reassigned to an unrelated host.
+     * Carried between the two events because the membership rows are gone by the second.
      *
      * @var array<int, int>
      */
@@ -142,40 +137,11 @@ class Server extends AbstractModel
         parent::boot();
 
         static::deleting(function (Server $server): void {
-            $siblings = [];
-            NetworkServer::query()
-                ->where('server_id', $server->id)
-                ->pluck('network_id')
-                ->each(function (int $networkId) use ($server, &$siblings): void {
-                    NetworkServer::query()
-                        ->where('network_id', $networkId)
-                        ->where('server_id', '!=', $server->id)
-                        ->where('status', '!=', NetworkServerStatus::LEAVING)
-                        ->pluck('id')
-                        ->each(function (int $id) use (&$siblings): void {
-                            $siblings[$id] = true;
-                        });
-                });
-            $server->networkSiblingsToResync = array_keys($siblings);
+            $server->networkSiblingsToResync = app(ResyncNetworkSiblings::class)->capture($server);
         });
 
         static::deleted(function (Server $server): void {
-            $ids = $server->networkSiblingsToResync;
-
-            if ($ids === []) {
-                return;
-            }
-
-            DB::afterCommit(function () use ($ids): void {
-                NetworkServer::query()
-                    ->whereIn('id', $ids)
-                    ->where('status', '!=', NetworkServerStatus::LEAVING)
-                    ->with('server', 'network')
-                    ->get()
-                    ->each(function (NetworkServer $member): void {
-                        app(DispatchNetworkServerSync::class)->toPresent($member);
-                    });
-            });
+            app(ResyncNetworkSiblings::class)->handle($server->networkSiblingsToResync);
         });
 
         static::deleting(function (Server $server): void {

@@ -157,6 +157,9 @@ class AddServersToNetwork
      * two would then fight over on that host. The network moves to a free port instead of
      * refusing the server — every healthy member is resynced by the caller, so they follow it.
      *
+     * Peers do not follow: their endpoint port is baked into the config at download time, so an
+     * already-imported config keeps the old port. The caller warns when peers exist.
+     *
      * @param  array<int, int>  $serverIds
      */
     private function resolvePortConflict(Network $network, array $serverIds): void

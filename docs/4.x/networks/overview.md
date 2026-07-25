@@ -44,7 +44,7 @@ A network shows one of the following statuses, derived from the state of its ser
 
 | Status | Meaning |
 | --- | --- |
-| `creating` | The network has no servers yet — it was just created, or its last server was removed. |
+| `creating` | The network has no servers. A network created with servers moves straight to `syncing`. |
 | `syncing` | At least one server is still being configured. |
 | `active` | Every server is configured and in sync. |
 | `failed` | At least one server failed to configure. Vito retries automatically. |

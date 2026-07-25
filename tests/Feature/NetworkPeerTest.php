@@ -51,6 +51,31 @@ class NetworkPeerTest extends TestCase
         ]);
     }
 
+    /**
+     * A network with no members has nothing to configure the peer on, so the peer waits rather
+     * than claiming to be connected. It must clear itself once a server joins — nothing else
+     * activates a pending peer.
+     */
+    public function test_peer_on_a_member_less_network_activates_once_a_server_joins(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::WIREGUARD,
+        ]);
+
+        app(RecomputeNetworkStatus::class)->handle($network);
+
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+        $this->assertSame(NetworkPeerStatus::PENDING, $peer->fresh()?->status);
+
+        app(AddServersToNetwork::class)->add($network, ['servers' => [$this->server->id]]);
+
+        $this->assertSame(NetworkPeerStatus::ACTIVE, $peer->fresh()?->status);
+    }
+
     public function test_create_peer_allocates_next_free_ip(): void
     {
         SSH::fake();

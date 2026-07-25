@@ -17,6 +17,8 @@ class Linode extends AbstractProvider implements ProvidesPrivateNetworks
 {
     protected string $apiUrl = 'https://api.linode.com/v4';
 
+    private const MAX_PAGES = 100;
+
     public static function id(): string
     {
         return 'linode';
@@ -141,9 +143,16 @@ class Linode extends AbstractProvider implements ProvidesPrivateNetworks
             $batch = $body['data'] ?? [];
             $items = array_merge($items, $batch);
 
-            $pages = (int) ($body['pages'] ?? 1);
-            $page = $page < $pages ? $page + 1 : null;
-        } while ($page !== null);
+            if ($page >= (int) ($body['pages'] ?? 1)) {
+                break;
+            }
+
+            if ($page >= self::MAX_PAGES) {
+                throw $this->syncError();
+            }
+
+            $page++;
+        } while (true);
 
         return $items;
     }

@@ -26,7 +26,7 @@ abstract class AbstractProvider implements ServerProvider
     /**
      * @param  array<int, string>  $regions
      */
-    public function canDiscoverPrivateNetworks(array $regions): bool
+    public function canDiscoverPrivateNetworks(array $regions, int $serversWithoutRegion): bool
     {
         return true;
     }

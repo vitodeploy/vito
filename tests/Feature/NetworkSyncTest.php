@@ -8,6 +8,7 @@ use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\DeleteNetwork;
 use App\Actions\Network\RemoveServerFromNetwork;
 use App\Actions\Network\SyncNetwork;
+use App\Actions\ServerIp\RefreshServerIps;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkAddressingPool;
@@ -361,6 +362,89 @@ class NetworkSyncTest extends TestCase
         $fresh = $member->fresh();
         $this->assertSame(NetworkServerStatus::ACTIVE, $fresh->status);
         $this->assertSame(0, $fresh->sync_attempts);
+    }
+
+    /**
+     * A member that burns through its fast attempts drops to an hourly retry rather than being
+     * abandoned: giving up permanently would keep the network `failed` forever and would never
+     * pick up a later change, with nothing in the UI to say a manual sync is needed.
+     */
+    public function test_reconciler_retries_an_exhausted_member_on_the_slow_cadence(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+        $member = $network->servers()->firstOrFail();
+
+        NetworkServer::query()->whereKey($member->id)->update([
+            'status' => NetworkServerStatus::FAILED,
+            'sync_attempts' => 5,
+            'updated_at' => now()->subMinutes(5),
+        ]);
+
+        Artisan::call('networks:reconcile');
+
+        $this->assertSame(
+            NetworkServerStatus::FAILED,
+            $member->fresh()?->status,
+            'An exhausted member must not be retried again on the fast cadence.'
+        );
+
+        NetworkServer::query()->whereKey($member->id)->update(['updated_at' => now()->subMinutes(61)]);
+
+        Artisan::call('networks:reconcile');
+
+        $this->assertSame(NetworkServerStatus::ACTIVE, $member->fresh()?->status);
+    }
+
+    /**
+     * A custom membership is addressed solely by its IP row, so the membership has to go when
+     * the address does. The refresh used to drop these rows with a query-builder delete, which
+     * fires no model events, leaving the membership behind with a null address.
+     */
+    public function test_refresh_removes_a_custom_membership_when_its_address_disappears(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $address = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.70.0.5',
+            'prefix_length' => 24,
+            'family' => IpAddressFamily::V4,
+            'type' => IpAddressType::PRIVATE,
+            'is_managed' => false,
+        ]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'custom-net',
+            'type' => 'custom',
+            'cidr' => '10.70.0.0/24',
+            'servers' => [$this->server->id],
+            'ip_addresses' => [$this->server->id => $address->id],
+        ]);
+
+        $this->assertSame(1, $network->servers()->count());
+
+        SSH::fake(json_encode([[
+            'ifname' => 'eth0',
+            'addr_info' => [[
+                'family' => 'inet',
+                'local' => '10.70.0.9',
+                'prefixlen' => 24,
+                'scope' => 'global',
+            ]],
+        ]]));
+
+        app(RefreshServerIps::class)->handle($this->server);
+
+        $this->assertDatabaseMissing('server_ip_addresses', ['id' => $address->id]);
+        $this->assertSame(0, $network->servers()->where('status', '!=', NetworkServerStatus::LEAVING)->count());
     }
 
     public function test_deleting_server_resyncs_wireguard_siblings(): void

@@ -70,7 +70,7 @@ Membership belongs to the provider, so Vito won't let you edit it:
 | Remove a server | Not available — detach the instance at your provider, then sync |
 | Manage firewall rules | **Available** |
 | Rename the network | **Available** |
-| Delete the network | Not available while its provider connection exists |
+| Delete the network | Not available while Vito can still sync it |
 
 Renaming is safe: Vito sets the name once, when the network is first imported, and never overwrites it afterwards. If you rename the VPC at your provider, your name in Vito stays.
 
@@ -78,7 +78,10 @@ Renaming is safe: Vito sets the name once, when the network is first imported, a
 
 You cannot delete a provider network while the connection it came from still exists — it would simply be re-imported on the next sync. Delete the network at your provider and sync instead.
 
-The one exception is an **orphaned** network: if you delete the [server provider connection](../settings/server-providers.md) it came from, Vito can no longer sync it, so the network becomes deletable. Its Settings page shows a notice explaining this.
+The exception is a network Vito can no longer sync, which becomes deletable so it isn't stranded. Its Settings page shows a notice explaining which case applies:
+
+- **Orphaned** — you deleted the [server provider connection](../settings/server-providers.md) it came from.
+- **Cannot be synced** — none of its servers still carries the identifier the provider knows them by, so Vito has no way to ask the provider about the network. This is rare; it usually means a server's provider details were changed outside Vito.
 
 ## Addresses and Firewall Rules
 

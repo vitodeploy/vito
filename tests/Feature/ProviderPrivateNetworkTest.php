@@ -226,6 +226,35 @@ class ProviderPrivateNetworkTest extends TestCase
         $this->assertSame('10.0.1.4', $networks[0]->members[0]->ip);
     }
 
+    /**
+     * A page count the API never stops advancing past would otherwise be walked until the job's
+     * timeout. Failing beats returning what was collected so far: a partial view of the account
+     * would look like the missing VPCs are gone, and sync prunes on that.
+     */
+    public function test_linode_stops_and_fails_on_a_runaway_page_count(): void
+    {
+        Http::fake([
+            'api.linode.com/v4/*' => Http::response([
+                'data' => [],
+                'page' => 1,
+                'pages' => 100000,
+            ]),
+        ]);
+
+        $connection = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Linode::id(),
+            'credentials' => ['token' => 'secret-token'],
+        ]);
+
+        /** @var Linode $provider */
+        $provider = $connection->provider();
+
+        $this->expectException(PrivateNetworkSyncError::class);
+
+        $provider->privateNetworks(['555'], []);
+    }
+
     public function test_linode_multi_subnet_vpc_reports_no_single_cidr(): void
     {
         Http::fake([

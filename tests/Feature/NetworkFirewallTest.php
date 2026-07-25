@@ -242,7 +242,7 @@ class NetworkFirewallTest extends TestCase
         $this->assertSame(NetworkStatus::SYNCING, $network->fresh()->status);
     }
 
-    public function test_provider_network_firewall_uses_cidr_source(): void
+    public function test_custom_network_with_a_cidr_uses_the_range_as_the_rule_source(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
@@ -254,7 +254,7 @@ class NetworkFirewallTest extends TestCase
         ]);
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
-            'name' => 'prov-net',
+            'name' => 'custom-net',
             'type' => 'custom',
             'cidr' => '10.0.0.0/24',
             'servers' => [$this->server->id],
@@ -270,7 +270,7 @@ class NetworkFirewallTest extends TestCase
         SSH::assertExecutedContains('allow from 10.0.0.0/24 to any proto tcp port 3306');
     }
 
-    public function test_provider_network_without_cidr_uses_member_private_ip(): void
+    public function test_custom_network_without_a_cidr_uses_each_member_private_ip(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
@@ -293,7 +293,7 @@ class NetworkFirewallTest extends TestCase
         ]);
 
         $network = app(CreateNetwork::class)->create($this->server->project, [
-            'name' => 'prov-net',
+            'name' => 'custom-net',
             'type' => 'custom',
             'servers' => [$this->server->id, $peer->id],
             'ip_addresses' => [$this->server->id => $ip1->id, $peer->id => $ip2->id],
@@ -308,14 +308,14 @@ class NetworkFirewallTest extends TestCase
         SSH::assertExecutedContains('from 10.0.0.6/32 to any');
     }
 
-    public function test_provider_network_applies_catch_all_on_create(): void
+    public function test_custom_network_applies_the_catch_all_rule_on_create(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
         $ip = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);
 
         app(CreateNetwork::class)->create($this->server->project, [
-            'name' => 'prov-net',
+            'name' => 'custom-net',
             'type' => 'custom',
             'cidr' => '10.0.0.0/24',
             'servers' => [$this->server->id],

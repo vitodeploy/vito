@@ -28,6 +28,8 @@ class ReconcileNetworksCommand extends Command
 
     private const MAX_ATTEMPTS = 5;
 
+    private const SLOW_RETRY_MINUTES = 60;
+
     public function handle(): void
     {
         $this->reconcilePending();
@@ -65,18 +67,30 @@ class ReconcileNetworksCommand extends Command
             });
     }
 
+    /**
+     * The first attempts run at the command's own cadence; past that the member drops to an
+     * hourly retry rather than being abandoned. A member that gave up permanently would keep
+     * its network `failed` forever and would never pick up a later change — a moved WireGuard
+     * port, say — with nothing in the UI to say a manual sync is required.
+     */
     private function reconcileFailed(): void
     {
+        $slowRetry = now()->subMinutes(self::SLOW_RETRY_MINUTES);
+
+        $due = fn ($query) => $query->where(fn ($due) => $due
+            ->where('sync_attempts', '<', self::MAX_ATTEMPTS)
+            ->orWhere('updated_at', '<', $slowRetry));
+
         NetworkServer::query()
             ->where('status', NetworkServerStatus::FAILED)
-            ->where('sync_attempts', '<', self::MAX_ATTEMPTS)
+            ->tap($due)
             ->whereHas('server', $this->reachable())
             ->pluck('id')
-            ->each(function (int $id): void {
+            ->each(function (int $id) use ($due): void {
                 $claimed = NetworkServer::query()
                     ->whereKey($id)
                     ->where('status', NetworkServerStatus::FAILED)
-                    ->where('sync_attempts', '<', self::MAX_ATTEMPTS)
+                    ->tap($due)
                     ->update([
                         'status' => NetworkServerStatus::UPDATING,
                         'sync_attempts' => DB::raw('sync_attempts + 1'),

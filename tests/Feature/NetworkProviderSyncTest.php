@@ -392,33 +392,9 @@ class NetworkProviderSyncTest extends TestCase
      */
     public function test_aws_networks_survive_when_no_region_is_known(): void
     {
-        $connection = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => AWS::id(),
-            'profile' => 'aws-main',
-            'credentials' => ['key' => 'key', 'secret' => 'secret'],
-        ]);
-
-        $server = Server::factory()->create([
-            'project_id' => $this->server->project_id,
-            'user_id' => $this->user->id,
-            'status' => ServerStatus::READY,
-            'provider_id' => $connection->id,
-            'provider_data' => ['instance_id' => 'i-0abc'],
-        ]);
-
-        $network = Network::factory()->create([
-            'project_id' => $this->server->project_id,
-            'type' => NetworkType::PROVIDER,
-            'server_provider_id' => $connection->id,
-            'external_id' => 'vpc-0abc',
-        ]);
-
-        $network->servers()->create([
-            'server_id' => $server->id,
-            'ip' => '172.31.0.5',
-            'status' => NetworkServerStatus::ACTIVE,
-        ]);
+        $connection = $this->awsConnection();
+        $server = $this->awsServer($connection, 'i-0abc');
+        $network = $this->awsNetwork($connection, 'vpc-0abc', $server);
 
         $this->sync();
 
@@ -427,6 +403,99 @@ class NetworkProviderSyncTest extends TestCase
             'An AWS network must not be pruned when no region was available to query.'
         );
         $this->assertSame(1, $network->servers()->count());
+    }
+
+    /**
+     * Only the regions actually collected are queried, so one server without a region leaves its
+     * VPC unasked-about while the rest of the connection answers normally. Treating that as a
+     * complete answer would delete precisely the network the guard exists to protect.
+     */
+    public function test_aws_networks_survive_when_one_server_has_no_region(): void
+    {
+        $connection = $this->awsConnection();
+        $this->awsServer($connection, 'i-known', 'eu-west-1');
+        $stranded = $this->awsServer($connection, 'i-unknown');
+        $network = $this->awsNetwork($connection, 'vpc-unknown', $stranded);
+
+        $this->sync();
+
+        $this->assertNotNull(
+            Network::query()->find($network->id),
+            'A network in an unqueried region must not be pruned because other servers answered.'
+        );
+        $this->assertSame(1, $network->servers()->count());
+    }
+
+    /**
+     * Sync spares a network it could not ask about, and the policy refuses to delete a network
+     * whose connection still exists. A network no member can be identified at the provider by
+     * falls into both, so it has to be deletable or it is stranded with no way out.
+     */
+    public function test_provider_network_no_member_can_be_identified_by_becomes_deletable(): void
+    {
+        $network = $this->providerNetwork($this->connection->id);
+        $network->servers()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.0.0.2',
+            'status' => NetworkServerStatus::ACTIVE,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('networks.destroy', $network))->assertForbidden();
+
+        $this->server->update(['provider_data' => ['region' => 'nbg1']]);
+
+        $this->sync();
+
+        $this->assertNotNull(
+            Network::query()->find($network->id),
+            'Sync cannot ask about this network, so it must not be pruned either.'
+        );
+
+        $this->delete(route('networks.destroy', $network))->assertRedirect();
+        $this->assertNotSame(NetworkStatus::ACTIVE, $network->fresh()?->status);
+    }
+
+    private function awsConnection(): ServerProvider
+    {
+        return ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => AWS::id(),
+            'profile' => 'aws-main',
+            'credentials' => ['key' => 'key', 'secret' => 'secret'],
+        ]);
+    }
+
+    private function awsServer(ServerProvider $connection, string $instanceId, ?string $region = null): Server
+    {
+        return Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+            'provider_id' => $connection->id,
+            'provider_data' => $region === null
+                ? ['instance_id' => $instanceId]
+                : ['instance_id' => $instanceId, 'region' => $region],
+        ]);
+    }
+
+    private function awsNetwork(ServerProvider $connection, string $externalId, Server $member): Network
+    {
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::PROVIDER,
+            'server_provider_id' => $connection->id,
+            'external_id' => $externalId,
+        ]);
+
+        $network->servers()->create([
+            'server_id' => $member->id,
+            'ip' => '172.31.0.5',
+            'status' => NetworkServerStatus::ACTIVE,
+        ]);
+
+        return $network;
     }
 
     public function test_vpc_without_managed_servers_is_not_imported(): void

@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Actions\Network\AddServersToNetwork;
 use App\Actions\Network\CreateNetwork;
+use App\Actions\Network\CreateNetworkPeer;
 use App\Actions\Network\GenerateWireGuardKeys;
+use App\Actions\Network\RecomputeNetworkStatus;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
@@ -425,6 +427,45 @@ class NetworkTest extends TestCase
     }
 
     /**
+     * A peer's endpoint port is fixed when its config is downloaded, so a config already imported
+     * on a laptop keeps pointing at the old port after the network moves. Nothing on the peer
+     * changes and no handshake failure surfaces, so the move has to be called out.
+     */
+    public function test_port_move_warns_that_peers_must_download_their_config_again(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $other = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-first',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $second = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-second',
+            'type' => 'wireguard',
+            'servers' => [$other->id],
+        ]);
+
+        app(CreateNetworkPeer::class)->create($second, ['name' => 'laptop']);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('networks.servers.store', ['network' => $second]), [
+            'servers' => [$this->server->id],
+        ])->assertSessionHas('warning');
+
+        $this->assertSame(51821, $second->fresh()?->port);
+    }
+
+    /**
      * The per-server IP rules are keyed by server id, so building them from raw input turned a
      * malformed `servers` entry into a 500 before the validator ever ran.
      */
@@ -549,6 +590,22 @@ class NetworkTest extends TestCase
             'type' => 'apply-rules',
         ]);
         $this->assertSame(0, DB::table('server_logs')->whereNull('network_id')->count());
+    }
+
+    /**
+     * `active` reads as "every server is configured and in sync", which a network with no
+     * servers at all has no business claiming.
+     */
+    public function test_network_without_servers_is_not_reported_as_active(): void
+    {
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'status' => NetworkStatus::ACTIVE,
+        ]);
+
+        app(RecomputeNetworkStatus::class)->handle($network);
+
+        $this->assertSame(NetworkStatus::CREATING, $network->fresh()?->status);
     }
 
     /**

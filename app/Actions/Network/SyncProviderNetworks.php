@@ -50,7 +50,7 @@ class SyncProviderNetworks
             $connection = $context['connection'];
 
             $asked = $context['servers'] !== []
-                && $context['provider']->canDiscoverPrivateNetworks($context['regions']);
+                && $context['provider']->canDiscoverPrivateNetworks($context['regions'], $context['serversWithoutRegion']);
 
             try {
                 $discovered = $asked
@@ -329,7 +329,7 @@ class SyncProviderNetworks
     }
 
     /**
-     * @return array<int, array{connection: ServerProvider, provider: ProvidesPrivateNetworks, key: string, servers: array<string, Server>, regions: array<int, string>}>
+     * @return array<int, array{connection: ServerProvider, provider: ProvidesPrivateNetworks, key: string, servers: array<string, Server>, regions: array<int, string>, serversWithoutRegion: int}>
      */
     private function connections(Project $project, ?Network $only): array
     {
@@ -361,6 +361,7 @@ class SyncProviderNetworks
                     'key' => $provider->instanceIdKey(),
                     'servers' => [],
                     'regions' => [],
+                    'serversWithoutRegion' => 0,
                 ];
             }
 
@@ -374,7 +375,13 @@ class SyncProviderNetworks
 
             $region = $server->provider_data['region'] ?? null;
 
-            if (is_string($region) && $region !== '' && ! in_array($region, $contexts[$connection->id]['regions'], true)) {
+            if (! is_string($region) || $region === '') {
+                $contexts[$connection->id]['serversWithoutRegion']++;
+
+                continue;
+            }
+
+            if (! in_array($region, $contexts[$connection->id]['regions'], true)) {
                 $contexts[$connection->id]['regions'][] = $region;
             }
         }

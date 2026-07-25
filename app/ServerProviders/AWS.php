@@ -29,14 +29,16 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * EC2 is queried per region, so with no region to query the result is empty for want of
-     * asking rather than because the VPCs are gone. Saying so keeps sync from pruning them.
+     * EC2 is queried per region, so a region that was never collected is never asked about. With
+     * no regions at all, or with a server whose region is unknown, the result is incomplete for
+     * want of asking rather than because the VPCs are gone — saying so keeps sync from pruning
+     * a network whose members live in a region this run could not reach.
      *
      * @param  array<int, string>  $regions
      */
-    public function canDiscoverPrivateNetworks(array $regions): bool
+    public function canDiscoverPrivateNetworks(array $regions, int $serversWithoutRegion): bool
     {
-        return $regions !== [];
+        return $regions !== [] && $serversWithoutRegion === 0;
     }
 
     /**
