@@ -17,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 class AddServersToNetwork
 {
     public function __construct(
+        private AllocateWireGuardPort $ports,
         private CreateWireGuardMembers $members,
         private DispatchNetworkServerSync $sync,
         private RecomputeNetworkStatus $recompute,
@@ -66,7 +67,7 @@ class AddServersToNetwork
         Project::query()->whereKey($network->project_id)->lockForUpdate()->first();
         Network::query()->whereKey($network->id)->lockForUpdate()->first();
 
-        $this->validateNoPortConflict($network, $input['servers'] ?? []);
+        $this->resolvePortConflict($network, $input['servers']);
 
         $used = $network->servers()->lockForUpdate()->pluck('ip')
             ->concat($network->peers()->lockForUpdate()->pluck('ip'))
@@ -118,37 +119,62 @@ class AddServersToNetwork
 
         if ($network->type === NetworkType::CUSTOM) {
             $rules['ip_addresses'] = ['required', 'array'];
-            foreach ($input['servers'] ?? [] as $serverId) {
-                $rules["ip_addresses.$serverId"] = [
-                    'required',
-                    Rule::exists('server_ip_addresses', 'id')
-                        ->where('server_id', $serverId)
-                        ->where('type', IpAddressType::PRIVATE->value),
-                    Rule::unique('network_servers', 'server_ip_address_id'),
-                    new WithinCidrRule($network->cidr),
-                ];
-            }
+        }
+
+        Validator::make($input, $rules)->validate();
+
+        if ($network->type === NetworkType::CUSTOM) {
+            $this->validateMemberIps($network, $input);
+        }
+    }
+
+    /**
+     * Runs only once `servers` is known to be a list of integers — building these rules from
+     * unvalidated input would interpolate an array into a rule key and fail with a 500.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    private function validateMemberIps(Network $network, array $input): void
+    {
+        $rules = [];
+
+        foreach ($input['servers'] as $serverId) {
+            $rules["ip_addresses.$serverId"] = [
+                'required',
+                Rule::exists('server_ip_addresses', 'id')
+                    ->where('server_id', $serverId)
+                    ->where('type', IpAddressType::PRIVATE->value),
+                Rule::unique('network_servers', 'server_ip_address_id'),
+                new WithinCidrRule($network->cidr),
+            ];
         }
 
         Validator::make($input, $rules)->validate();
     }
 
     /**
+     * An incoming server may already run this network's port for a different network, which the
+     * two would then fight over on that host. The network moves to a free port instead of
+     * refusing the server — every healthy member is resynced by the caller, so they follow it.
+     *
      * @param  array<int, int>  $serverIds
      */
-    private function validateNoPortConflict(Network $network, array $serverIds): void
+    private function resolvePortConflict(Network $network, array $serverIds): void
     {
-        $conflict = Network::query()
-            ->where('type', NetworkType::WIREGUARD)
-            ->whereKeyNot($network->id)
-            ->where('port', $network->port)
-            ->whereHas('servers', fn ($query) => $query->whereIn('server_id', $serverIds))
-            ->exists();
+        $serverIds = array_merge($network->servers()->pluck('server_id')->all(), $serverIds);
 
-        if ($conflict) {
-            throw ValidationException::withMessages([
-                'servers' => __('A selected server already belongs to another WireGuard network using port :port.', ['port' => $network->port]),
-            ]);
+        $port = $this->ports->allocate(
+            $network->project_id,
+            $serverIds,
+            $network->port ?? 51820,
+            $network->id,
+        );
+
+        if ($port === $network->port) {
+            return;
         }
+
+        $network->port = $port;
+        $network->save();
     }
 }

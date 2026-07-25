@@ -24,6 +24,14 @@ abstract class AbstractProvider implements ServerProvider
     }
 
     /**
+     * @param  array<int, string>  $regions
+     */
+    public function canDiscoverPrivateNetworks(array $regions): bool
+    {
+        return true;
+    }
+
+    /**
      * Convert any upstream failure into a credential-free exception. Upstream
      * HTTP/SDK exceptions can carry tokens in their message or trace arguments,
      * which the queue would persist into `failed_jobs.exception`.

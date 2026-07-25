@@ -35,6 +35,10 @@ Protocol and port are independent — all four combinations are valid:
 | UDP | empty | UDP on any port |
 | empty | empty | all traffic from the network |
 
+:::info
+A port **range** must name a protocol — UFW rejects a multi-port rule that doesn't. A single port works with or without one.
+:::
+
 ## How Rules Are Applied
 
 Vito translates each network rule into a rule on every member's firewall, scoped to the other members of that network:
@@ -43,6 +47,8 @@ Vito translates each network rule into a rule on every member's firewall, scoped
 - On **custom** networks without a CIDR, and on all **provider** networks, rules are scoped to each member's individual address instead. This is tighter — the port is opened only to the specific servers in the network, not to everything sharing the range.
 
 WireGuard networks also get an automatic rule opening the tunnel's listen port to the other members, so the tunnel can be established. This rule is managed by Vito and is not affected when you delete the **Allow all** rule.
+
+Adding a [peer](peers.md) widens that rule to any source, because a laptop or CI runner connects from an address Vito can't know in advance. Only the tunnel's UDP listen port is opened; traffic still has to authenticate with a known peer key before it reaches anything. Remove every peer and the rule narrows back to the other members.
 
 :::info
 Network rules appear on each server's own [Firewall](../servers/firewall.md) page as managed rules. They're shown there for visibility but are edited from the network, so they stay consistent across every member.

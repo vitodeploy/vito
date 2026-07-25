@@ -21,6 +21,14 @@ interface ProvidesPrivateNetworks
     public function instanceIdKey(): string;
 
     /**
+     * Whether a complete query is possible with the given regions. A provider that returns
+     * false cannot be asked, so an empty result must not be read as "these networks are gone".
+     *
+     * @param  array<int, string>  $regions
+     */
+    public function canDiscoverPrivateNetworks(array $regions): bool;
+
+    /**
      * Private networks that at least one of $instanceIds is attached to. Members are
      * restricted to $instanceIds — instances the caller did not ask about are omitted.
      *

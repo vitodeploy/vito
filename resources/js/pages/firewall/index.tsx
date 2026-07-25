@@ -1,5 +1,4 @@
 import { Head, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
 import { Server } from '@/types/server';
 import { FirewallRule } from '@/types/firewall';
 import ServerLayout from '@/layouts/server/layout';
@@ -24,13 +23,7 @@ export default function Firewall() {
     networkRules: InertiaTableData;
   }>();
   const dialog = useDialog();
-  const [hasNetworkRules, setHasNetworkRules] = useState((page.props.networkRules?.data?.length ?? 0) > 0);
-
-  useEffect(() => {
-    if ((page.props.networkRules?.data?.length ?? 0) > 0) {
-      setHasNetworkRules(true);
-    }
-  }, [page.props.networkRules]);
+  const hasNetworkRules = (page.props.networkRules?.data?.length ?? 0) > 0;
 
   return (
     <ServerLayout>

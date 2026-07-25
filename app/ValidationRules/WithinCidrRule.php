@@ -29,10 +29,10 @@ class WithinCidrRule implements ValidationRule
         }
 
         if (! Cidr::contains($this->cidr, $ip)) {
-            $fail(__('The selected address :ip is outside the network range :cidr.', [
+            $fail('The selected address :ip is outside the network range :cidr.')->translate([
                 'ip' => $ip,
                 'cidr' => $this->cidr,
-            ]))->translate();
+            ]);
         }
     }
 }

@@ -16,6 +16,7 @@ use App\Models\Server;
 use App\Models\ServerNetworkRule;
 use App\Models\ServerProvider;
 use App\Models\User;
+use App\ServerProviders\AWS;
 use App\ServerProviders\Hetzner;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -380,6 +381,50 @@ class NetworkProviderSyncTest extends TestCase
         $this->assertNotNull(
             Network::query()->find($network->id),
             'A network with live members must not be pruned when the provider could not be queried.'
+        );
+        $this->assertSame(1, $network->servers()->count());
+    }
+
+    /**
+     * EC2 is queried per region, so a connection whose servers carry no region cannot be asked
+     * at all. Reading that empty result as "the VPCs are gone" would delete every AWS network
+     * on the connection, with its firewall rules, on a single sync.
+     */
+    public function test_aws_networks_survive_when_no_region_is_known(): void
+    {
+        $connection = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => AWS::id(),
+            'profile' => 'aws-main',
+            'credentials' => ['key' => 'key', 'secret' => 'secret'],
+        ]);
+
+        $server = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+            'provider_id' => $connection->id,
+            'provider_data' => ['instance_id' => 'i-0abc'],
+        ]);
+
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::PROVIDER,
+            'server_provider_id' => $connection->id,
+            'external_id' => 'vpc-0abc',
+        ]);
+
+        $network->servers()->create([
+            'server_id' => $server->id,
+            'ip' => '172.31.0.5',
+            'status' => NetworkServerStatus::ACTIVE,
+        ]);
+
+        $this->sync();
+
+        $this->assertNotNull(
+            Network::query()->find($network->id),
+            'An AWS network must not be pruned when no region was available to query.'
         );
         $this->assertSame(1, $network->servers()->count());
     }

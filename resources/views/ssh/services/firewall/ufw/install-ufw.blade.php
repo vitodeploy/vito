@@ -1,4 +1,4 @@
-if [ -f /etc/default/ufw ] && ! grep -q '^IPV6=yes' /etc/default/ufw; then
+if [ -f /proc/net/if_inet6 ] && [ -f /etc/default/ufw ] && ! grep -q '^IPV6=yes' /etc/default/ufw; then
     if ! sudo sed -i '/^IPV6=/d' /etc/default/ufw; then
         echo 'VITO_SSH_ERROR' && exit 1
     fi
@@ -15,15 +15,15 @@ if ! sudo ufw default allow outgoing; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo ufw allow from 0.0.0.0/0 to any proto tcp port {{ $sshPort }}; then
+if ! sudo ufw allow proto tcp to any port {{ $sshPort }}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo ufw allow from 0.0.0.0/0 to any proto tcp port 80; then
+if ! sudo ufw allow proto tcp to any port 80; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo ufw allow from 0.0.0.0/0 to any proto tcp port 443; then
+if ! sudo ufw allow proto tcp to any port 443; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 

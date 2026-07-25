@@ -7,6 +7,7 @@ use App\Jobs\Network\ApplyNetworkFirewallJob;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Service;
+use Illuminate\Support\Facades\DB;
 
 class ApplyNetworkFirewall
 {
@@ -33,7 +34,7 @@ class ApplyNetworkFirewall
             ->each(function (NetworkServer $member) use (&$deferred): void {
                 if ($member->server->isReady()) {
                     if ($member->server->firewall() instanceof Service) {
-                        dispatch(new ApplyNetworkFirewallJob($member))->onQueue('ssh');
+                        DB::afterCommit(fn () => dispatch(new ApplyNetworkFirewallJob($member))->onQueue('ssh'));
                     }
 
                     return;

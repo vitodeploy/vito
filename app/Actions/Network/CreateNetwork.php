@@ -24,6 +24,7 @@ class CreateNetwork
 {
     public function __construct(
         private AllocateNetworkBlock $allocator,
+        private AllocateWireGuardPort $ports,
         private CreateWireGuardMembers $members,
         private DispatchNetworkServerSync $sync,
         private RecomputeNetworkStatus $recompute,
@@ -91,7 +92,7 @@ class CreateNetwork
             'addressing_pool' => $pool,
             'cidr' => $cidr,
             'cidr_canonical' => $cidr,
-            'port' => $this->allocatePort($project, $members->pluck('id')->all(), (int) ($input['port'] ?? 51820)),
+            'port' => $this->ports->allocate($project->id, $members->pluck('id')->all(), (int) ($input['port'] ?? 51820)),
         ]);
 
         $this->members->create($network, $members);
@@ -151,32 +152,6 @@ class CreateNetwork
     }
 
     /**
-     * @param  array<int, int>  $serverIds
-     */
-    private function allocatePort(Project $project, array $serverIds, int $requested): int
-    {
-        $used = Network::query()
-            ->where('type', NetworkType::WIREGUARD)
-            ->where('project_id', $project->id)
-            ->whereHas('servers', fn ($query) => $query->whereIn('server_id', $serverIds))
-            ->pluck('port')
-            ->filter()
-            ->all();
-
-        $port = $requested;
-        while (in_array($port, $used, true)) {
-            $port++;
-            if ($port > 65535) {
-                throw ValidationException::withMessages([
-                    'port' => __('No free WireGuard port is available for the selected servers.'),
-                ]);
-            }
-        }
-
-        return $port;
-    }
-
-    /**
      * @param  array<string, mixed>  $input
      */
     private function validate(Project $project, array $input): void
@@ -212,16 +187,34 @@ class CreateNetwork
         if (($input['type'] ?? null) === NetworkType::CUSTOM->value) {
             $rules['cidr'] = ['nullable', 'string', new CidrRule];
             $rules['ip_addresses'] = ['required', 'array'];
-            foreach ($input['servers'] ?? [] as $serverId) {
-                $rules["ip_addresses.$serverId"] = [
-                    'required',
-                    Rule::exists('server_ip_addresses', 'id')
-                        ->where('server_id', $serverId)
-                        ->where('type', IpAddressType::PRIVATE->value),
-                    Rule::unique('network_servers', 'server_ip_address_id'),
-                    new WithinCidrRule($input['cidr'] ?? null),
-                ];
-            }
+        }
+
+        Validator::make($input, $rules)->validate();
+
+        if (($input['type'] ?? null) === NetworkType::CUSTOM->value) {
+            $this->validateMemberIps($input);
+        }
+    }
+
+    /**
+     * Runs only once `servers` is known to be a list of integers — building these rules from
+     * unvalidated input would interpolate an array into a rule key and fail with a 500.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    private function validateMemberIps(array $input): void
+    {
+        $rules = [];
+
+        foreach ($input['servers'] as $serverId) {
+            $rules["ip_addresses.$serverId"] = [
+                'required',
+                Rule::exists('server_ip_addresses', 'id')
+                    ->where('server_id', $serverId)
+                    ->where('type', IpAddressType::PRIVATE->value),
+                Rule::unique('network_servers', 'server_ip_address_id'),
+                new WithinCidrRule($input['cidr'] ?? null),
+            ];
         }
 
         Validator::make($input, $rules)->validate();

@@ -66,7 +66,7 @@ class WireGuard extends AbstractService implements VPN
         $this->service->server->ssh()
             ->setLog($this->service->log)
             ->exec(
-                view('ssh.wireguard.install'),
+                view('ssh.services.wireguard.install'),
                 'install-wireguard'
             );
         event('service.installed', $this->service);
@@ -79,7 +79,7 @@ class WireGuard extends AbstractService implements VPN
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.wireguard.uninstall'),
+            view('ssh.services.wireguard.uninstall'),
             'uninstall-wireguard'
         );
         event('service.uninstalled', $this->service);
@@ -104,7 +104,7 @@ class WireGuard extends AbstractService implements VPN
     {
         $network = $membership->network;
 
-        $content = view('ssh.wireguard.conf', [
+        $content = view('ssh.services.wireguard.conf', [
             'address' => $membership->ip,
             'prefix' => $this->prefix($network),
             'listenPort' => $network->port,
@@ -120,7 +120,7 @@ class WireGuard extends AbstractService implements VPN
         $this->uploadConf($ssh, $this->confPath($network).'.tmp', $content);
 
         $ssh->exec(
-            view('ssh.wireguard.configure', ['networkId' => $network->id]),
+            view('ssh.services.wireguard.configure', ['networkId' => $network->id]),
             'configure-wireguard'
         );
     }
@@ -131,7 +131,7 @@ class WireGuard extends AbstractService implements VPN
     public function removeNetwork(Network $network): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.wireguard.remove-network', ['networkId' => $network->id]),
+            view('ssh.services.wireguard.remove-network', ['networkId' => $network->id]),
             'remove-wireguard-network'
         );
     }
@@ -187,7 +187,7 @@ class WireGuard extends AbstractService implements VPN
     public function latestHandshakes(Network $network): array
     {
         $output = $this->service->server->ssh()->exec(
-            view('ssh.wireguard.latest-handshakes', ['networkId' => $network->id]),
+            view('ssh.services.wireguard.latest-handshakes', ['networkId' => $network->id]),
             'wireguard-latest-handshakes'
         );
 

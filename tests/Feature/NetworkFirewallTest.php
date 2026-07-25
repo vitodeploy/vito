@@ -471,6 +471,43 @@ class NetworkFirewallTest extends TestCase
     }
 
     /**
+     * `ufw` refuses a multi-port rule that names no protocol. Accepting one would apply on every
+     * member and fail there, and because rules are reset and reapplied as a unit that failure
+     * takes the network's other rules — and the server's own — down with it.
+     */
+    public function test_port_range_without_a_protocol_is_rejected(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = $this->wireguardNetwork([$this->server->id]);
+
+        try {
+            app(ManageNetworkFirewallRule::class)->create($network, [
+                'name' => 'range',
+                'protocol' => null,
+                'port' => '3000:3010',
+            ]);
+            $this->fail('A port range without a protocol must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('protocol', $e->errors());
+        }
+
+        $this->assertDatabaseMissing('network_firewall_rules', [
+            'network_id' => $network->id,
+            'name' => 'range',
+        ]);
+
+        app(ManageNetworkFirewallRule::class)->create($network, [
+            'name' => 'range',
+            'protocol' => 'tcp',
+            'port' => '3000:3010',
+        ]);
+
+        SSH::assertExecutedContains('to any proto tcp port 3000:3010');
+    }
+
+    /**
      * Every network type derives rules that name the other members, so deleting a server must
      * clear its address from the remaining members' rules — a provider address in particular
      * can be reassigned to an unrelated host later.

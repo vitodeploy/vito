@@ -37,7 +37,7 @@ export default function Networks() {
                 dialog.confirm.open({
                   title: 'Sync provider networks',
                   description:
-                    'Query every cloud provider connection used by this project’s servers and create, update or remove provider-managed networks to match. Servers Vito does not manage are ignored.',
+                    "Query every cloud provider connection used by this project's servers and create, update or remove provider-managed networks to match. Servers Vito does not manage are ignored.",
                   confirmLabel: 'Sync',
                   method: 'post',
                   url: route('networks.sync-providers'),

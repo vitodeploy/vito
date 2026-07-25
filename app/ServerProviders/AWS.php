@@ -29,6 +29,17 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
+     * EC2 is queried per region, so with no region to query the result is empty for want of
+     * asking rather than because the VPCs are gone. Saying so keeps sync from pruning them.
+     *
+     * @param  array<int, string>  $regions
+     */
+    public function canDiscoverPrivateNetworks(array $regions): bool
+    {
+        return $regions !== [];
+    }
+
+    /**
      * EC2 is regional, so each region is queried with its own client. A region failure aborts
      * the whole connection rather than returning partial results: the caller only skips
      * pruning per connection, and returning a partial view would let it delete networks that
@@ -111,7 +122,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
             $result[] = new PrivateNetworkDTO(
                 externalId: $vpcId,
                 name: $this->nameOf($vpc, $vpcId),
-                cidr: isset($vpc['CidrBlock']) ? (string) $vpc['CidrBlock'] : null,
+                cidr: $this->cidrOf($vpc),
                 region: $region,
                 members: $members[$vpcId],
             );
@@ -145,20 +156,71 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
 
         foreach ($primary !== null ? [$primary] : $interfaces as $interface) {
             $vpcId = $interface['VpcId'] ?? null;
-            $ip = $interface['PrivateIpAddress'] ?? null;
 
             if (is_string($vpcId) && $vpcId !== '') {
-                return [$vpcId, is_string($ip) && $ip !== '' ? $ip : null];
+                return [$vpcId, $this->addressOf($interface)];
             }
         }
 
         $vpcId = $instance['VpcId'] ?? null;
-        $ip = $instance['PrivateIpAddress'] ?? null;
 
         return [
             is_string($vpcId) && $vpcId !== '' ? $vpcId : null,
-            is_string($ip) && $ip !== '' ? $ip : null,
+            $this->addressOf($instance),
         ];
+    }
+
+    /**
+     * A VPC always carries an IPv4 range unless it was created IPv6-only, in which case its
+     * range lives in the association set. A dual-stack VPC is recorded by its IPv4 range,
+     * since a network holds a single range.
+     *
+     * @param  array<string, mixed>  $vpc
+     */
+    private function cidrOf(array $vpc): ?string
+    {
+        $cidr = $vpc['CidrBlock'] ?? null;
+
+        if (is_string($cidr) && $cidr !== '') {
+            return $cidr;
+        }
+
+        foreach ($vpc['Ipv6CidrBlockAssociationSet'] ?? [] as $association) {
+            $cidr = $association['Ipv6CidrBlock'] ?? null;
+
+            if (is_string($cidr) && $cidr !== '') {
+                return $cidr;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * An IPv6-only instance has no `PrivateIpAddress`, so its address has to be read from the
+     * IPv6 fields — without this it would join its network with no address at all.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    private function addressOf(array $source): ?string
+    {
+        $ip = $source['PrivateIpAddress'] ?? null;
+
+        if (is_string($ip) && $ip !== '') {
+            return $ip;
+        }
+
+        foreach ($source['Ipv6Addresses'] ?? [] as $address) {
+            $ipv6 = $address['Ipv6Address'] ?? null;
+
+            if (is_string($ipv6) && $ipv6 !== '') {
+                return $ipv6;
+            }
+        }
+
+        $ipv6 = $source['Ipv6Address'] ?? null;
+
+        return is_string($ipv6) && $ipv6 !== '' ? $ipv6 : null;
     }
 
     /**

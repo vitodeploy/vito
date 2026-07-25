@@ -179,6 +179,30 @@ class NetworkIpv6Test extends TestCase
         SSH::assertExecutedContains("echo 'IPV6=yes' | sudo tee -a /etc/default/ufw");
     }
 
+    /**
+     * The install allows SSH before enabling the firewall. Scoping that allow to an IPv4 source
+     * would leave a default-deny v6 table with no way in, locking Vito out of a server it
+     * reaches over IPv6 — and the very next thing install does is open a new connection.
+     */
+    public function test_ufw_install_opens_ssh_for_both_families(): void
+    {
+        SSH::fake();
+        $server = $this->readyServer('2001:db8::31');
+
+        $server->services()->where('type', 'firewall')->delete();
+        $service = $server->services()->create([
+            'type' => 'firewall',
+            'name' => 'ufw',
+            'version' => 'latest',
+            'status' => \App\Enums\ServiceStatus::INSTALLING,
+        ]);
+
+        $service->handler()->install();
+
+        SSH::assertExecutedContains('ufw allow proto tcp to any port '.($server->port ?? 22));
+        SSH::assertNotExecutedContains('from 0.0.0.0/0', 'The install must not scope its own allows to IPv4.');
+    }
+
     public function test_member_address_outside_the_declared_range_is_rejected(): void
     {
         SSH::fake();

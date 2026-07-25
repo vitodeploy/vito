@@ -9,20 +9,19 @@ use App\Actions\Network\UpdateNetwork;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkType;
 use App\Helpers\QueryBuilder;
+use App\Http\Resources\NetworkMemberIpResource;
+use App\Http\Resources\NetworkServerOptionResource;
 use App\Http\Resources\ServerLogResource;
 use App\Jobs\Network\SyncProviderNetworksJob;
 use App\Models\Network;
-use App\Models\NetworkServer;
 use App\Models\Project;
-use App\Models\Server;
-use App\Models\ServerIpAddress;
 use App\Tables\Networks\NetworkServerTable;
 use App\Tables\NetworkTable;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -105,34 +104,13 @@ class NetworkController extends Controller
         ]);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function memberIpsPayload(Network $network): array
+    private function memberIpsPayload(Network $network): AnonymousResourceCollection
     {
-        return $network->servers()
-            ->with(['server', 'server.ipAddresses' => fn ($query) => $query->where('type', IpAddressType::PRIVATE)])
-            ->get()
-            ->map(fn (NetworkServer $member): array => [
-                'id' => $member->id,
-                'server_id' => $member->server_id,
-                'server_name' => $member->server->name,
-                'ip_address_id' => $member->server_ip_address_id,
-                'private_ips' => $this->mapPrivateIps($member->server),
-            ])
-            ->all();
-    }
-
-    /**
-     * @return Collection<int, array{id: int, ip: string, is_primary: bool}>
-     */
-    private function mapPrivateIps(Server $server): Collection
-    {
-        return $server->ipAddresses->map(fn (ServerIpAddress $ip): array => [
-            'id' => $ip->id,
-            'ip' => $ip->ip,
-            'is_primary' => $ip->is_primary,
-        ])->values();
+        return NetworkMemberIpResource::collection(
+            $network->servers()
+                ->with(['server', 'server.ipAddresses' => fn ($query) => $query->where('type', IpAddressType::PRIVATE)])
+                ->get()
+        );
     }
 
     #[Get('/{network}/logs', name: 'networks.logs')]
@@ -199,20 +177,14 @@ class NetworkController extends Controller
 
     /**
      * @param  array<int, int>  $excludeServerIds
-     * @return array<int, array<string, mixed>>
      */
-    private function serversPayload(Project $project, array $excludeServerIds = []): array
+    private function serversPayload(Project $project, array $excludeServerIds = []): AnonymousResourceCollection
     {
-        return $project->servers()
-            ->when($excludeServerIds !== [], fn ($query) => $query->whereNotIn('id', $excludeServerIds))
-            ->with(['ipAddresses' => fn ($query) => $query->where('type', IpAddressType::PRIVATE)])
-            ->get()
-            ->map(fn (Server $server): array => [
-                'id' => $server->id,
-                'name' => $server->name,
-                'is_ready' => $server->isReady(),
-                'private_ips' => $this->mapPrivateIps($server),
-            ])
-            ->all();
+        return NetworkServerOptionResource::collection(
+            $project->servers()
+                ->when($excludeServerIds !== [], fn ($query) => $query->whereNotIn('id', $excludeServerIds))
+                ->with(['ipAddresses' => fn ($query) => $query->where('type', IpAddressType::PRIVATE)])
+                ->get()
+        );
     }
 }

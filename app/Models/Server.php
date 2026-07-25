@@ -135,7 +135,7 @@ class Server extends AbstractModel
      *
      * @var array<int, int>
      */
-    public array $networkSiblingsToResync = [];
+    protected array $networkSiblingsToResync = [];
 
     public static function boot(): void
     {

@@ -49,7 +49,7 @@ class ServerIpAddress extends AbstractModel
     ];
 
     /** @var array<int, int> */
-    public array $reapplyNetworkIds = [];
+    protected array $reapplyNetworkIds = [];
 
     /**
      * A CUSTOM membership is addressed solely by this row, and the foreign key is

@@ -36,6 +36,11 @@ class GetNetworkPeerConfig
     }
 
     /**
+     * The first member carries the whole network range as its `AllowedIPs` so the device routes
+     * the subnet through it, and the rest carry only their own host address. That makes the
+     * order load-bearing: without a deterministic one, regenerating a config could silently
+     * move which server the device routes through.
+     *
      * @return array<int, array{public_key: string, allowed_ips: string, endpoint: string}>
      */
     private function peers(NetworkPeer $peer): array
@@ -47,6 +52,7 @@ class GetNetworkPeerConfig
             ->whereNotNull('public_key')
             ->whereNotNull('ip')
             ->with('server')
+            ->orderBy('id')
             ->get()
             ->filter(fn (NetworkServer $member): bool => Cidr::isValidAddress((string) $member->server->ip))
             ->values();

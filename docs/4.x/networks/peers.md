@@ -119,4 +119,4 @@ This is a quick way to cut off a device temporarily without having to reissue it
 
 ## Connection Status
 
-Vito periodically checks each member for the last handshake with every peer, so the peers list shows whether a device is currently connected and when it was last seen.
+Vito periodically asks one of the network's members for its last handshake with every peer, so the peers list shows whether a device is currently connected and when it was last seen. A peer keeps its tunnel alive with every member, so any one of them can answer for it.

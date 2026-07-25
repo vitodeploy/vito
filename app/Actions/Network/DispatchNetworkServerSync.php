@@ -6,6 +6,7 @@ use App\Enums\NetworkServerStatus;
 use App\Jobs\Network\SyncNetworkServerJob;
 use App\Models\Network;
 use App\Models\NetworkServer;
+use Illuminate\Support\Facades\DB;
 
 class DispatchNetworkServerSync
 {
@@ -31,7 +32,7 @@ class DispatchNetworkServerSync
         if ($member->server->isReady()) {
             $member->status = NetworkServerStatus::UPDATING;
             $member->save();
-            dispatch(new SyncNetworkServerJob($member))->onQueue('ssh');
+            DB::afterCommit(fn () => dispatch(new SyncNetworkServerJob($member))->onQueue('ssh'));
 
             return;
         }
@@ -46,6 +47,6 @@ class DispatchNetworkServerSync
         $member->sync_attempts = 0;
         $member->save();
 
-        dispatch(new SyncNetworkServerJob($member, true))->onQueue('ssh');
+        DB::afterCommit(fn () => dispatch(new SyncNetworkServerJob($member, true))->onQueue('ssh'));
     }
 }

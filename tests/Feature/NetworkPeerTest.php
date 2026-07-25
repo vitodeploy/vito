@@ -222,6 +222,41 @@ class NetworkPeerTest extends TestCase
         );
     }
 
+    /**
+     * The first member listed in a peer config carries the whole network range as its
+     * AllowedIPs, so it is the server the device routes the subnet through. That makes the
+     * order load-bearing: it must be stable across regenerations, not left to the database.
+     */
+    public function test_peer_config_routes_the_subnet_through_a_stable_member(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+        $second = $this->readyPeerServer();
+        $third = $this->readyPeerServer();
+
+        $network = $this->wireguardNetwork([$this->server->id]);
+        app(AddServersToNetwork::class)->add($network, ['servers' => [$second->id, $third->id]]);
+
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+
+        $lowest = $network->servers()->orderBy('id')->firstOrFail();
+
+        for ($i = 0; $i < 3; $i++) {
+            $config = app(GetNetworkPeerConfig::class)->config($peer->refresh())['config'];
+
+            $blocks = array_slice(preg_split('/^\[Peer\]$/m', $config) ?: [], 1);
+            $this->assertCount(3, $blocks);
+
+            $this->assertStringContainsString('AllowedIPs = '.$network->cidr, $blocks[0]);
+            $this->assertStringContainsString('PublicKey = '.$lowest->public_key, $blocks[0]);
+
+            foreach (array_slice($blocks, 1) as $block) {
+                $this->assertStringNotContainsString('AllowedIPs = '.$network->cidr, $block);
+                $this->assertMatchesRegularExpression('/AllowedIPs = \S+\/32/', $block);
+            }
+        }
+    }
+
     public function test_byo_peer_keeps_config_and_rejects_conceal(): void
     {
         SSH::fake();

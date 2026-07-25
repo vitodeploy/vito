@@ -40,6 +40,7 @@ class RecomputeNetworkStatus
         $statuses = $network->servers()->pluck('status');
 
         $computed = match (true) {
+            $statuses->isEmpty() => NetworkStatus::CREATING,
             $statuses->contains(NetworkServerStatus::FAILED) => NetworkStatus::FAILED,
             $statuses->contains(NetworkServerStatus::PENDING),
             $statuses->contains(NetworkServerStatus::UPDATING),

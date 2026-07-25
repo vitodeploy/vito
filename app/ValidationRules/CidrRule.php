@@ -15,7 +15,7 @@ class CidrRule implements ValidationRule
         }
 
         if (! is_string($value) || ! Cidr::isValid($value)) {
-            $fail(__('The :attribute must be a valid IPv4 or IPv6 CIDR, for example 10.0.0.0/24 or fd00::/64.'))->translate();
+            $fail('The :attribute must be a valid IPv4 or IPv6 CIDR, for example 10.0.0.0/24 or fd00::/64.')->translate();
         }
     }
 }

@@ -88,10 +88,15 @@ class ManageNetworkFirewallRule
      */
     private function validate(array $input): void
     {
+        $port = $input['port'] ?? null;
+        $isRange = is_string($port) && str_contains($port, ':');
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'protocol' => ['nullable', 'in:tcp,udp'],
+            'protocol' => [$isRange ? 'required' : 'nullable', 'in:tcp,udp'],
             'port' => ['nullable', new PortOrPortRangeRule],
+        ], [
+            'protocol.required' => __('A protocol is required when the port is a range, because ufw rejects a multi-port rule without one.'),
         ])->validate();
     }
 }

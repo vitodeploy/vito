@@ -46,7 +46,7 @@ export default function NetworkServers() {
                 dialog.confirm.open({
                   title: `Sync network [${network.name}]`,
                   description: isManaged
-                    ? 'Query the provider and update this network’s members to match. The network is removed if it no longer exists at the provider.'
+                    ? "Query the provider and update this network's members to match. The network is removed if it no longer exists at the provider."
                     : 'Re-apply configuration to every server in this network.',
                   confirmLabel: 'Sync',
                   method: 'post',

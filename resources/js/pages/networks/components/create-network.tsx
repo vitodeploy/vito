@@ -124,6 +124,16 @@ export default function CreateNetwork({
                   <Input id="prefix" value={form.data.prefix} onChange={(e) => form.setData('prefix', e.target.value)} />
                   <InputError message={form.errors.prefix} />
                 </FormField>
+
+                <FormField>
+                  <Label htmlFor="port">Listen port</Label>
+                  <Input id="port" value={form.data.port} onChange={(e) => form.setData('port', e.target.value)} />
+                  <p className="text-muted-foreground text-xs">
+                    The UDP port the tunnel listens on. Vito moves to the next free port if a selected server already uses this one for another
+                    network.
+                  </p>
+                  <InputError message={form.errors.port} />
+                </FormField>
               </>
             )}
 
@@ -141,7 +151,7 @@ export default function CreateNetwork({
             )}
 
             <FormField>
-              <Label htmlFor="primary-server">Primary Server</Label>
+              <Label htmlFor="primary-server">Primary server</Label>
               <Combobox
                 id="primary-server"
                 items={servers.map((server) => ({

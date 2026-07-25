@@ -384,6 +384,80 @@ class ProviderPrivateNetworkTest extends TestCase
         $this->assertSame('172.31.0.5', $networks[0]->members[0]->ip);
     }
 
+    /**
+     * An IPv6-only VPC carries its range in the association set and its instances have no
+     * `PrivateIpAddress`. Reading only the IPv4 fields would sync the network with no range and
+     * its members with no address, leaving them outside every firewall rule derived from it.
+     */
+    public function test_aws_mapper_reads_ipv6_only_vpcs_and_members(): void
+    {
+        $connection = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => AWS::id(),
+            'credentials' => ['key' => 'k', 'secret' => 's'],
+        ]);
+
+        /** @var AWS $provider */
+        $provider = $connection->provider();
+
+        $networks = $provider->mapPrivateNetworks(
+            [['Instances' => [[
+                'InstanceId' => 'i-v6',
+                'NetworkInterfaces' => [[
+                    'VpcId' => 'vpc-v6',
+                    'Ipv6Addresses' => [['Ipv6Address' => '2001:db8:1::5']],
+                ]],
+            ]]]],
+            [[
+                'VpcId' => 'vpc-v6',
+                'Ipv6CidrBlockAssociationSet' => [['Ipv6CidrBlock' => '2001:db8:1::/56']],
+            ]],
+            ['i-v6'],
+            'eu-west-1',
+        );
+
+        $this->assertCount(1, $networks);
+        $this->assertSame('2001:db8:1::/56', $networks[0]->cidr);
+        $this->assertSame('2001:db8:1::5', $networks[0]->members[0]->ip);
+    }
+
+    /**
+     * A dual-stack VPC keeps its IPv4 identity — a network holds one range, and the members
+     * report their IPv4 addresses.
+     */
+    public function test_aws_mapper_prefers_ipv4_on_a_dual_stack_vpc(): void
+    {
+        $connection = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => AWS::id(),
+            'credentials' => ['key' => 'k', 'secret' => 's'],
+        ]);
+
+        /** @var AWS $provider */
+        $provider = $connection->provider();
+
+        $networks = $provider->mapPrivateNetworks(
+            [['Instances' => [[
+                'InstanceId' => 'i-dual',
+                'NetworkInterfaces' => [[
+                    'VpcId' => 'vpc-dual',
+                    'PrivateIpAddress' => '172.31.0.5',
+                    'Ipv6Addresses' => [['Ipv6Address' => '2001:db8:2::5']],
+                ]],
+            ]]]],
+            [[
+                'VpcId' => 'vpc-dual',
+                'CidrBlock' => '172.31.0.0/16',
+                'Ipv6CidrBlockAssociationSet' => [['Ipv6CidrBlock' => '2001:db8:2::/56']],
+            ]],
+            ['i-dual'],
+            'eu-west-1',
+        );
+
+        $this->assertSame('172.31.0.0/16', $networks[0]->cidr);
+        $this->assertSame('172.31.0.5', $networks[0]->members[0]->ip);
+    }
+
     public function test_aws_mapper_falls_back_to_vpc_id_when_untagged(): void
     {
         $connection = ServerProvider::factory()->create([

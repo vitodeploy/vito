@@ -82,6 +82,6 @@ Vito handles IPv6 wherever an address is given to it:
 
 - A server reachable only over IPv6 works as a WireGuard endpoint — the address is bracketed as `[2001:db8::1]:51820` in every generated config, and the handshake firewall rule uses a `/128` host prefix.
 - **Custom** networks can be built from IPv6 private addresses and can declare an IPv6 range.
-- **Provider** networks with IPv6 ranges are discovered and synced like IPv4 ones.
+- **Provider** networks with IPv6 ranges are discovered and synced like IPv4 ones, and a member whose only address is IPv6 joins with that address. A network holds a single range, so a dual-stack VPC is recorded by its IPv4 range.
 
 The address block a **WireGuard** network hands out to its own members and peers is always IPv4, from the CGNAT or RFC1918 pool above. That is the address space inside the tunnel; it is independent of whether the servers reach each other over IPv4 or IPv6.

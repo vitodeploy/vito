@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Network\AddServersToNetwork;
 use App\Actions\Network\CreateNetwork;
 use App\Actions\Network\GenerateWireGuardKeys;
 use App\Enums\IpAddressType;
@@ -384,6 +385,73 @@ class NetworkTest extends TestCase
         ])->assertNotFound();
     }
 
+    /**
+     * Two WireGuard interfaces on one host cannot share a listen port. A server joining a second
+     * network on the port it already runs moves that network to the next free one — refusing the
+     * server instead would make "a server can belong to several networks" unreachable on the
+     * default port, with no way to change it.
+     */
+    public function test_adding_a_server_moves_the_network_off_a_port_it_already_uses(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $other = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $first = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-first',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $second = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-second',
+            'type' => 'wireguard',
+            'servers' => [$other->id],
+        ]);
+
+        $this->assertSame(51820, $first->port);
+        $this->assertSame(51820, $second->port);
+
+        app(AddServersToNetwork::class)->add($second, ['servers' => [$this->server->id]]);
+
+        $this->assertSame(51821, $second->fresh()?->port);
+        $this->assertSame(51820, $first->fresh()?->port);
+        $this->assertSame(2, $second->servers()->count());
+    }
+
+    /**
+     * The per-server IP rules are keyed by server id, so building them from raw input turned a
+     * malformed `servers` entry into a 500 before the validator ever ran.
+     */
+    public function test_malformed_servers_input_is_a_validation_error(): void
+    {
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'type' => NetworkType::CUSTOM,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('networks.store'), [
+            'name' => 'bad-input',
+            'type' => 'custom',
+            'servers' => [['nested']],
+            'ip_addresses' => [],
+        ])->assertSessionHasErrors('servers.0');
+
+        $this->post(route('networks.servers.store', ['network' => $network]), [
+            'servers' => [['nested']],
+            'ip_addresses' => [],
+        ])->assertSessionHasErrors('servers.0');
+
+        $this->assertDatabaseMissing('networks', ['name' => 'bad-input']);
+    }
+
     public function test_sub_resource_404_when_not_belonging_to_network(): void
     {
         $network = Network::factory()->create(['project_id' => $this->server->project_id]);
@@ -481,6 +549,73 @@ class NetworkTest extends TestCase
             'type' => 'apply-rules',
         ]);
         $this->assertSame(0, DB::table('server_logs')->whereNull('network_id')->count());
+    }
+
+    /**
+     * The create dialog reads `servers` as a bare list of options, each carrying the private
+     * addresses a custom network can be built from.
+     */
+    public function test_index_lists_servers_as_options_with_their_private_ips(): void
+    {
+        $ip = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.0.0.7',
+            'type' => IpAddressType::PRIVATE,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('networks'))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('networks/index')
+                ->has('servers.0', fn (AssertableInertia $option) => $option
+                    ->where('id', $this->server->id)
+                    ->where('name', $this->server->name)
+                    ->has('is_ready')
+                    ->has('private_ips.0', fn (AssertableInertia $address) => $address
+                        ->where('id', $ip->id)
+                        ->where('ip', '10.0.0.7')
+                        ->has('is_primary')))
+                ->etc());
+    }
+
+    /**
+     * The servers tab of a custom network offers each member's other private addresses so the
+     * one it joined with can be changed.
+     */
+    public function test_servers_page_lists_member_ips_for_a_custom_network(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $ip = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.60.0.5',
+            'type' => IpAddressType::PRIVATE,
+        ]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'custom-members',
+            'type' => 'custom',
+            'cidr' => '10.60.0.0/24',
+            'servers' => [$this->server->id],
+            'ip_addresses' => [$this->server->id => $ip->id],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('networks.servers', $network))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('networks/servers')
+                ->has('memberIps.0', fn (AssertableInertia $member) => $member
+                    ->where('server_id', $this->server->id)
+                    ->where('server_name', $this->server->name)
+                    ->where('ip_address_id', $ip->id)
+                    ->has('private_ips.0')
+                    ->etc())
+                ->etc());
     }
 
     public function test_overview_returns_stats_and_recent_logs(): void

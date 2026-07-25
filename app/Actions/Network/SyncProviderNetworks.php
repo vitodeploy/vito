@@ -25,6 +25,7 @@ class SyncProviderNetworks
         private ApplyNetworkFirewall $firewall,
         private RecomputeNetworkStatus $recompute,
         private RemoveServerFromNetwork $remove,
+        private DeleteNetwork $delete,
     ) {}
 
     /**
@@ -48,7 +49,8 @@ class SyncProviderNetworks
         foreach ($this->connections($project, $only) as $context) {
             $connection = $context['connection'];
 
-            $asked = $context['servers'] !== [];
+            $asked = $context['servers'] !== []
+                && $context['provider']->canDiscoverPrivateNetworks($context['regions']);
 
             try {
                 $discovered = $asked
@@ -268,8 +270,9 @@ class SyncProviderNetworks
     }
 
     /**
-     * `$asked` is false when the connection had no instance ids to query, so `$seen` being
-     * empty carries no information about what still exists at the provider. Only a network
+     * `$asked` is false when the connection had no instance ids to query, or when the provider
+     * could not be queried at all (an EC2 connection whose servers carry no region), so `$seen`
+     * being empty carries no information about what still exists at the provider. Only a network
      * with no members left may be reaped in that case — anything else has to wait for a run
      * that could actually ask.
      *
@@ -289,7 +292,7 @@ class SyncProviderNetworks
                         return;
                     }
 
-                    app(DeleteNetwork::class)->delete($network);
+                    $this->delete->delete($network);
 
                     return;
                 }
@@ -300,7 +303,7 @@ class SyncProviderNetworks
                     return;
                 }
 
-                app(DeleteNetwork::class)->delete($network);
+                $this->delete->delete($network);
             });
     }
 
