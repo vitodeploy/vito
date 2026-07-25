@@ -15,6 +15,7 @@ use App\Models\Service;
 use App\Services\VPN\WireGuard;
 use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Carbon;
 use Throwable;
@@ -29,26 +30,26 @@ class PollPeerHandshakesJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("network-{$this->network->id}-handshakes", function (): void {
-            $member = $this->reachableMember();
-            if (! $member instanceof NetworkServer) {
+            foreach ($this->reachableMembers() as $member) {
+                $service = $member->server->service(WireGuard::type());
+
+                if (! $service instanceof Service || $service->status !== ServiceStatus::READY) {
+                    continue;
+                }
+
+                /** @var WireGuard $handler */
+                $handler = $service->handler();
+
+                $this->apply($handler->latestHandshakes($this->network));
+
                 return;
             }
-
-            $service = $member->server->service(WireGuard::type());
-            if (! $service instanceof Service || $service->status !== ServiceStatus::READY) {
-                return;
-            }
-
-            /** @var WireGuard $handler */
-            $handler = $service->handler();
-
-            $this->apply($handler->latestHandshakes($this->network));
         });
     }
 
     public function failed(Throwable $e): void
     {
-        $member = $this->reachableMember();
+        $member = $this->reachableMembers()->first();
         if ($member instanceof NetworkServer) {
             ServerLog::withNetwork(
                 $this->network->id,
@@ -84,13 +85,16 @@ class PollPeerHandshakesJob implements ShouldQueue
         }
     }
 
-    private function reachableMember(): ?NetworkServer
+    /**
+     * @return Collection<int, NetworkServer>
+     */
+    private function reachableMembers(): Collection
     {
         return $this->network->servers()
             ->where('status', NetworkServerStatus::ACTIVE)
             ->whereHas('server', fn ($query) => $query->whereIn('status', [ServerStatus::READY, ServerStatus::UPDATING]))
             ->with('server')
             ->orderBy('id')
-            ->first();
+            ->get();
     }
 }

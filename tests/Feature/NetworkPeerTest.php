@@ -13,8 +13,10 @@ use App\Actions\Network\UpdateNetworkPeer;
 use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
+use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Services\VPN\WireGuard;
 use App\Jobs\Network\PollPeerHandshakesJob;
 use App\Models\Network;
 use App\Models\NetworkPeer;
@@ -332,6 +334,29 @@ class NetworkPeerTest extends TestCase
 
         app(UpdateNetworkPeer::class)->update($peer, ['name' => 'laptop', 'enabled' => true]);
         $this->assertStringContainsString($peer->public_key, SSH::getUploadedContent());
+    }
+
+    /**
+     * The lowest-id member is polled first, but a member whose WireGuard service is not yet
+     * READY must not stop the poll — a later member with a ready service still serves it.
+     */
+    public function test_poll_peer_handshakes_falls_back_to_a_later_eligible_member(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+        $second = $this->readyPeerServer();
+
+        $network = $this->wireguardNetwork([$this->server->id]);
+        app(AddServersToNetwork::class)->add($network, ['servers' => [$second->id]]);
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+
+        $first = $network->servers()->where('server_id', $this->server->id)->firstOrFail();
+        $first->server->service(WireGuard::type())->update(['status' => ServiceStatus::INSTALLING]);
+
+        SSH::fake("{$peer->public_key}\t1700000000");
+        (new PollPeerHandshakesJob($network->refresh()))->handle();
+
+        $this->assertNotNull($peer->refresh()->last_handshake_at);
     }
 
     public function test_poll_peer_handshakes_updates_last_handshake(): void

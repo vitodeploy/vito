@@ -31,6 +31,10 @@ class SyncNetworkServerJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->member->server_id}", function (): void {
+            if (! $this->claim()) {
+                return;
+            }
+
             ServerLog::withNetwork($this->member->network_id, function (): void {
                 if ($this->teardown) {
                     $this->tearDown();
@@ -41,6 +45,31 @@ class SyncNetworkServerJob implements ShouldQueue
                 $this->syncToPresent();
             });
         });
+    }
+
+    /**
+     * The membership is serialised at dispatch time, so a queued job can outlive the state
+     * it was queued for — a removal turns a pending sync stale, and a completed teardown
+     * leaves no row at all. Re-read under the per-server queue lock and only proceed while
+     * the membership still holds the status this job was dispatched to act on.
+     */
+    private function claim(): bool
+    {
+        $fresh = NetworkServer::query()->whereKey($this->member->id)->first();
+
+        if (! $fresh instanceof NetworkServer) {
+            return false;
+        }
+
+        $expected = $this->teardown ? NetworkServerStatus::LEAVING : NetworkServerStatus::UPDATING;
+
+        if ($fresh->status !== $expected) {
+            return false;
+        }
+
+        $this->member = $fresh;
+
+        return true;
     }
 
     public function failed(Throwable $e): void

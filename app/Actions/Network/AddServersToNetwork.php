@@ -6,6 +6,7 @@ use App\Enums\IpAddressType;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkType;
 use App\Models\Network;
+use App\Models\Project;
 use App\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -61,7 +62,10 @@ class AddServersToNetwork
      */
     private function addWireGuard(Network $network, array $input): array
     {
+        Project::query()->whereKey($network->project_id)->lockForUpdate()->first();
         Network::query()->whereKey($network->id)->lockForUpdate()->first();
+
+        $this->validateNoPortConflict($network, $input['servers'] ?? []);
 
         $used = $network->servers()->lockForUpdate()->pluck('ip')
             ->concat($network->peers()->lockForUpdate()->pluck('ip'))
@@ -125,10 +129,6 @@ class AddServersToNetwork
         }
 
         Validator::make($input, $rules)->validate();
-
-        if ($network->type === NetworkType::WIREGUARD) {
-            $this->validateNoPortConflict($network, $input['servers'] ?? []);
-        }
     }
 
     /**

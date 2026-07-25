@@ -141,8 +141,17 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
             $items = array_merge($items, $batch);
 
             $next = $body['meta']['links']['next'] ?? null;
-            $cursor = is_string($next) && $next !== '' && $next !== $cursor ? $next : null;
-        } while ($cursor !== null);
+
+            if (! is_string($next) || $next === '') {
+                break;
+            }
+
+            if ($next === $cursor) {
+                throw $this->syncError();
+            }
+
+            $cursor = $next;
+        } while (true);
 
         return $items;
     }

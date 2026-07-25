@@ -16,6 +16,7 @@ use App\Support\Testing\SSHFake;
 use Closure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class WireGuard extends AbstractService implements VPN
 {
@@ -208,12 +209,18 @@ class WireGuard extends AbstractService implements VPN
     {
         $tmpName = 'wg-'.Str::random(20);
         $disk = Storage::disk('local');
-        $disk->put($tmpName, '');
-        $path = $disk->path($tmpName);
-        chmod($path, 0600);
-        $disk->put($tmpName, $content);
 
         try {
+            if (! $disk->put($tmpName, '')) {
+                throw new RuntimeException('Could not create the temporary WireGuard configuration file.');
+            }
+
+            $path = $disk->path($tmpName);
+
+            if (! chmod($path, 0600) || ! $disk->put($tmpName, $content)) {
+                throw new RuntimeException('Could not write the temporary WireGuard configuration file.');
+            }
+
             $ssh->upload($path, $remote, 'root');
         } finally {
             $disk->delete($tmpName);

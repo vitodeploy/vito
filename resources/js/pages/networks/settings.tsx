@@ -42,7 +42,11 @@ export default function NetworkSettings() {
   const submit = () => {
     form.put(route('networks.update', { network: network.id }), {
       preserveScroll: true,
-      onSuccess: () => setEditMode(undefined),
+      onSuccess: () => {
+        setEditMode(undefined);
+        form.setDefaults();
+        form.reset();
+      },
     });
   };
 
