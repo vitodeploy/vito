@@ -17,9 +17,12 @@ class NetworkMemberIpResource extends JsonResource
         return [
             'id' => $this->id,
             'server_id' => $this->server_id,
-            'server_name' => $this->server->name,
+            'server_name' => $this->whenLoaded('server', fn (): string => $this->server->name),
             'ip_address_id' => $this->server_ip_address_id,
-            'private_ips' => NetworkPrivateIpResource::collection($this->server->ipAddresses),
+            'private_ips' => $this->whenLoaded(
+                'server',
+                fn () => NetworkPrivateIpResource::collection($this->server->ipAddresses)
+            ),
         ];
     }
 }

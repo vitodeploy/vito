@@ -7,6 +7,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
 use App\Enums\NetworkType;
+use App\Exceptions\PrivateNetworkPersistError;
 use App\Exceptions\PrivateNetworkSyncError;
 use App\Models\Network;
 use App\Models\NetworkServer;
@@ -34,9 +35,10 @@ class SyncProviderNetworks
      *
      * One connection's failure must not suppress pruning for the others, so failures are
      * collected and rethrown once every healthy connection has been processed — the caller
-     * still sees the error instead of a silent success.
+     * still sees the error instead of a silent success. A network that could not be written
+     * is counted the same way, so a partial sweep never reports success either.
      *
-     * @throws PrivateNetworkSyncError
+     * @throws PrivateNetworkSyncError|PrivateNetworkPersistError
      */
     public function forProject(Project $project, ?Network $only = null): void
     {
@@ -45,6 +47,7 @@ class SyncProviderNetworks
         }
 
         $failure = null;
+        $persistFailures = 0;
 
         foreach ($this->connections($project, $only) as $context) {
             $connection = $context['connection'];
@@ -75,7 +78,9 @@ class SyncProviderNetworks
 
                 $seen[] = $dto->externalId;
 
-                $this->reconcile($project, $connection, $dto, $context['servers']);
+                if (! $this->reconcile($project, $connection, $dto, $context['servers'])) {
+                    $persistFailures++;
+                }
             }
 
             $this->prune($project, $connection, $seen, $only, $asked);
@@ -83,6 +88,10 @@ class SyncProviderNetworks
 
         if ($failure instanceof PrivateNetworkSyncError) {
             throw $failure;
+        }
+
+        if ($persistFailures > 0) {
+            throw new PrivateNetworkPersistError($project->id, $persistFailures);
         }
     }
 
@@ -92,8 +101,9 @@ class SyncProviderNetworks
      * failure — that would wrongly suppress pruning for every other network on the connection.
      *
      * @param  array<string, Server>  $servers
+     * @return bool whether the network was persisted; the caller fails the sweep at the end
      */
-    private function reconcile(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto, array $servers): void
+    private function reconcile(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto, array $servers): bool
     {
         try {
             $network = DB::transaction(function () use ($project, $connection, $dto, $servers): Network {
@@ -111,11 +121,13 @@ class SyncProviderNetworks
                 'reason' => $e->getCode(),
             ]);
 
-            return;
+            return false;
         }
 
         $this->firewall->handle($network);
         $this->recompute->handle($network);
+
+        return true;
     }
 
     private function upsert(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto): Network
@@ -399,6 +411,7 @@ class SyncProviderNetworks
                 'key' => $provider->instanceIdKey(),
                 'servers' => [],
                 'regions' => [],
+                'serversWithoutRegion' => 0,
             ];
         }
 

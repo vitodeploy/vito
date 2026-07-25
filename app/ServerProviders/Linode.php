@@ -136,11 +136,14 @@ class Linode extends AbstractProvider implements ProvidesPrivateNetworks
                 throw $this->syncError($response->status());
             }
 
-            /** @var array<string, mixed> $body */
             $body = $response->json();
 
+            if (! is_array($body) || ! is_array($body['data'] ?? null)) {
+                throw $this->syncError($response->status());
+            }
+
             /** @var array<int, array<string, mixed>> $batch */
-            $batch = $body['data'] ?? [];
+            $batch = $body['data'];
             $items = array_merge($items, $batch);
 
             if ($page >= (int) ($body['pages'] ?? 1)) {

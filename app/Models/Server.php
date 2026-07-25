@@ -128,20 +128,20 @@ class Server extends AbstractModel
     /**
      * Carried between the two events because the membership rows are gone by the second.
      *
-     * @var array<int, int>
+     * @var array{members: array<int, int>, networks: array<int, int>}
      */
-    protected array $networkSiblingsToResync = [];
+    protected array $networkDeparture = ['members' => [], 'networks' => []];
 
     public static function boot(): void
     {
         parent::boot();
 
         static::deleting(function (Server $server): void {
-            $server->networkSiblingsToResync = app(ResyncNetworkSiblings::class)->capture($server);
+            $server->networkDeparture = app(ResyncNetworkSiblings::class)->capture($server);
         });
 
         static::deleted(function (Server $server): void {
-            app(ResyncNetworkSiblings::class)->handle($server->networkSiblingsToResync);
+            app(ResyncNetworkSiblings::class)->handle($server->networkDeparture);
         });
 
         static::deleting(function (Server $server): void {

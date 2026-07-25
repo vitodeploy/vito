@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Actions\Network\CheckNetworkStranding;
 use App\Enums\NetworkType;
 use App\Models\Network;
 use App\Models\Project;
@@ -43,7 +44,7 @@ class NetworkPolicy
     {
         if ($network->type === NetworkType::PROVIDER
             && $network->server_provider_id !== null
-            && ! $network->isStrandedFromProvider()) {
+            && ! app(CheckNetworkStranding::class)->handle($network)) {
             return false;
         }
 

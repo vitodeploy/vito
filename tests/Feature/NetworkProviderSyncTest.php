@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Network\RecomputeNetworkStatus;
 use App\Actions\Network\SyncProviderNetworks;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
 use App\Enums\UserRole;
+use App\Exceptions\PrivateNetworkPersistError;
 use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\SSH;
+use App\Events\SocketEvent;
 use App\Jobs\Network\SyncProviderNetworksJob;
 use App\Models\Network;
 use App\Models\Server;
@@ -21,8 +24,12 @@ use App\ServerProviders\Hetzner;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use RuntimeException;
 use Tests\TestCase;
 
 class NetworkProviderSyncTest extends TestCase
@@ -39,6 +46,8 @@ class NetworkProviderSyncTest extends TestCase
 
     private ?int $failStatus = null;
 
+    private bool $malformed = false;
+
     /**
      * `Http::fake()` merges stubs rather than replacing them, so a per-call fake would let
      * the first registration win for every later sync. One closure reading mutable state
@@ -53,6 +62,10 @@ class NetworkProviderSyncTest extends TestCase
         Http::fake(function (Request $request): PromiseInterface {
             if ($this->failStatus !== null) {
                 return Http::response(['error' => ['message' => 'nope']], $this->failStatus);
+            }
+
+            if ($this->malformed) {
+                return Http::response(['unexpected' => 'shape']);
             }
 
             if (str_contains($request->url(), '/networks')) {
@@ -455,6 +468,103 @@ class NetworkProviderSyncTest extends TestCase
 
         $this->delete(route('networks.destroy', $network))->assertRedirect();
         $this->assertNotSame(NetworkStatus::ACTIVE, $network->fresh()?->status);
+    }
+
+    /**
+     * A 200 whose body is not the expected shape says nothing about the account's inventory.
+     * Reading it as "no networks" would make an API change, a proxy, or a captive portal delete
+     * every synced network on the connection.
+     */
+    public function test_malformed_provider_response_fails_the_sweep_instead_of_pruning(): void
+    {
+        $this->fakeProvider(
+            [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101]]],
+            [['id' => 101, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]]],
+        );
+        $this->sync();
+
+        $network = Network::query()->where('external_id', '4711')->firstOrFail();
+
+        $this->malformed = true;
+
+        try {
+            $this->sync();
+            $this->fail('A malformed provider response must fail the sweep.');
+        } catch (PrivateNetworkSyncError) {
+            // expected
+        }
+
+        $this->assertNotNull(
+            Network::query()->find($network->id),
+            'A network must not be pruned on the strength of an unreadable response.'
+        );
+    }
+
+    /**
+     * Discovered networks that cannot be written leave the sweep incomplete. Pruning still runs
+     * for the rest, but the job has to report failure rather than a silent partial sync.
+     */
+    public function test_a_network_that_cannot_be_persisted_fails_the_sweep(): void
+    {
+        $peer = $this->otherServer();
+
+        $this->fakeProvider(
+            [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101, 102]]],
+            [
+                ['id' => 101, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]],
+                ['id' => 102, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]],
+            ],
+        );
+
+        $this->expectException(PrivateNetworkPersistError::class);
+
+        $this->sync();
+
+        $this->assertNotNull($peer);
+    }
+
+    /**
+     * The client replaces its whole copy of the network from this payload, so a relation the
+     * initial page load included has to be present here too — otherwise Settings blanks the
+     * provider the moment any status change is broadcast.
+     */
+    public function test_status_broadcast_carries_the_provider_relation(): void
+    {
+        Event::fake([SocketEvent::class]);
+
+        $network = $this->providerNetwork($this->connection->id);
+
+        app(RecomputeNetworkStatus::class)->handle($network);
+
+        $payload = null;
+
+        Event::assertDispatched(SocketEvent::class, function (SocketEvent $event) use (&$payload): bool {
+            if ($event->data->type === 'network.updated' && is_array($event->data->data)) {
+                $payload = $event->data->data;
+            }
+
+            return true;
+        });
+
+        $this->assertIsArray($payload);
+        $this->assertSame(Hetzner::id(), $payload['provider'] ?? null);
+    }
+
+    /**
+     * Only the sweep's own exceptions are built credential-free; anything else can carry a token
+     * in its message, and this log is written verbatim.
+     */
+    public function test_failed_job_does_not_log_an_unexpected_exception_message(): void
+    {
+        Log::spy();
+        Notification::fake();
+
+        (new SyncProviderNetworksJob($this->server->project))->failed(new RuntimeException('token=super-secret'));
+
+        Log::shouldHaveReceived('warning')->withArgs(
+            fn (string $message, array $context): bool => $context['exception'] === RuntimeException::class
+                && $context['reason'] === null
+        );
     }
 
     private function awsConnection(): ServerProvider

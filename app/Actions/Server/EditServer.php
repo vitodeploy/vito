@@ -2,10 +2,7 @@
 
 namespace App\Actions\Server;
 
-use App\Actions\Network\DispatchNetworkServerSync;
-use App\Enums\NetworkServerStatus;
-use App\Enums\NetworkType;
-use App\Models\NetworkServer;
+use App\Actions\Network\ResyncServerEndpoint;
 use App\Models\Server;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class EditServer
 {
-    public function __construct(private DispatchNetworkServerSync $sync) {}
+    public function __construct(private ResyncServerEndpoint $resync) {}
 
     /**
      * @param  array<string, mixed>  $input
@@ -50,7 +47,7 @@ class EditServer
         $server->save();
 
         if ($ipChanged) {
-            $this->resyncWireGuardPeers($server);
+            $this->resync->handle($server);
         }
 
         if ($checkConnection) {
@@ -58,21 +55,6 @@ class EditServer
         }
 
         return $server;
-    }
-
-    /**
-     * The server's public IP feeds every peer's WireGuard endpoint and handshake
-     * firewall rule, so re-sync the peers in each of its WireGuard networks.
-     */
-    private function resyncWireGuardPeers(Server $server): void
-    {
-        NetworkServer::query()
-            ->where('server_id', $server->id)
-            ->where('status', '!=', NetworkServerStatus::LEAVING)
-            ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
-            ->with('network')
-            ->get()
-            ->each(fn (NetworkServer $membership) => $this->sync->resyncMembers($membership->network, $membership->id));
     }
 
     private function validate(Server $server, array $input): void

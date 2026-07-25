@@ -3,6 +3,8 @@
 namespace App\Jobs\Network;
 
 use App\Actions\Network\SyncProviderNetworks;
+use App\Exceptions\PrivateNetworkPersistError;
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\Notifier;
 use App\Models\Network;
 use App\Models\Project;
@@ -73,11 +75,24 @@ class SyncProviderNetworksJob implements ShouldQueue
         Log::warning('Provider network sync job failed.', [
             'project_id' => $this->project->id,
             'network_id' => $this->network?->id,
-            'reason' => $e->getMessage(),
+            'exception' => $e::class,
+            'reason' => $this->safeReason($e),
         ]);
 
         Notifier::send($this->project, new GenericNotification(
             __('Could not sync private networks from your cloud providers. Check the provider connection and its permissions.')
         ));
+    }
+
+    /**
+     * Only the sweep's own exceptions are built to be credential-free. Anything else — a driver
+     * or HTTP client exception, say — can carry a token or a connection string in its message,
+     * and this log is written verbatim.
+     */
+    private function safeReason(Throwable $e): ?string
+    {
+        return $e instanceof PrivateNetworkSyncError || $e instanceof PrivateNetworkPersistError
+            ? $e->getMessage()
+            : null;
     }
 }

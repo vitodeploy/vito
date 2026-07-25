@@ -10,6 +10,7 @@ use App\Events\SocketEvent;
 use App\Http\Resources\NetworkPeerResource;
 use App\Http\Resources\NetworkResource;
 use App\Models\Network;
+use App\Models\NetworkPeer;
 
 class RecomputeNetworkStatus
 {
@@ -57,11 +58,36 @@ class RecomputeNetworkStatus
             $this->activatePendingPeers($network);
         }
 
+        if ($computed === NetworkStatus::CREATING) {
+            $this->holdActivePeers($network);
+        }
+
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $network->project_id,
             type: 'network.updated',
-            data: new NetworkResource($network->loadCount('servers')),
+            data: new NetworkResource($network->load('serverProvider')->loadCount('servers')),
         ));
+    }
+
+    /**
+     * No member is left to hold the peer's key, so it is not connected to anything. It waits
+     * for a server to join rather than reporting itself active against an empty network.
+     */
+    private function holdActivePeers(Network $network): void
+    {
+        $network->peers()
+            ->where('status', NetworkPeerStatus::ACTIVE)
+            ->get()
+            ->each(function (NetworkPeer $peer) use ($network): void {
+                $peer->status = NetworkPeerStatus::PENDING;
+                $peer->save();
+
+                SocketEvent::dispatch(new SocketEventDTO(
+                    projectId: $network->project_id,
+                    type: 'network-peer.updated',
+                    data: new NetworkPeerResource($peer),
+                ));
+            });
     }
 
     private function activatePendingPeers(Network $network): void

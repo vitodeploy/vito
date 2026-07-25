@@ -18,7 +18,7 @@ class NetworkServerOptionResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'is_ready' => $this->isReady(),
-            'private_ips' => NetworkPrivateIpResource::collection($this->ipAddresses),
+            'private_ips' => NetworkPrivateIpResource::collection($this->whenLoaded('ipAddresses')),
         ];
     }
 }

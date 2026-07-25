@@ -26,8 +26,9 @@ class AddServersToNetwork
 
     /**
      * @param  array<string, mixed>  $input
+     * @return ?int the port the network moved to, when an incoming server forced it off its own
      */
-    public function add(Network $network, array $input): void
+    public function add(Network $network, array $input): ?int
     {
         if ($network->type === NetworkType::PROVIDER) {
             throw ValidationException::withMessages([
@@ -36,6 +37,8 @@ class AddServersToNetwork
         }
 
         $this->validate($network, $input);
+
+        $portBefore = $network->port;
 
         $newMemberIds = DB::transaction(function () use ($network, $input): array {
             return $network->type === NetworkType::WIREGUARD
@@ -56,6 +59,8 @@ class AddServersToNetwork
         }
 
         $this->recompute->handle($network);
+
+        return $network->port !== $portBefore ? $network->port : null;
     }
 
     /**

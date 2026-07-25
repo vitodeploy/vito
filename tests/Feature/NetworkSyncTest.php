@@ -5,13 +5,16 @@ namespace Tests\Feature;
 use App\Actions\Network\AddServersToNetwork;
 use App\Actions\Network\AllocateNetworkBlock;
 use App\Actions\Network\CreateNetwork;
+use App\Actions\Network\CreateNetworkPeer;
 use App\Actions\Network\DeleteNetwork;
 use App\Actions\Network\RemoveServerFromNetwork;
 use App\Actions\Network\SyncNetwork;
+use App\Actions\ServerIp\ManageServerIp;
 use App\Actions\ServerIp\RefreshServerIps;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressType;
 use App\Enums\NetworkAddressingPool;
+use App\Enums\NetworkPeerStatus;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
 use App\Enums\ServerStatus;
@@ -104,7 +107,7 @@ class NetworkSyncTest extends TestCase
         $this->assertSame(NetworkStatus::ACTIVE, $network->fresh()->status);
     }
 
-    public function test_create_provider_network_members_active_without_wireguard(): void
+    public function test_custom_network_members_are_active_without_wireguard(): void
     {
         SSH::fake();
 
@@ -140,7 +143,7 @@ class NetworkSyncTest extends TestCase
         ]);
     }
 
-    public function test_create_provider_rejects_public_ip(): void
+    public function test_custom_network_rejects_a_public_ip(): void
     {
         $ip = ServerIpAddress::factory()->create([
             'server_id' => $this->server->id,
@@ -217,7 +220,12 @@ class NetworkSyncTest extends TestCase
         $this->assertSame(NetworkStatus::SYNCING, $network->fresh()->status);
     }
 
-    public function test_reconciler_force_converges_stuck_leaving_member(): void
+    /**
+     * Cleanup on the server can only run while it is reachable, so a teardown that has burned
+     * its fast attempts keeps retrying on the slow cadence — abandoning it there would leave the
+     * tunnel configured on a server that was merely rebooting.
+     */
+    public function test_reconciler_keeps_retrying_a_leaving_member_past_the_fast_attempts(): void
     {
         SSH::fake();
         $this->server->update(['status' => ServerStatus::READY]);
@@ -237,7 +245,52 @@ class NetworkSyncTest extends TestCase
 
         Artisan::call('networks:reconcile');
 
+        $this->assertDatabaseHas('network_servers', ['id' => $member->id]);
+
+        NetworkServer::query()->whereKey($member->id)->update([
+            'status' => NetworkServerStatus::LEAVING,
+            'updated_at' => now()->subMinutes(61),
+        ]);
+
+        Artisan::call('networks:reconcile');
+
         $this->assertDatabaseMissing('network_servers', ['id' => $member->id]);
+        $this->assertDatabaseMissing('server_logs', [
+            'network_id' => $network->id,
+            'type' => 'network-leave-incomplete',
+        ]);
+    }
+
+    /**
+     * The retries are bounded so a server that never comes back cannot strand the network in
+     * `deleting` forever. The membership goes; the log records that the server may still hold
+     * the tunnel configuration.
+     */
+    public function test_reconciler_force_converges_a_leaving_member_that_never_converges(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+        $member = $network->servers()->firstOrFail();
+
+        NetworkServer::query()->whereKey($member->id)->update([
+            'status' => NetworkServerStatus::LEAVING,
+            'sync_attempts' => 30,
+            'updated_at' => now()->subMinutes(3),
+        ]);
+
+        Artisan::call('networks:reconcile');
+
+        $this->assertDatabaseMissing('network_servers', ['id' => $member->id]);
+        $this->assertDatabaseHas('server_logs', [
+            'network_id' => $network->id,
+            'type' => 'network-leave-incomplete',
+        ]);
     }
 
     public function test_create_wireguard_rejects_when_block_is_full(): void
@@ -447,6 +500,75 @@ class NetworkSyncTest extends TestCase
         $this->assertSame(0, $network->servers()->where('status', '!=', NetworkServerStatus::LEAVING)->count());
     }
 
+    /**
+     * A network losing its last member has no sibling left whose sync would recompute it, so the
+     * status has to be recomputed from the departure itself — otherwise the network reports
+     * `active` with no servers, and its peers report connected to nothing.
+     */
+    /**
+     * A peer's WireGuard endpoint is the server's public address, so promoting a different one
+     * has to push the change to the other members — the same resync an explicit IP edit does.
+     * Without it they keep dialling the old address.
+     */
+    public function test_promoting_a_public_ip_resyncs_wireguard_members(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $other = Server::factory()->create([
+            'project_id' => $this->server->project_id,
+            'user_id' => $this->user->id,
+            'status' => ServerStatus::READY,
+        ]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id, $other->id],
+        ]);
+
+        $promoted = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '203.0.113.9',
+            'family' => IpAddressFamily::V4,
+            'type' => IpAddressType::PUBLIC,
+        ]);
+
+        SSH::fake();
+
+        app(ManageServerIp::class)->setPrimary($promoted);
+
+        $this->assertSame('203.0.113.9', $this->server->fresh()?->ip);
+        $this->assertStringContainsString(
+            'Endpoint = 203.0.113.9:'.$network->port,
+            SSH::getUploadedContent(),
+            "The other member's tunnel must point at the new address."
+        );
+    }
+
+    public function test_deleting_the_last_member_server_recomputes_the_network(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'wg-net',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id],
+        ]);
+
+        $peer = app(CreateNetworkPeer::class)->create($network, ['name' => 'laptop']);
+
+        $this->assertSame(NetworkStatus::ACTIVE, $network->fresh()?->status);
+        $this->assertSame(NetworkPeerStatus::ACTIVE, $peer->fresh()?->status);
+
+        $this->server->delete();
+
+        $this->assertSame(0, $network->servers()->count());
+        $this->assertSame(NetworkStatus::CREATING, $network->fresh()?->status);
+        $this->assertSame(NetworkPeerStatus::PENDING, $peer->fresh()?->status);
+    }
+
     public function test_deleting_server_resyncs_wireguard_siblings(): void
     {
         SSH::fake();
@@ -464,6 +586,9 @@ class NetworkSyncTest extends TestCase
             'servers' => [$this->server->id, $server2->id],
         ]);
         $sibling = $network->servers()->where('server_id', $server2->id)->firstOrFail();
+        $departingKey = (string) $network->servers()->where('server_id', $this->server->id)->firstOrFail()->public_key;
+
+        SSH::fake();
 
         $this->server->deleteFromProvider = false;
         $this->server->delete();
@@ -471,6 +596,13 @@ class NetworkSyncTest extends TestCase
         $this->assertDatabaseMissing('network_servers', ['server_id' => $this->server->id]);
         $this->assertSame(1, $network->servers()->count());
         $this->assertSame(NetworkServerStatus::ACTIVE, $sibling->fresh()->status);
+
+        SSH::assertExecutedContains('wg-quick@wg-vito-'.$network->id);
+        $this->assertStringNotContainsString(
+            $departingKey,
+            SSH::getUploadedContent(),
+            "The sibling's tunnel must be rewritten without the departed server's key."
+        );
     }
 
     public function test_leaving_one_of_two_wireguard_networks_keeps_service_installed(): void
@@ -558,7 +690,7 @@ class NetworkSyncTest extends TestCase
         $this->assertSame(51821, $b->port);
     }
 
-    public function test_provider_add_server_success(): void
+    public function test_custom_network_accepts_a_second_server(): void
     {
         SSH::fake();
         $ip1 = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);

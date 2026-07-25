@@ -268,6 +268,10 @@ class NetworkFirewallTest extends TestCase
         ]);
 
         SSH::assertExecutedContains('allow from 10.0.0.0/24 to any proto tcp port 3306');
+        SSH::assertNotExecutedContains(
+            "grep -q '^IPV6=yes'",
+            'An IPv4 rule must be applied unconditionally, not behind the IPv6 guard.'
+        );
     }
 
     public function test_custom_network_without_a_cidr_uses_each_member_private_ip(): void

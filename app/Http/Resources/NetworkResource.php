@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Actions\Network\CheckNetworkStranding;
 use App\Enums\NetworkType;
 use App\Models\Network;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class NetworkResource extends JsonResource
             'region' => $this->region,
             'is_managed' => $this->type === NetworkType::PROVIDER,
             'is_orphaned' => $this->type === NetworkType::PROVIDER && $this->server_provider_id === null,
-            'is_stranded' => $this->type === NetworkType::PROVIDER && $this->server_provider_id !== null && $this->isStrandedFromProvider(),
+            'is_stranded' => app(CheckNetworkStranding::class)->handle($this->resource),
             'provider' => $this->whenLoaded('serverProvider', fn (): ?string => $this->serverProvider?->provider),
             'last_synced_at' => $this->last_synced_at,
             'status' => $this->status->getText(),

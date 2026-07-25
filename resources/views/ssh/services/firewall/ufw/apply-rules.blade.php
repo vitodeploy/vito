@@ -24,12 +24,22 @@ fi
         $port = isset($rule->port) && $rule->port !== null && $rule->port !== ''
             ? ' port ' . $rule->port
             : '';
+        $isV6Source = isset($rule->source) && $rule->source !== null && \App\Support\Cidr::isV6($rule->source);
     @endphp
 
+@if($isV6Source)
+    if grep -q '^IPV6=yes' /etc/default/ufw 2>/dev/null; then
+        if ! sudo ufw {{ $rule->type }} from {{ $source }} to any{{ $protocol }}{{ $port }}; then
+            @include('ssh.services.firewall.ufw.restore-rules')
+            echo 'VITO_SSH_ERROR' && exit 1
+        fi
+    fi
+@else
     if ! sudo ufw {{ $rule->type }} from {{ $source }} to any{{ $protocol }}{{ $port }}; then
         @include('ssh.services.firewall.ufw.restore-rules')
         echo 'VITO_SSH_ERROR' && exit 1
     fi
+@endif
 @endforeach
 
 if ! sudo ufw --force enable; then

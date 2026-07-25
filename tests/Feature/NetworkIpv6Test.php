@@ -124,6 +124,27 @@ class NetworkIpv6Test extends TestCase
         SSH::assertExecutedContains('allow from 2001:db8::2/128 to any proto udp port '.$network->port);
     }
 
+    /**
+     * ufw refuses a v6 rule when its own IPv6 support is off, and rules are applied as one
+     * reset-and-reapply batch — so an unguarded v6 rule would fail the whole batch on an
+     * IPv4-only member and leave it permanently `failed`. With IPv6 off the kernel table is
+     * unfiltered anyway, so skipping the rule loses nothing.
+     */
+    public function test_ipv6_rules_are_skipped_on_a_member_whose_ufw_has_no_ipv6(): void
+    {
+        SSH::fake();
+        $this->server->update(['ip' => '2001:db8::1', 'status' => ServerStatus::READY]);
+        $peer = $this->readyServer('2001:db8::2');
+
+        app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'v6-guard',
+            'type' => 'wireguard',
+            'servers' => [$this->server->id, $peer->id],
+        ]);
+
+        SSH::assertExecutedContains("grep -q '^IPV6=yes' /etc/default/ufw");
+    }
+
     public function test_custom_network_accepts_an_ipv6_range_and_members(): void
     {
         SSH::fake();

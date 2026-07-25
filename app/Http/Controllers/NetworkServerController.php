@@ -27,10 +27,10 @@ class NetworkServerController extends Controller
         $this->authorize('update', $network);
         $this->ensureNotProviderManaged($network);
 
-        app(AddServersToNetwork::class)->add($network, $request->all());
+        $movedPort = app(AddServersToNetwork::class)->add($network, $request->all());
 
-        if ($network->wasChanged('port') && $network->peers()->exists()) {
-            return back()->with('warning', 'Servers are being added. The listen port moved to '.$network->port.', so every peer must download its config again to reconnect.');
+        if ($movedPort !== null && $network->peers()->exists()) {
+            return back()->with('warning', 'Servers are being added. The listen port moved to '.$movedPort.', so every peer must download its config again to reconnect.');
         }
 
         return back()->with('info', 'Servers are being added to the network.');

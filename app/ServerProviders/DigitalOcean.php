@@ -121,11 +121,14 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
                 throw $this->syncError($response->status());
             }
 
-            /** @var array<string, mixed> $body */
             $body = $response->json();
 
+            if (! is_array($body) || ! is_array($body[$key] ?? null)) {
+                throw $this->syncError($response->status());
+            }
+
             /** @var array<int, array<string, mixed>> $batch */
-            $batch = $body[$key] ?? [];
+            $batch = $body[$key];
             $items = array_merge($items, $batch);
 
             if (! isset($body['links']['pages']['next'])) {

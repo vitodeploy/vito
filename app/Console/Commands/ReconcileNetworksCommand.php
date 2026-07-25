@@ -18,6 +18,7 @@ use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\ServerLog;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ReconcileNetworksCommand extends Command
@@ -29,6 +30,8 @@ class ReconcileNetworksCommand extends Command
     private const MAX_ATTEMPTS = 5;
 
     private const SLOW_RETRY_MINUTES = 60;
+
+    private const MAX_LEAVING_ATTEMPTS = 30;
 
     public function handle(): void
     {
@@ -124,19 +127,32 @@ class ReconcileNetworksCommand extends Command
             });
     }
 
+    /**
+     * On-server cleanup only works while the server is reachable, so a teardown keeps retrying —
+     * quickly at first, then hourly — for about a day before the membership is force-removed.
+     * Giving up after the fast attempts alone would abandon the tunnel config on a server that
+     * was merely rebooting.
+     */
     private function reconcileLeaving(): void
     {
         $threshold = now()->subMinutes(2);
+        $slowRetry = now()->subMinutes(self::SLOW_RETRY_MINUTES);
 
         NetworkServer::query()
             ->where('status', NetworkServerStatus::LEAVING)
             ->where('updated_at', '<', $threshold)
             ->with('network', 'server')
             ->get()
-            ->each(function (NetworkServer $member) use ($threshold): void {
-                if ($member->sync_attempts >= self::MAX_ATTEMPTS) {
+            ->each(function (NetworkServer $member) use ($threshold, $slowRetry): void {
+                if ($member->sync_attempts >= self::MAX_LEAVING_ATTEMPTS) {
                     $this->forceConverge($member);
 
+                    return;
+                }
+
+                if ($member->sync_attempts >= self::MAX_ATTEMPTS
+                    && $member->updated_at instanceof Carbon
+                    && $member->updated_at->greaterThan($slowRetry)) {
                     return;
                 }
 
@@ -164,7 +180,8 @@ class ReconcileNetworksCommand extends Command
         ServerLog::withNetwork($network->id, fn () => ServerLog::log(
             $member->server,
             'network-leave-incomplete',
-            'On-server cleanup could not complete after repeated attempts; membership force-removed.'
+            'On-server cleanup could not complete after repeated attempts; membership force-removed. '
+            .'The tunnel configuration may still exist on the server; it is cleared the next time the server syncs a network.'
         ));
 
         $member->delete();

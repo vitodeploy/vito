@@ -120,9 +120,32 @@ class WireGuard extends AbstractService implements VPN
         $this->uploadConf($ssh, $this->confPath($network).'.tmp', $content);
 
         $ssh->exec(
-            view('ssh.services.wireguard.configure', ['networkId' => $network->id]),
+            view('ssh.services.wireguard.configure', [
+                'networkId' => $network->id,
+                'keepNetworkIds' => $this->managedNetworkIds($membership),
+            ]),
             'configure-wireguard'
         );
+    }
+
+    /**
+     * Every WireGuard network this server still belongs to. Any other wg-vito interface on the
+     * box is a leftover — a teardown that could not complete while the server was unreachable,
+     * for instance — and the configure pass removes it.
+     *
+     * @return array<int, int>
+     */
+    private function managedNetworkIds(NetworkServer $membership): array
+    {
+        return NetworkServer::query()
+            ->where('server_id', $membership->server_id)
+            ->where('status', '!=', NetworkServerStatus::LEAVING)
+            ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
+            ->pluck('network_id')
+            ->push($membership->network_id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

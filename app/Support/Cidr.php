@@ -119,6 +119,20 @@ class Cidr
         return self::mask($candidate, $prefix) === self::mask($network, $prefix);
     }
 
+    /**
+     * Whether $inner sits entirely inside $outer. A range can only be contained by one at least
+     * as wide, so the prefix is compared before the network address.
+     */
+    public static function containsRange(string $outer, string $inner): bool
+    {
+        if (self::bits($outer) !== self::bits($inner)) {
+            return false;
+        }
+
+        return self::prefix($inner) >= self::prefix($outer)
+            && self::contains($outer, self::network($inner));
+    }
+
     public static function overlaps(string $a, string $b): bool
     {
         if (self::bits($a) !== self::bits($b)) {

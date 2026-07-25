@@ -27,6 +27,7 @@ use App\Models\User;
 use App\Services\VPN\WireGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -466,6 +467,50 @@ class NetworkTest extends TestCase
     }
 
     /**
+     * The declared range is what the firewall rules are scoped to, so a range wider than private
+     * space would emit `allow from 0.0.0.0/0` on every member — opening those ports to the
+     * internet on servers that were default-deny.
+     */
+    public function test_a_range_outside_private_address_space_is_rejected(): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $ip = ServerIpAddress::factory()->create([
+            'server_id' => $this->server->id,
+            'ip' => '10.80.0.5',
+            'type' => IpAddressType::PRIVATE,
+        ]);
+
+        foreach (['0.0.0.0/0', '::/0', '8.8.8.0/24', '10.0.0.0/7', '2001:db8::/32'] as $cidr) {
+            try {
+                app(CreateNetwork::class)->create($this->server->project, [
+                    'name' => 'public-'.md5($cidr),
+                    'type' => 'custom',
+                    'cidr' => $cidr,
+                    'servers' => [$this->server->id],
+                    'ip_addresses' => [$this->server->id => $ip->id],
+                ]);
+                $this->fail("Expected [$cidr] to be rejected.");
+            } catch (ValidationException) {
+                // expected
+            }
+        }
+
+        $this->assertSame(0, Network::query()->where('project_id', $this->server->project_id)->count());
+
+        $network = app(CreateNetwork::class)->create($this->server->project, [
+            'name' => 'private-range',
+            'type' => 'custom',
+            'cidr' => '10.80.0.0/24',
+            'servers' => [$this->server->id],
+            'ip_addresses' => [$this->server->id => $ip->id],
+        ]);
+
+        $this->assertSame('10.80.0.0/24', $network->cidr);
+    }
+
+    /**
      * The per-server IP rules are keyed by server id, so building them from raw input turned a
      * malformed `servers` entry into a 500 before the validator ever ran.
      */
@@ -532,23 +577,36 @@ class NetworkTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_member_regenerate_via_http(): void
+    public function test_member_regenerate_via_http_resyncs_the_member(): void
     {
         SSH::fake();
-        $network = Network::factory()->create(['project_id' => $this->server->project_id]);
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $network = Network::factory()->create([
+            'project_id' => $this->server->project_id,
+            'cidr' => '100.64.0.0/24',
+            'cidr_canonical' => '100.64.0.0/24',
+        ]);
         $member = NetworkServer::factory()->create([
             'network_id' => $network->id,
             'server_id' => $this->server->id,
             'ip' => '100.64.0.5',
+            'status' => NetworkServerStatus::FAILED,
+            'sync_attempts' => 3,
         ]);
 
         $this->actingAs($this->user);
 
         $this->post(route('networks.servers.sync', ['network' => $network, 'networkServer' => $member]))
             ->assertSessionDoesntHaveErrors();
+
+        $fresh = $member->fresh();
+        $this->assertSame(NetworkServerStatus::ACTIVE, $fresh?->status);
+        $this->assertSame(0, $fresh?->sync_attempts);
+        SSH::assertExecutedContains('wg-quick@wg-vito-'.$network->id);
     }
 
-    public function test_provider_duplicate_cidr_returns_422(): void
+    public function test_custom_network_duplicate_cidr_is_rejected(): void
     {
         $ip = ServerIpAddress::factory()->create(['server_id' => $this->server->id, 'ip' => '10.0.0.5', 'type' => IpAddressType::PRIVATE]);
         Network::factory()->create([

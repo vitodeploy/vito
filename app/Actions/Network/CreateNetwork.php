@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Support\Cidr;
 use App\ValidationRules\CidrRule;
+use App\ValidationRules\PrivateRangeRule;
 use App\ValidationRules\WithinCidrRule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -185,7 +186,7 @@ class CreateNetwork
         }
 
         if (($input['type'] ?? null) === NetworkType::CUSTOM->value) {
-            $rules['cidr'] = ['nullable', 'string', new CidrRule];
+            $rules['cidr'] = ['nullable', 'string', new CidrRule, new PrivateRangeRule];
             $rules['ip_addresses'] = ['required', 'array'];
         }
 
