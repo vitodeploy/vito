@@ -132,7 +132,7 @@ class Hetzner extends AbstractProvider implements ProvidesPrivateNetworks
             $items = array_merge($items, $batch);
 
             $next = $body['meta']['pagination']['next_page'] ?? null;
-            $page = is_numeric($next) ? (int) $next : null;
+            $page = is_numeric($next) && (int) $next > $page ? (int) $next : null;
         } while ($page !== null);
 
         return $items;

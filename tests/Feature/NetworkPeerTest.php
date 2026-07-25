@@ -145,6 +145,10 @@ class NetworkPeerTest extends TestCase
         ]);
     }
 
+    /**
+     * WireGuard requires one directive per line — a reformatted blade template that
+     * collapses these onto a single line produces a config no client can parse.
+     */
     public function test_peer_config_is_valid_wireguard_ini_format(): void
     {
         SSH::fake();
@@ -154,8 +158,6 @@ class NetworkPeerTest extends TestCase
 
         $config = app(GetNetworkPeerConfig::class)->config($peer)['config'];
 
-        // WireGuard requires one directive per line — a reformatted blade template that
-        // collapses these onto a single line produces a config no client can parse.
         $this->assertMatchesRegularExpression('/^\[Interface\]$/m', $config);
         $this->assertMatchesRegularExpression('/^Address = '.preg_quote((string) $peer->ip, '/').'\/32$/m', $config);
         $this->assertMatchesRegularExpression('/^PrivateKey = \S+$/m', $config);
@@ -165,6 +167,9 @@ class NetworkPeerTest extends TestCase
         $this->assertMatchesRegularExpression('/^PersistentKeepalive = 25$/m', $config);
     }
 
+    /**
+     * The config is not a secret — it must stay available so it can be regenerated.
+     */
     public function test_private_key_is_revealed_once_but_config_remains_available(): void
     {
         SSH::fake();
@@ -187,7 +192,6 @@ class NetworkPeerTest extends TestCase
 
         $this->assertDatabaseHas('network_peers', ['id' => $peer->id, 'private_key' => null]);
 
-        // The config is not a secret — it must stay available so it can be regenerated.
         $this->getJson($url)
             ->assertOk()
             ->assertJsonPath('private_key', null)
@@ -256,6 +260,45 @@ class NetworkPeerTest extends TestCase
         app(CreateNetworkPeer::class)->create($network, ['name' => 'first', 'public_key' => $existing]);
         $this->post(route('networks.peers.store', $network), ['name' => 'collide-peer', 'public_key' => $existing])
             ->assertSessionHasErrors('public_key');
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function untrustedPublicKeys(): array
+    {
+        $valid = 'QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWY=';
+
+        return [
+            'embedded space' => ['QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZW Y='],
+            'embedded newline' => ["QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZW\nY="],
+            'trailing newline directive' => [$valid."\nAllowedIPs = 0.0.0.0/0"],
+            'embedded tab' => ["QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZW\tY="],
+            'command substitution' => ['$(id)'],
+            'command chaining' => [$valid.'; rm -rf /'],
+            'backticks' => ['`whoami`'],
+            'too short' => ['QUJDREVG'],
+            'wrong padding' => [str_repeat('A', 44)],
+        ];
+    }
+
+    /**
+     * A bring-your-own public key is interpolated straight into the WireGuard config
+     * template, so anything but the exact 44-character wire form must be rejected.
+     */
+    #[DataProvider('untrustedPublicKeys')]
+    public function test_untrusted_byo_public_keys_are_rejected(string $publicKey): void
+    {
+        SSH::fake();
+        $this->server->update(['status' => ServerStatus::READY]);
+        $network = $this->wireguardNetwork([$this->server->id]);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('networks.peers.store', $network), ['name' => 'laptop', 'public_key' => $publicKey])
+            ->assertSessionHasErrors('public_key');
+
+        $this->assertDatabaseMissing('network_peers', ['network_id' => $network->id, 'public_key' => $publicKey]);
     }
 
     public function test_regenerate_peer_keys(): void

@@ -1,5 +1,5 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
@@ -10,7 +10,8 @@ import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
 import { NetworkServerOption } from '@/types/network';
-import PrivateIpSelect, { PrivateIp } from './private-ip-select';
+import PrivateIpSelect from './private-ip-select';
+import { useServerWithPrivateIp } from '@/hooks/use-server-with-private-ip';
 
 type CreateNetworkForm = {
   name: string;
@@ -32,8 +33,6 @@ export default function CreateNetwork({
   onOpenChange: (open: boolean) => void;
   servers: NetworkServerOption[];
 }) {
-  const [servers, setServers] = useState<NetworkServerOption[]>(initialServers);
-
   const form = useForm<CreateNetworkForm>({
     name: '',
     type: 'wireguard',
@@ -47,13 +46,16 @@ export default function CreateNetwork({
 
   const isCustom = form.data.type === 'custom';
 
-  const selectPrimaryServer = (id: number) => {
-    form.setData((prev) => ({ ...prev, servers: [id], ip_addresses: {} }));
-  };
-
-  const applyRefreshedIps = (serverId: number, ips: PrivateIp[]) => {
-    setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, private_ips: ips } : s)));
-  };
+  const {
+    servers,
+    selectedServerId: primaryServerId,
+    selectedServer: primaryServer,
+    selectServer: selectPrimaryServer,
+    selectIp,
+    applyRefreshedIps,
+    selectedIp,
+    ipError,
+  } = useServerWithPrivateIp(form, initialServers);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -64,9 +66,6 @@ export default function CreateNetwork({
       },
     });
   };
-
-  const primaryServerId = form.data.servers[0] ?? null;
-  const primaryServer = primaryServerId ? (servers.find((s) => s.id === primaryServerId) ?? null) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -160,11 +159,11 @@ export default function CreateNetwork({
                 <PrivateIpSelect
                   serverId={primaryServerId}
                   ips={primaryServer?.private_ips ?? []}
-                  value={primaryServerId ? form.data.ip_addresses[primaryServerId] : undefined}
-                  onValueChange={(ipId) => form.setData('ip_addresses', primaryServerId ? { [primaryServerId]: ipId } : {})}
+                  value={selectedIp}
+                  onValueChange={selectIp}
                   onRefreshed={applyRefreshedIps}
                 />
-                <InputError message={primaryServerId ? form.errors[`ip_addresses.${primaryServerId}` as keyof typeof form.errors] : undefined} />
+                <InputError message={ipError} />
               </FormField>
             )}
           </FormFields>

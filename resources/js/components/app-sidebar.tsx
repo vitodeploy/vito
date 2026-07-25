@@ -206,7 +206,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                           childItem.hidden
                             ? false
                             : childItem.onlyActivePath
-                              ? currentPath() === childItem.onlyActivePath
+                              ? currentPath() === childItem.href
                               : window.location.href.startsWith(childItem.href),
                         );
 

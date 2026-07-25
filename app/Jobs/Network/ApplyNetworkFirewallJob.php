@@ -9,9 +9,9 @@ use App\Models\ServerLog;
 use App\Models\Service;
 use App\Services\Firewall\Firewall;
 use App\Traits\UniqueQueue;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Throwable;
 
 class ApplyNetworkFirewallJob implements ShouldQueue
 {
@@ -36,11 +36,15 @@ class ApplyNetworkFirewallJob implements ShouldQueue
         });
     }
 
-    public function failed(Exception $e): void
+    public function failed(Throwable $e): void
     {
         NetworkServer::query()
             ->whereKey($this->member->id)
-            ->where('status', NetworkServerStatus::ACTIVE)
+            ->whereIn('status', [
+                NetworkServerStatus::ACTIVE,
+                NetworkServerStatus::PENDING,
+                NetworkServerStatus::UPDATING,
+            ])
             ->update(['status' => NetworkServerStatus::FAILED]);
 
         ServerLog::withNetwork(

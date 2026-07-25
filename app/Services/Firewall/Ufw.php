@@ -69,6 +69,7 @@ class Ufw extends AbstractFirewall implements HasLogs
 
         $serverRules = $server->firewallRules()
             ->where('status', '!=', FirewallRuleStatus::DELETING)
+            ->orderBy('id')
             ->get();
 
         $rules = $networkRules->concat($serverRules);

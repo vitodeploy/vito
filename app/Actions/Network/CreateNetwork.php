@@ -22,7 +22,7 @@ class CreateNetwork
 {
     public function __construct(
         private AllocateNetworkBlock $allocator,
-        private GenerateWireGuardKeys $keys,
+        private CreateWireGuardMembers $members,
         private DispatchNetworkServerSync $sync,
         private RecomputeNetworkStatus $recompute,
         private ApplyNetworkFirewall $firewall,
@@ -92,25 +92,7 @@ class CreateNetwork
             'port' => $this->allocatePort($project, $members->pluck('id')->all(), (int) ($input['port'] ?? 51820)),
         ]);
 
-        $used = [];
-        foreach ($members as $server) {
-            $ip = Cidr::nextHost($cidr, $used);
-            if ($ip === null) {
-                throw ValidationException::withMessages([
-                    'servers' => __('The network address block is full.'),
-                ]);
-            }
-            $used[] = $ip;
-
-            $keys = $this->keys->generate();
-            $network->servers()->create([
-                'server_id' => $server->id,
-                'ip' => $ip,
-                'public_key' => $keys['public_key'],
-                'private_key' => $keys['private_key'],
-                'status' => NetworkServerStatus::PENDING,
-            ]);
-        }
+        $this->members->create($network, $members);
 
         return $network;
     }

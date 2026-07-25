@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\Network\ApplyNetworkFirewall;
+use App\Actions\Network\DispatchNetworkServerSync;
 use App\Actions\Network\RecomputeNetworkStatus;
 use App\DTOs\SocketEventDTO;
 use App\Enums\NetworkPeerStatus;
@@ -159,6 +160,10 @@ class ReconcileNetworksCommand extends Command
             type: 'network-server.deleted',
             data: ['id' => $memberId],
         ));
+
+        if ($network->type === NetworkType::WIREGUARD) {
+            app(DispatchNetworkServerSync::class)->resyncMembers($network);
+        }
 
         app(ApplyNetworkFirewall::class)->handle($network);
         app(RecomputeNetworkStatus::class)->handle($network);

@@ -1,5 +1,5 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/ui/input-error';
 import { Combobox } from '@/components/ui/combobox';
 import { NetworkServerOption } from '@/types/network';
-import PrivateIpSelect, { PrivateIp } from './private-ip-select';
+import PrivateIpSelect from './private-ip-select';
+import { useServerWithPrivateIp } from '@/hooks/use-server-with-private-ip';
 
 type AddServerForm = {
   servers: number[];
@@ -28,20 +29,15 @@ export default function AddServer({
   isCustom: boolean;
   servers: NetworkServerOption[];
 }) {
-  const [servers, setServers] = useState<NetworkServerOption[]>(initialServers);
-
   const form = useForm<AddServerForm>({
     servers: [],
     ip_addresses: {},
   });
 
-  const selectServer = (id: number) => {
-    form.setData((prev) => ({ ...prev, servers: [id], ip_addresses: {} }));
-  };
-
-  const applyRefreshedIps = (serverId: number, ips: PrivateIp[]) => {
-    setServers((prev) => prev.map((s) => (s.id === serverId ? { ...s, private_ips: ips } : s)));
-  };
+  const { servers, selectedServerId, selectedServer, selectServer, selectIp, applyRefreshedIps, selectedIp, ipError } = useServerWithPrivateIp(
+    form,
+    initialServers,
+  );
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -52,9 +48,6 @@ export default function AddServer({
       },
     });
   };
-
-  const selectedServerId = form.data.servers[0] ?? null;
-  const selectedServer = selectedServerId ? (servers.find((s) => s.id === selectedServerId) ?? null) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,11 +82,11 @@ export default function AddServer({
                 <PrivateIpSelect
                   serverId={selectedServerId}
                   ips={selectedServer?.private_ips ?? []}
-                  value={selectedServerId ? form.data.ip_addresses[selectedServerId] : undefined}
-                  onValueChange={(ipId) => form.setData('ip_addresses', selectedServerId ? { [selectedServerId]: ipId } : {})}
+                  value={selectedIp}
+                  onValueChange={selectIp}
                   onRefreshed={applyRefreshedIps}
                 />
-                <InputError message={selectedServerId ? form.errors[`ip_addresses.${selectedServerId}` as keyof typeof form.errors] : undefined} />
+                <InputError message={ipError} />
               </FormField>
             )}
           </FormFields>

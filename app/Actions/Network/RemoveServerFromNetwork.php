@@ -2,7 +2,6 @@
 
 namespace App\Actions\Network;
 
-use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkType;
 use App\Models\NetworkServer;
 
@@ -21,13 +20,7 @@ class RemoveServerFromNetwork
         $this->sync->teardown($member);
 
         if ($network->type === NetworkType::WIREGUARD) {
-            $network->load('servers.server');
-            foreach ($network->servers as $sibling) {
-                if ($sibling->id !== $member->id
-                    && in_array($sibling->status, [NetworkServerStatus::ACTIVE, NetworkServerStatus::UPDATING], true)) {
-                    $this->sync->toPresent($sibling);
-                }
-            }
+            $this->sync->resyncMembers($network, $member->id);
         } else {
             $this->firewall->handle($network);
         }

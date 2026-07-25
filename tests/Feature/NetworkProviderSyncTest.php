@@ -37,15 +37,17 @@ class NetworkProviderSyncTest extends TestCase
 
     private ?int $failStatus = null;
 
+    /**
+     * `Http::fake()` merges stubs rather than replacing them, so a per-call fake would let
+     * the first registration win for every later sync. One closure reading mutable state
+     * is the only way to vary the response across runs within a test.
+     */
     protected function setUp(): void
     {
         parent::setUp();
 
         SSH::fake();
 
-        // `Http::fake()` merges stubs rather than replacing them, so a per-call fake would let
-        // the first registration win for every later sync. One closure reading mutable state
-        // is the only way to vary the response across runs within a test.
         Http::fake(function (Request $request): PromiseInterface {
             if ($this->failStatus !== null) {
                 return Http::response(['error' => ['message' => 'nope']], $this->failStatus);
@@ -212,6 +214,9 @@ class NetworkProviderSyncTest extends TestCase
         $this->assertSame(1, $network->servers()->count(), 'Reviving must not insert a second member row.');
     }
 
+    /**
+     * The peer keeps the network alive so this exercises member removal, not network prune.
+     */
     public function test_already_leaving_member_is_not_torn_down_again(): void
     {
         $peer = $this->otherServer();
@@ -229,7 +234,6 @@ class NetworkProviderSyncTest extends TestCase
         $member = $network->servers()->where('server_id', $this->server->id)->firstOrFail();
         $member->update(['status' => NetworkServerStatus::LEAVING, 'sync_attempts' => 3]);
 
-        // The peer keeps the network alive so this exercises member removal, not network prune.
         $this->fakeProvider(
             [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [102]]],
             [['id' => 102, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.3']]]],

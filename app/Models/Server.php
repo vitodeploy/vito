@@ -157,13 +157,19 @@ class Server extends AbstractModel
             $ids = static::$networkSiblingsToResync[$server->id] ?? [];
             unset(static::$networkSiblingsToResync[$server->id]);
 
-            NetworkServer::query()
-                ->whereIn('id', $ids)
-                ->with('server', 'network')
-                ->get()
-                ->each(function (NetworkServer $member): void {
-                    app(DispatchNetworkServerSync::class)->toPresent($member);
-                });
+            if ($ids === []) {
+                return;
+            }
+
+            DB::afterCommit(function () use ($ids): void {
+                NetworkServer::query()
+                    ->whereIn('id', $ids)
+                    ->with('server', 'network')
+                    ->get()
+                    ->each(function (NetworkServer $member): void {
+                        app(DispatchNetworkServerSync::class)->toPresent($member);
+                    });
+            });
         });
 
         static::deleting(function (Server $server): void {

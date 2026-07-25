@@ -208,11 +208,13 @@ class WireGuard extends AbstractService implements VPN
     {
         $tmpName = 'wg-'.Str::random(20);
         $disk = Storage::disk('local');
+        $disk->put($tmpName, '');
+        $path = $disk->path($tmpName);
+        chmod($path, 0600);
         $disk->put($tmpName, $content);
-        @chmod($disk->path($tmpName), 0600);
 
         try {
-            $ssh->upload($disk->path($tmpName), $remote, 'root');
+            $ssh->upload($path, $remote, 'root');
         } finally {
             $disk->delete($tmpName);
         }

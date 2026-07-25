@@ -4,6 +4,7 @@ namespace App\Actions\Network;
 
 use App\Enums\NetworkAddressingPool;
 use App\Models\Server;
+use App\Models\ServerIpAddress;
 use App\Support\Cidr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -121,10 +122,11 @@ class AllocateNetworkBlock
      */
     private function memberSubnets(Collection $memberServers): array
     {
-        return $memberServers
-            ->flatMap(fn (Server $server): Collection => $server->ipAddresses()->get())
-            ->filter(fn ($address): bool => filter_var($address->ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false)
-            ->map(fn ($address): string => Cidr::canonical($address->ip.'/'.$address->prefix_length))
+        return ServerIpAddress::query()
+            ->whereIn('server_id', $memberServers->pluck('id')->all())
+            ->get()
+            ->filter(fn (ServerIpAddress $address): bool => filter_var($address->ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false)
+            ->map(fn (ServerIpAddress $address): string => Cidr::canonical($address->ip.'/'.$address->prefix_length))
             ->unique()
             ->values()
             ->all();

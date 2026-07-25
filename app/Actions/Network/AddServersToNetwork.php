@@ -7,7 +7,6 @@ use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkType;
 use App\Models\Network;
 use App\Models\Server;
-use App\Support\Cidr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -16,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 class AddServersToNetwork
 {
     public function __construct(
-        private GenerateWireGuardKeys $keys,
+        private CreateWireGuardMembers $members,
         private DispatchNetworkServerSync $sync,
         private RecomputeNetworkStatus $recompute,
         private ApplyNetworkFirewall $firewall,
@@ -75,28 +74,7 @@ class AddServersToNetwork
             ->whereIn('id', $input['servers'])
             ->get();
 
-        $ids = [];
-        foreach ($servers as $server) {
-            $ip = Cidr::nextHost((string) $network->cidr, $used);
-            if ($ip === null) {
-                throw ValidationException::withMessages([
-                    'servers' => __('The network address block is full.'),
-                ]);
-            }
-            $used[] = $ip;
-
-            $keys = $this->keys->generate();
-            $member = $network->servers()->create([
-                'server_id' => $server->id,
-                'ip' => $ip,
-                'public_key' => $keys['public_key'],
-                'private_key' => $keys['private_key'],
-                'status' => NetworkServerStatus::PENDING,
-            ]);
-            $ids[] = $member->id;
-        }
-
-        return $ids;
+        return $this->members->create($network, $servers, $used);
     }
 
     /**

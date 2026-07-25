@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Actions\Network\ApplyNetworkFirewall;
+use App\Actions\Network\RemoveServerFromNetwork;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
@@ -50,6 +50,11 @@ class ServerIpAddress extends AbstractModel
     /** @var array<int, int> */
     public array $reapplyNetworkIds = [];
 
+    /**
+     * A CUSTOM membership is addressed solely by this row, and the foreign key is
+     * nullOnDelete — losing the address leaves the membership with nothing to
+     * announce, so it is removed rather than re-applied with an incomplete source.
+     */
     protected static function booted(): void
     {
         static::deleting(function (ServerIpAddress $address): void {
@@ -63,10 +68,11 @@ class ServerIpAddress extends AbstractModel
         });
 
         static::deleted(function (ServerIpAddress $address): void {
-            Network::query()
-                ->whereIn('id', $address->reapplyNetworkIds)
+            NetworkServer::query()
+                ->whereIn('network_id', $address->reapplyNetworkIds)
+                ->where('server_id', $address->server_id)
                 ->get()
-                ->each(fn (Network $network) => app(ApplyNetworkFirewall::class)->handle($network));
+                ->each(fn (NetworkServer $member) => app(RemoveServerFromNetwork::class)->remove($member));
         });
     }
 

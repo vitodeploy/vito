@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Actions\Network\GenerateWireGuardKeys;
 use App\Enums\NetworkServerStatus;
 use App\Models\Network;
 use App\Models\NetworkServer;
@@ -17,13 +18,15 @@ class NetworkServerFactory extends Factory
 
     public function definition(): array
     {
+        $keys = app(GenerateWireGuardKeys::class)->generate();
+
         return [
             'network_id' => Network::factory(),
             'server_id' => Server::factory(),
             'server_ip_address_id' => null,
             'ip' => $this->hostAddress(),
-            'public_key' => base64_encode(random_bytes(32)),
-            'private_key' => base64_encode(random_bytes(32)),
+            'public_key' => $keys['public_key'],
+            'private_key' => $keys['private_key'],
             'status' => NetworkServerStatus::ACTIVE,
             'sync_attempts' => 0,
         ];

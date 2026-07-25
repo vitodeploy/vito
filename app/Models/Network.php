@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, NetworkServer> $servers
  * @property Collection<int, NetworkFirewallRule> $firewallRules
  * @property Collection<int, NetworkPeer> $peers
+ * @property Collection<int, ServerNetworkRule> $serverRules
+ * @property Collection<int, ServerLog> $serverLogs
  */
 class Network extends AbstractModel
 {

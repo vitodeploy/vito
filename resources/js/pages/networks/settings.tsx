@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRealtimeRecord } from '@/hooks/use-socket-events';
 import NetworkLayout from '@/layouts/network/layout';
 import { useDialog } from '@/hooks/use-dialog';
@@ -28,6 +28,16 @@ export default function NetworkSettings() {
   const form = useForm<{ name: string }>({
     name: network.name,
   });
+
+  const { isDirty, setDefaults, setData } = form;
+
+  useEffect(() => {
+    if (isDirty) {
+      return;
+    }
+    setDefaults('name', network.name);
+    setData('name', network.name);
+  }, [network.name, isDirty, setDefaults, setData]);
 
   const submit = () => {
     form.put(route('networks.update', { network: network.id }), {

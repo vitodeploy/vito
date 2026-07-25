@@ -6,6 +6,8 @@ use App\Enums\FirewallRuleStatus;
 use App\Enums\ServerNetworkRuleKind;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * @property int $id
@@ -56,14 +58,22 @@ class ServerNetworkRule extends AbstractModel
     /**
      * Network rows first (handshakes, then rules by network), stable by id.
      *
-     * @param  Builder<ServerNetworkRule>  $query
+     * @param  Builder<ServerNetworkRule>|QueryBuilder|Relation<ServerNetworkRule, covariant AbstractModel, *>  $query
      */
-    public function scopeOrdered(Builder $query): void
+    public static function applyOrder(Builder|QueryBuilder|Relation $query): void
     {
         $query
             ->orderByRaw('case when kind = ? then 0 else 1 end', [ServerNetworkRuleKind::HANDSHAKE->value])
             ->orderBy('network_id')
             ->orderBy('id');
+    }
+
+    /**
+     * @param  Builder<ServerNetworkRule>  $query
+     */
+    public function scopeOrdered(Builder $query): void
+    {
+        self::applyOrder($query);
     }
 
     /**

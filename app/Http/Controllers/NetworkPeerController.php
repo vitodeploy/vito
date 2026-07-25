@@ -56,7 +56,8 @@ class NetworkPeerController extends Controller
         $this->authorize('update', $network);
         $this->ensureBelongsToNetwork($network, $networkPeer);
 
-        return response()->json(app(GetNetworkPeerConfig::class)->config($networkPeer));
+        return response()->json(app(GetNetworkPeerConfig::class)->config($networkPeer))
+            ->header('Cache-Control', 'no-store');
     }
 
     #[Post('/{networkPeer}/conceal', name: 'networks.peers.conceal')]

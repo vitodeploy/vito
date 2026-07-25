@@ -18,6 +18,8 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
 {
     protected string $apiUrl = 'https://api.digitalocean.com/v2';
 
+    private const MAX_PAGES = 100;
+
     public static function id(): string
     {
         return 'digitalocean';
@@ -126,7 +128,7 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
             $batch = $body[$key] ?? [];
             $items = array_merge($items, $batch);
 
-            $hasNext = isset($body['links']['pages']['next']);
+            $hasNext = isset($body['links']['pages']['next']) && $page < self::MAX_PAGES;
             $page = $hasNext ? $page + 1 : null;
         } while ($page !== null);
 

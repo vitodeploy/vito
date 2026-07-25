@@ -72,13 +72,7 @@ class EditServer
             ->whereHas('network', fn ($query) => $query->where('type', NetworkType::WIREGUARD))
             ->with('network')
             ->get()
-            ->each(function (NetworkServer $membership) use ($server): void {
-                $membership->network->servers()
-                    ->where('server_id', '!=', $server->id)
-                    ->whereIn('status', [NetworkServerStatus::ACTIVE, NetworkServerStatus::UPDATING])
-                    ->get()
-                    ->each(fn (NetworkServer $peer) => $this->sync->toPresent($peer));
-            });
+            ->each(fn (NetworkServer $membership) => $this->sync->resyncMembers($membership->network, $membership->id));
     }
 
     private function validate(Server $server, array $input): void

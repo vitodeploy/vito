@@ -3,7 +3,6 @@
 namespace App\Tables\Servers;
 
 use App\Enums\NetworkServerStatus;
-use App\Enums\ServerNetworkRuleKind;
 use App\Models\ServerNetworkRule;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\EnumColumn;
@@ -20,10 +19,9 @@ class ServerNetworkRuleTable extends Table
         $this->perPage = config('web.pagination_size');
         $this->query
             ->whereHas('networkServer', fn ($query) => $query->where('status', '!=', NetworkServerStatus::LEAVING))
-            ->with('network')
-            ->orderByRaw('case when kind = ? then 0 else 1 end', [ServerNetworkRuleKind::HANDSHAKE->value])
-            ->orderBy('network_id')
-            ->orderBy('id');
+            ->with('network');
+
+        ServerNetworkRule::applyOrder($this->query);
     }
 
     protected function columns(): array

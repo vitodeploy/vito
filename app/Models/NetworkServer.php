@@ -47,6 +47,10 @@ class NetworkServer extends AbstractModel
         'private_key' => 'encrypted',
     ];
 
+    protected $hidden = [
+        'private_key',
+    ];
+
     /**
      * @return BelongsTo<Network, covariant $this>
      */

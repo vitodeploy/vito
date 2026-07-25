@@ -14,12 +14,13 @@ class DispatchNetworkServerSync
      * Used when peer/topology data changes and existing members must rewrite
      * their WireGuard config and firewall rules.
      */
-    public function resyncMembers(Network $network): void
+    public function resyncMembers(Network $network, ?int $excludeMemberId = null): void
     {
         $network->load('servers.server');
 
         foreach ($network->servers as $member) {
-            if (in_array($member->status, [NetworkServerStatus::ACTIVE, NetworkServerStatus::UPDATING], true)) {
+            if ($member->id !== $excludeMemberId
+                && in_array($member->status, [NetworkServerStatus::ACTIVE, NetworkServerStatus::UPDATING], true)) {
                 $this->toPresent($member);
             }
         }

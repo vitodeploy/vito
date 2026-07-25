@@ -17,9 +17,9 @@ use App\Models\Service;
 use App\Services\Firewall\Firewall;
 use App\Services\VPN\WireGuard;
 use App\Traits\UniqueQueue;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Throwable;
 
 class SyncNetworkServerJob implements ShouldQueue
 {
@@ -43,7 +43,7 @@ class SyncNetworkServerJob implements ShouldQueue
         });
     }
 
-    public function failed(Exception $e): void
+    public function failed(Throwable $e): void
     {
         ServerLog::withNetwork($this->member->network_id, function () use ($e): void {
             if ($this->teardown) {

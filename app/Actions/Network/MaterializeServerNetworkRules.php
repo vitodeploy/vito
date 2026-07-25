@@ -10,6 +10,7 @@ use App\Enums\NetworkType;
 use App\Enums\ServerNetworkRuleKind;
 use App\Events\SocketEvent;
 use App\Models\Network;
+use App\Models\NetworkFirewallRule;
 use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Models\ServerNetworkRule;
@@ -20,6 +21,15 @@ use Illuminate\Support\Facades\DB;
 
 class MaterializeServerNetworkRules
 {
+    /** @var array<int, Collection<int, NetworkServer>> */
+    private array $peerCache = [];
+
+    /** @var array<int, Collection<int, NetworkFirewallRule>> */
+    private array $ruleCache = [];
+
+    /** @var array<int, bool> */
+    private array $deviceCache = [];
+
     /**
      * Re-materialise every non-LEAVING member's server. A topology change on the
      * network (membership, IP, keys) affects the handshake/source rows on all peers.
@@ -79,6 +89,14 @@ class MaterializeServerNetworkRules
                         'status' => $applied ? FirewallRuleStatus::UPDATING : FirewallRuleStatus::READY,
                     ])->save();
                     $changed = true;
+
+                    continue;
+                }
+
+                if ($row->status === FirewallRuleStatus::DELETING) {
+                    $row->status = $applied ? FirewallRuleStatus::CREATING : FirewallRuleStatus::READY;
+                    $row->save();
+                    $changed = true;
                 }
             }
 
@@ -113,6 +131,10 @@ class MaterializeServerNetworkRules
             ->with('network')
             ->get();
 
+        $this->peerCache = [];
+        $this->ruleCache = [];
+        $this->deviceCache = [];
+
         $desired = [];
 
         foreach ($memberships as $membership) {
@@ -135,7 +157,7 @@ class MaterializeServerNetworkRules
                     $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, $handshake['ip'], 32)] = $spec;
                 }
 
-                if ($network->peers()->where('status', '!=', NetworkPeerStatus::DISABLED)->exists()) {
+                if ($this->hasDevices($network)) {
                     $desired[$this->identity($membership->id, ServerNetworkRuleKind::HANDSHAKE, null, null, null)] = [
                         'network_id' => $network->id,
                         'network_server_id' => $membership->id,
@@ -153,7 +175,7 @@ class MaterializeServerNetworkRules
 
             $sources = $this->sources($network, $server);
 
-            foreach ($network->firewallRules()->where('status', '!=', FirewallRuleStatus::DELETING)->orderBy('id')->get() as $rule) {
+            foreach ($this->firewallRules($network) as $rule) {
                 foreach ($sources as $source) {
                     $spec = [
                         'network_id' => $network->id,
@@ -202,7 +224,7 @@ class MaterializeServerNetworkRules
         $sources = [];
 
         foreach ($this->peers($network, $server) as $peer) {
-            $ip = $peer->server_ip_address_id !== null ? $peer->serverIpAddress->ip : $peer->ip;
+            $ip = $peer->server_ip_address_id !== null ? $peer->serverIpAddress?->ip : $peer->ip;
 
             if ($ip === null || $ip === '') {
                 continue;
@@ -219,12 +241,30 @@ class MaterializeServerNetworkRules
      */
     private function peers(Network $network, Server $server): Collection
     {
-        return NetworkServer::query()
+        return $this->peerCache[$network->id] ??= NetworkServer::query()
             ->where('network_id', $network->id)
             ->where('server_id', '!=', $server->id)
             ->where('status', '!=', NetworkServerStatus::LEAVING)
             ->with('server', 'serverIpAddress')
             ->get();
+    }
+
+    /**
+     * @return Collection<int, NetworkFirewallRule>
+     */
+    private function firewallRules(Network $network): Collection
+    {
+        return $this->ruleCache[$network->id] ??= $network->firewallRules()
+            ->where('status', '!=', FirewallRuleStatus::DELETING)
+            ->orderBy('id')
+            ->get();
+    }
+
+    private function hasDevices(Network $network): bool
+    {
+        return $this->deviceCache[$network->id] ??= $network->peers()
+            ->where('status', '!=', NetworkPeerStatus::DISABLED)
+            ->exists();
     }
 
     private function identity(int $networkServerId, ServerNetworkRuleKind $kind, ?int $ruleId, ?string $source, ?int $mask): string

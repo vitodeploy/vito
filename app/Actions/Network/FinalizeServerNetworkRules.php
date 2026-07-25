@@ -7,6 +7,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Events\SocketEvent;
 use App\Models\Server;
 use App\Models\ServerNetworkRule;
+use Illuminate\Support\Facades\DB;
 
 class FinalizeServerNetworkRules
 {
@@ -19,16 +20,18 @@ class FinalizeServerNetworkRules
      */
     public function success(Server $server, array $emittedIds, array $deletingIds): void
     {
-        if ($emittedIds !== []) {
-            ServerNetworkRule::query()
-                ->whereIn('id', $emittedIds)
-                ->where('status', '!=', FirewallRuleStatus::READY)
-                ->update(['status' => FirewallRuleStatus::READY]);
-        }
+        DB::transaction(function () use ($emittedIds, $deletingIds): void {
+            if ($emittedIds !== []) {
+                ServerNetworkRule::query()
+                    ->whereIn('id', $emittedIds)
+                    ->where('status', '!=', FirewallRuleStatus::READY)
+                    ->update(['status' => FirewallRuleStatus::READY]);
+            }
 
-        if ($deletingIds !== []) {
-            ServerNetworkRule::query()->whereIn('id', $deletingIds)->delete();
-        }
+            if ($deletingIds !== []) {
+                ServerNetworkRule::query()->whereIn('id', $deletingIds)->delete();
+            }
+        });
 
         $this->broadcast($server);
     }
