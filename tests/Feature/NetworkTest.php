@@ -12,9 +12,11 @@ use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Http\Resources\NetworkPeerResource;
 use App\Http\Resources\NetworkServerResource;
 use App\Models\Network;
 use App\Models\NetworkFirewallRule;
+use App\Models\NetworkPeer;
 use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
@@ -278,6 +280,19 @@ class NetworkTest extends TestCase
 
         $this->assertArrayNotHasKey('private_key', $data);
         $this->assertArrayHasKey('public_key', $data);
+    }
+
+    public function test_network_peer_is_never_serialised_with_its_private_key(): void
+    {
+        $network = Network::factory()->create(['project_id' => $this->server->project_id]);
+        $peer = NetworkPeer::factory()->create([
+            'network_id' => $network->id,
+            'private_key' => 'top-secret',
+        ]);
+
+        $this->assertArrayNotHasKey('private_key', (new NetworkPeerResource($peer))->toArray(request()));
+        $this->assertArrayNotHasKey('private_key', $peer->toArray());
+        $this->assertSame('top-secret', $peer->private_key);
     }
 
     public function test_firewall_rule_update_via_http(): void

@@ -52,7 +52,7 @@ class MaterializeServerNetworkRules
         $desired = $this->desiredFor($server);
         $applied = $server->firewall() instanceof Service;
 
-        DB::transaction(function () use ($server, $desired, $applied): void {
+        $changed = DB::transaction(function () use ($server, $desired, $applied): bool {
             $existing = $server->networkRules()->get()->keyBy(fn (ServerNetworkRule $row): string => $this->identity(
                 $row->network_server_id,
                 $row->kind,
@@ -114,10 +114,12 @@ class MaterializeServerNetworkRules
                 $changed = true;
             }
 
-            if ($changed) {
-                $this->broadcast($server);
-            }
+            return $changed;
         });
+
+        if ($changed) {
+            $this->broadcast($server);
+        }
     }
 
     /**

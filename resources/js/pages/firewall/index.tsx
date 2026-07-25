@@ -81,7 +81,7 @@ export default function Firewall() {
         />
 
         {hasNetworkRules && (
-          <div className="mt-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <div>
               <h2 className="text-base font-medium">Private network rules</h2>
               <p className="text-muted-foreground text-sm">

@@ -50,8 +50,8 @@ export interface NetworkPeer {
   public_key: string;
   status: string;
   status_color: StatusColor;
-  last_handshake: string;
-  last_handshake_at: string | null;
+  last_handshake?: string;
+  last_handshake_at?: string | null;
   byo: boolean;
   has_private_key: boolean;
   created_at: string;
