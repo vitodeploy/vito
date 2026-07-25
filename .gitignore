@@ -31,7 +31,6 @@ laradumps.yaml
 /storage/pail
 .nvmrc
 /app/Vito/Plugins
-AGENTS.md
 .cursor
 boost.json
 opencode.json
