@@ -53,9 +53,18 @@ class SyncNetworkServerJob implements ShouldQueue
                 return;
             }
 
-            $this->member->status = NetworkServerStatus::FAILED;
-            $this->member->save();
-            $this->broadcastMember();
+            $failed = NetworkServer::query()
+                ->whereKey($this->member->id)
+                ->whereIn('status', [
+                    NetworkServerStatus::ACTIVE,
+                    NetworkServerStatus::PENDING,
+                    NetworkServerStatus::UPDATING,
+                ])
+                ->update(['status' => NetworkServerStatus::FAILED]);
+
+            if ($failed === 1) {
+                $this->broadcastMember();
+            }
 
             ServerLog::log($this->member->server, 'network-sync-failed', $e->getMessage());
 

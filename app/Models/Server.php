@@ -164,6 +164,7 @@ class Server extends AbstractModel
             DB::afterCommit(function () use ($ids): void {
                 NetworkServer::query()
                     ->whereIn('id', $ids)
+                    ->where('status', '!=', NetworkServerStatus::LEAVING)
                     ->with('server', 'network')
                     ->get()
                     ->each(function (NetworkServer $member): void {

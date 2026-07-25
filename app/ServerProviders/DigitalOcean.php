@@ -128,9 +128,16 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
             $batch = $body[$key] ?? [];
             $items = array_merge($items, $batch);
 
-            $hasNext = isset($body['links']['pages']['next']) && $page < self::MAX_PAGES;
-            $page = $hasNext ? $page + 1 : null;
-        } while ($page !== null);
+            if (! isset($body['links']['pages']['next'])) {
+                break;
+            }
+
+            if ($page >= self::MAX_PAGES) {
+                throw $this->syncError();
+            }
+
+            $page++;
+        } while (true);
 
         return $items;
     }

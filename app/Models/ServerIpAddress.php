@@ -10,6 +10,7 @@ use App\Enums\NetworkType;
 use Database\Factories\ServerIpAddressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $server_id
@@ -68,11 +69,17 @@ class ServerIpAddress extends AbstractModel
         });
 
         static::deleted(function (ServerIpAddress $address): void {
-            NetworkServer::query()
-                ->whereIn('network_id', $address->reapplyNetworkIds)
-                ->where('server_id', $address->server_id)
-                ->get()
-                ->each(fn (NetworkServer $member) => app(RemoveServerFromNetwork::class)->remove($member));
+            if ($address->reapplyNetworkIds === []) {
+                return;
+            }
+
+            DB::afterCommit(function () use ($address): void {
+                NetworkServer::query()
+                    ->whereIn('network_id', $address->reapplyNetworkIds)
+                    ->where('server_id', $address->server_id)
+                    ->get()
+                    ->each(fn (NetworkServer $member) => app(RemoveServerFromNetwork::class)->remove($member));
+            });
         });
     }
 
