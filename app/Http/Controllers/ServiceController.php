@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Actions\Service\GetConfigFile;
 use App\Actions\Service\Install;
 use App\Actions\Service\Manage;
+use App\Actions\Service\ToggleNetworking;
 use App\Actions\Service\Uninstall;
 use App\Actions\Service\UpdateConfigFile;
+use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Http\Resources\ServiceResource;
 use App\Models\Server;
 use App\Models\Service;
+use App\Services\SupportsNetworking;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -135,6 +140,61 @@ class ServiceController extends Controller
         return back()->with('success', __(':service is being disabled.', [
             'service' => $service->name,
         ]));
+    }
+
+    #[Get('/{service}/networking', name: 'services.networking')]
+    public function networking(Server $server, Service $service): JsonResponse
+    {
+        $this->authorize('manageNetworking', $service);
+
+        if (! $service->hasHandler()) {
+            return response()->json(['supported' => false]);
+        }
+
+        $handler = $service->handler();
+
+        if (! $handler instanceof SupportsNetworking) {
+            return response()->json(['supported' => false]);
+        }
+
+        $pending = $service->status === ServiceStatus::RESTARTING;
+
+        try {
+            return response()->json([
+                'supported' => true,
+                'pending' => $pending,
+                ...$handler->networkingDetails(),
+            ]);
+        } catch (SSHError) {
+            return response()->json([
+                'supported' => true,
+                'pending' => $pending,
+                'enabled' => $handler->networkingEnabled(),
+                'port' => $handler->networkingPort(),
+                'effective' => null,
+                'error' => true,
+            ]);
+        }
+    }
+
+    #[Post('/{service}/networking/enable', name: 'services.networking.enable')]
+    public function enableNetworking(Server $server, Service $service): HttpResponse
+    {
+        $this->authorize('manageNetworking', $service);
+
+        app(ToggleNetworking::class)->enable($service);
+
+        return response()->noContent();
+    }
+
+    #[Post('/{service}/networking/disable', name: 'services.networking.disable')]
+    public function disableNetworking(Server $server, Service $service): HttpResponse
+    {
+        $this->authorize('manageNetworking', $service);
+
+        app(ToggleNetworking::class)->disable($service);
+
+        return response()->noContent();
     }
 
     #[Delete('/{service}', name: 'services.destroy')]

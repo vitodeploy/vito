@@ -7,10 +7,14 @@ use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
 use App\Services\HasLogs;
+use App\Services\MemoryDatabase\HasNetworking;
+use App\Services\SupportsNetworking;
 use Closure;
 
-class Redis extends AbstractService implements HasLogs
+class Redis extends AbstractService implements HasLogs, SupportsNetworking
 {
+    use HasNetworking;
+
     public static function id(): string
     {
         return 'redis';

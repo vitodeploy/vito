@@ -60,6 +60,14 @@ properties:
   is_default:
     type: boolean
     example: true
+  supports_networking:
+    type: boolean
+    description: Whether the service can be toggled between local-only and network-accessible
+    example: false
+  networking_enabled:
+    type: boolean
+    description: Whether network access is enabled for this service
+    example: false
   log:
     type: object
     nullable: true

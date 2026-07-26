@@ -1,0 +1,282 @@
+import { type ReactNode, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { AlertCircleIcon, CopyIcon, LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Service } from '@/types/service';
+
+type NetworkingUnsupported = {
+  supported: false;
+};
+
+type NetworkingSupported = {
+  supported: true;
+  pending: boolean;
+  enabled: boolean;
+  port: number;
+  effective: boolean | null;
+  secret?: string | null;
+  requires_remote_users?: boolean;
+  error?: boolean;
+};
+
+type NetworkingResponse = NetworkingUnsupported | NetworkingSupported;
+
+const networkingQueryKey = (service: Service) => ['services.networking', service.server_id, service.id];
+
+function StateRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground text-sm">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function SecretField({ secret }: { secret: string }) {
+  const copy = () => {
+    if (!navigator.clipboard) {
+      toast.error('The clipboard is not available in this browser');
+      return;
+    }
+
+    navigator.clipboard
+      .writeText(secret)
+      .then(() => toast.success('Password copied to clipboard'))
+      .catch(() => toast.error('Failed to copy the password'));
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="networking-secret">Password</Label>
+      <div className="flex items-center gap-2">
+        <PasswordInput id="networking-secret" readOnly value={secret} className="font-mono" />
+        <Button type="button" variant="outline" size="icon" onClick={copy} aria-label="Copy password">
+          <CopyIcon />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function ServiceNetworkingDialog({
+  open,
+  onOpenChange,
+  service,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  service: Service;
+}) {
+  const queryClient = useQueryClient();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const query = useQuery<NetworkingResponse>({
+    queryKey: networkingQueryKey(service),
+    queryFn: async () => {
+      const response = await axios.get(route('services.networking', { server: service.server_id, service: service.id }));
+      return response.data;
+    },
+    retry: false,
+    enabled: open,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    refetchInterval: (currentQuery) => {
+      const data = currentQuery.state.data;
+      return data?.supported && data.pending ? 3000 : false;
+    },
+  });
+
+  const data = query.data;
+  const details: NetworkingSupported | null = data && data.supported ? data : null;
+  const pending = details?.pending ?? false;
+  const isMemoryDatabase = service.type === 'memory_database';
+
+  const toggle = async (action: 'enable' | 'disable') => {
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await axios.post(route(`services.networking.${action}`, { server: service.server_id, service: service.id }));
+      await queryClient.invalidateQueries({ queryKey: networkingQueryKey(service) });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const payload = error.response?.data as { message?: string; errors?: Record<string, string[]> } | undefined;
+        const firstError = payload?.errors ? Object.values(payload.errors).flat()[0] : undefined;
+        setSubmitError(firstError ?? payload?.message ?? 'Failed to update networking.');
+      } else {
+        setSubmitError('Failed to update networking.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>
+            Networking for <span className="capitalize">{service.name}</span>
+          </DialogTitle>
+          <DialogDescription>
+            Networking opens this service on all IPv4 interfaces (0.0.0.0) so other servers can reach it. Access is only gated by authentication and
+            your firewall.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4 p-4">
+          {query.isLoading && (
+            <>
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </>
+          )}
+
+          {query.isError && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>Could not load networking state</AlertTitle>
+              <AlertDescription>
+                {(axios.isAxiosError(query.error) ? query.error.response?.data?.message : null) ?? 'Please try again in a moment.'}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {data && !data.supported && (
+            <Alert>
+              <AlertCircleIcon />
+              <AlertTitle>Not supported</AlertTitle>
+              <AlertDescription>This service does not support the networking toggle.</AlertDescription>
+            </Alert>
+          )}
+
+          {details && (
+            <>
+              <div className="flex flex-col gap-2">
+                <StateRow label="Networking">
+                  <Badge variant={details.enabled ? 'success' : 'gray'}>{details.enabled ? 'Enabled' : 'Disabled'}</Badge>
+                </StateRow>
+                <StateRow label="Live state on the server">
+                  {pending ? (
+                    <Badge variant="warning">Applying…</Badge>
+                  ) : details.effective === null ? (
+                    <Badge variant="gray">Unknown</Badge>
+                  ) : (
+                    <Badge variant={details.effective ? 'success' : 'gray'}>{details.effective ? 'Listening on all interfaces' : 'Local only'}</Badge>
+                  )}
+                </StateRow>
+                <StateRow label="Default port">
+                  <span className="font-mono text-sm">{details.port}</span>
+                </StateRow>
+              </div>
+
+              {pending && (
+                <Alert>
+                  <LoaderCircleIcon className="animate-spin" />
+                  <AlertTitle>Applying the change</AlertTitle>
+                  <AlertDescription>
+                    Vito is updating the configuration and restarting the service. This dialog updates automatically.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {!pending && details.effective === null && (
+                <Alert>
+                  <AlertCircleIcon />
+                  <AlertTitle>Couldn&apos;t read the live state</AlertTitle>
+                  <AlertDescription>
+                    Vito could not read the current configuration from the server. This is expected while the service or the server is not running.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {!pending && details.effective !== null && details.effective !== details.enabled && (
+                <Alert variant="destructive">
+                  <TriangleAlertIcon />
+                  <AlertTitle>The server does not match Vito</AlertTitle>
+                  <AlertDescription>
+                    {details.enabled
+                      ? 'Vito has networking enabled, but the service is currently local only on the server. Something changed the configuration outside of Vito — enable networking again to reapply it.'
+                      : 'Vito has networking disabled, but the service is still listening on all interfaces. Something changed the configuration outside of Vito — disable networking again to reapply it.'}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isMemoryDatabase && !pending && !details.enabled && (
+                <Alert variant="destructive">
+                  <TriangleAlertIcon />
+                  <AlertTitle>A password will be set</AlertTitle>
+                  <AlertDescription>
+                    Every existing client on this server (apps, workers, queues) must be updated to authenticate with the password below, or it will
+                    fail with NOAUTH.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isMemoryDatabase && !pending && details.enabled && (
+                <Alert>
+                  <AlertCircleIcon />
+                  <AlertTitle>Disabling keeps the password</AlertTitle>
+                  <AlertDescription>
+                    The service goes back to local only, but the password remains set — local clients keep authenticating with it.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isMemoryDatabase && details.secret && <SecretField secret={details.secret} />}
+
+              {details.requires_remote_users === true && (
+                <Alert>
+                  <AlertCircleIcon />
+                  <AlertTitle>Remote database users are required</AlertTitle>
+                  <AlertDescription>Remote servers need a database user with remote host (%) to connect.</AlertDescription>
+                </Alert>
+              )}
+
+              {details.requires_remote_users === false && (
+                <Alert>
+                  <AlertCircleIcon />
+                  <AlertTitle>Authentication</AlertTitle>
+                  <AlertDescription>Remote connections authenticate with database user passwords.</AlertDescription>
+                </Alert>
+              )}
+            </>
+          )}
+
+          {submitError && (
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertDescription>{submitError}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
+          {details && (
+            <Button
+              variant={details.enabled ? 'destructive' : 'default'}
+              disabled={submitting || pending}
+              onClick={() => toggle(details.enabled ? 'disable' : 'enable')}
+            >
+              {(submitting || pending) && <LoaderCircleIcon className="animate-spin" />}
+              {details.enabled ? 'Disable networking' : 'Enable networking'}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

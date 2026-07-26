@@ -8,6 +8,7 @@ import DateTime from '@/components/date-time';
 import Uninstall from '@/pages/services/components/uninstall';
 import { Action } from '@/pages/services/components/action';
 import { ResyncStats } from '@/pages/services/components/resync-stats';
+import Networking from './networking';
 import Version from './version';
 import ConfigFile from './config-file';
 import InstallationLog from './installation-log';
@@ -44,8 +45,9 @@ export const columns: ColumnDef<Service>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       return (
-        <div className="min-w-24">
+        <div className="flex min-w-24 flex-wrap items-center gap-1">
           <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+          {row.original.networking_enabled && <Badge variant="info">Networked</Badge>}
         </div>
       );
     },
@@ -71,6 +73,12 @@ export const columns: ColumnDef<Service>[] = [
               <Action type="reload" service={row.original} />
               <Action type="enable" service={row.original} />
               <Action type="disable" service={row.original} />
+              {row.original.supports_networking && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Networking service={row.original} />
+                </>
+              )}
               {row.original.type === 'log_analysis' && (
                 <>
                   <DropdownMenuSeparator />

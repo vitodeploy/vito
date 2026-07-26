@@ -3,14 +3,18 @@
 namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
+use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Services\HasLogs;
+use App\Services\SupportsNetworking;
 use Illuminate\Contracts\View\View;
 
-class Postgresql extends AbstractDatabase implements HasLogs
+class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
+    use HasNetworking;
+
     protected array $systemDbs = ['template0', 'template1', 'postgres'];
 
     /**
@@ -68,6 +72,82 @@ class Postgresql extends AbstractDatabase implements HasLogs
         );
 
         return trim($version);
+    }
+
+    public function networkingPort(): int
+    {
+        return 5432;
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function writeNetworkingConfig(bool $enable): void
+    {
+        $this->service->server->ssh()->exec(
+            view($this->getScriptView('write-networking'), [
+                ...$this->networkingScriptData(),
+                'address' => $enable ? '0.0.0.0' : 'localhost',
+                'open' => $enable,
+            ]),
+            ($enable ? 'enable' : 'disable').'-postgresql-networking'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function runNetworkingRollback(): void
+    {
+        $this->service->server->ssh()->exec(
+            view($this->getScriptView('rollback-networking'), $this->networkingScriptData()),
+            'rollback-postgresql-networking'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function verifyNetworking(bool $expectedOpen): void
+    {
+        $expected = $expectedOpen ? '0.0.0.0' : 'localhost';
+
+        if (! $this->networkingValueMatches($this->networkingListenAddresses(), $expected)) {
+            throw new SSHCommandError("{$this->service->name} is not listening on {$expected} after the restart.");
+        }
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function networkingIsOpen(): bool
+    {
+        return $this->networkingValueMatches($this->networkingListenAddresses(), '0.0.0.0', '*', '::');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    private function networkingListenAddresses(): string
+    {
+        return $this->service->server->ssh()->clearLog()->exec(
+            'sudo -u postgres psql -tAc "SHOW listen_addresses"'
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function networkingScriptData(): array
+    {
+        $directory = sprintf('/etc/postgresql/%s/main', $this->service->version);
+
+        return [
+            'conf' => $directory.'/postgresql.conf',
+            'hba' => $directory.'/pg_hba.conf',
+            'directory' => $directory.'/conf.d',
+            'dropIn' => $directory.'/conf.d/zz-vito-networking.conf',
+        ];
     }
 
     /**

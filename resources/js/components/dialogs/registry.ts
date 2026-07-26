@@ -18,6 +18,7 @@ import ServerProviderEditDialog from '@/pages/server-providers/components/edit-d
 import DnsProviderEditDialog from '@/pages/dns-providers/components/edit-dialog';
 import NotificationChannelEditDialog from '@/pages/notification-channels/components/edit-dialog';
 import ServiceConfigFileDialog from '@/pages/services/components/config-file-dialog';
+import ServiceNetworkingDialog from '@/pages/services/components/networking-dialog';
 import CreateHostedDomain from '@/pages/hosted-domains/components/create-hosted-domain';
 import EditHostedDomain from '@/pages/hosted-domains/components/edit-hosted-domain';
 import FirewallRuleForm from '@/pages/firewall/components/form';
@@ -68,6 +69,7 @@ export const dialogs = {
   dnsProviderEdit: DnsProviderEditDialog,
   notificationChannelEdit: NotificationChannelEditDialog,
   serviceConfigFile: ServiceConfigFileDialog,
+  serviceNetworking: ServiceNetworkingDialog,
   createHostedDomain: CreateHostedDomain,
   editHostedDomain: EditHostedDomain,
   firewallForm: FirewallRuleForm,

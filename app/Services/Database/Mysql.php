@@ -4,10 +4,13 @@ namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
 use App\Services\HasLogs;
+use App\Services\SupportsNetworking;
 use Illuminate\Contracts\View\View;
 
-class Mysql extends AbstractDatabase implements HasLogs
+class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
+    use HasMysqlNetworking;
+
     protected array $systemDbs = ['information_schema', 'performance_schema', 'mysql', 'sys'];
 
     protected array $systemUsers = [
@@ -48,6 +51,11 @@ class Mysql extends AbstractDatabase implements HasLogs
         );
 
         return trim($version);
+    }
+
+    protected function networkingManagesXPlugin(): bool
+    {
+        return true;
     }
 
     public function logs(): array

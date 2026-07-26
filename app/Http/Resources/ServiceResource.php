@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Service;
+use App\Services\SupportsNetworking;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
@@ -29,6 +30,8 @@ class ServiceResource extends JsonResource
             'status_color' => $this->status->getColor(),
             'icon' => config('core.service_icons')[$this->name] ?? '',
             'is_default' => $this->is_default,
+            'supports_networking' => $this->hasHandler() && $this->handler() instanceof SupportsNetworking,
+            'networking_enabled' => (bool) ($this->type_data['networking'] ?? false),
             'log' => $this->log ? new ServerLogResource($this->log) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
