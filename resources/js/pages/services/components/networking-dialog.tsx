@@ -19,10 +19,13 @@ type NetworkingUnsupported = {
 type NetworkingSupported = {
   supported: true;
   pending: boolean;
+  failed: boolean;
   enabled: boolean;
+  managed: boolean;
   port: number;
   effective: boolean | null;
   secret?: string | null;
+  uses_password?: boolean;
   requires_remote_users?: boolean;
   error?: boolean;
 };
@@ -98,7 +101,9 @@ export default function ServiceNetworkingDialog({
   const data = query.data;
   const details: NetworkingSupported | null = data && data.supported ? data : null;
   const pending = details?.pending ?? false;
-  const isMemoryDatabase = service.type === 'memory_database';
+  const usesPassword = details?.uses_password === true;
+  const drifted = details !== null && !pending && details.managed && details.effective !== null && details.effective !== details.enabled;
+  const openByDefault = details !== null && !pending && !details.managed && details.effective === true;
 
   const toggle = async (action: 'enable' | 'disable') => {
     setSubmitting(true);
@@ -110,8 +115,8 @@ export default function ServiceNetworkingDialog({
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const payload = error.response?.data as { message?: string; errors?: Record<string, string[]> } | undefined;
-        const firstError = payload?.errors ? Object.values(payload.errors).flat()[0] : undefined;
-        setSubmitError(firstError ?? payload?.message ?? 'Failed to update networking.');
+        const messages = payload?.errors ? Object.values(payload.errors).flat() : [];
+        setSubmitError(messages.length > 0 ? messages.join(' ') : (payload?.message ?? 'Failed to update networking.'));
       } else {
         setSubmitError('Failed to update networking.');
       }
@@ -190,6 +195,16 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
+              {details.failed && !pending && (
+                <Alert variant="destructive">
+                  <TriangleAlertIcon />
+                  <AlertTitle>The last change failed</AlertTitle>
+                  <AlertDescription>
+                    Vito could not apply the last networking change and reverted the configuration. Check the server logs for details, then try again.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {!pending && details.effective === null && (
                 <Alert>
                   <AlertCircleIcon />
@@ -200,30 +215,52 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {!pending && details.effective !== null && details.effective !== details.enabled && (
+              {drifted && (
                 <Alert variant="destructive">
                   <TriangleAlertIcon />
                   <AlertTitle>The server does not match Vito</AlertTitle>
                   <AlertDescription>
                     {details.enabled
-                      ? 'Vito has networking enabled, but the service is currently local only on the server. Something changed the configuration outside of Vito — enable networking again to reapply it.'
-                      : 'Vito has networking disabled, but the service is still listening on all interfaces. Something changed the configuration outside of Vito — disable networking again to reapply it.'}
+                      ? 'Vito has networking enabled, but the service is currently local only on the server. Something changed the configuration outside of Vito — use Reapply to write it again.'
+                      : 'Vito has networking disabled, but the service is still listening on all interfaces. Something changed the configuration outside of Vito — use Reapply to write it again.'}
                   </AlertDescription>
                 </Alert>
               )}
 
-              {isMemoryDatabase && !pending && !details.enabled && (
+              {openByDefault && (
+                <Alert>
+                  <AlertCircleIcon />
+                  <AlertTitle>Already listening on all interfaces</AlertTitle>
+                  <AlertDescription>
+                    This service ships listening on all interfaces and Vito has never changed it. Enable networking to have Vito manage the
+                    configuration, or close it to localhost.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {usesPassword && !pending && !details.enabled && !details.secret && (
                 <Alert variant="destructive">
                   <TriangleAlertIcon />
                   <AlertTitle>A password will be set</AlertTitle>
                   <AlertDescription>
-                    Every existing client on this server (apps, workers, queues) must be updated to authenticate with the password below, or it will
-                    fail with NOAUTH.
+                    Vito generates a password when networking is enabled. Every existing client on this server (apps, workers, queues) must be updated
+                    to authenticate with it, or it will fail with NOAUTH.
                   </AlertDescription>
                 </Alert>
               )}
 
-              {isMemoryDatabase && !pending && details.enabled && (
+              {usesPassword && !pending && !details.enabled && details.secret && (
+                <Alert variant="destructive">
+                  <TriangleAlertIcon />
+                  <AlertTitle>A password has been generated</AlertTitle>
+                  <AlertDescription>
+                    Networking is off. If it was ever enabled, this password is still in effect on the server and every client must keep authenticating
+                    with it. Enabling networking applies it again.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {usesPassword && !pending && details.enabled && (
                 <Alert>
                   <AlertCircleIcon />
                   <AlertTitle>Disabling keeps the password</AlertTitle>
@@ -233,7 +270,7 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {isMemoryDatabase && details.secret && <SecretField secret={details.secret} />}
+              {usesPassword && details.secret && <SecretField secret={details.secret} />}
 
               {details.requires_remote_users === true && (
                 <Alert>
@@ -265,14 +302,26 @@ export default function ServiceNetworkingDialog({
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
+          {details && openByDefault && (
+            <Button variant="secondary" disabled={submitting || pending} onClick={() => toggle('disable')}>
+              {(submitting || pending) && <LoaderCircleIcon className="animate-spin" />}
+              Close to localhost
+            </Button>
+          )}
           {details && (
             <Button
-              variant={details.enabled ? 'destructive' : 'default'}
+              variant={drifted ? 'secondary' : details.enabled ? 'destructive' : 'default'}
               disabled={submitting || pending}
               onClick={() => toggle(details.enabled ? 'disable' : 'enable')}
             >
               {(submitting || pending) && <LoaderCircleIcon className="animate-spin" />}
               {details.enabled ? 'Disable networking' : 'Enable networking'}
+            </Button>
+          )}
+          {details && drifted && (
+            <Button disabled={submitting} onClick={() => toggle(details.enabled ? 'enable' : 'disable')}>
+              {submitting && <LoaderCircleIcon className="animate-spin" />}
+              Reapply
             </Button>
           )}
         </DialogFooter>

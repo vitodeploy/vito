@@ -1,6 +1,6 @@
-[ -f {{ $conf }} ] && sudo cp {{ $conf }} {{ $conf }}.vito.bak || true
+sudo test -f {{ $conf }} && sudo cp {{ $conf }} {{ $conf }}.vito.bak || true
 
-[ -f {{ $hba }} ] && sudo cp {{ $hba }} {{ $hba }}.vito.bak || true
+sudo test -f {{ $hba }} && sudo cp {{ $hba }} {{ $hba }}.vito.bak || true
 
 sudo grep -Eq '^[[:space:]]*include_dir[[:space:]]*=' {{ $conf }} || printf "\ninclude_dir = 'conf.d'\n" | sudo tee -a {{ $conf }} > /dev/null
 

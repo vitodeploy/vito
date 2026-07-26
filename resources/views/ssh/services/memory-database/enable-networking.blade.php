@@ -1,4 +1,4 @@
-[ -f {{ $conf }} ] && sudo cp {{ $conf }} {{ $conf }}.vito.bak || true
+sudo test -f {{ $conf }} && sudo cp {{ $conf }} {{ $conf }}.vito.bak || true
 
 sudo sed -i -E 's/^([[:space:]]*bind[[:space:]]+)(0\.0\.0\.0|\*).*$/\1127.0.0.1/' {{ $conf }}
 

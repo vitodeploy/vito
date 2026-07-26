@@ -13,7 +13,7 @@ use Illuminate\Contracts\View\View;
 
 class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
-    use HasNetworking;
+    use ManagesDatabaseNetworking;
 
     protected array $systemDbs = ['template0', 'template1', 'postgres'];
 
@@ -85,7 +85,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
     protected function writeNetworkingConfig(bool $enable): void
     {
         $this->service->server->ssh()->exec(
-            view($this->getScriptView('write-networking'), [
+            view($this->getNetworkingScriptView('write-networking'), [
                 ...$this->networkingScriptData(),
                 'address' => $enable ? '0.0.0.0' : 'localhost',
                 'open' => $enable,
@@ -100,7 +100,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
     protected function runNetworkingRollback(): void
     {
         $this->service->server->ssh()->exec(
-            view($this->getScriptView('rollback-networking'), $this->networkingScriptData()),
+            view($this->getNetworkingScriptView('rollback-networking'), $this->networkingScriptData()),
             'rollback-postgresql-networking'
         );
     }

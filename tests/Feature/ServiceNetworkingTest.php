@@ -40,7 +40,8 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals(ServiceStatus::READY, $service->status);
         $this->assertNotNull($service->secret);
 
-        SSH::assertExecutedContains("sudo cp /etc/{$name}/{$name}.conf /etc/{$name}/{$name}.conf.vito.bak");
+        SSH::assertExecutedContains("sudo test -f /etc/{$name}/{$name}.conf && sudo cp /etc/{$name}/{$name}.conf /etc/{$name}/{$name}.conf.vito.bak");
+        SSH::assertNotExecutedContains("[ -f /etc/{$name}/", 'Guards must run under sudo — the conf directory is not readable by the SSH user.');
         SSH::assertExecutedContains('bind[[:space:]]+)(0\.0\.0\.0|\*).*$/\1127.0.0.1/');
         SSH::assertExecutedContains("sudo install -o {$name} -g {$name} -m 600 /dev/null /etc/{$name}/vito-networking.conf");
         SSH::assertExecutedContains('printf \'requirepass "%s"\n\' "$VITO_MEMDB_PASSWORD"');
@@ -74,8 +75,10 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals(ServiceStatus::READY, $service->status);
 
         SSH::assertExecutedContains('# BEGIN VITO NETWORKING\ninclude %s\n# END VITO NETWORKING\n');
+        SSH::assertExecutedContains("sudo test -f /etc/{$name}/vito-networking.conf || sudo install -o {$name}");
         SSH::assertExecutedContains("sudo systemctl restart {$name}-server");
         SSH::assertNotExecutedContains('bind 0.0.0.0');
+        SSH::assertNotExecutedContains("[ -f /etc/{$name}/", 'An unprivileged guard would truncate the include file and drop the password.');
     }
 
     public function test_enable_persists_the_secret_before_dispatching_the_job(): void
@@ -241,8 +244,8 @@ class ServiceNetworkingTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        /** @var Service $service */
-        $service = $this->server->services()->create([
+        $service = Service::factory()->create([
+            'server_id' => $this->server->id,
             'type' => 'memory_database',
             'name' => 'ghost',
             'version' => 'latest',
@@ -372,6 +375,112 @@ class ServiceNetworkingTest extends TestCase
         ]);
     }
 
+    public function test_failed_config_write_rolls_back_and_marks_the_service_as_failed(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+
+        SSH::swap(new class extends SSHFake
+        {
+            public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
+            {
+                if (str((string) $command)->contains('requirepass')) {
+                    throw new SSHCommandError('Connection failed');
+                }
+
+                return parent::exec($command, $log, $siteId, $stream, $streamCallback, $timeout);
+            }
+        });
+
+        $this->postJson(route('services.networking.enable', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+        $this->assertNull($service->type_data);
+
+        SSH::assertExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'type' => 'enable-networking-failed',
+        ]);
+    }
+
+    public function test_failed_rollback_is_logged(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+
+        SSH::swap(new class extends SSHFake
+        {
+            public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
+            {
+                if (str((string) $command)->contains('.vito.bak /etc/redis/redis.conf')) {
+                    throw new SSHCommandError('Rollback failed');
+                }
+
+                return parent::exec($command, $log, $siteId, $stream, $streamCallback, $timeout);
+            }
+        });
+
+        $this->postJson(route('services.networking.enable', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'type' => 'rollback-redis-networking-failed',
+        ]);
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'type' => 'enable-networking-failed',
+        ]);
+    }
+
+    public function test_networking_details_report_management_and_password_capability(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+
+        SSH::fake('bind 127.0.0.1');
+
+        $this->getJson(route('services.networking', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertOk()
+            ->assertJson([
+                'managed' => false,
+                'failed' => false,
+                'uses_password' => true,
+            ]);
+
+        $service->type_data = ['networking' => false];
+        $service->status = ServiceStatus::FAILED;
+        $service->save();
+
+        $this->getJson(route('services.networking', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertOk()
+            ->assertJson([
+                'managed' => true,
+                'failed' => true,
+            ]);
+    }
+
     public function test_failed_disable_does_not_roll_back(): void
     {
         $this->actingAs($this->user);
@@ -400,15 +509,13 @@ class ServiceNetworkingTest extends TestCase
     {
         $this->server->services()->where('type', 'memory_database')->delete();
 
-        /** @var Service $service */
-        $service = $this->server->services()->create([
+        return Service::factory()->create([
+            'server_id' => $this->server->id,
             'type' => 'memory_database',
             'name' => $name,
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);
-
-        return $service;
     }
 
     /**

@@ -43,7 +43,6 @@ class Service extends AbstractModel
         'log_id',
         'type',
         'type_data',
-        'secret',
         'name',
         'version',
         'installed_version',

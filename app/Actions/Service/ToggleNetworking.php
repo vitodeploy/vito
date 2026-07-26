@@ -5,9 +5,7 @@ namespace App\Actions\Service;
 use App\Enums\ServiceStatus;
 use App\Jobs\Service\ToggleNetworkingJob;
 use App\Models\Service;
-use App\Services\Redis\Redis;
 use App\Services\SupportsNetworking;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ToggleNetworking
@@ -17,11 +15,10 @@ class ToggleNetworking
      */
     public function enable(Service $service): void
     {
-        $this->validate($service);
+        $handler = $this->validate($service);
 
-        if ($service->type === Redis::type() && ($service->secret === null || $service->secret === '')) {
-            $service->secret = Str::random(32);
-        }
+        $handler->prepareNetworking();
+        $service->save();
 
         $this->dispatch($service, true);
     }
@@ -48,9 +45,11 @@ class ToggleNetworking
     /**
      * @throws ValidationException
      */
-    private function validate(Service $service): void
+    private function validate(Service $service): SupportsNetworking
     {
-        if (! $service->hasHandler() || ! $service->handler() instanceof SupportsNetworking) {
+        $handler = $service->hasHandler() ? $service->handler() : null;
+
+        if (! $handler instanceof SupportsNetworking) {
             throw ValidationException::withMessages([
                 'service' => __('This service does not support networking.'),
             ]);
@@ -61,5 +60,7 @@ class ToggleNetworking
                 'service' => __('Wait for the service to settle before changing its networking.'),
             ]);
         }
+
+        return $handler;
     }
 }

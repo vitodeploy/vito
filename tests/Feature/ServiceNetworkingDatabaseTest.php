@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
+use App\Support\Testing\SSHFake;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -34,6 +37,7 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $this->assertNull($service->secret);
 
         SSH::assertExecutedContains('sudo mkdir -p /etc/mysql/mysql.conf.d');
+        SSH::assertExecutedContains('sudo cp /etc/mysql/mysql.conf.d/zz-vito-networking.cnf /etc/mysql/mysql.conf.d/zz-vito-networking.cnf.vito.bak');
         SSH::assertExecutedContains('printf \'[mysqld]\nbind-address = %s\n\' \'0.0.0.0\' | sudo tee /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
         SSH::assertExecutedContains('printf \'loose-mysqlx-bind-address = %s\n\' \'0.0.0.0\' | sudo tee -a /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
         SSH::assertExecutedContains('sudo systemctl restart mysql');
@@ -243,7 +247,7 @@ class ServiceNetworkingDatabaseTest extends TestCase
         SSH::assertNotExecutedContains('SHOW listen_addresses');
     }
 
-    public function test_failed_mysql_enable_deletes_the_drop_in_and_marks_the_service_as_failed(): void
+    public function test_failed_mysql_enable_rolls_back_the_drop_in_and_marks_the_service_as_failed(): void
     {
         $this->actingAs($this->user);
 
@@ -266,6 +270,26 @@ class ServiceNetworkingDatabaseTest extends TestCase
             'server_id' => $this->server->id,
             'type' => 'enable-networking-failed',
         ]);
+    }
+
+    public function test_failed_mysql_enable_restores_a_previous_drop_in_instead_of_deleting_it(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->databaseService('mysql', '8.4');
+
+        SSH::fake("Active: active\n127.0.0.1\nmysqlx_bind_address\t127.0.0.1");
+
+        $this->postJson(route('services.networking.enable', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+
+        SSH::assertExecutedContains('sudo cp /etc/mysql/mysql.conf.d/zz-vito-networking.cnf.vito.bak /etc/mysql/mysql.conf.d/zz-vito-networking.cnf');
     }
 
     public function test_failed_mysql_disable_does_not_roll_back(): void
@@ -312,6 +336,38 @@ class ServiceNetworkingDatabaseTest extends TestCase
         SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/postgresql.conf.vito.bak /etc/postgresql/16/main/postgresql.conf');
         SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/pg_hba.conf.vito.bak /etc/postgresql/16/main/pg_hba.conf');
         SSH::assertExecutedContains('sudo rm -f /etc/postgresql/16/main/conf.d/zz-vito-networking.conf');
+    }
+
+    public function test_failed_postgresql_config_write_rolls_back_the_drop_in(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->databaseService('postgresql', '16');
+
+        SSH::swap(new class extends SSHFake
+        {
+            public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
+            {
+                if (str((string) $command)->contains('sudo tee /etc/postgresql/16/main/conf.d/zz-vito-networking.conf')) {
+                    throw new SSHCommandError('Connection failed');
+                }
+
+                return parent::exec($command, $log, $siteId, $stream, $streamCallback, $timeout);
+            }
+        });
+
+        $this->postJson(route('services.networking.enable', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+        $this->assertNull($service->type_data);
+
+        SSH::assertExecutedContains('sudo rm -f /etc/postgresql/16/main/conf.d/zz-vito-networking.conf');
+        SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/postgresql.conf.vito.bak /etc/postgresql/16/main/postgresql.conf');
     }
 
     public function test_failed_postgresql_disable_never_restores_the_open_state(): void
@@ -406,15 +462,13 @@ class ServiceNetworkingDatabaseTest extends TestCase
     {
         $this->server->services()->where('type', 'database')->delete();
 
-        /** @var Service $service */
-        $service = $this->server->services()->create([
+        return Service::factory()->create([
+            'server_id' => $this->server->id,
             'type' => 'database',
             'name' => $name,
             'version' => $version,
             'status' => ServiceStatus::READY,
         ]);
-
-        return $service;
     }
 
     /**

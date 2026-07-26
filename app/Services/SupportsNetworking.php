@@ -2,12 +2,26 @@
 
 namespace App\Services;
 
+use App\Exceptions\SSHError;
+
 interface SupportsNetworking
 {
     public function networkingEnabled(): bool;
 
+    public function networkingManaged(): bool;
+
+    public function networkingSecret(): ?string;
+
+    public function prepareNetworking(): void;
+
+    /**
+     * @throws SSHError
+     */
     public function enableNetworking(): void;
 
+    /**
+     * @throws SSHError
+     */
     public function disableNetworking(): void;
 
     public function networkingPort(): int;
@@ -16,4 +30,9 @@ interface SupportsNetworking
      * @return array<string, mixed>
      */
     public function networkingDetails(): array;
+
+    /**
+     * @throws SSHError
+     */
+    public function effectiveNetworking(): ?bool;
 }

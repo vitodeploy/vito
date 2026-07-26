@@ -9,7 +9,7 @@ use Illuminate\Contracts\View\View;
 
 class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
-    use HasMysqlNetworking;
+    use ManagesMysqlNetworking;
 
     protected array $systemDbs = ['information_schema', 'performance_schema', 'mysql', 'sys'];
 

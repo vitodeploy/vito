@@ -5,13 +5,18 @@ namespace App\Services\Database;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 
-trait HasMysqlNetworking
+trait ManagesMysqlNetworking
 {
-    use HasNetworking;
+    use ManagesDatabaseNetworking;
 
     public function networkingPort(): int
     {
         return 3306;
+    }
+
+    protected function getNetworkingScriptView(string $script): string
+    {
+        return 'ssh.services.database.mysql-family.'.$script;
     }
 
     /**
@@ -20,7 +25,7 @@ trait HasMysqlNetworking
     protected function writeNetworkingConfig(bool $enable): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.database.mysql-family.write-networking', [
+            view($this->getNetworkingScriptView('write-networking'), [
                 ...$this->networkingScriptData(),
                 'address' => $enable ? '0.0.0.0' : '127.0.0.1',
                 'managesXPlugin' => $this->networkingManagesXPlugin(),
@@ -35,7 +40,7 @@ trait HasMysqlNetworking
     protected function runNetworkingRollback(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.database.mysql-family.rollback-networking', $this->networkingScriptData()),
+            view($this->getNetworkingScriptView('rollback-networking'), $this->networkingScriptData()),
             'rollback-'.static::id().'-networking'
         );
     }

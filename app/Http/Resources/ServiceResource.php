@@ -16,6 +16,8 @@ class ServiceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $handler = $this->hasHandler() ? $this->handler() : null;
+
         return [
             'id' => $this->id,
             'server_id' => $this->server_id,
@@ -30,8 +32,8 @@ class ServiceResource extends JsonResource
             'status_color' => $this->status->getColor(),
             'icon' => config('core.service_icons')[$this->name] ?? '',
             'is_default' => $this->is_default,
-            'supports_networking' => $this->hasHandler() && $this->handler() instanceof SupportsNetworking,
-            'networking_enabled' => (bool) ($this->type_data['networking'] ?? false),
+            'supports_networking' => $handler instanceof SupportsNetworking,
+            'networking_enabled' => $handler instanceof SupportsNetworking && $handler->networkingEnabled(),
             'log' => $this->log ? new ServerLogResource($this->log) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
