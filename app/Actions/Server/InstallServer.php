@@ -54,6 +54,8 @@ class InstallServer
      */
     public function install(): void
     {
+        $this->progress(5, 'preparing-system');
+        $this->server->os()->waitForBoot();
         $this->createUser();
         $this->progress(15, 'installing-updates');
         $this->server->os()->upgrade();

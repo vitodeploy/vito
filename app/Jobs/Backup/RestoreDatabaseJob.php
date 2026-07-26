@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Actions\Backup\BroadcastBackupUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Events\SocketEvent;
@@ -65,7 +66,7 @@ class RestoreDatabaseJob implements ShouldQueue
         Notifier::send($server, new RestoreFailed($server, $this->backupFile));
 
         try {
-            $server->os()->deleteFile($this->backupFile->tempPath());
+            $server->os()->deleteFile($this->backupFile->tempPath($server));
         } catch (Throwable $cleanupError) {
             ServerLog::log($server, 'cleanup-failed-restore', $cleanupError->getMessage());
         }
@@ -80,5 +81,7 @@ class RestoreDatabaseJob implements ShouldQueue
             type: 'backup-file.updated',
             data: new BackupFileResource($this->backupFile),
         ));
+
+        app(BroadcastBackupUpdate::class)->broadcast($this->backupFile->backup);
     }
 }

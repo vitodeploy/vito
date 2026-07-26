@@ -26,6 +26,19 @@ class OS
     /**
      * @throws SSHError
      */
+    public function waitForBoot(int $timeout = 300): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.wait-for-boot', [
+                'timeout' => $timeout,
+            ]),
+            'wait-for-boot'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
     public function installDependencies(): void
     {
         $this->server->ssh()->exec(

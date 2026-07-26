@@ -9,6 +9,7 @@ import CopyableBadge from '@/components/copyable-badge';
 import { useDialog } from '@/hooks/use-dialog';
 import { Backup } from '@/types/backup';
 import ErrorIndicator from '@/components/error-indicator';
+import { formatBytes } from '@/lib/utils';
 
 function Restore({ backup, file }: { backup: Backup; file: BackupFile }) {
   const dialog = useDialog();
@@ -46,6 +47,28 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       return <DateTime date={row.original.created_at} />;
+    },
+  },
+  {
+    accessorKey: 'database_engine',
+    header: 'Source',
+    enableColumnFilter: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      return row.original.database_engine ? (
+        <Badge variant="outline">{`${row.original.database_engine} ${row.original.database_version ?? ''}`.trim()}</Badge>
+      ) : (
+        '-'
+      );
+    },
+  },
+  {
+    accessorKey: 'size',
+    header: 'Size',
+    enableColumnFilter: false,
+    enableSorting: false,
+    cell: ({ row }) => {
+      return row.original.size === null ? '-' : formatBytes(row.original.size, 2);
     },
   },
   {

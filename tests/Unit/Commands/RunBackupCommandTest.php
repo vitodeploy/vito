@@ -11,6 +11,7 @@ use App\Models\Database;
 use App\Models\StorageProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -120,5 +121,20 @@ class RunBackupCommandTest extends TestCase
 
         $this->artisan('backups:run')
             ->expectsOutput('1 backups started');
+    }
+
+    public function test_does_not_run_backups_whose_server_is_missing(): void
+    {
+        SSH::fake();
+        Bus::fake();
+        Carbon::setTestNow('2026-06-19 10:00:00');
+
+        $backup = $this->createBackup(['interval' => '0 * * * *', 'server_id' => 999999]);
+
+        $this->artisan('backups:run')
+            ->expectsOutput('0 backups started');
+
+        $this->assertDatabaseHas('backups', ['id' => $backup->id, 'server_id' => 999999]);
+        Bus::assertNothingDispatched();
     }
 }

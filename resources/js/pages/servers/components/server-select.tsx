@@ -158,7 +158,7 @@ export default function ServerSelect({
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger || defaultTrigger}</PopoverTrigger>
-      <PopoverContent className="flex max-h-[400px] w-56 flex-col p-0" align="start">
+      <PopoverContent className="flex max-h-[400px] w-(--radix-popover-trigger-width) min-w-56 flex-col p-0" align="start">
         <Command shouldFilter={false} className="flex flex-col overflow-hidden">
           <CommandInput placeholder="Search server..." value={query} onValueChange={setQuery} />
           <CommandList data-slot="command-list" className="min-h-0 flex-1 overflow-y-auto" onWheel={(e) => e.stopPropagation()}>

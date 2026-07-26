@@ -143,6 +143,10 @@ class Server extends AbstractModel
                     /** @var ServerLog $log */
                     $log->delete();
                 });
+                $server->backups()->each(function ($backup): void {
+                    /** @var Backup $backup */
+                    $backup->delete();
+                });
                 $server->services()->delete();
                 $server->databases()->delete();
                 $server->databaseUsers()->delete();
