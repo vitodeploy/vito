@@ -1,3 +1,5 @@
+sudo rm -f {{ $dropIn }}.vito.bak
+
 sudo mkdir -p {{ $directory }}
 
 if sudo test -f {{ $dropIn }}; then

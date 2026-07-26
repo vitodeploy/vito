@@ -23,6 +23,10 @@ trait ManagesDatabaseNetworking
         return $this->getScriptView($script);
     }
 
+    abstract public function usesHost(): bool;
+
+    abstract protected function getScriptView(string $script): string;
+
     protected function networkingValueMatches(string $output, string ...$expected): bool
     {
         foreach ($expected as $value) {

@@ -28,7 +28,6 @@ class GetNetworking
         $details = [
             'supported' => true,
             'pending' => $service->status === ServiceStatus::RESTARTING,
-            'failed' => $service->status === ServiceStatus::FAILED,
             ...$handler->networkingDetails(),
         ];
 
@@ -41,7 +40,10 @@ class GetNetworking
         try {
             return [...$details, 'effective' => $handler->effectiveNetworking()];
         } catch (SSHError $e) {
-            Log::debug('Could not read the networking state of service '.$service->id.': '.$e->getMessage());
+            Log::warning('Could not read the networking state of a service', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
 
             return [...$details, 'effective' => null, 'error' => true];
         }

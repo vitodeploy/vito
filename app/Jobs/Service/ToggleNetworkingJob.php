@@ -45,6 +45,7 @@ class ToggleNetworkingJob implements ShouldQueue
 
             $typeData = $this->service->type_data ?? [];
             $typeData['networking'] = $this->enable;
+            unset($typeData['networking_failed']);
             $this->service->type_data = $typeData;
             $this->service->save();
 
@@ -54,6 +55,9 @@ class ToggleNetworkingJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
+        $typeData = $this->service->type_data ?? [];
+        $typeData['networking_failed'] = true;
+        $this->service->type_data = $typeData;
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
         $this->broadcastServiceUpdate();

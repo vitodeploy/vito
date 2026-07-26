@@ -43,7 +43,7 @@ class ServiceNetworkingDatabaseTest extends TestCase
         SSH::assertExecutedContains('sudo systemctl restart mysql');
         SSH::assertExecutedContains('sudo mysql -N -e "SELECT @@bind_address"');
         SSH::assertExecutedContains('sudo mysql -N -e "SHOW VARIABLES LIKE \'mysqlx_bind_address\'"');
-        SSH::assertNotExecutedContains('sudo rm -f /etc/mysql/mysql.conf.d/zz-vito-networking.cnf');
+        SSH::assertNotExecutedContains('.vito.bak /etc/mysql/mysql.conf.d/zz-vito-networking.cnf', 'The drop-in must not be rolled back.');
     }
 
     public function test_disable_mysql_networking(): void
@@ -110,7 +110,8 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo rm -f /etc/mysql/mysql.conf.d/zz-vito-networking.cnf');
     }
@@ -263,7 +264,8 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo rm -f /etc/mysql/mysql.conf.d/zz-vito-networking.cnf');
         $this->assertDatabaseHas('server_logs', [
@@ -312,7 +314,7 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
         $this->assertTrue($service->type_data['networking']);
 
-        SSH::assertNotExecutedContains('sudo rm -f /etc/mysql/mysql.conf.d/zz-vito-networking.cnf');
+        SSH::assertNotExecutedContains('.vito.bak /etc/mysql/mysql.conf.d/zz-vito-networking.cnf', 'The drop-in must not be rolled back.');
     }
 
     public function test_failed_postgresql_enable_restores_both_backups(): void
@@ -331,7 +333,8 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/postgresql.conf.vito.bak /etc/postgresql/16/main/postgresql.conf');
         SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/pg_hba.conf.vito.bak /etc/postgresql/16/main/pg_hba.conf');
@@ -364,7 +367,8 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo rm -f /etc/postgresql/16/main/conf.d/zz-vito-networking.conf');
         SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/postgresql.conf.vito.bak /etc/postgresql/16/main/postgresql.conf');

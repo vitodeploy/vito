@@ -43,6 +43,7 @@ class ServiceNetworkingTest extends TestCase
         SSH::assertExecutedContains("sudo test -f /etc/{$name}/{$name}.conf && sudo cp /etc/{$name}/{$name}.conf /etc/{$name}/{$name}.conf.vito.bak");
         SSH::assertNotExecutedContains("[ -f /etc/{$name}/", 'Guards must run under sudo — the conf directory is not readable by the SSH user.');
         SSH::assertExecutedContains('bind[[:space:]]+)(0\.0\.0\.0|\*).*$/\1127.0.0.1/');
+        SSH::assertExecutedContains("sudo cp /etc/{$name}/vito-networking.conf /etc/{$name}/vito-networking.conf.vito.bak");
         SSH::assertExecutedContains("sudo install -o {$name} -g {$name} -m 600 /dev/null /etc/{$name}/vito-networking.conf");
         SSH::assertExecutedContains('printf \'requirepass "%s"\n\' "$VITO_MEMDB_PASSWORD"');
         SSH::assertExecutedContains('sudo sed -i \'/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d\'');
@@ -74,7 +75,7 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals('existing-secret', $service->secret);
         $this->assertEquals(ServiceStatus::READY, $service->status);
 
-        SSH::assertExecutedContains('# BEGIN VITO NETWORKING\ninclude %s\n# END VITO NETWORKING\n');
+        SSH::assertExecutedContains('# BEGIN VITO NETWORKING\nbind 127.0.0.1\ninclude %s\n# END VITO NETWORKING\n');
         SSH::assertExecutedContains("sudo test -f /etc/{$name}/vito-networking.conf || sudo install -o {$name}");
         SSH::assertExecutedContains("sudo systemctl restart {$name}-server");
         SSH::assertNotExecutedContains('bind 0.0.0.0');
@@ -366,7 +367,8 @@ class ServiceNetworkingTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
         $this->assertDatabaseHas('server_logs', [
@@ -401,9 +403,11 @@ class ServiceNetworkingTest extends TestCase
         $service->refresh();
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
-        $this->assertNull($service->type_data);
+        $this->assertFalse($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_failed']);
 
         SSH::assertExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
+        SSH::assertExecutedContains('sudo cp /etc/redis/vito-networking.conf.vito.bak /etc/redis/vito-networking.conf');
         $this->assertDatabaseHas('server_logs', [
             'server_id' => $this->server->id,
             'type' => 'enable-networking-failed',
@@ -477,8 +481,39 @@ class ServiceNetworkingTest extends TestCase
             ->assertOk()
             ->assertJson([
                 'managed' => true,
-                'failed' => true,
+                'failed' => false,
             ]);
+
+        $service->type_data = ['networking' => false, 'networking_failed' => true];
+        $service->save();
+
+        $this->getJson(route('services.networking', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertOk()
+            ->assertJson(['failed' => true]);
+    }
+
+    public function test_a_successful_toggle_clears_a_previous_networking_failure(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+        $service->type_data = ['networking' => false, 'networking_failed' => true];
+        $service->save();
+
+        SSH::fake("Active: active\nbind 0.0.0.0");
+
+        $this->postJson(route('services.networking.enable', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertTrue($service->type_data['networking']);
+        $this->assertArrayNotHasKey('networking_failed', $service->type_data);
     }
 
     public function test_failed_disable_does_not_roll_back(): void

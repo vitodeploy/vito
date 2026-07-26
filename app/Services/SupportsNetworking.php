@@ -10,6 +10,8 @@ interface SupportsNetworking
 
     public function networkingManaged(): bool;
 
+    public function networkingFailed(): bool;
+
     public function networkingSecret(): ?string;
 
     public function prepareNetworking(): void;

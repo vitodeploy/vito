@@ -19,6 +19,11 @@ trait ManagesNetworking
         return array_key_exists('networking', $this->service->type_data ?? []);
     }
 
+    public function networkingFailed(): bool
+    {
+        return (bool) ($this->service->type_data['networking_failed'] ?? false);
+    }
+
     public function networkingSecret(): ?string
     {
         return null;
@@ -50,6 +55,7 @@ trait ManagesNetworking
         return [
             'enabled' => $this->networkingEnabled(),
             'managed' => $this->networkingManaged(),
+            'failed' => $this->networkingFailed(),
             'port' => $this->networkingPort(),
             ...$this->networkingExtraDetails(),
         ];

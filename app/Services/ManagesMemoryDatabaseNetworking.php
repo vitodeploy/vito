@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Services\MemoryDatabase;
+namespace App\Services;
 
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
-use App\Services\ManagesNetworking;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 trait ManagesMemoryDatabaseNetworking
 {
@@ -41,7 +39,6 @@ trait ManagesMemoryDatabaseNetworking
 
     /**
      * @throws SSHError
-     * @throws RuntimeException
      */
     protected function writeNetworkingConfig(bool $enable): void
     {
@@ -57,7 +54,7 @@ trait ManagesMemoryDatabaseNetworking
         $secret = $this->service->secret;
 
         if ($secret === null || $secret === '') {
-            throw new RuntimeException("Networking password is missing for {$this->service->name}.");
+            throw new SSHCommandError("Networking password is missing for {$this->service->name}.");
         }
 
         $this->service->server->ssh()

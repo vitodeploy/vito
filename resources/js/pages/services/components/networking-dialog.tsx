@@ -249,7 +249,7 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {usesPassword && !pending && !details.enabled && details.secret && (
+              {usesPassword && !pending && !details.failed && !details.enabled && details.secret && (
                 <Alert variant="destructive">
                   <TriangleAlertIcon />
                   <AlertTitle>A password has been generated</AlertTitle>
