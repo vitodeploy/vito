@@ -33,8 +33,11 @@ interface SupportsNetworking
      */
     public function networkingDetails(): array;
 
-    /**
-     * @throws SSHError
-     */
-    public function effectiveNetworking(): ?bool;
+    public function networkingProbeCommand(): string;
+
+    public function networkingProbeRequiresRunning(): bool;
+
+    public function parseNetworkingProbe(string $output): ?bool;
+
+    public function rememberEffectiveNetworking(?bool $effective, bool $observed = true): void;
 }

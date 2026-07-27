@@ -24,11 +24,11 @@ class SyncDatabases
 
     private function updateCharsets(Service $service, Database $handler): void
     {
-        $data = $service->type_data ?? [];
         $charsets = $handler->getCharsets();
-        $data['charsets'] = $charsets['charsets'] ?? [];
-        $data['defaultCharset'] = $charsets['defaultCharset'] ?? '';
-        $service->type_data = $data;
+
+        $service->refresh();
+        $service->jsonUpdate('type_data', 'charsets', $charsets['charsets'] ?? [], save: false);
+        $service->jsonUpdate('type_data', 'defaultCharset', $charsets['defaultCharset'] ?? '', save: false);
         $service->save();
     }
 

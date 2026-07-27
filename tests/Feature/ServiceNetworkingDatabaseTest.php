@@ -241,6 +241,11 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $service->refresh();
 
         $this->assertTrue($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_effective']);
+        $this->assertNull(
+            $service->type_data['networking_checked_at'] ?? null,
+            'A toggle that never restarted or verified must not stamp an observation timestamp.'
+        );
         $this->assertEquals(ServiceStatus::STOPPED, $service->status);
 
         SSH::assertNotExecutedContains('systemctl restart');
@@ -402,8 +407,13 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->databaseService('mysql', '8.4');
+        $service->type_data = [
+            'networking_effective' => true,
+            'networking_checked_at' => '2026-07-26T12:00:00+00:00',
+        ];
+        $service->save();
 
-        SSH::fake('0.0.0.0');
+        SSH::fake();
 
         $response = $this->getJson(route('services.networking', [
             'server' => $this->server,
@@ -415,13 +425,14 @@ class ServiceNetworkingDatabaseTest extends TestCase
                 'pending' => false,
                 'enabled' => false,
                 'effective' => true,
+                'checked_at' => '2026-07-26T12:00:00+00:00',
                 'port' => 3306,
                 'requires_remote_users' => true,
             ]);
 
         $this->assertArrayNotHasKey('secret', $response->json());
 
-        SSH::assertExecutedContains('sudo mysql -N -e "SELECT @@bind_address"');
+        SSH::assertNotExecutedContains('SELECT @@bind_address');
     }
 
     public function test_postgresql_networking_details(): void
@@ -429,10 +440,14 @@ class ServiceNetworkingDatabaseTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->databaseService('postgresql', '16');
-        $service->type_data = ['networking' => true];
+        $service->type_data = [
+            'networking' => true,
+            'networking_effective' => false,
+            'networking_checked_at' => '2026-07-26T12:00:00+00:00',
+        ];
         $service->save();
 
-        SSH::fake('localhost');
+        SSH::fake();
 
         $this->getJson(route('services.networking', [
             'server' => $this->server,
@@ -444,11 +459,12 @@ class ServiceNetworkingDatabaseTest extends TestCase
                 'pending' => false,
                 'enabled' => true,
                 'effective' => false,
+                'checked_at' => '2026-07-26T12:00:00+00:00',
                 'port' => 5432,
                 'requires_remote_users' => false,
             ]);
 
-        SSH::assertExecutedContains('sudo -u postgres psql -tAc "SHOW listen_addresses"');
+        SSH::assertNotExecutedContains('SHOW listen_addresses');
     }
 
     #[DataProvider('databases')]

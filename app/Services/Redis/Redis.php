@@ -8,10 +8,10 @@ use App\Exceptions\SSHError;
 use App\Services\AbstractService;
 use App\Services\HasLogs;
 use App\Services\ManagesMemoryDatabaseNetworking;
-use App\Services\SupportsNetworking;
+use App\Services\SupportsNetworkingSecret;
 use Closure;
 
-class Redis extends AbstractService implements HasLogs, SupportsNetworking
+class Redis extends AbstractService implements HasLogs, SupportsNetworkingSecret
 {
     use ManagesMemoryDatabaseNetworking;
 
@@ -76,9 +76,9 @@ class Redis extends AbstractService implements HasLogs, SupportsNetworking
         $this->service->server->os()->cleanup();
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        return $this->service->server->ssh()->exec('redis-server --version | awk \'{print $3}\' | cut -d= -f2', 'get-redis-version');
+        return 'redis-server --version | awk \'{print $3}\' | cut -d= -f2';
     }
 
     public function logs(): array

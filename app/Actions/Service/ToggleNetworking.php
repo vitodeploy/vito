@@ -35,11 +35,14 @@ class ToggleNetworking
 
     private function dispatch(Service $service, bool $enable): void
     {
+        $service->refresh();
+
         $previousStatus = $service->status;
 
-        $typeData = $service->type_data ?? [];
-        $typeData['networking'] ??= false;
-        $service->type_data = $typeData;
+        if (! array_key_exists('networking', $service->type_data ?? [])) {
+            $service->jsonUpdate('type_data', 'networking', false, save: false);
+        }
+
         $service->status = ServiceStatus::RESTARTING;
         $service->save();
 

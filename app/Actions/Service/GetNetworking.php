@@ -3,10 +3,8 @@
 namespace App\Actions\Service;
 
 use App\Enums\ServiceStatus;
-use App\Exceptions\SSHError;
 use App\Models\Service;
 use App\Services\SupportsNetworking;
-use Illuminate\Support\Facades\Log;
 
 class GetNetworking
 {
@@ -37,15 +35,6 @@ class GetNetworking
             $details['secret'] = $secret;
         }
 
-        try {
-            return [...$details, 'effective' => $handler->effectiveNetworking()];
-        } catch (SSHError $e) {
-            Log::warning('Could not read the networking state of a service', [
-                'service_id' => $service->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [...$details, 'effective' => null, 'error' => true];
-        }
+        return $details;
     }
 }

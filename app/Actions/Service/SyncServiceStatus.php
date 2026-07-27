@@ -20,7 +20,7 @@ class SyncServiceStatus
         ServiceStatus::DISABLED,
     ];
 
-    public function sync(Server $server, Service $service, string $state): void
+    public function sync(Server $server, Service $service, string $state, bool $force = false): bool
     {
         $newStatus = match ($state) {
             'active' => ServiceStatus::READY,
@@ -30,7 +30,7 @@ class SyncServiceStatus
         };
 
         if (! $newStatus instanceof ServiceStatus) {
-            return;
+            return false;
         }
 
         $previousStatus = $service->status;
@@ -39,11 +39,11 @@ class SyncServiceStatus
             || ($previousStatus === ServiceStatus::DISABLED && $newStatus === ServiceStatus::STOPPED)) {
             Cache::forget($this->pendingKey($service));
 
-            return;
+            return false;
         }
 
-        if ($newStatus !== ServiceStatus::READY && ! $this->confirmed($service, $newStatus)) {
-            return;
+        if (! $force && $newStatus !== ServiceStatus::READY && ! $this->confirmed($service, $newStatus)) {
+            return false;
         }
 
         Cache::forget($this->pendingKey($service));
@@ -54,12 +54,12 @@ class SyncServiceStatus
             ->update(['status' => $newStatus]);
 
         if ($updated === 0) {
-            return;
+            return false;
         }
 
         $service = $service->fresh();
         if (! $service instanceof Service) {
-            return;
+            return false;
         }
 
         ServiceStatusChanged::dispatch($service, $previousStatus, $newStatus);
@@ -69,6 +69,8 @@ class SyncServiceStatus
             type: 'service.updated',
             data: new ServiceResource($service),
         ));
+
+        return true;
     }
 
     private function pendingKey(Service $service): string

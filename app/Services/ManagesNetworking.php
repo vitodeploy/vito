@@ -57,20 +57,24 @@ trait ManagesNetworking
             'managed' => $this->networkingManaged(),
             'failed' => $this->networkingFailed(),
             'port' => $this->networkingPort(),
+            'effective' => $this->service->type_data['networking_effective'] ?? null,
+            'checked_at' => $this->service->type_data['networking_checked_at'] ?? null,
             ...$this->networkingExtraDetails(),
         ];
     }
 
-    /**
-     * @throws SSHError
-     */
-    public function effectiveNetworking(): ?bool
+    public function networkingProbeRequiresRunning(): bool
     {
-        if ($this->service->status === ServiceStatus::RESTARTING) {
-            return null;
-        }
+        return true;
+    }
 
-        return $this->networkingIsOpen();
+    public function rememberEffectiveNetworking(?bool $effective, bool $observed = true): void
+    {
+        $this->service->jsonUpdate('type_data', 'networking_effective', $effective, save: false);
+
+        if ($observed) {
+            $this->service->jsonUpdate('type_data', 'networking_checked_at', now()->toIso8601String(), save: false);
+        }
     }
 
     /**
@@ -155,8 +159,17 @@ trait ManagesNetworking
      */
     abstract protected function verifyNetworking(bool $expectedOpen): void;
 
+    abstract public function networkingProbeCommand(): string;
+
+    abstract public function parseNetworkingProbe(string $output): ?bool;
+
     /**
      * @throws SSHError
      */
-    abstract protected function networkingIsOpen(): bool;
+    protected function networkingIsOpen(): bool
+    {
+        $output = $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
+
+        return $this->parseNetworkingProbe($output) ?? false;
+    }
 }

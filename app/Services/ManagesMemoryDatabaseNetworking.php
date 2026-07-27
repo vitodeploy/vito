@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\ServiceStatus;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
+use App\Models\ServerLog;
 use Illuminate\Support\Str;
 
 trait ManagesMemoryDatabaseNetworking
@@ -23,7 +25,66 @@ trait ManagesMemoryDatabaseNetworking
     public function prepareNetworking(): void
     {
         if ($this->service->secret === null || $this->service->secret === '') {
-            $this->service->secret = Str::random(32);
+            $this->service->secret = $this->generateNetworkingSecret();
+        }
+    }
+
+    public function generateNetworkingSecret(): string
+    {
+        return Str::random(32);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function writeNetworkingSecret(?string $secret): void
+    {
+        try {
+            $ssh = $this->service->server->ssh();
+
+            if ($secret !== null) {
+                $ssh = $ssh->variables(['VITO_MEMDB_PASSWORD' => $secret]);
+            }
+
+            $ssh->exec(
+                view('ssh.services.memory-database.write-secret', [
+                    ...$this->networkingScriptData(),
+                    'withSecret' => $secret !== null,
+                ]),
+                ($secret === null ? 'remove' : 'update').'-'.static::id().'-secret'
+            );
+
+            if ($this->service->status !== ServiceStatus::READY) {
+                return;
+            }
+
+            if (! $this->manage('restart')) {
+                throw new SSHCommandError("Failed to restart {$this->service->name} after updating the password.");
+            }
+        } catch (SSHError $e) {
+            $this->rollbackNetworkingSecret();
+
+            throw $e;
+        }
+    }
+
+    private function rollbackNetworkingSecret(): void
+    {
+        try {
+            $this->service->server->ssh()->exec(
+                view('ssh.services.memory-database.rollback-secret', $this->networkingScriptData()),
+                'rollback-'.static::id().'-secret'
+            );
+
+            if ($this->service->status === ServiceStatus::READY) {
+                $this->manage('restart');
+            }
+        } catch (SSHError $e) {
+            ServerLog::log(
+                $this->service->server,
+                'rollback-'.static::id().'-secret-failed',
+                $e->getMessage()
+            );
         }
     }
 
@@ -90,16 +151,23 @@ trait ManagesMemoryDatabaseNetworking
             : "Networking is still active in the {$this->service->name} configuration after the restart.");
     }
 
-    /**
-     * @throws SSHError
-     */
-    protected function networkingIsOpen(): bool
+    public function networkingProbeCommand(): string
     {
-        $bind = $this->service->server->ssh()->clearLog()->exec(
-            sprintf("sudo grep -E '^[[:space:]]*bind' %s | tail -1 || true", $this->networkingConfPath())
-        );
+        return sprintf("sudo grep -E '^[[:space:]]*bind' %s | tail -1 || true", $this->networkingConfPath());
+    }
 
-        return preg_match('/^\s*bind\s+(0\.0\.0\.0|\*)/m', $bind) === 1;
+    public function networkingProbeRequiresRunning(): bool
+    {
+        return false;
+    }
+
+    public function parseNetworkingProbe(string $output): ?bool
+    {
+        if (trim($output) === '') {
+            return null;
+        }
+
+        return preg_match('/^\s*bind\s+(0\.0\.0\.0|\*)/m', $output) === 1;
     }
 
     /**

@@ -8,21 +8,21 @@ use App\Events\SocketEvent;
 use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
 use App\Models\Service;
-use App\Services\SupportsNetworking;
+use App\Services\SupportsNetworkingSecret;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use RuntimeException;
 
-class ToggleNetworkingJob implements ShouldQueue
+class UpdateNetworkingSecretJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;
 
     public function __construct(
         protected Service $service,
-        protected bool $enable,
+        protected bool $remove,
         protected ServiceStatus $previousStatus,
     ) {}
 
@@ -33,22 +33,15 @@ class ToggleNetworkingJob implements ShouldQueue
 
             $handler = $this->service->handler();
 
-            if (! $handler instanceof SupportsNetworking) {
-                throw new RuntimeException("{$this->service->name} does not support networking.");
+            if (! $handler instanceof SupportsNetworkingSecret) {
+                throw new RuntimeException("{$this->service->name} does not use a networking password.");
             }
 
-            if ($this->enable) {
-                $handler->enableNetworking();
-            } else {
-                $handler->disableNetworking();
-            }
+            $secret = $this->remove ? null : $handler->generateNetworkingSecret();
 
-            $this->service->jsonUpdate('type_data', 'networking', $this->enable, save: false);
-            $this->service->jsonForget('type_data', 'networking_failed', save: false);
-            $handler->rememberEffectiveNetworking(
-                $this->enable,
-                observed: $this->previousStatus === ServiceStatus::READY
-            );
+            $handler->writeNetworkingSecret($secret);
+
+            $this->service->secret = $secret;
             $this->service->save();
 
             $this->broadcastServiceUpdate();
@@ -58,20 +51,12 @@ class ToggleNetworkingJob implements ShouldQueue
     public function failed(Exception $e): void
     {
         $this->service->refresh();
-        $this->service->jsonUpdate('type_data', 'networking_failed', true, save: false);
-
-        $handler = $this->service->hasHandler() ? $this->service->handler() : null;
-
-        if ($handler instanceof SupportsNetworking) {
-            $handler->rememberEffectiveNetworking(null);
-        }
-
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
         $this->broadcastServiceUpdate();
         ServerLog::log(
             $this->service->server,
-            ($this->enable ? 'enable' : 'disable').'-networking-failed',
+            ($this->remove ? 'remove' : 'regenerate').'-networking-secret-failed',
             $e->getMessage()
         );
     }

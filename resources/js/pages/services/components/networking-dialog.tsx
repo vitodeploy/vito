@@ -1,8 +1,8 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { AlertCircleIcon, CopyIcon, LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
+import { AlertCircleIcon, CopyIcon, LoaderCircleIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Skeleton } from '@/components/ui/skeleton';
+import DateTime from '@/components/date-time';
+import { SOCKET_EVENT } from '@/stores/socket-store';
 import { Service } from '@/types/service';
 
 type NetworkingUnsupported = {
@@ -24,10 +26,10 @@ type NetworkingSupported = {
   managed: boolean;
   port: number;
   effective: boolean | null;
+  checked_at: string | null;
   secret?: string | null;
   uses_password?: boolean;
   requires_remote_users?: boolean;
-  error?: boolean;
 };
 
 type NetworkingResponse = NetworkingUnsupported | NetworkingSupported;
@@ -43,7 +45,17 @@ function StateRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function SecretField({ secret }: { secret: string }) {
+function SecretField({
+  secret,
+  busy,
+  onRegenerate,
+  onRemove,
+}: {
+  secret: string;
+  busy: boolean;
+  onRegenerate: () => void;
+  onRemove: (() => void) | null;
+}) {
   const copy = () => {
     if (!navigator.clipboard) {
       toast.error('The clipboard is not available in this browser');
@@ -60,11 +72,30 @@ function SecretField({ secret }: { secret: string }) {
     <div className="flex flex-col gap-2">
       <Label htmlFor="networking-secret">Password</Label>
       <div className="flex items-center gap-2">
-        <PasswordInput id="networking-secret" readOnly value={secret} className="font-mono" />
+        <div className="flex-1">
+          <PasswordInput id="networking-secret" readOnly value={secret} className="font-mono" />
+        </div>
         <Button type="button" variant="outline" size="icon" onClick={copy} aria-label="Copy password">
           <CopyIcon />
         </Button>
       </div>
+      <div className="flex items-center gap-2">
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onRegenerate}>
+          <RefreshCwIcon />
+          Regenerate
+        </Button>
+        {onRemove && (
+          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onRemove}>
+            <Trash2Icon />
+            Remove
+          </Button>
+        )}
+      </div>
+      <p className="text-muted-foreground text-xs">
+        {onRemove
+          ? 'Both restart the service. Every client must be updated to the new password, or to no password at all.'
+          : 'Regenerating restarts the service - every client must be updated to the new password. The password can only be removed while the service is local only.'}
+      </p>
     </div>
   );
 }
@@ -102,15 +133,34 @@ export default function ServiceNetworkingDialog({
   const details: NetworkingSupported | null = data && data.supported ? data : null;
   const pending = details?.pending ?? false;
   const usesPassword = details?.uses_password === true;
-  const drifted = details !== null && !pending && details.managed && details.effective !== null && details.effective !== details.enabled;
-  const openByDefault = details !== null && !pending && !details.managed && details.effective === true;
+  const networked = details === null ? false : (details.effective ?? details.enabled);
+  const unknown = details !== null && !pending && details.effective === null;
+  const neverChecked = unknown && details.checked_at === null;
 
-  const toggle = async (action: 'enable' | 'disable') => {
+  useEffect(() => {
+    const handler = (event: CustomEvent<{ type: string; data: Record<string, unknown> }>) => {
+      const { type, data: payload } = event.detail;
+      const matchesService = type === 'service.updated' && payload?.id === service.id;
+      const matchesServer = type === 'service.refreshed' && payload?.server_id === service.server_id;
+
+      if (matchesService || matchesServer) {
+        void queryClient.invalidateQueries({ queryKey: networkingQueryKey(service) });
+      }
+    };
+
+    window.addEventListener(SOCKET_EVENT, handler);
+
+    return () => window.removeEventListener(SOCKET_EVENT, handler);
+  }, [queryClient, service]);
+
+  const params = { server: service.server_id, service: service.id };
+
+  const submit = async (request: () => Promise<unknown>) => {
     setSubmitting(true);
     setSubmitError(null);
 
     try {
-      await axios.post(route(`services.networking.${action}`, { server: service.server_id, service: service.id }));
+      await request();
       await queryClient.invalidateQueries({ queryKey: networkingQueryKey(service) });
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -124,6 +174,8 @@ export default function ServiceNetworkingDialog({
       setSubmitting(false);
     }
   };
+
+  const toggle = (action: 'enable' | 'disable') => submit(() => axios.post(route(`services.networking.${action}`, params)));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -169,15 +221,12 @@ export default function ServiceNetworkingDialog({
             <>
               <div className="flex flex-col gap-2">
                 <StateRow label="Networking">
-                  <Badge variant={details.enabled ? 'success' : 'gray'}>{details.enabled ? 'Enabled' : 'Disabled'}</Badge>
-                </StateRow>
-                <StateRow label="Live state on the server">
                   {pending ? (
-                    <Badge variant="warning">Applying…</Badge>
-                  ) : details.effective === null ? (
+                    <Badge variant="gray">Applying…</Badge>
+                  ) : unknown ? (
                     <Badge variant="gray">Unknown</Badge>
                   ) : (
-                    <Badge variant={details.effective ? 'success' : 'gray'}>{details.effective ? 'Listening on all interfaces' : 'Local only'}</Badge>
+                    <Badge variant={networked ? 'success' : 'gray'}>{networked ? 'Listening on all interfaces' : 'Local only'}</Badge>
                   )}
                 </StateRow>
                 <StateRow label="Default port">
@@ -205,40 +254,27 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {!pending && details.effective === null && (
+              {unknown && (
                 <Alert>
-                  <AlertCircleIcon />
-                  <AlertTitle>Couldn&apos;t read the live state</AlertTitle>
-                  <AlertDescription>
-                    Vito could not read the current configuration from the server. This is expected while the service or the server is not running.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {drifted && (
-                <Alert variant="destructive">
                   <TriangleAlertIcon />
-                  <AlertTitle>The server does not match Vito</AlertTitle>
+                  <AlertTitle>Refresh the services first</AlertTitle>
                   <AlertDescription>
-                    {details.enabled
-                      ? 'Vito has networking enabled, but the service is currently local only on the server. Something changed the configuration outside of Vito — use Reapply to write it again.'
-                      : 'Vito has networking disabled, but the service is still listening on all interfaces. Something changed the configuration outside of Vito — use Reapply to write it again.'}
+                    <p>
+                      {neverChecked ? (
+                        <>Vito hasn&apos;t checked this service&apos;s live state yet.</>
+                      ) : (
+                        <>
+                          Vito couldn&apos;t read this service&apos;s live state on the last check (<DateTime date={details.checked_at as string} />
+                          ). Check that the service is healthy first.
+                        </>
+                      )}{' '}
+                      Close this dialog and use Refresh on the Services page - networking can&apos;t be changed until Vito knows the current state.
+                    </p>
                   </AlertDescription>
                 </Alert>
               )}
 
-              {openByDefault && (
-                <Alert>
-                  <AlertCircleIcon />
-                  <AlertTitle>Already listening on all interfaces</AlertTitle>
-                  <AlertDescription>
-                    This service ships listening on all interfaces and Vito has never changed it. Enable networking to have Vito manage the
-                    configuration, or close it to localhost.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {usesPassword && !pending && !details.enabled && !details.secret && (
+              {usesPassword && !pending && !networked && !details.secret && (
                 <Alert variant="destructive">
                   <TriangleAlertIcon />
                   <AlertTitle>A password will be set</AlertTitle>
@@ -249,7 +285,7 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {usesPassword && !pending && !details.failed && !details.enabled && details.secret && (
+              {usesPassword && !pending && !details.failed && !networked && details.secret && (
                 <Alert variant="destructive">
                   <TriangleAlertIcon />
                   <AlertTitle>A password has been generated</AlertTitle>
@@ -260,17 +296,24 @@ export default function ServiceNetworkingDialog({
                 </Alert>
               )}
 
-              {usesPassword && !pending && details.enabled && (
+              {usesPassword && !pending && networked && (
                 <Alert>
                   <AlertCircleIcon />
                   <AlertTitle>Disabling keeps the password</AlertTitle>
                   <AlertDescription>
-                    The service goes back to local only, but the password remains set — local clients keep authenticating with it.
+                    The service goes back to local only, but the password remains set - local clients keep authenticating with it.
                   </AlertDescription>
                 </Alert>
               )}
 
-              {usesPassword && details.secret && <SecretField secret={details.secret} />}
+              {usesPassword && details.secret && (
+                <SecretField
+                  secret={details.secret}
+                  busy={submitting || pending}
+                  onRegenerate={() => void submit(() => axios.post(route('services.networking.secret.regenerate', params)))}
+                  onRemove={networked ? null : () => void submit(() => axios.delete(route('services.networking.secret.destroy', params)))}
+                />
+              )}
 
               {details.requires_remote_users === true && (
                 <Alert>
@@ -302,26 +345,14 @@ export default function ServiceNetworkingDialog({
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          {details && openByDefault && (
-            <Button variant="secondary" disabled={submitting || pending} onClick={() => toggle('disable')}>
-              {(submitting || pending) && <LoaderCircleIcon className="animate-spin" />}
-              Close to localhost
-            </Button>
-          )}
           {details && (
             <Button
-              variant={drifted ? 'secondary' : details.enabled ? 'destructive' : 'default'}
-              disabled={submitting || pending}
-              onClick={() => toggle(details.enabled ? 'disable' : 'enable')}
+              variant={networked ? 'destructive' : 'default'}
+              disabled={submitting || pending || unknown}
+              onClick={() => toggle(networked ? 'disable' : 'enable')}
             >
               {(submitting || pending) && <LoaderCircleIcon className="animate-spin" />}
-              {details.enabled ? 'Disable networking' : 'Enable networking'}
-            </Button>
-          )}
-          {details && drifted && (
-            <Button disabled={submitting} onClick={() => toggle(details.enabled ? 'enable' : 'disable')}>
-              {submitting && <LoaderCircleIcon className="animate-spin" />}
-              Reapply
+              {networked ? 'Disable networking' : 'Enable networking'}
             </Button>
           )}
         </DialogFooter>

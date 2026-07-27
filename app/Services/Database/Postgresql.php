@@ -65,13 +65,9 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
         ]);
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'psql --version | grep -oE \'[0-9]+\.[0-9]+(\.[0-9]+)?\' | head -n 1'
-        );
-
-        return trim($version);
+        return 'psql --version | grep -oE \'[0-9]+\.[0-9]+(\.[0-9]+)?\' | head -n 1';
     }
 
     public function networkingPort(): int
@@ -117,12 +113,18 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
         }
     }
 
-    /**
-     * @throws SSHError
-     */
-    protected function networkingIsOpen(): bool
+    public function networkingProbeCommand(): string
     {
-        return $this->networkingValueMatches($this->networkingListenAddresses(), '0.0.0.0', '*', '::');
+        return 'timeout 10 sudo -u postgres psql -tAc "SHOW listen_addresses"';
+    }
+
+    public function parseNetworkingProbe(string $output): ?bool
+    {
+        if (trim($output) === '') {
+            return null;
+        }
+
+        return $this->networkingValueMatches($output, '0.0.0.0', '*', '::');
     }
 
     /**
@@ -130,9 +132,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
      */
     private function networkingListenAddresses(): string
     {
-        return $this->service->server->ssh()->clearLog()->exec(
-            'sudo -u postgres psql -tAc "SHOW listen_addresses"'
-        );
+        return $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
     }
 
     /**

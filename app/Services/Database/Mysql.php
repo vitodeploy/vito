@@ -44,13 +44,9 @@ class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
         ]);
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'mysql -V | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\' | head -n 1'
-        );
-
-        return trim($version);
+        return 'mysql -V | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\' | head -n 1';
     }
 
     protected function networkingManagesXPlugin(): bool

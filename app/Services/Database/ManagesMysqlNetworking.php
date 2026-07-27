@@ -59,12 +59,18 @@ trait ManagesMysqlNetworking
         $this->verifyXPluginNetworking($expected);
     }
 
-    /**
-     * @throws SSHError
-     */
-    protected function networkingIsOpen(): bool
+    public function networkingProbeCommand(): string
     {
-        return $this->networkingValueMatches($this->networkingBindAddress(), '0.0.0.0', '*', '::');
+        return sprintf('timeout 10 sudo %s -N -e "SELECT @@bind_address"', static::id());
+    }
+
+    public function parseNetworkingProbe(string $output): ?bool
+    {
+        if (trim($output) === '') {
+            return null;
+        }
+
+        return $this->networkingValueMatches($output, '0.0.0.0', '*', '::');
     }
 
     abstract protected function networkingManagesXPlugin(): bool;
@@ -96,9 +102,7 @@ trait ManagesMysqlNetworking
      */
     private function networkingBindAddress(): string
     {
-        return $this->service->server->ssh()->clearLog()->exec(
-            sprintf('sudo %s -N -e "SELECT @@bind_address"', static::id())
-        );
+        return $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
     }
 
     /**

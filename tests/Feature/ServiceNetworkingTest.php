@@ -37,6 +37,8 @@ class ServiceNetworkingTest extends TestCase
         $service->refresh();
 
         $this->assertTrue($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_effective']);
+        $this->assertNotNull($service->type_data['networking_checked_at']);
         $this->assertEquals(ServiceStatus::READY, $service->status);
         $this->assertNotNull($service->secret);
 
@@ -72,6 +74,8 @@ class ServiceNetworkingTest extends TestCase
         $service->refresh();
 
         $this->assertFalse($service->type_data['networking']);
+        $this->assertFalse($service->type_data['networking_effective']);
+        $this->assertNotNull($service->type_data['networking_checked_at']);
         $this->assertEquals('existing-secret', $service->secret);
         $this->assertEquals(ServiceStatus::READY, $service->status);
 
@@ -185,6 +189,11 @@ class ServiceNetworkingTest extends TestCase
         $service->refresh();
 
         $this->assertTrue($service->type_data['networking']);
+        $this->assertTrue($service->type_data['networking_effective']);
+        $this->assertNull(
+            $service->type_data['networking_checked_at'] ?? null,
+            'A toggle that never restarted or verified must not stamp an observation timestamp.'
+        );
         $this->assertEquals(ServiceStatus::from($status), $service->status);
 
         SSH::assertExecutedContains('# BEGIN VITO NETWORKING');
@@ -303,8 +312,13 @@ class ServiceNetworkingTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->memoryDatabase('redis');
+        $service->type_data = [
+            'networking_effective' => true,
+            'networking_checked_at' => '2026-07-26T12:00:00+00:00',
+        ];
+        $service->save();
 
-        SSH::fake('bind 0.0.0.0');
+        SSH::fake();
 
         $this->getJson(route('services.networking', [
             'server' => $this->server,
@@ -316,27 +330,20 @@ class ServiceNetworkingTest extends TestCase
                 'pending' => false,
                 'enabled' => false,
                 'effective' => true,
+                'checked_at' => '2026-07-26T12:00:00+00:00',
                 'port' => 6379,
             ]);
 
-        SSH::assertExecutedContains("sudo grep -E '^[[:space:]]*bind' /etc/redis/redis.conf | tail -1 || true");
+        SSH::assertNotExecutedContains("sudo grep -E '^[[:space:]]*bind' /etc/redis/redis.conf | tail -1 || true");
     }
 
-    public function test_networking_details_report_no_effective_state_when_the_host_is_unreachable(): void
+    public function test_networking_details_report_unknown_when_never_probed(): void
     {
         $this->actingAs($this->user);
 
         $service = $this->memoryDatabase('redis');
 
-        SSH::swap(new class extends SSHFake
-        {
-            public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
-            {
-                throw new SSHCommandError('Connection failed');
-            }
-        });
-
-        $this->getJson(route('services.networking', [
+        $response = $this->getJson(route('services.networking', [
             'server' => $this->server,
             'service' => $service->id,
         ]))
@@ -346,9 +353,11 @@ class ServiceNetworkingTest extends TestCase
                 'pending' => false,
                 'enabled' => false,
                 'effective' => null,
-                'error' => true,
+                'checked_at' => null,
                 'port' => 6379,
             ]);
+
+        $this->assertArrayNotHasKey('error', $response->json());
     }
 
     public function test_failed_enable_rolls_back_and_marks_the_service_as_failed(): void
@@ -369,6 +378,7 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
         $this->assertFalse($service->type_data['networking']);
         $this->assertTrue($service->type_data['networking_failed']);
+        $this->assertNull($service->type_data['networking_effective']);
 
         SSH::assertExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
         $this->assertDatabaseHas('server_logs', [
@@ -405,6 +415,7 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
         $this->assertFalse($service->type_data['networking']);
         $this->assertTrue($service->type_data['networking_failed']);
+        $this->assertNull($service->type_data['networking_effective']);
 
         SSH::assertExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
         SSH::assertExecutedContains('sudo cp /etc/redis/vito-networking.conf.vito.bak /etc/redis/vito-networking.conf');
@@ -536,8 +547,183 @@ class ServiceNetworkingTest extends TestCase
 
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
         $this->assertTrue($service->type_data['networking']);
+        $this->assertNull($service->type_data['networking_effective']);
 
         SSH::assertNotExecutedContains('sudo cp /etc/redis/redis.conf.vito.bak /etc/redis/redis.conf');
+    }
+
+    #[DataProvider('memoryDatabases')]
+    public function test_regenerate_the_networking_password(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase($name);
+        $service->type_data = ['networking' => true, 'networking_effective' => true];
+        $service->secret = 'existing-secret';
+        $service->save();
+
+        SSH::fake('Active: active');
+
+        $this->postJson(route('services.networking.secret.regenerate', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals(32, strlen((string) $service->secret));
+        $this->assertNotEquals('existing-secret', $service->secret);
+        $this->assertTrue($service->type_data['networking']);
+        $this->assertEquals(ServiceStatus::READY, $service->status);
+
+        SSH::assertExecutedContains("sudo install -o {$name} -g {$name} -m 600 /dev/null /etc/{$name}/vito-networking.conf");
+        SSH::assertExecutedContains('printf \'requirepass "%s"\n\' "$VITO_MEMDB_PASSWORD"');
+        SSH::assertExecutedContains("sudo systemctl restart {$name}-server");
+        SSH::assertNotExecutedContains('# BEGIN VITO NETWORKING', 'Regenerating a password must not rewrite the bind configuration.');
+        SSH::assertNotExecutedContains((string) $service->secret, 'The networking password must never appear in a command.');
+    }
+
+    public function test_remove_the_networking_password(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+        $service->type_data = ['networking' => false, 'networking_effective' => false];
+        $service->secret = 'existing-secret';
+        $service->save();
+
+        SSH::fake('Active: active');
+
+        $this->deleteJson(route('services.networking.secret.destroy', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertNull($service->secret);
+        $this->assertEquals(ServiceStatus::READY, $service->status);
+
+        SSH::assertExecutedContains('sudo install -o redis -g redis -m 600 /dev/null /etc/redis/vito-networking.conf');
+        SSH::assertNotExecutedContains('requirepass');
+        SSH::assertExecutedContains('sudo systemctl restart redis-server');
+    }
+
+    public function test_cannot_remove_the_password_while_networking_is_open(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+        $service->type_data = ['networking' => true];
+        $service->secret = 'existing-secret';
+        $service->save();
+
+        SSH::fake();
+
+        $this->deleteJson(route('services.networking.secret.destroy', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertStatus(422);
+
+        $service->type_data = ['networking' => false, 'networking_effective' => true];
+        $service->save();
+
+        $this->deleteJson(route('services.networking.secret.destroy', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertStatus(422);
+
+        $this->assertEquals('existing-secret', $service->refresh()->secret);
+        SSH::assertNotExecutedContains('vito-networking.conf');
+    }
+
+    public function test_cannot_manage_the_password_without_one_or_on_unsupported_services(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+
+        SSH::fake();
+
+        $this->postJson(route('services.networking.secret.regenerate', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertStatus(422);
+
+        $nginx = $this->server->services()->where('name', 'nginx')->firstOrFail();
+
+        $this->postJson(route('services.networking.secret.regenerate', [
+            'server' => $this->server,
+            'service' => $nginx->id,
+        ]))->assertStatus(422);
+
+        $this->deleteJson(route('services.networking.secret.destroy', [
+            'server' => $this->server,
+            'service' => $nginx->id,
+        ]))->assertStatus(422);
+    }
+
+    public function test_user_role_cannot_manage_the_networking_password(): void
+    {
+        $service = $this->memoryDatabase('redis');
+        $service->secret = 'existing-secret';
+        $service->save();
+
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->postJson(route('services.networking.secret.regenerate', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertForbidden();
+
+        $this->deleteJson(route('services.networking.secret.destroy', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertForbidden();
+    }
+
+    public function test_failed_password_write_restores_the_previous_password(): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->memoryDatabase('redis');
+        $service->type_data = ['networking' => true, 'networking_effective' => true];
+        $service->secret = 'existing-secret';
+        $service->save();
+
+        SSH::swap(new class extends SSHFake
+        {
+            public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
+            {
+                if (str((string) $command)->contains('requirepass')) {
+                    throw new SSHCommandError('Connection failed');
+                }
+
+                return parent::exec($command, $log, $siteId, $stream, $streamCallback, $timeout);
+            }
+        });
+
+        $this->postJson(route('services.networking.secret.regenerate', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))->assertNoContent();
+
+        $service->refresh();
+
+        $this->assertEquals('existing-secret', $service->secret);
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+
+        SSH::assertExecutedContains('sudo cp /etc/redis/vito-networking.conf.vito.bak /etc/redis/vito-networking.conf');
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'type' => 'regenerate-networking-secret-failed',
+        ]);
     }
 
     private function memoryDatabase(string $name): Service
