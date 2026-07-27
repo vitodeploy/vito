@@ -70,7 +70,10 @@ export default function ServicesIndex() {
           </div>
         </HeaderContainer>
 
-        <VitoTable tableData={services} actions={(row: Row) => <ServiceActions service={asRow<{ resource: Service }>(row, ['resource']).resource} />} />
+        <VitoTable
+          tableData={services}
+          actions={(row: Row) => <ServiceActions service={asRow<{ resource: Service }>(row, ['resource']).resource} />}
+        />
       </Container>
     </ServerLayout>
   );

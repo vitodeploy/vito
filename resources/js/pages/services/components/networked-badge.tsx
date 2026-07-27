@@ -17,8 +17,7 @@ export function ServiceNetworkedBadge({ row, value }: CellComponentProps) {
     return <Badge variant="outline">{label}</Badge>;
   }
 
-  const drifted =
-    service.networking_managed && service.networking_effective !== null && service.networking_effective !== service.networking_enabled;
+  const drifted = service.networking_managed && service.networking_effective !== null && service.networking_effective !== service.networking_enabled;
   const intentWithoutObservation = service.networking_enabled && service.networking_effective === null;
 
   return (

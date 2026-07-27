@@ -290,8 +290,8 @@ export default function ServiceNetworkingDialog({
                   <TriangleAlertIcon />
                   <AlertTitle>A password has been generated</AlertTitle>
                   <AlertDescription>
-                    Networking is off. If it was ever enabled, this password is still in effect on the server and every client must keep authenticating
-                    with it. Enabling networking applies it again.
+                    Networking is off. If it was ever enabled, this password is still in effect on the server and every client must keep
+                    authenticating with it. Enabling networking applies it again.
                   </AlertDescription>
                 </Alert>
               )}
