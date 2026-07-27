@@ -158,6 +158,14 @@ class SSHFake extends SSH
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public function getExecutedCommands(): array
+    {
+        return array_map(fn (string|View $command): string => (string) $command, $this->commands);
+    }
+
     public function getUploadedLocalPath(): string
     {
         return $this->uploadedLocalPath;

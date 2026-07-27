@@ -366,11 +366,11 @@ class ServicesTest extends TestCase
         $this->assertNotNull($service->log);
         $this->assertStringStartsWith('install-redis', $service->log->type);
 
-        $this->assertFalse($service->type_data['networking_effective']);
         $this->assertNull(
-            $service->type_data['networking_checked_at'] ?? null,
-            'Install infers local-only from packaging defaults, so it must not stamp an observation.'
+            $service->type_data['networking_effective'] ?? null,
+            'Install never observes the live bind state, so it must not claim one.'
         );
+        $this->assertNull($service->type_data['networking_checked_at'] ?? null);
         $this->assertArrayNotHasKey('networking', $service->type_data);
     }
 

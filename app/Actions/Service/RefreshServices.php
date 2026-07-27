@@ -5,6 +5,7 @@ namespace App\Actions\Service;
 use App\Jobs\Service\RefreshServicesJob;
 use App\Models\Server;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class RefreshServices
 {
@@ -14,7 +15,13 @@ class RefreshServices
             return false;
         }
 
-        dispatch(new RefreshServicesJob($server))->onQueue('ssh');
+        try {
+            dispatch(new RefreshServicesJob($server))->onQueue('ssh');
+        } catch (Throwable $e) {
+            self::clearFlag($server);
+
+            throw $e;
+        }
 
         return true;
     }

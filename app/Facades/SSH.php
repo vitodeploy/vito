@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  * @method static string assertExecutedContains(string $command)
  * @method static string assertNotExecutedContains(string $command, string $message = '')
  * @method static string assertFileUploaded(string $toPath, ?string $content = null)
+ * @method static array<int, string> getExecutedCommands()
  * @method static string getUploadedLocalPath()
  * @method static string getUploadedContent()
  * @method static disconnect()

@@ -95,7 +95,7 @@ class ServiceRefreshTest extends TestCase
         $this->assertFalse($redis->type_data['networking_effective']);
         $this->assertEquals(ServiceStatus::STOPPED, $redis->status);
 
-        $script = $this->renderedScript();
+        $script = $this->executedScript();
 
         $this->assertEquals(1, substr_count($script, 'systemctl is-active'));
         $this->assertStringContainsString('###VITO:', $script);
@@ -142,7 +142,7 @@ class ServiceRefreshTest extends TestCase
         $this->assertEquals('8.2.19', $php->refresh()->installed_version);
         $this->assertEquals('8.4.5', $mysql->refresh()->installed_version);
 
-        $this->assertStringContainsString('printf \'%s\n\' "$OUT"', $this->renderedScript());
+        $this->assertStringContainsString('printf \'%s\n\' "$OUT"', $this->executedScript());
     }
 
     public function test_refresh_script_render_is_not_html_escaped(): void
@@ -155,7 +155,7 @@ class ServiceRefreshTest extends TestCase
 
         app(ProbeServices::class)->probe($this->server);
 
-        $script = $this->renderedScript();
+        $script = $this->executedScript();
 
         $this->assertStringContainsString('grep -oE', $script);
         $this->assertStringNotContainsString('&#039;', $script);
@@ -212,7 +212,7 @@ class ServiceRefreshTest extends TestCase
         );
         $this->assertEquals('2026-07-01T00:00:00+00:00', $mysql->type_data['networking_checked_at']);
 
-        $script = $this->renderedScript();
+        $script = $this->executedScript();
 
         $this->assertStringContainsString("if [ \"\$STATE_{$mysql->id}\" = \"active\" ]; then", $script);
     }
@@ -225,7 +225,7 @@ class ServiceRefreshTest extends TestCase
 
         app(ProbeServices::class)->probe($this->server);
 
-        $script = $this->renderedScript();
+        $script = $this->executedScript();
 
         $this->assertStringNotContainsString("###VITO:{$nodejs->id}:status###", $script);
         $this->assertStringContainsString("###VITO:{$nodejs->id}:version###", $script);
@@ -245,7 +245,7 @@ class ServiceRefreshTest extends TestCase
 
         app(ProbeServices::class)->probe($this->server);
 
-        $this->assertStringNotContainsString("###VITO:{$agent->id}:version###", $this->renderedScript());
+        $this->assertStringNotContainsString("###VITO:{$agent->id}:version###", $this->executedScript());
         $this->assertNull($agent->refresh()->installed_version);
     }
 
@@ -406,25 +406,14 @@ class ServiceRefreshTest extends TestCase
         return $output;
     }
 
-    private function renderedScript(): string
+    private function executedScript(): string
     {
-        return view('ssh.os.refresh-services', $this->viewData())->render();
-    }
+        foreach (SSH::getExecutedCommands() as $command) {
+            if (str_contains($command, '###VITO:')) {
+                return $command;
+            }
+        }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function viewData(): array
-    {
-        $probe = new ProbeServices;
-        $reflection = new \ReflectionClass($probe);
-
-        $descriptors = $reflection->getMethod('descriptors');
-        $descriptors->setAccessible(true);
-
-        $viewData = $reflection->getMethod('viewData');
-        $viewData->setAccessible(true);
-
-        return $viewData->invoke($probe, $descriptors->invoke($probe, $this->server));
+        $this->fail('The refresh script was never executed.');
     }
 }

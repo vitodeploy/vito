@@ -42,7 +42,8 @@ class ServiceNetworkingTest extends TestCase
         $this->assertEquals(ServiceStatus::READY, $service->status);
         $this->assertNotNull($service->secret);
 
-        SSH::assertExecutedContains("sudo test -f /etc/{$name}/{$name}.conf && sudo cp /etc/{$name}/{$name}.conf /etc/{$name}/{$name}.conf.vito.bak");
+        SSH::assertExecutedContains("sudo cp /etc/{$name}/{$name}.conf /etc/{$name}/{$name}.conf.vito.bak");
+        SSH::assertNotExecutedContains('.vito.bak || true', 'A failed backup must abort the write, not be suppressed.');
         SSH::assertNotExecutedContains("[ -f /etc/{$name}/", 'Guards must run under sudo — the conf directory is not readable by the SSH user.');
         SSH::assertExecutedContains('bind[[:space:]]+)(0\.0\.0\.0|\*).*$/\1127.0.0.1/');
         SSH::assertExecutedContains("sudo cp /etc/{$name}/vito-networking.conf /etc/{$name}/vito-networking.conf.vito.bak");
