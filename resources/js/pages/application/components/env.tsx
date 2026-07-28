@@ -476,6 +476,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                   form.processing ||
                   busy ||
                   query.isError ||
+                  canEdit !== true ||
                   pathUncommitted ||
                   (mode === 'variables' && (hasDuplicates || variables.length === 0))
                 }
