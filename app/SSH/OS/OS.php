@@ -152,7 +152,7 @@ class OS
     {
         $key = $this->server->ssh()->exec(
             view('ssh.os.read-file', [
-                'path' => escapeshellarg('/home/'.$user.'/.ssh/id_rsa.pub'),
+                'path' => '/home/'.$user.'/.ssh/id_rsa.pub',
             ]),
             'get-public-key'
         );
@@ -255,7 +255,7 @@ class OS
     {
         return trim($this->server->ssh()->exec(
             view('ssh.os.read-file', [
-                'path' => escapeshellarg($path),
+                'path' => $path,
             ])
         ));
     }

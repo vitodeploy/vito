@@ -1,1 +1,1 @@
-if [ -f {!! $path !!} ]; then sudo cat {!! $path !!}; fi
+if [ -f {!! escapeshellarg($path) !!} ]; then sudo cat {!! escapeshellarg($path) !!}; fi

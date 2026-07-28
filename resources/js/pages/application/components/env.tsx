@@ -24,6 +24,15 @@ type ParsedVariable = { key: string; value: string; is_secret: boolean };
 
 const defaultEnvPath = (site: Site): string => site.type_data.env_path || `${site.path}/.env`;
 
+const toVariables = (parsed: ParsedVariable[], isNew = true): EnvVariable[] =>
+  parsed.map((v) => ({
+    id: rowId(),
+    key: v.key,
+    value: v.value,
+    isSecret: v.is_secret,
+    isNew,
+  }));
+
 const errorMessage = (error: unknown, fallback: string): string => {
   if (axios.isAxiosError(error)) {
     return error.response?.data?.message ?? error.response?.data?.error ?? fallback;
@@ -90,6 +99,8 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     setFocused(isOpen);
     if (!isOpen) {
       setMode('variables');
+      setVariables([]);
+      setRawContent('');
       setVariablesDirty(false);
       setUploadError(null);
     }
@@ -126,20 +137,6 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
           env: committedPath,
         }),
       );
-      if (response.data?.variables) {
-        setVariables(
-          response.data.variables.map((v: ParsedVariable) => ({
-            id: rowId(),
-            key: v.key,
-            value: v.value,
-            isSecret: v.is_secret,
-            isNew: false,
-          })),
-        );
-      }
-      setRawContent(response.data?.env ?? '');
-      setCanEdit(response.data?.can_edit === true);
-      setVariablesDirty(false);
       return response.data;
     },
     retry: false,
@@ -147,6 +144,17 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
+  useEffect(() => {
+    if (!query.data) {
+      return;
+    }
+
+    setVariables(toVariables(query.data.variables ?? [], false));
+    setRawContent(query.data.env ?? '');
+    setCanEdit(query.data.can_edit === true);
+    setVariablesDirty(false);
+  }, [query.data, query.dataUpdatedAt]);
 
   const queryError = useMemo(() => (query.isError ? errorMessage(query.error, 'Failed to read the .env file') : null), [query.isError, query.error]);
 
@@ -274,15 +282,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
         try {
           const parsed = await parseRawContent(content);
           setVariablesDirty(true);
-          setVariables(
-            parsed.map((v) => ({
-              id: rowId(),
-              key: v.key,
-              value: v.value,
-              isSecret: v.is_secret,
-              isNew: true,
-            })),
-          );
+          setVariables(toVariables(parsed));
         } catch (error) {
           setUploadError(errorMessage(error, 'Failed to parse uploaded file'));
         } finally {
@@ -316,15 +316,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       const parsed = await parseRawContent(content);
 
       setVariablesDirty(true);
-      setVariables(
-        parsed.map((v) => ({
-          id: rowId(),
-          key: v.key,
-          value: v.value,
-          isSecret: v.is_secret,
-          isNew: true,
-        })),
-      );
+      setVariables(toVariables(parsed));
     } catch (error) {
       setUploadError(errorMessage(error, 'Failed to read from clipboard'));
     } finally {
@@ -437,7 +429,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                 </div>
               </div>
             ) : query.isError ? null : query.isSuccess ? (
-              <fieldset disabled={isSwitching} className="flex flex-col gap-3 py-2">
+              <fieldset disabled={isSwitching || canEdit === false} className="flex flex-col gap-3 py-2">
                 {variables.map((variable, index) => (
                   <EnvVariableRow
                     key={variable.id}
@@ -450,7 +442,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                 ))}
                 {variables.length === 0 && (
                   <p className="text-muted-foreground text-sm">
-                    This file has no variables. Add one below{canEdit ? ', or use Classic mode to save it empty' : ''}.
+                    This file has no variables{canEdit ? '. Add one below, or use Classic mode to save it empty' : ''}.
                   </p>
                 )}
                 <Button type="button" variant="outline" className="w-full" onClick={handleAddVariable}>
@@ -482,19 +474,18 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                 type="submit"
                 disabled={
                   form.processing ||
-                  query.isLoading ||
+                  busy ||
                   query.isError ||
-                  isSwitching ||
                   pathUncommitted ||
                   (mode === 'variables' && (hasDuplicates || variables.length === 0))
                 }
               >
-                {(form.processing || query.isLoading) && <LoaderCircleIcon className="animate-spin" />}
+                {(form.processing || busy) && <LoaderCircleIcon className="animate-spin" />}
                 Save
               </Button>
             </div>
             {canEdit === true && (
-              <Button type="button" variant="outline" onClick={switchMode} disabled={busy || query.isError}>
+              <Button type="button" variant="outline" onClick={switchMode} disabled={busy || (mode === 'variables' && query.isError)}>
                 {isSwitching && <LoaderCircleIcon className="animate-spin" />}
                 {mode === 'variables' ? 'Classic mode' : 'Variables mode'}
               </Button>

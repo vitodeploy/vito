@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { EyeIcon, EyeOffIcon, LockIcon, TrashIcon, UnlockIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ interface EnvVariableRowProps {
 
 export default function EnvVariableRow({ variable, onChange, onDelete, revealable = false, error }: EnvVariableRowProps) {
   const [showValue, setShowValue] = useState(false);
+  const hintId = useId();
   const isMultiLine = variable.value.includes('\n');
 
   const isExistingSecret = variable.isSecret && !variable.isNew && !revealable;
@@ -92,8 +93,15 @@ export default function EnvVariableRow({ variable, onChange, onDelete, revealabl
               onChange={handleValueChange}
               readOnly={isMultiLine}
               placeholder={isMultiLine ? 'Reveal to edit this value' : 'Enter value...'}
+              title={isMultiLine ? 'This value spans several lines. Reveal it to edit.' : undefined}
+              aria-describedby={isMultiLine ? hintId : undefined}
               className="h-9 w-full pr-10"
             />
+            {isMultiLine && (
+              <span id={hintId} className="sr-only">
+                This value spans several lines. Reveal it to edit.
+              </span>
+            )}
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"

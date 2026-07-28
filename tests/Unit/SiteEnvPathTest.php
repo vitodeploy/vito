@@ -14,13 +14,10 @@ class SiteEnvPathTest extends TestCase
 
     private function site(?string $storedEnvPath = null): Site
     {
-        $site = new Site(['path' => '/home/vito/example.com']);
-
-        if ($storedEnvPath !== null) {
-            $site->type_data = ['env_path' => $storedEnvPath];
-        }
-
-        return $site;
+        return Site::factory()->make([
+            'path' => '/home/vito/example.com',
+            'type_data' => $storedEnvPath === null ? null : ['env_path' => $storedEnvPath],
+        ]);
     }
 
     /**

@@ -300,8 +300,10 @@ class SSH
             $tmpRemotePath = '/tmp/'.$tmpName;
             $this->upload($storageDisk->path($tmpName), $tmpRemotePath, $owner, $log, $siteId);
             $this->asUser($owner)->exec(
-                'cat '.escapeshellarg($tmpRemotePath).' > '.escapeshellarg($remotePath)
-                .' && rm -f '.escapeshellarg($tmpRemotePath)
+                view('ssh.os.write-file', [
+                    'tmpPath' => $tmpRemotePath,
+                    'path' => $remotePath,
+                ])
             );
         } catch (Throwable $e) {
             throw new SSHCommandError(

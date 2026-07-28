@@ -51,9 +51,8 @@ class UpdateEnv
         );
 
         $site->env_variables = $this->secretKeys($variables);
+        $site->jsonUpdate('type_data', 'env_path', $path, save: false);
         $site->save();
-
-        $site->jsonUpdate('type_data', 'env_path', $path);
     }
 
     /**
