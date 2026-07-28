@@ -341,6 +341,8 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
+        $site->update(['env_variables' => ['DB_PASSWORD']]);
+
         $this->json('GET', route('api.projects.servers.sites.env.show', [
             'project' => $this->server->project,
             'server' => $this->server,
@@ -349,15 +351,39 @@ class SitesTest extends TestCase
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data' => [
-                    'env',
                     'variables' => [
                         '*' => ['key', 'value', 'is_secret'],
                     ],
                 ],
             ])
-            ->assertJsonFragment([
-                'env' => $envContent,
-            ]);
+            ->assertJsonMissingPath('data.env');
+    }
+
+    public function test_show_env_with_write_token(): void
+    {
+        $envContent = "APP_NAME=Laravel\nDB_PASSWORD=supersecret";
+        SSH::fake($envContent);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $response = $this->json('GET', route('api.projects.servers.sites.env.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))->assertSuccessful();
+
+        $this->assertEquals($envContent, $response->json('data.env'));
+
+        $secret = collect($response->json('data.variables'))->firstWhere('key', 'DB_PASSWORD');
+        $this->assertTrue($secret['is_secret']);
+        $this->assertEquals('supersecret', $secret['value']);
     }
 
     public function test_show_env_unauthorized(): void

@@ -54,16 +54,25 @@ class EnvParser
             $key = trim(substr($trimmedLine, 0, $equalsIndex));
             $value = substr($trimmedLine, $equalsIndex + 1);
 
-            // Remove surrounding quotes if present
+            $wasDoubleQuoted = strlen($value) >= 2
+                && str_starts_with($value, '"')
+                && str_ends_with($value, '"');
+
             if (
-                (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
-                (str_starts_with($value, "'") && str_ends_with($value, "'"))
+                $wasDoubleQuoted ||
+                (strlen($value) >= 2 && str_starts_with($value, "'") && str_ends_with($value, "'"))
             ) {
                 $value = substr($value, 1, -1);
             }
 
-            // Handle escaped newlines in quoted strings
-            $value = str_replace('\\n', "\n", $value);
+            if ($wasDoubleQuoted) {
+                $value = preg_replace_callback('/\\\\(.)/s', fn (array $matches): string => match ($matches[1]) {
+                    'n' => "\n",
+                    '"' => '"',
+                    '\\' => '\\',
+                    default => $matches[0],
+                }, $value) ?? $value;
+            }
 
             if ($key !== '') {
                 $variables[] = [
@@ -75,6 +84,72 @@ class EnvParser
         }
 
         return $variables;
+    }
+
+    /**
+     * Whether the variables form can hold this content without losing anything.
+     *
+     * @param  array<int, array{key: string, value: string, is_secret: bool}>  $variables
+     */
+    public static function isRepresentable(string $content, array $variables): bool
+    {
+        $shapeOk = collect(explode("\n", $content))
+            ->map(fn (string $line): string => trim($line))
+            ->every(function (string $line): bool {
+                if ($line === '' || str_starts_with($line, '#')) {
+                    return true;
+                }
+
+                $index = strpos($line, '=');
+
+                if ($index === false || preg_match('/^[^\s=]+\s*=/', $line) !== 1) {
+                    return false;
+                }
+
+                $value = ltrim(substr($line, $index + 1));
+
+                foreach (['"', "'"] as $quote) {
+                    if (str_starts_with($value, $quote)) {
+                        return self::closesQuote($value, $quote);
+                    }
+                }
+
+                return true;
+            });
+
+        return $shapeOk && self::parse(self::stringify($variables)) === $variables;
+    }
+
+    /**
+     * Whether a value opening with the given quote also closes it on the same
+     * physical line. Anything after the closing quote (an inline comment, say)
+     * is irrelevant — only an unterminated quote means the value continues onto
+     * the next line. Backslash escapes apply to double quotes only.
+     */
+    private static function closesQuote(string $value, string $quote): bool
+    {
+        $escaped = false;
+        $length = strlen($value);
+
+        for ($i = 1; $i < $length; $i++) {
+            if ($escaped) {
+                $escaped = false;
+
+                continue;
+            }
+
+            if ($quote === '"' && $value[$i] === '\\') {
+                $escaped = true;
+
+                continue;
+            }
+
+            if ($value[$i] === $quote) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -101,7 +176,7 @@ class EnvParser
                 str_contains($value, '#');
 
             if ($needsQuotes) {
-                $escapedValue = str_replace(["\n", '"'], ['\\n', '\\"'], $value);
+                $escapedValue = str_replace(['\\', "\n", '"'], ['\\\\', '\\n', '\\"'], $value);
                 $lines[] = "{$key}=\"{$escapedValue}\"";
             } else {
                 $lines[] = "{$key}={$value}";

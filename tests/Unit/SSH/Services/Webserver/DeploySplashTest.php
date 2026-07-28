@@ -24,8 +24,8 @@ class DeploySplashTest extends TestCase
 
         SSH::assertExecutedContains('sudo rm -f /etc/nginx/sites-enabled/default');
         SSH::assertExecutedContains('sudo mkdir -p /var/www/vito-splash');
-        SSH::assertExecutedContains('> /var/www/vito-splash/index.html');
-        SSH::assertExecutedContains('> /etc/nginx/sites-available/000-default');
+        SSH::assertExecutedContains("> '/var/www/vito-splash/index.html'");
+        SSH::assertExecutedContains("> '/etc/nginx/sites-available/000-default'");
         SSH::assertExecutedContains('sudo ln -sf /etc/nginx/sites-available/000-default /etc/nginx/sites-enabled/000-default');
 
         SSH::assertNotExecutedContains(
@@ -54,8 +54,8 @@ class DeploySplashTest extends TestCase
         $caddy->deploySplash();
 
         SSH::assertExecutedContains('sudo mkdir -p /var/www/vito-splash');
-        SSH::assertExecutedContains('> /var/www/vito-splash/index.html');
-        SSH::assertExecutedContains('> /etc/caddy/sites-enabled/000-default.caddy');
+        SSH::assertExecutedContains("> '/var/www/vito-splash/index.html'");
+        SSH::assertExecutedContains("> '/etc/caddy/sites-enabled/000-default.caddy'");
 
         SSH::assertNotExecutedContains(
             'caddy reload',

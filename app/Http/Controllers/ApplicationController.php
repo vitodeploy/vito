@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\Site\Deploy;
 use App\Actions\Site\GetEnv;
+use App\Actions\Site\ParseEnv;
 use App\Actions\Site\Rollback;
+use App\Actions\Site\StringifyEnv;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
@@ -13,7 +15,6 @@ use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\ReverseProxyNotConfiguredException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
-use App\Helpers\EnvParser;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
 use App\Http\Resources\WorkerResource;
@@ -26,6 +27,7 @@ use App\Tables\DeploymentTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -115,32 +117,48 @@ class ApplicationController extends Controller
         return back()->with('success', 'Deployment removed successfully.');
     }
 
+    /**
+     * @throws SSHError
+     * @throws ValidationException
+     */
     #[Get('/env', name: 'application.env')]
     public function env(Request $request, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
 
-        if ($request->input('env')) {
-            $site->jsonUpdate('type_data', 'env_path', $request->input('env'), false);
+        $input = $request->input('env');
+        $path = is_string($input) && $input !== '' ? $input : null;
+        $canReveal = $request->user()->can('revealEnv', [$site, $server]);
+
+        if ($path !== null && $path !== $site->resolveEnvPath()) {
+            $this->authorize('update', [$site, $server]);
         }
 
-        return response()->json(app(GetEnv::class)->get($site));
+        $data = app(GetEnv::class)->get($site, $path, $canReveal);
+
+        return response()->json([...$data, 'can_edit' => $canReveal]);
     }
 
+    /**
+     * @throws ValidationException
+     */
     #[Post('/env/parse', name: 'application.parse-env')]
     public function parseEnv(Request $request, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
 
-        $request->validate([
-            'content' => ['required', 'string'],
-        ]);
+        return response()->json(app(ParseEnv::class)->parse($request->all()));
+    }
 
-        $variables = EnvParser::parse($request->input('content'));
+    /**
+     * @throws ValidationException
+     */
+    #[Post('/env/stringify', name: 'application.stringify-env')]
+    public function stringifyEnv(Request $request, Server $server, Site $site): JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
 
-        return response()->json([
-            'variables' => $variables,
-        ]);
+        return response()->json(app(StringifyEnv::class)->stringify($request->all()));
     }
 
     /**

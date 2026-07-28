@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
@@ -616,12 +617,41 @@ class Site extends AbstractModel
             : 'site_'.$this->id;
     }
 
+    /**
+     * @throws ValidationException
+     */
+    public function resolveEnvPath(?string $path = null): string
+    {
+        $stored = data_get($this->type_data, 'env_path');
+
+        if ($path === null) {
+            return is_string($stored) ? $stored : $this->path.'/.env';
+        }
+
+        if ($stored !== null && $path === $stored) {
+            return $path;
+        }
+
+        if (
+            preg_match('/^[a-zA-Z0-9\/_.\-]+\z/', $path) !== 1
+            || str_contains($path, '..')
+            || ! str_starts_with($path, $this->path.'/')
+        ) {
+            throw ValidationException::withMessages([
+                'path' => __('The path must be within the site directory.'),
+            ]);
+        }
+
+        return $path;
+    }
+
+    /**
+     * @throws ValidationException
+     */
     public function getEnv(?string $path = null): string
     {
         try {
-            $envPath = $path ?? $this->type_data['env_path'] ?? $this->path.'/.env';
-
-            return $this->server->os()->readFile($envPath);
+            return $this->server->os()->readFile($this->resolveEnvPath($path));
         } catch (SSHError) {
             return '';
         }

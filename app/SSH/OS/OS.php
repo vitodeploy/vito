@@ -2,6 +2,7 @@
 
 namespace App\SSH\OS;
 
+use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
@@ -149,12 +150,18 @@ class OS
      */
     public function getPublicKey(string $user): string
     {
-        return $this->server->ssh()->exec(
+        $key = $this->server->ssh()->exec(
             view('ssh.os.read-file', [
-                'path' => '/home/'.$user.'/.ssh/id_rsa.pub',
+                'path' => escapeshellarg('/home/'.$user.'/.ssh/id_rsa.pub'),
             ]),
             'get-public-key'
         );
+
+        if (trim($key) === '') {
+            throw new SSHCommandError(message: 'Failed to read the public key for '.$user);
+        }
+
+        return $key;
     }
 
     /**
@@ -248,7 +255,7 @@ class OS
     {
         return trim($this->server->ssh()->exec(
             view('ssh.os.read-file', [
-                'path' => $path,
+                'path' => escapeshellarg($path),
             ])
         ));
     }

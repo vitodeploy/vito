@@ -641,7 +641,10 @@ paths:
   /api/projects/{project}/servers/{server}/sites/{site}/env:
     get:
       summary: Get environment variables
-      description: Get site environment variables. Returns both raw env content and structured variables array.
+      description: >-
+        Get site environment variables. Raw env content and real secret values are only returned to
+        tokens carrying the `write` ability whose user also has write access to the project. Read-only
+        callers receive the `variables` array with secret values masked, and no `env` field at all.
       tags:
         - Sites
       security:
@@ -681,7 +684,7 @@ paths:
                     properties:
                       env:
                         type: string
-                        description: Raw .env file content
+                        description: Raw .env file content. Only present for tokens with the `write` ability whose user has write access to the project; omitted entirely otherwise.
                         example: "APP_NAME=MyApp\nAPP_ENV=production"
                       variables:
                         type: array
@@ -695,15 +698,14 @@ paths:
                               example: 'APP_NAME'
                             value:
                               type: string
-                              description: Variable value. Empty for variables marked as secret — secret values are never returned.
+                              description: Variable value. Empty for variables marked as secret unless the caller has write access.
                               example: 'MyApp'
                             is_secret:
                               type: boolean
-                              description: Whether the variable is marked as secret. Secret values are masked (returned empty) and must be re-entered to change them.
+                              description: Whether the variable is marked as secret. Secret values are masked (returned empty) for read-only callers and must be re-entered to change them.
                               example: false
               example:
                 data:
-                  env: "APP_NAME=MyApp\nAPP_ENV=production\nDB_PASSWORD=<the-actual-value>"
                   variables:
                     - key: 'APP_NAME'
                       value: 'MyApp'
@@ -728,6 +730,12 @@ paths:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '500':
+          description: The environment file could not be read from the server
           content:
             application/json:
               schema:
@@ -771,11 +779,16 @@ paths:
               properties:
                 env:
                   type: string
-                  description: Raw .env file content (use this OR variables, not both)
+                  description: >-
+                    Raw .env file content (use this OR variables, not both). Sending an empty or null value
+                    writes an empty file, truncating the site's existing environment.
                   example: "APP_NAME=MyApp\nAPP_ENV=production"
                 variables:
                   type: array
-                  description: Structured environment variables (use this OR env, not both)
+                  minItems: 1
+                  description: >-
+                    Structured environment variables (use this OR env, not both). Must contain at least one
+                    entry — send an empty `env` instead to blank the file.
                   items:
                     type: object
                     required:
@@ -795,7 +808,11 @@ paths:
                         example: false
                 path:
                   type: string
-                  description: Custom path to the .env file
+                  pattern: '^[a-zA-Z0-9/_.\-]+$'
+                  description: >-
+                    Custom path to the .env file. Must sit inside the site's directory (or exactly match the
+                    path already stored for the site), may not contain `..`, and is limited to letters,
+                    digits, `/`, `_`, `.` and `-`. Anything else returns 422.
                   example: '/home/vito/myapp/.env'
             examples:
               raw:

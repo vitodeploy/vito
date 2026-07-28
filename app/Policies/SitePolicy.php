@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\PersonalAccessToken;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -45,6 +46,22 @@ class SitePolicy
             && $site->server_id === $server->id
             && $siteServer->isReady()
             && $siteServer->webserver();
+    }
+
+    /**
+     * Raw .env content and unmasked secret values are only for callers who can
+     * already rewrite them. API tokens must additionally carry the write ability.
+     */
+    public function revealEnv(User $user, Site $site, Server $server): bool
+    {
+        /** @var PersonalAccessToken|null $token */
+        $token = $user->currentAccessToken();
+
+        if ($token !== null && ! $token->can('write')) {
+            return false;
+        }
+
+        return $this->update($user, $site, $server);
     }
 
     public function delete(User $user, Site $site, Server $server): bool

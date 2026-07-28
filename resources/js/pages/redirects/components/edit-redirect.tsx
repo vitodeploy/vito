@@ -7,15 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Redirect } from '@/types/redirect';
 import RedirectFormFields, { RedirectForm } from './redirect-form-fields';
 
-export default function EditRedirect({
-  open,
-  onOpenChange,
-  redirect,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  redirect: Redirect;
-}) {
+export default function EditRedirect({ open, onOpenChange, redirect }: { open: boolean; onOpenChange: (open: boolean) => void; redirect: Redirect }) {
   const form = useForm<RedirectForm>({
     mode: String(redirect.mode),
     from: redirect.from,

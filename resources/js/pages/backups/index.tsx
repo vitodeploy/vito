@@ -46,7 +46,10 @@ export default function Backups() {
           </div>
         </HeaderContainer>
 
-        <VitoTable tableData={page.props.backups} actions={(row: Row) => <BackupActions backup={asRow<{ resource: Backup }>(row, ['resource']).resource} />} />
+        <VitoTable
+          tableData={page.props.backups}
+          actions={(row: Row) => <BackupActions backup={asRow<{ resource: Backup }>(row, ['resource']).resource} />}
+        />
       </Container>
     </Comp>
   );

@@ -11,15 +11,16 @@ interface EnvVariableRowProps {
   variable: EnvVariable;
   onChange: (variable: EnvVariable) => void;
   onDelete: () => void;
+  revealable?: boolean;
   error?: string;
 }
 
-export default function EnvVariableRow({ variable, onChange, onDelete, error }: EnvVariableRowProps) {
+export default function EnvVariableRow({ variable, onChange, onDelete, revealable = false, error }: EnvVariableRowProps) {
   const [showValue, setShowValue] = useState(false);
   const isMultiLine = variable.value.includes('\n');
 
-  // Existing secrets (not new) cannot be shown - they weren't sent from server
-  const isExistingSecret = variable.isSecret && !variable.isNew;
+  const isExistingSecret = variable.isSecret && !variable.isNew && !revealable;
+  const canToggleSecret = variable.isNew || revealable;
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange({ ...variable, key: e.target.value });
@@ -30,8 +31,7 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
   };
 
   const toggleSecret = () => {
-    // Only new variables can toggle their secret status
-    if (variable.isNew) {
+    if (canToggleSecret) {
       onChange({ ...variable, isSecret: !variable.isSecret });
     }
   };
@@ -82,12 +82,18 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
       );
     }
 
-    // New secret with toggle visibility
-    if (variable.isSecret && variable.isNew) {
+    if (variable.isSecret) {
       if (!showValue) {
         return (
           <div className="relative min-h-9 flex-1">
-            <Input type="password" value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="h-9 w-full pr-10" />
+            <Input
+              type="password"
+              value={variable.value}
+              onChange={handleValueChange}
+              readOnly={isMultiLine}
+              placeholder={isMultiLine ? 'Reveal to edit this value' : 'Enter value...'}
+              className="h-9 w-full pr-10"
+            />
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"
@@ -124,8 +130,7 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
   };
 
   const renderSecretToggle = () => {
-    // Only show toggle for new variables, but keep placeholder for alignment
-    if (!variable.isNew) {
+    if (!canToggleSecret) {
       return <div className="size-9 shrink-0" />;
     }
 
@@ -151,7 +156,7 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
     const isExisting = !variable.isNew;
     const hasError = !!error;
 
-    if (isExisting && variable.isSecret) {
+    if (isExisting && variable.isSecret && !revealable) {
       return (
         <div className={cn('relative', isMultiLine ? 'w-full sm:w-72' : 'w-72')}>
           <Input value={variable.key} onChange={handleKeyChange} placeholder="KEY" className="pr-9 font-mono" disabled />

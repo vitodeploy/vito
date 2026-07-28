@@ -29,7 +29,7 @@ class UpdateVitoAgentConfigJobTest extends TestCase
         dispatch(new UpdateVitoAgentConfigJob($this->server));
 
         SSH::assertExecutedContains('/etc/vito-agent/config.json');
-        SSH::assertExecutedContains('&& rm -f /tmp/');
+        SSH::assertExecutedContains("&& rm -f '/tmp/");
         SSH::assertExecutedContains('chmod 600 /etc/vito-agent/config.json');
         SSH::assertExecutedContains('Monitoring services: ');
         SSH::assertNotExecutedContains('agent-secret');

@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Site\UpdateEnv;
 use App\Enums\DeploymentStatus;
+use App\Enums\UserRole;
 use App\Enums\WorkerStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
@@ -18,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -636,9 +639,11 @@ class ApplicationTest extends TestCase
         $this->assertEquals(['DB_PASSWORD'], $this->site->env_variables);
     }
 
-    public function test_secret_values_are_masked_on_read(): void
+    public function test_secret_values_are_masked_for_read_only_members(): void
     {
         SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123');
+
+        $this->makeUserReadOnly();
 
         $this->actingAs($this->user);
 
@@ -650,6 +655,9 @@ class ApplicationTest extends TestCase
         ]));
 
         $response->assertOk();
+        $response->assertJsonMissingPath('env');
+        $this->assertFalse($response->json('can_edit'));
+
         $data = $response->json('variables');
 
         $secretVar = collect($data)->firstWhere('key', 'DB_PASSWORD');
@@ -661,9 +669,35 @@ class ApplicationTest extends TestCase
         $this->assertEquals('TestApp', $normalVar['value']);
     }
 
+    public function test_secret_values_are_revealed_for_writers(): void
+    {
+        $env = 'APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123';
+
+        SSH::fake($env);
+
+        $this->actingAs($this->user);
+
+        $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+        $response = $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]));
+
+        $response->assertOk();
+        $this->assertTrue($response->json('can_edit'));
+        $this->assertEquals($env, $response->json('env'));
+
+        $secretVar = collect($response->json('variables'))->firstWhere('key', 'DB_PASSWORD');
+        $this->assertTrue($secretVar['is_secret']);
+        $this->assertEquals('supersecret123', $secretVar['value']);
+    }
+
     public function test_secret_classification_survives_legacy_db_shape(): void
     {
         SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=supersecret123');
+
+        $this->makeUserReadOnly();
 
         $this->actingAs($this->user);
 
@@ -777,6 +811,8 @@ class ApplicationTest extends TestCase
     public function test_pattern_secrets_masked_for_site_never_saved_through_vito(): void
     {
         SSH::fake('APP_NAME=TestApp'.PHP_EOL.'APP_KEY=base64:supersecret');
+
+        $this->makeUserReadOnly();
 
         $this->actingAs($this->user);
 
@@ -1223,5 +1259,336 @@ class ApplicationTest extends TestCase
             'supervisorctl restart '.$workerId.':*',
             "Worker {$workerId} should not be restarted"
         );
+    }
+
+    public function test_read_only_member_cannot_override_env_path(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->makeUserReadOnly();
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $this->site->path.'/other/.env',
+        ]))->assertForbidden();
+    }
+
+    public function test_read_only_member_can_read_the_default_env_path(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->makeUserReadOnly();
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $this->site->path.'/.env',
+        ]))->assertOk();
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function rejectedEnvPathProvider(): array
+    {
+        return [
+            'absolute path outside the site' => ['/etc/passwd'],
+            'shell metacharacters' => ['/etc/passwd;id'],
+            'export prefix' => ['export /etc/passwd'],
+        ];
+    }
+
+    #[DataProvider('rejectedEnvPathProvider')]
+    public function test_env_path_outside_the_site_is_rejected(string $path): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->getJson(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $path,
+        ]))->assertStatus(422);
+    }
+
+    public function test_env_path_traversal_is_rejected(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->getJson(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $this->site->path.'/../other/.env',
+        ]))->assertStatus(422);
+    }
+
+    public function test_array_env_param_is_treated_as_no_override(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]).'?env[]=/etc/passwd')->assertOk();
+    }
+
+    public function test_stored_env_path_outside_the_site_is_still_readable(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->site->jsonUpdate('type_data', 'env_path', '/home/vito/other-site/.env');
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => '/home/vito/other-site/.env',
+        ]))->assertOk();
+    }
+
+    public function test_env_path_within_the_site_is_accepted(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $this->site->path.'/nested/.env',
+        ]))->assertOk();
+    }
+
+    public function test_reading_env_does_not_persist_the_overridden_path(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'env' => $this->site->path.'/nested/.env',
+        ]))->assertOk();
+
+        $this->site->refresh();
+
+        $this->assertNull(data_get($this->site->type_data, 'env_path'));
+    }
+
+    public function test_missing_env_file_still_returns_ok(): void
+    {
+        SSH::fake('');
+
+        $this->actingAs($this->user);
+
+        $response = $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]));
+
+        $response->assertOk();
+        $this->assertEquals([], $response->json('variables'));
+    }
+
+    public function test_ssh_failure_while_reading_env_surfaces_as_an_error(): void
+    {
+        $ssh = SSH::fake();
+        $ssh->execWillFail();
+
+        $this->actingAs($this->user);
+
+        $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertStatus(500);
+    }
+
+    public function test_update_env_rejects_an_empty_path(): void
+    {
+        SSH::fake();
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateEnv::class)->update($this->site, ['env' => 'APP_NAME=Test', 'path' => '']);
+    }
+
+    public function test_update_env_rejects_an_array_path(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_NAME=Test',
+            'path' => ['x'],
+        ])->assertSessionHasErrors('path');
+    }
+
+    public function test_update_env_rejects_an_empty_variables_array(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [],
+        ])->assertSessionHasErrors('variables');
+    }
+
+    public function test_update_env_rejects_an_empty_variables_array_alongside_env(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => '',
+            'variables' => [],
+        ])->assertSessionHasErrors('variables');
+    }
+
+    public function test_update_env_rejects_a_null_env_sent_alongside_variables(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->putJson(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => null,
+            'variables' => null,
+        ])->assertStatus(422);
+    }
+
+    public function test_update_env_rejects_a_submission_with_neither_key(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'path' => $this->site->path.'/.env',
+        ])->assertSessionHasErrors('env');
+    }
+
+    public function test_classic_mode_can_blank_the_env_file(): void
+    {
+        $ssh = SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => '',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertEquals('', trim($ssh->getUploadedContent() ?? 'not-empty'));
+    }
+
+    public function test_read_only_member_cannot_update_env(): void
+    {
+        SSH::fake();
+
+        $this->makeUserReadOnly();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_NAME=Test',
+        ])->assertForbidden();
+    }
+
+    public function test_parse_env_accepts_empty_content(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->post(route('application.parse-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), ['content' => '']);
+
+        $response->assertOk();
+        $this->assertEquals([], $response->json('variables'));
+    }
+
+    public function test_parse_env_marks_a_commented_file_as_representable(): void
+    {
+        $this->actingAs($this->user);
+
+        $content = '# Application'.PHP_EOL.PHP_EOL.'APP_NAME=TestApp'.PHP_EOL.'MY-KEY=1'.PHP_EOL.'2FA_ENABLED=1'.PHP_EOL."A='single quoted'";
+
+        $this->post(route('application.parse-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), ['content' => $content])->assertOk()->assertJsonPath('representable', true);
+    }
+
+    public function test_stringify_env_serialises_rows(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->post(route('application.stringify-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'TestApp'],
+                ['key' => 'APP_DEBUG', 'value' => ''],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertEquals('APP_NAME=TestApp'.PHP_EOL.'APP_DEBUG=', $response->json('env'));
+    }
+
+    public function test_stringify_env_requires_variables(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->post(route('application.stringify-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [])->assertSessionHasErrors('variables');
+    }
+
+    /**
+     * Demote the acting user to the read-only project role.
+     */
+    private function makeUserReadOnly(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
     }
 }

@@ -14,6 +14,7 @@ import { AlertCircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon } from 'luci
 import { useInputFocus } from '@/stores/useInputFocus';
 import { EnvVariable } from '@/types/env';
 import { generateUniqueKey } from '@/lib/env';
+import { rowId } from '@/lib/utils';
 import EnvVariableRow from '@/pages/application/components/env-variable-row';
 
 type ApplyChoice = '' | 'config' | 'restart';
@@ -75,6 +76,7 @@ export default function WorkerEnvDialog({
           : route('site-settings.worker-env', { server: serverId, site: siteId }),
       );
       const parsed = (response.data?.variables ?? []).map((v: { key: string; value: string; is_secret: boolean }) => ({
+        id: rowId(),
         key: v.key,
         value: v.value,
         isSecret: v.is_secret,
@@ -104,6 +106,7 @@ export default function WorkerEnvDialog({
     setVariables((prev) => [
       ...prev,
       {
+        id: rowId(),
         key: generateUniqueKey(prev.map((v) => v.key)),
         value: '',
         isSecret: false,
@@ -169,7 +172,7 @@ export default function WorkerEnvDialog({
               <div className="space-y-3 py-2">
                 {variables.map((variable, index) => (
                   <EnvVariableRow
-                    key={`env-${index}`}
+                    key={variable.id}
                     variable={variable}
                     onChange={(updated) => handleVariableChange(index, updated)}
                     onDelete={() => handleVariableDelete(index)}

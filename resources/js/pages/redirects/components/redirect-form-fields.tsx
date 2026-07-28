@@ -67,12 +67,7 @@ export default function RedirectFormFields({ form }: { form: InertiaFormProps<Re
       {form.data.mode === '1000' && (
         <FormField>
           <div className="flex items-center gap-3">
-            <Checkbox
-              id="websocket"
-              name="websocket"
-              checked={form.data.websocket}
-              onClick={() => form.setData('websocket', !form.data.websocket)}
-            />
+            <Checkbox id="websocket" name="websocket" checked={form.data.websocket} onClick={() => form.setData('websocket', !form.data.websocket)} />
             <Label htmlFor="websocket">WebSocket support</Label>
           </div>
           <InputError message={form.errors.websocket} />

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Helpers\EnvParser;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class EnvParserTest extends TestCase
@@ -158,6 +159,82 @@ class EnvParserTest extends TestCase
             $this->assertEquals($var['key'], $reParsed[$i]['key']);
             $this->assertEquals($var['value'], $reParsed[$i]['value']);
         }
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function roundtripValueProvider(): array
+    {
+        return [
+            'double quote' => ['he said "hi"'],
+            'literal backslash n unquoted' => ['C:\name'],
+            'literal backslash n quoted' => ['%h \n %t'],
+            'hash' => ['#fff'],
+            'spaces' => ['My Laravel App'],
+            'trailing backslash inside quotes' => ['abc def\\'],
+            'trailing backslash unquoted' => ['trail\\'],
+            'multi line' => ["line1\nline2"],
+            'empty' => [''],
+            'base64 padding' => ['base64:abc=123='],
+            'backslash and quote' => ['C:\dir "x"'],
+        ];
+    }
+
+    #[DataProvider('roundtripValueProvider')]
+    public function test_roundtrip_preserves_every_value_shape(string $value): void
+    {
+        $stringified = EnvParser::stringify([['key' => 'K', 'value' => $value]]);
+        $reParsed = EnvParser::parse($stringified);
+
+        $this->assertCount(1, $reParsed);
+        $this->assertEquals('K', $reParsed[0]['key']);
+        $this->assertEquals($value, $reParsed[0]['value']);
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function representableContentProvider(): array
+    {
+        return [
+            'comments and blank lines' => ["# Application\n\nAPP_NAME=TestApp"],
+            'crlf line endings' => ["APP_NAME=TestApp\r\nAPP_ENV=production"],
+            'single quoted value' => ["A='single quoted'"],
+            'duplicate keys' => ["A=1\nA=2"],
+            'whitespace around equals' => [' A = 1 '],
+            'dashed key' => ['MY-KEY=1'],
+            'dotted key' => ['MY.KEY=1'],
+            'leading digit key' => ['2FA_ENABLED=1'],
+            'empty value' => ['DB_PASSWORD='],
+            'escaped quotes' => ['K="he said \\"hi\\""'],
+        ];
+    }
+
+    #[DataProvider('representableContentProvider')]
+    public function test_is_representable_accepts_content_the_form_can_hold(string $content): void
+    {
+        $this->assertTrue(EnvParser::isRepresentable($content, EnvParser::parse($content)));
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function unrepresentableContentProvider(): array
+    {
+        return [
+            'pem block' => ["KEY=\"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n-----END RSA PRIVATE KEY-----\""],
+            'continuation line containing equals' => ["EXTRA_CONFIG=\"foo=1\nbar=2\""],
+            'single quoted multi line' => ["A='foo=1\nbar=2'"],
+            'escaped closing quote' => ["A=\"foo\\\"\nb=2\""],
+            'export prefix' => ['export FOO=bar'],
+        ];
+    }
+
+    #[DataProvider('unrepresentableContentProvider')]
+    public function test_is_representable_rejects_content_the_form_would_mangle(string $content): void
+    {
+        $this->assertFalse(EnvParser::isRepresentable($content, EnvParser::parse($content)));
     }
 
     public function test_mask_secrets_hides_secret_values(): void

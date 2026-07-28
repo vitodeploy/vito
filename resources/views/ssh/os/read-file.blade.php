@@ -1,1 +1,1 @@
-[ -f {{ $path }} ] && sudo cat {{ $path }}
+if [ -f {!! $path !!} ]; then sudo cat {!! $path !!}; fi

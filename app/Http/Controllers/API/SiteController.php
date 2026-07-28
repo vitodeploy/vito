@@ -14,6 +14,7 @@ use App\Actions\Site\UpdateLoadBalancer;
 use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Exceptions\DeploymentScriptIsEmptyException;
+use App\Exceptions\SSHError;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\SiteResource;
@@ -148,15 +149,18 @@ class SiteController extends Controller
         ]);
     }
 
+    /**
+     * @throws SSHError
+     */
     #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
-    public function showEnv(Project $project, Server $server, Site $site): JsonResponse
+    public function showEnv(Request $request, Project $project, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
 
         return response()->json([
-            'data' => app(GetEnv::class)->get($site),
+            'data' => app(GetEnv::class)->get($site, reveal: $request->user()->can('revealEnv', [$site, $server])),
         ]);
     }
 

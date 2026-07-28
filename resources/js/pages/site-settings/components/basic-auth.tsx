@@ -19,10 +19,9 @@ import InputError from '@/components/ui/input-error';
 import { Switch } from '@/components/ui/switch';
 import { LoaderCircleIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import { Site } from '@/types/site';
+import { rowId } from '@/lib/utils';
 
 type FormUser = { id: string; username: string; password: string; existing: boolean };
-
-const rowId = (): string => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
 export default function BasicAuth({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);

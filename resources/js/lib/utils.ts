@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// stable client-side id for repeated form rows; crypto.randomUUID needs a secure context
+export function rowId(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+}
+
 // convert kb to gb
 export function kbToGb(kb: number | string): number {
   if (typeof kb === 'string') {
