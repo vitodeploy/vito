@@ -3,12 +3,15 @@
 namespace Tests\Unit;
 
 use App\Models\Site;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SiteEnvPathTest extends TestCase
 {
+    use RefreshDatabase;
+
     private function site(?string $storedEnvPath = null): Site
     {
         $site = new Site(['path' => '/home/vito/example.com']);
