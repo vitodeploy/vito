@@ -257,7 +257,7 @@ class SSH
     /**
      * @throws Throwable
      */
-    public function upload(string $local, string $remote, ?string $owner = null, ?string $log = null, ?int $siteId = null): void
+    public function upload(string $local, string $remote, ?string $owner = null, ?string $log = null, ?int $siteId = null, string $permission = '644'): void
     {
         $this->ensureLog($log, $siteId);
         $sftp = $this->ensureSftp();
@@ -267,12 +267,12 @@ class SSH
 
         $sftp->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
-        $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
+        $this->exec(sprintf('chmod %s %s && sudo mv %s %s', $permission, $tempPath, $tempPath, $remote));
         if ($owner === null || $owner === '' || $owner === '0') {
             $owner = $this->user;
         }
         $this->exec(sprintf('sudo chown %s:%s %s', $owner, $owner, $remote));
-        $this->exec(sprintf('sudo chmod 644 %s', $remote));
+        $this->exec(sprintf('sudo chmod %s %s', $permission, $remote));
     }
 
     /**
@@ -298,7 +298,7 @@ class SSH
             $storageDisk = Storage::disk('local');
             $storageDisk->put($tmpName, $content);
             $tmpRemotePath = '/tmp/'.$tmpName;
-            $this->upload($storageDisk->path($tmpName), $tmpRemotePath, $owner, $log, $siteId);
+            $this->upload($storageDisk->path($tmpName), $tmpRemotePath, $owner, $log, $siteId, '600');
             $this->asUser($owner)->exec(
                 view('ssh.os.write-file', [
                     'tmpPath' => $tmpRemotePath,

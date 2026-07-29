@@ -40,6 +40,12 @@ class UpdateEnv
             ]);
         }
 
+        if ($hasEnv && $hasVariables) {
+            throw ValidationException::withMessages([
+                'env' => __('Provide either raw content or variables, not both.'),
+            ]);
+        }
+
         $path = $site->resolveEnvPath($input['path'] ?? null);
 
         $variables = $this->resolveVariables($site, $input, $path, $hasVariables);
@@ -68,8 +74,8 @@ class UpdateEnv
      *
      * The raw-text path has no per-field secret toggle, so existing secret
      * classifications are carried over and newly introduced keys fall back to
-     * pattern auto-detection. It writes the submitted content verbatim — no
-     * secret restoration is performed, so callers must supply real values.
+     * pattern auto-detection. No secret restoration is performed on that path,
+     * so callers must supply real values.
      *
      * @param  array<string, mixed>  $input
      * @return array<int, array{key: string, value: string, is_secret: bool}>

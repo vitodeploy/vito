@@ -1483,6 +1483,23 @@ class ApplicationTest extends TestCase
         ])->assertStatus(422);
     }
 
+    public function test_update_env_rejects_a_submission_with_both_keys(): void
+    {
+        SSH::fake('APP_NAME=TestApp');
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_NAME=Test',
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'Test', 'is_secret' => false],
+            ],
+        ])->assertSessionHasErrors('env');
+    }
+
     public function test_update_env_rejects_a_submission_with_neither_key(): void
     {
         SSH::fake('APP_NAME=TestApp');
