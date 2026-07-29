@@ -4,6 +4,10 @@
 
 The **Network** section of a server lets you view and manage the server's IP addresses. Vito detects the addresses configured on the server and lets you add or remove additional ones.
 
+:::info
+This page is about the addresses on a single server. To connect several servers together privately, see [Networks](../networks/overview.md). A [custom network](../networks/create.md) is built from the private addresses listed here.
+:::
+
 ## Viewing IP Addresses
 
 The Network page lists every IP address Vito knows about for the server, including:

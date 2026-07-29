@@ -110,6 +110,7 @@ class CreateServer
             'ip' => [
                 Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == Custom::id(), [
                     'required',
+                    'ip',
                     new RestrictedIPAddressesRule,
                 ]),
             ],

@@ -9,6 +9,7 @@ use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -26,6 +27,21 @@ class ServicesTest extends TestCase
         ]))
             ->assertSuccessful()
             ->assertInertia(fn (AssertableInertia $page) => $page->component('services/index'));
+    }
+
+    public function test_services_index_returns_the_inertia_table(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('services', ['server' => $this->server]))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('services/index')
+                ->where('refreshing', false)
+                ->has('services.columns')
+                ->has('services.data.0.resource')
+                ->has('services.data.0.networked')
+            );
     }
 
     #[DataProvider('data')]
@@ -349,25 +365,49 @@ class ServicesTest extends TestCase
         $this->assertNotNull($service->log_id);
         $this->assertNotNull($service->log);
         $this->assertStringStartsWith('install-redis', $service->log->type);
+
+        $this->assertNull(
+            $service->type_data['networking_effective'] ?? null,
+            'Install never observes the live bind state, so it must not claim one.'
+        );
+        $this->assertNull($service->type_data['networking_checked_at'] ?? null);
+        $this->assertArrayNotHasKey('networking', $service->type_data);
     }
 
     #[DataProvider('phpVersionOutputData')]
-    public function test_fetch_php_installed_version(string $sshOutput, string $expectedVersion): void
+    public function test_parse_php_installed_version(string $sshOutput, string $expectedVersion): void
     {
-        SSH::fake($sshOutput);
+        /** @var Service $service */
+        $service = $this->server->services()->where('name', 'php')->firstOrFail();
 
-        $this->actingAs($this->user);
+        $this->assertEquals($expectedVersion, $service->handler()->parseVersionOutput($sshOutput));
+    }
+
+    public function test_version_falls_back_to_the_raw_output_when_it_cannot_be_parsed(): void
+    {
+        SSH::fake('no version here');
 
         /** @var Service $service */
         $service = $this->server->services()->where('name', 'php')->firstOrFail();
 
-        $this->get(route('services.version', [
-            'server' => $this->server,
-            'service' => $service->id,
-        ]))
-            ->assertSessionDoesntHaveErrors();
+        $this->assertEquals('no version here', $service->handler()->version());
+    }
 
-        $this->assertEquals($expectedVersion, $service->refresh()->installed_version);
+    public function test_php_version_command_escapes_the_configured_version(): void
+    {
+        /** @var Service $service */
+        $service = $this->server->services()->where('name', 'php')->firstOrFail();
+        $service->version = "8.3'; rm -rf /tmp; echo '";
+
+        $this->assertEquals(
+            '/usr/bin/php\'8.3\'\\\'\'; rm -rf /tmp; echo \'\\\'\'\' -r \'echo PHP_VERSION;\' 2>/dev/null',
+            $service->handler()->versionCommand()
+        );
+    }
+
+    public function test_services_version_route_is_removed(): void
+    {
+        $this->assertFalse(Route::has('services.version'));
     }
 
     /**

@@ -1,0 +1,38 @@
+<?php
+
+namespace App\ValidationRules;
+
+use App\Models\ServerIpAddress;
+use App\Support\Cidr;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
+
+/**
+ * A custom network's declared range is what its firewall rules are built from, so a member
+ * addressed outside that range gets no working rule while the declared range is opened
+ * regardless. The value under validation is a `server_ip_addresses` id.
+ */
+class WithinCidrRule implements ValidationRule
+{
+    public function __construct(private ?string $cidr) {}
+
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        if ($this->cidr === null || $this->cidr === '' || ! Cidr::isValid($this->cidr)) {
+            return;
+        }
+
+        $ip = ServerIpAddress::query()->whereKey($value)->value('ip');
+
+        if (! is_string($ip)) {
+            return;
+        }
+
+        if (! Cidr::contains($this->cidr, $ip)) {
+            $fail('The selected address :ip is outside the network range :cidr.')->translate([
+                'ip' => $ip,
+                'cidr' => $this->cidr,
+            ]);
+        }
+    }
+}

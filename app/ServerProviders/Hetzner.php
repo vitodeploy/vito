@@ -2,7 +2,10 @@
 
 namespace App\ServerProviders;
 
+use App\DTOs\PrivateNetworkDTO;
+use App\DTOs\PrivateNetworkMemberDTO;
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
@@ -12,13 +15,139 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
-class Hetzner extends AbstractProvider
+class Hetzner extends AbstractProvider implements ProvidesPrivateNetworks
 {
     protected string $apiUrl = 'https://api.hetzner.cloud/v1';
 
     public static function id(): string
     {
         return 'hetzner';
+    }
+
+    public function instanceIdKey(): string
+    {
+        return 'hetzner_id';
+    }
+
+    public function privateNetworks(array $instanceIds, array $regions): array
+    {
+        return $this->mapPrivateNetworks(
+            $this->fetchAll('/networks', 'networks'),
+            $this->fetchAll('/servers', 'servers'),
+            $instanceIds,
+        );
+    }
+
+    /**
+     * `/networks` already carries `servers[]` (attached ids), so membership needs no
+     * extra call; `/servers` is read only for the per-network private IPs.
+     *
+     * @param  array<int, array<string, mixed>>  $networks
+     * @param  array<int, array<string, mixed>>  $servers
+     * @param  array<int, string>  $instanceIds
+     * @return array<int, PrivateNetworkDTO>
+     */
+    private function mapPrivateNetworks(array $networks, array $servers, array $instanceIds): array
+    {
+        $wanted = array_flip($instanceIds);
+        $ips = [];
+
+        foreach ($servers as $server) {
+            $serverId = (string) ($server['id'] ?? '');
+
+            foreach ($server['private_net'] ?? [] as $attachment) {
+                if (isset($attachment['network'], $attachment['ip'])) {
+                    $ips[(string) $attachment['network']][$serverId] = (string) $attachment['ip'];
+                }
+            }
+        }
+
+        $result = [];
+
+        foreach ($networks as $network) {
+            $networkId = (string) ($network['id'] ?? '');
+            $members = [];
+
+            foreach ($network['servers'] ?? [] as $attachedId) {
+                $attachedId = (string) $attachedId;
+
+                if (! isset($wanted[$attachedId])) {
+                    continue;
+                }
+
+                $members[] = new PrivateNetworkMemberDTO(
+                    instanceId: $attachedId,
+                    ip: $ips[$networkId][$attachedId] ?? null,
+                );
+            }
+
+            if ($members === []) {
+                continue;
+            }
+
+            $result[] = new PrivateNetworkDTO(
+                externalId: $networkId,
+                name: (string) ($network['name'] ?? $networkId),
+                cidr: isset($network['ip_range']) ? (string) $network['ip_range'] : null,
+                region: isset($network['subnets'][0]['network_zone'])
+                    ? (string) $network['subnets'][0]['network_zone']
+                    : null,
+                members: $members,
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws PrivateNetworkSyncError
+     */
+    private function fetchAll(string $path, string $key): array
+    {
+        $token = $this->serverProvider->getCredentials()['token'];
+        $items = [];
+        $page = 1;
+
+        do {
+            try {
+                $response = Http::withToken($token)->get($this->apiUrl.$path, [
+                    'per_page' => 50,
+                    'page' => $page,
+                ]);
+            } catch (Exception) {
+                throw $this->syncError();
+            }
+
+            if (! $response->ok()) {
+                throw $this->syncError($response->status());
+            }
+
+            $body = $response->json();
+
+            if (! is_array($body) || ! is_array($body[$key] ?? null)) {
+                throw $this->syncError($response->status());
+            }
+
+            /** @var array<int, array<string, mixed>> $batch */
+            $batch = $body[$key];
+            $items = array_merge($items, $batch);
+
+            $next = $body['meta']['pagination']['next_page'] ?? null;
+
+            if ($next === null) {
+                break;
+            }
+
+            if (! is_numeric($next) || (int) $next <= $page) {
+                throw $this->syncError();
+            }
+
+            $page = (int) $next;
+        } while (true);
+
+        return $items;
     }
 
     public function createRules(array $input): array

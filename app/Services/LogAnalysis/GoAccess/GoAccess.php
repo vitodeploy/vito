@@ -120,16 +120,9 @@ class GoAccess extends AbstractService
         $this->service->server->os()->cleanup();
     }
 
-    /**
-     * @throws SSHError
-     */
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            "goaccess --version | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1"
-        );
-
-        return trim($version);
+        return "goaccess --version | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1";
     }
 
     public function canBeManaged(): bool

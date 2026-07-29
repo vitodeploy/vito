@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Network\ResyncNetworkSiblings;
 use App\Actions\Server\CheckConnection;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
@@ -124,9 +125,24 @@ class Server extends AbstractModel
 
     public bool $deleteFromProvider = true;
 
+    /**
+     * Carried between the two events because the membership rows are gone by the second.
+     *
+     * @var array{members: array<int, int>, networks: array<int, int>}
+     */
+    protected array $networkDeparture = ['members' => [], 'networks' => []];
+
     public static function boot(): void
     {
         parent::boot();
+
+        static::deleting(function (Server $server): void {
+            $server->networkDeparture = app(ResyncNetworkSiblings::class)->capture($server);
+        });
+
+        static::deleted(function (Server $server): void {
+            app(ResyncNetworkSiblings::class)->handle($server->networkDeparture);
+        });
 
         static::deleting(function (Server $server): void {
             DB::beginTransaction();
@@ -273,6 +289,14 @@ class Server extends AbstractModel
     public function firewallRules(): HasMany
     {
         return $this->hasMany(FirewallRule::class);
+    }
+
+    /**
+     * @return HasMany<ServerNetworkRule, covariant $this>
+     */
+    public function networkRules(): HasMany
+    {
+        return $this->hasMany(ServerNetworkRule::class);
     }
 
     /**

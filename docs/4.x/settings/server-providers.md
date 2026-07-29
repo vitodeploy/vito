@@ -6,6 +6,8 @@ Vito provides integration with multiple server providers to deploy your servers 
 
 When creating new servers, You can select the provider you've connected and deploy your servers with a few clicks.
 
+A connected provider is also used to discover the private networks your servers already belong to — see [Provider Networks](../networks/provider-networks.md).
+
 ## Supported Providers
 
 - AWS

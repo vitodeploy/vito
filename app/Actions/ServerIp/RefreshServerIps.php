@@ -185,7 +185,8 @@ class RefreshServerIps
             $server->ipAddresses()
                 ->where('is_managed', false)
                 ->whereNotIn('ip', $seen)
-                ->delete();
+                ->get()
+                ->each(fn (ServerIpAddress $address) => $address->delete());
         });
     }
 }

@@ -257,13 +257,9 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         );
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'supervisord --version'
-        );
-
-        return trim($version);
+        return 'supervisord --version';
     }
 
     public function logs(): array

@@ -22,6 +22,11 @@ export interface Service {
   is_default: boolean;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+  supports_networking: boolean;
+  networking_enabled: boolean;
+  networking_managed: boolean;
+  networking_effective: boolean | null;
+  networking_checked_at: string | null;
   icon: string;
   log?: ServerLog | null;
   created_at: string;

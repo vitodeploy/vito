@@ -20,8 +20,10 @@ export default function Firewall() {
   const page = usePage<{
     server: Server;
     rules: InertiaTableData;
+    networkRules: InertiaTableData;
   }>();
   const dialog = useDialog();
+  const hasNetworkRules = (page.props.networkRules?.data?.length ?? 0) > 0;
 
   return (
     <ServerLayout>
@@ -70,6 +72,18 @@ export default function Firewall() {
             );
           }}
         />
+
+        {hasNetworkRules && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <h2 className="text-base font-medium">Private network rules</h2>
+              <p className="text-muted-foreground text-sm">
+                These rules are applied by the private networks this server belongs to. They are read-only here &mdash; edit them from the network.
+              </p>
+            </div>
+            <VitoTable tableData={page.props.networkRules} />
+          </div>
+        )}
       </Container>
     </ServerLayout>
   );

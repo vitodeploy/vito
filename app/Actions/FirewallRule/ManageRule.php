@@ -6,6 +6,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Jobs\FirewallRule\ApplyRulesJob;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Support\Cidr;
 use App\ValidationRules\PortOrPortRangeRule;
 use Illuminate\Support\Facades\Validator;
 
@@ -55,6 +56,9 @@ class ManageRule
 
     private function validate(array $input): void
     {
+        $source = $input['source'] ?? null;
+        $maxMask = is_string($source) && Cidr::isValidAddress($source) ? Cidr::bits($source) : 32;
+
         $rules = [
             'name' => [
                 'required',
@@ -81,13 +85,13 @@ class ManageRule
                 'nullable',
                 'numeric',
                 'min:1',
-                'max:32',
+                'max:'.$maxMask,
             ],
         ];
 
         if (isset($input['source_any']) && $input['source_any'] === false) {
             $rules['source'] = ['required', 'ip'];
-            $rules['mask'] = ['required', 'numeric', 'min:1', 'max:32'];
+            $rules['mask'] = ['required', 'numeric', 'min:1', 'max:'.$maxMask];
         }
 
         Validator::make($input, $rules)->validate();

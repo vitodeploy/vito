@@ -3,11 +3,14 @@
 namespace App\Traits;
 
 use Closure;
+use Illuminate\Database\DetectsConcurrencyErrors;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 trait UniqueQueue
 {
+    use DetectsConcurrencyErrors;
+
     public $tries = 120;
 
     public function retryUntil(): \DateTime
@@ -30,7 +33,12 @@ trait UniqueQueue
             try {
                 $callback();
             } catch (Throwable $e) {
-                $lock->release();
+                if ($this->isTransientDatabaseError($e) && $this->attempts() < $this->tries) {
+                    $this->release(min(30, $this->attempts() * 2));
+
+                    return;
+                }
+
                 $this->fail($e);
             } finally {
                 $lock->release();
@@ -38,5 +46,10 @@ trait UniqueQueue
         } else {
             $this->release(30);
         }
+    }
+
+    protected function isTransientDatabaseError(Throwable $e): bool
+    {
+        return $this->causedByConcurrencyError($e);
     }
 }

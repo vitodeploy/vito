@@ -74,20 +74,22 @@ export default function InstallService({ name, children }: { name?: string; chil
                       <CommandInput placeholder="Search service..." />
                       <CommandList>
                         <CommandGroup>
-                          {Object.entries(configs.service.services).map(([key, service]) => (
-                            <CommandItem
-                              key={`service-${key}`}
-                              value={service.label}
-                              onSelect={() => {
-                                form.setData('name', key);
-                                form.setData('version', '');
-                                setNameOpen(false);
-                              }}
-                            >
-                              {service.label}
-                              <CheckIcon className={cn('ml-auto', form.data.name === key ? 'opacity-100' : 'opacity-0')} />
-                            </CommandItem>
-                          ))}
+                          {Object.entries(configs.service.services)
+                            .filter(([, service]) => service.type !== 'vpn')
+                            .map(([key, service]) => (
+                              <CommandItem
+                                key={`service-${key}`}
+                                value={service.label}
+                                onSelect={() => {
+                                  form.setData('name', key);
+                                  form.setData('version', '');
+                                  setNameOpen(false);
+                                }}
+                              >
+                                {service.label}
+                                <CheckIcon className={cn('ml-auto', form.data.name === key ? 'opacity-100' : 'opacity-0')} />
+                              </CommandItem>
+                            ))}
                         </CommandGroup>
                       </CommandList>
                     </Command>

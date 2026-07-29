@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property Collection<int, User> $registeredUsers
  * @property Collection<int, Workflow> $workflows
  * @property Collection<int, Domain> $domains
+ * @property Collection<int, Network> $networks
  */
 class Project extends Model
 {
@@ -125,5 +126,13 @@ class Project extends Model
     public function domains(): HasMany
     {
         return $this->hasMany(Domain::class);
+    }
+
+    /**
+     * @return HasMany<Network, covariant $this>
+     */
+    public function networks(): HasMany
+    {
+        return $this->hasMany(Network::class);
     }
 }

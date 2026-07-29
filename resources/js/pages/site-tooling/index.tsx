@@ -63,7 +63,7 @@ export default function SiteTooling() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Tooling" description={`Manage developer tooling installed for isolated user ${isolated_user}.`} />
-          <a href="https://vitodeploy.com/docs/sites/tooling" target="_blank">
+          <a href="https://vitodeploy.com/docs/sites/site-tooling" target="_blank">
             <Button variant="outline">
               <BookOpenIcon />
               <span className="hidden lg:block">Docs</span>

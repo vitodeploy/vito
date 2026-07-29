@@ -2,6 +2,7 @@
 
 namespace App\ServerProviders;
 
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Models\Server;
 use App\Models\ServerProvider as Provider;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -20,6 +21,30 @@ abstract class AbstractProvider implements ServerProvider
             ->reject(fn (mixed $plan): bool => is_array($plan) && ($plan['available'] ?? true) === false)
             ->map(fn (mixed $plan): string => is_array($plan) ? $plan['label'] : $plan)
             ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $regions
+     */
+    public function canDiscoverPrivateNetworks(array $regions, int $serversWithoutRegion): bool
+    {
+        return true;
+    }
+
+    /**
+     * Convert any upstream failure into a credential-free exception. Upstream
+     * HTTP/SDK exceptions can carry tokens in their message or trace arguments,
+     * which the queue would persist into `failed_jobs.exception`.
+     */
+    protected function syncError(?int $status = null, ?string $region = null): PrivateNetworkSyncError
+    {
+        return new PrivateNetworkSyncError(
+            serverProviderId: $this->serverProvider->id,
+            provider: static::id(),
+            profile: $this->serverProvider->profile,
+            status: $status,
+            region: $region,
+        );
     }
 
     public function generateKeyPair(): void

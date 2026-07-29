@@ -2,6 +2,7 @@
 
 namespace App\Actions\ServerIp;
 
+use App\Actions\Network\ResyncServerEndpoint;
 use App\DTOs\SocketEventDTO;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
@@ -67,6 +68,7 @@ class ManageServerIp
     public function setPrimary(ServerIpAddress $address): void
     {
         $server = $address->server;
+        $endpointChanged = $address->type !== IpAddressType::PRIVATE && $server->ip !== $address->ip;
 
         DB::transaction(function () use ($server, $address): void {
             if ($address->type === IpAddressType::PRIVATE) {
@@ -80,6 +82,10 @@ class ManageServerIp
             $server->ipAddresses()->update(['is_primary' => false]);
             $server->ipAddresses()->whereIn('ip', $primaryIps)->update(['is_primary' => true]);
         });
+
+        if ($endpointChanged) {
+            app(ResyncServerEndpoint::class)->handle($server);
+        }
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $server->project_id,

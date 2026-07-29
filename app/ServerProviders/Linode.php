@@ -2,7 +2,10 @@
 
 namespace App\ServerProviders;
 
+use App\DTOs\PrivateNetworkDTO;
+use App\DTOs\PrivateNetworkMemberDTO;
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Exceptions\PrivateNetworkSyncError;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
@@ -10,13 +13,151 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class Linode extends AbstractProvider
+class Linode extends AbstractProvider implements ProvidesPrivateNetworks
 {
     protected string $apiUrl = 'https://api.linode.com/v4';
+
+    private const MAX_PAGES = 100;
 
     public static function id(): string
     {
         return 'linode';
+    }
+
+    public function instanceIdKey(): string
+    {
+        return 'linode_id';
+    }
+
+    public function privateNetworks(array $instanceIds, array $regions): array
+    {
+        return $this->mapPrivateNetworks(
+            $this->fetchAll('/vpcs'),
+            $this->fetchAll('/vpcs/ips'),
+            $instanceIds,
+        );
+    }
+
+    /**
+     * `/vpcs` carries `subnets[].linodes[]`, so membership needs no extra call; `/vpcs/ips`
+     * is the account-wide address list. A linode can hold several VPC addresses, and an entry
+     * may carry only `address_range`, so the first active entry with a plain address wins.
+     *
+     * @param  array<int, array<string, mixed>>  $vpcs
+     * @param  array<int, array<string, mixed>>  $addresses
+     * @param  array<int, string>  $instanceIds
+     * @return array<int, PrivateNetworkDTO>
+     */
+    private function mapPrivateNetworks(array $vpcs, array $addresses, array $instanceIds): array
+    {
+        $wanted = array_flip($instanceIds);
+        $ips = [];
+
+        foreach ($addresses as $entry) {
+            $linodeId = (string) ($entry['linode_id'] ?? '');
+            $vpcId = (string) ($entry['vpc_id'] ?? '');
+            $address = $entry['address'] ?? null;
+
+            if ($linodeId === '' || $vpcId === '' || ! is_string($address) || $address === '') {
+                continue;
+            }
+
+            if (($entry['active'] ?? true) === false) {
+                continue;
+            }
+
+            $ips[$vpcId][$linodeId] ??= $address;
+        }
+
+        $result = [];
+
+        foreach ($vpcs as $vpc) {
+            $vpcId = (string) ($vpc['id'] ?? '');
+            $members = [];
+            $cidrs = [];
+
+            foreach ($vpc['subnets'] ?? [] as $subnet) {
+                if (isset($subnet['ipv4'])) {
+                    $cidrs[] = (string) $subnet['ipv4'];
+                }
+
+                foreach ($subnet['linodes'] ?? [] as $linode) {
+                    $linodeId = (string) ($linode['id'] ?? '');
+
+                    if ($linodeId === '' || ! isset($wanted[$linodeId])) {
+                        continue;
+                    }
+
+                    $members[] = new PrivateNetworkMemberDTO(
+                        instanceId: $linodeId,
+                        ip: $ips[$vpcId][$linodeId] ?? null,
+                    );
+                }
+            }
+
+            if ($members === []) {
+                continue;
+            }
+
+            $result[] = new PrivateNetworkDTO(
+                externalId: $vpcId,
+                name: (string) ($vpc['label'] ?? $vpcId),
+                cidr: count($cidrs) === 1 ? $cidrs[0] : null,
+                region: isset($vpc['region']) ? (string) $vpc['region'] : null,
+                members: $members,
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws PrivateNetworkSyncError
+     */
+    private function fetchAll(string $path): array
+    {
+        $token = $this->serverProvider->getCredentials()['token'];
+        $items = [];
+        $page = 1;
+
+        do {
+            try {
+                $response = Http::withToken($token)->get($this->apiUrl.$path, [
+                    'page_size' => 500,
+                    'page' => $page,
+                ]);
+            } catch (Exception) {
+                throw $this->syncError();
+            }
+
+            if (! $response->ok()) {
+                throw $this->syncError($response->status());
+            }
+
+            $body = $response->json();
+
+            if (! is_array($body) || ! is_array($body['data'] ?? null)) {
+                throw $this->syncError($response->status());
+            }
+
+            /** @var array<int, array<string, mixed>> $batch */
+            $batch = $body['data'];
+            $items = array_merge($items, $batch);
+
+            if ($page >= (int) ($body['pages'] ?? 1)) {
+                break;
+            }
+
+            if ($page >= self::MAX_PAGES) {
+                throw $this->syncError();
+            }
+
+            $page++;
+        } while (true);
+
+        return $items;
     }
 
     public function createRules(array $input): array

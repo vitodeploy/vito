@@ -22,6 +22,7 @@ use InvalidArgumentException;
  * @property ?int $log_id
  * @property string $type
  * @property ?array<string, mixed> $type_data
+ * @property ?string $secret
  * @property string $name
  * @property string $version
  * @property string $installed_version
@@ -55,8 +56,13 @@ class Service extends AbstractModel
         'server_id' => 'integer',
         'log_id' => 'integer',
         'type_data' => 'json',
+        'secret' => 'encrypted',
         'is_default' => 'boolean',
         'status' => ServiceStatus::class,
+    ];
+
+    protected $hidden = [
+        'secret',
     ];
 
     /**

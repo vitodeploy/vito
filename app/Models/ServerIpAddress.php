@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Network\RemoveMembershipsForAddress;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
@@ -44,6 +45,25 @@ class ServerIpAddress extends AbstractModel
         'type' => IpAddressType::class,
         'status' => IpAddressStatus::class,
     ];
+
+    /**
+     * Carried between the two events because the foreign key is nullOnDelete, so by the second
+     * nothing records which memberships this address backed.
+     *
+     * @var array<int, int>
+     */
+    protected array $reapplyNetworkIds = [];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (ServerIpAddress $address): void {
+            $address->reapplyNetworkIds = app(RemoveMembershipsForAddress::class)->capture($address);
+        });
+
+        static::deleted(function (ServerIpAddress $address): void {
+            app(RemoveMembershipsForAddress::class)->handle($address->server_id, $address->reapplyNetworkIds);
+        });
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>

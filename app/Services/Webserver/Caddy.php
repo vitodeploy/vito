@@ -262,13 +262,9 @@ class Caddy extends AbstractWebserver implements HasLogs
         );
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'caddy version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
-        );
-
-        return trim($version);
+        return 'caddy version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\'';
     }
 
     public function logs(): array

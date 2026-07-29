@@ -50,10 +50,15 @@ class Install
 
     private function validate(array $input): void
     {
+        $installable = collect(config('service.services'))
+            ->reject(fn (array $service): bool => ($service['type'] ?? null) === 'vpn')
+            ->keys()
+            ->all();
+
         $rules = [
             'name' => [
                 'required',
-                Rule::in(array_keys(config('service.services'))),
+                Rule::in($installable),
             ],
             'version' => [
                 'required',

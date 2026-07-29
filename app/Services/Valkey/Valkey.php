@@ -7,10 +7,14 @@ use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
 use App\Services\HasLogs;
+use App\Services\ManagesMemoryDatabaseNetworking;
+use App\Services\SupportsNetworkingSecret;
 use Closure;
 
-class Valkey extends AbstractService implements HasLogs
+class Valkey extends AbstractService implements HasLogs, SupportsNetworkingSecret
 {
+    use ManagesMemoryDatabaseNetworking;
+
     public static function id(): string
     {
         return 'valkey';
@@ -72,9 +76,9 @@ class Valkey extends AbstractService implements HasLogs
         $this->service->server->os()->cleanup();
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        return $this->service->server->ssh()->exec("valkey-server --version | grep -oP 'v=\\K[0-9.]+'", 'get-valkey-version');
+        return "valkey-server --version | grep -oP 'v=\\K[0-9.]+'";
     }
 
     public function logs(): array

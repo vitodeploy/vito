@@ -3,14 +3,18 @@
 namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
+use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Services\HasLogs;
+use App\Services\SupportsNetworking;
 use Illuminate\Contracts\View\View;
 
-class Postgresql extends AbstractDatabase implements HasLogs
+class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
+    use ManagesDatabaseNetworking;
+
     protected array $systemDbs = ['template0', 'template1', 'postgres'];
 
     /**
@@ -61,13 +65,89 @@ class Postgresql extends AbstractDatabase implements HasLogs
         ]);
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'psql --version | grep -oE \'[0-9]+\.[0-9]+(\.[0-9]+)?\' | head -n 1'
-        );
+        return 'psql --version | grep -oE \'[0-9]+\.[0-9]+(\.[0-9]+)?\' | head -n 1';
+    }
 
-        return trim($version);
+    public function networkingPort(): int
+    {
+        return 5432;
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function writeNetworkingConfig(bool $enable): void
+    {
+        $this->service->server->ssh()->exec(
+            view($this->getNetworkingScriptView('write-networking'), [
+                ...$this->networkingScriptData(),
+                'address' => $enable ? '0.0.0.0' : 'localhost',
+                'open' => $enable,
+            ]),
+            ($enable ? 'enable' : 'disable').'-postgresql-networking'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function runNetworkingRollback(): void
+    {
+        $this->service->server->ssh()->exec(
+            view($this->getNetworkingScriptView('rollback-networking'), $this->networkingScriptData()),
+            'rollback-postgresql-networking'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function verifyNetworking(bool $expectedOpen): void
+    {
+        $expected = $expectedOpen ? '0.0.0.0' : 'localhost';
+
+        if (! $this->networkingValueMatches($this->networkingListenAddresses(), $expected)) {
+            throw new SSHCommandError("{$this->service->name} is not listening on {$expected} after the restart.");
+        }
+    }
+
+    public function networkingProbeCommand(): string
+    {
+        return 'timeout 10 sudo -u postgres psql -tAc "SHOW listen_addresses"';
+    }
+
+    public function parseNetworkingProbe(string $output): ?bool
+    {
+        if (trim($output) === '') {
+            return null;
+        }
+
+        return $this->networkingValueMatches($output, '0.0.0.0', '*', '::');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    private function networkingListenAddresses(): string
+    {
+        return $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function networkingScriptData(): array
+    {
+        $directory = sprintf('/etc/postgresql/%s/main', $this->service->version);
+
+        return [
+            'conf' => $directory.'/postgresql.conf',
+            'hba' => $directory.'/pg_hba.conf',
+            'directory' => $directory.'/conf.d',
+            'dropIn' => $directory.'/conf.d/zz-vito-networking.conf',
+        ];
     }
 
     /**

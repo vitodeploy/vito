@@ -1,29 +1,51 @@
-import { Head, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { BookOpenIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { Server } from '@/types/server';
-import { PaginatedData } from '@/types';
+import { Service } from '@/types/service';
 import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, PlusIcon } from 'lucide-react';
 import Container from '@/components/container';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/services/components/columns';
-import { Service } from '@/types/service';
+import { VitoTable } from '@/components/vito-table';
+import { asRow } from '@/lib/inertia-table';
 import InstallService from '@/pages/services/components/install';
-import { useRealtime } from '@/hooks/use-socket-events';
+import ServiceActions from '@/pages/services/components/service-actions';
+import { cn } from '@/lib/utils';
 
-export default function WorkerIndex() {
-  const page = usePage<{
-    server: Server;
-    services: PaginatedData<Service>;
-  }>();
+type Page = {
+  server: Server;
+  services: InertiaTableData;
+  refreshing: boolean;
+};
 
-  const [services] = useRealtime<Service>(page.props.services, 'service', { server_id: page.props.server.id });
+export default function ServicesIndex() {
+  const page = usePage<Page>();
+  const { server, services, refreshing } = page.props;
+
+  const form = useForm({});
+
+  useEffect(() => {
+    if (!refreshing) {
+      return;
+    }
+
+    const interval = setInterval(() => router.reload(), 5000);
+
+    return () => clearInterval(interval);
+  }, [refreshing]);
+
+  const refresh = () => {
+    form.post(route('services.refresh', { server: server.id }), { preserveScroll: true });
+  };
+
+  const busy = refreshing || form.processing;
 
   return (
     <ServerLayout>
-      <Head title={`Services - ${page.props.server.name}`} />
+      <Head title={`Services - ${server.name}`} />
 
       <Container className="max-w-5xl">
         <HeaderContainer>
@@ -35,6 +57,10 @@ export default function WorkerIndex() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
+            <Button variant="outline" onClick={refresh} disabled={busy}>
+              <RefreshCwIcon className={cn(busy && 'animate-spin')} />
+              <span className="hidden lg:block">Refresh</span>
+            </Button>
             <InstallService>
               <Button>
                 <PlusIcon />
@@ -44,7 +70,10 @@ export default function WorkerIndex() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={services} />
+        <VitoTable
+          tableData={services}
+          actions={(row: Row) => <ServiceActions service={asRow<{ resource: Service }>(row, ['resource']).resource} />}
+        />
       </Container>
     </ServerLayout>
   );

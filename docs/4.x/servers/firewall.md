@@ -23,6 +23,10 @@ These rules are applied in the server level, Your server provider might have add
 Do not remove the SSH rule, This will cause Vito to lose connection to your server.
 :::
 
+## Network Rules
+
+If the server belongs to a [network](../networks/overview.md), the rules for that network also appear on this page as managed rules. They are listed here for visibility, but you edit them from the network's [Firewall](../networks/firewall.md) tab so they stay consistent across every server in the network.
+
 ## Create new Rule
 
 You can easily create firewall rules and deploy them to your server.

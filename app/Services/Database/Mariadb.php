@@ -4,10 +4,13 @@ namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
 use App\Services\HasLogs;
+use App\Services\SupportsNetworking;
 use Illuminate\Contracts\View\View;
 
-class Mariadb extends AbstractDatabase implements HasLogs
+class Mariadb extends AbstractDatabase implements HasLogs, SupportsNetworking
 {
+    use ManagesMysqlNetworking;
+
     protected array $systemDbs = ['information_schema', 'performance_schema', 'mysql', 'sys'];
 
     protected array $systemUsers = [
@@ -40,13 +43,14 @@ class Mariadb extends AbstractDatabase implements HasLogs
         ]);
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'mariadb --version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\' | head -n 1'
-        );
+        return 'mariadb --version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\' | head -n 1';
+    }
 
-        return trim($version);
+    protected function networkingManagesXPlugin(): bool
+    {
+        return false;
     }
 
     public function logs(): array

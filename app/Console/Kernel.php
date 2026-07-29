@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('servers:check-updates')->dailyAt('02:00');
         $schedule->command('servers:auto-update')->everyMinute()->withoutOverlapping();
         $schedule->command('domains:check-pending')->everyFiveMinutes();
+        $schedule->command('networks:reconcile')->everyThreeMinutes()->withoutOverlapping(10);
         $schedule->command('ssl:renew-wildcards')->daily();
         $schedule->command('ssl:check-expiry')->daily();
         $schedule->command('github-app:sync')->cron('0 */4 * * *');

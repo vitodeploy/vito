@@ -56,7 +56,7 @@ export default function ServerNetwork() {
         <HeaderContainer>
           <Heading title="Network" description="Here you can manage the IP addresses configured on the server" />
           <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/servers/networking" target="_blank">
+            <a href="https://vitodeploy.com/docs/servers/network" target="_blank">
               <Button variant="outline">
                 <BookOpenIcon />
                 <span className="hidden lg:block">Docs</span>

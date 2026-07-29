@@ -3,10 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Actions\Bootstrap\GetBootstrap;
+use App\Http\Resources\NetworkResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
 use App\Http\Resources\UserResource;
+use App\Models\Network;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -75,6 +77,23 @@ class HandleInertiaRequests extends Middleware
                 $site = $request->route('site');
                 $site->load('hostedDomains.ssl', 'workers');
                 $data['site'] = SiteResource::make($site);
+            }
+        }
+
+        if ($request->route('network')) {
+            /** @var Network $network */
+            $network = $request->route('network');
+            if ($user && $user->can('view', $network)) {
+                if ($user->current_project_id !== $network->project_id) {
+                    $user->current_project_id = $network->project_id;
+                    $user->save();
+                    $user->unsetRelation('currentProject');
+                    $currentProject = $user->currentProject;
+                }
+
+                $data['network'] = fn () => NetworkResource::make(
+                    $network->load('serverProvider')->loadCount('servers')
+                );
             }
         }
 

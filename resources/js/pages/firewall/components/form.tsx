@@ -41,6 +41,16 @@ export default function RuleForm({
     mask: firewallRule?.mask?.toString() || '32',
   });
 
+  const changeSource = (source: string) => {
+    const hostMask = source.includes(':') ? '128' : '32';
+
+    form.setData((prev) => ({
+      ...prev,
+      source,
+      mask: prev.mask === '' || prev.mask === '32' || prev.mask === '128' ? hostMask : prev.mask,
+    }));
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (firewallRule) {
@@ -127,7 +137,7 @@ export default function RuleForm({
               <>
                 <FormField>
                   <Label htmlFor="source">Source</Label>
-                  <Input type="text" id="source" value={form.data.source} onChange={(e) => form.setData('source', e.target.value)} />
+                  <Input type="text" id="source" value={form.data.source} onChange={(e) => changeSource(e.target.value)} />
                   <InputError message={form.errors.source} />
                 </FormField>
 
@@ -138,8 +148,9 @@ export default function RuleForm({
                     <InfoIcon />
                     <AlertDescription>
                       <p>
-                        The mask sets how many IP addresses this rule covers. Use <code>32</code> for just this one IP, <code>24</code> for its whole
-                        local network (256 addresses), and smaller numbers to cover even more. Lower number = wider range.
+                        The mask sets how many IP addresses this rule covers. Use <code>{form.data.source.includes(':') ? '128' : '32'}</code> for
+                        just this one IP, <code>{form.data.source.includes(':') ? '64' : '24'}</code> for its whole local network, and smaller numbers
+                        to cover even more. Lower number = wider range.
                       </p>
                     </AlertDescription>
                   </Alert>

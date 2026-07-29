@@ -73,4 +73,14 @@ class ServicePolicy
     {
         return $this->update($user, $service);
     }
+
+    public function manageNetworking(User $user, Service $service): bool
+    {
+        return $this->update($user, $service);
+    }
+
+    public function refresh(User $user, Server $server): bool
+    {
+        return $this->create($user, $server);
+    }
 }

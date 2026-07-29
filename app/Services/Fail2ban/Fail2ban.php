@@ -125,13 +125,9 @@ class Fail2ban extends AbstractService implements HasLogs
         );
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'fail2ban-client version 2>/dev/null | tr -d "\n"'
-        );
-
-        return trim($version);
+        return 'fail2ban-client version 2>/dev/null | tr -d "\n"';
     }
 
     /**

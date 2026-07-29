@@ -60,6 +60,29 @@ properties:
   is_default:
     type: boolean
     example: true
+  supports_networking:
+    type: boolean
+    description: Whether the service can be toggled between local-only and network-accessible
+    example: false
+  networking_enabled:
+    type: boolean
+    description: Whether network access is enabled for this service
+    example: false
+  networking_managed:
+    type: boolean
+    description: Whether Vito has written the networking configuration for this service
+    example: false
+  networking_effective:
+    type: boolean
+    nullable: true
+    description: Last observed state on the server; null means never checked or unreadable
+    example: false
+  networking_checked_at:
+    type: string
+    format: date-time
+    nullable: true
+    description: When the effective state was last observed; null means the value is assumed, not observed
+    example: '2026-07-26T12:00:00+00:00'
   log:
     type: object
     nullable: true

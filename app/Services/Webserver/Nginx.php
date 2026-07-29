@@ -264,13 +264,16 @@ class Nginx extends AbstractWebserver implements HasLogs
         );
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            'nginx -v 2>&1 | awk -F/ \'{print $2}\';'
-        );
+        return 'nginx -v 2>&1 | awk -F/ \'{print $2}\';';
+    }
 
-        return str(trim($version))->before(' ');
+    public function parseVersionOutput(string $output): ?string
+    {
+        $version = str(trim($output))->before(' ')->toString();
+
+        return $version === '' ? null : $version;
     }
 
     public function logs(): array

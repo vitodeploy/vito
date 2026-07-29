@@ -168,17 +168,22 @@ class PHP extends AbstractService implements HasLogs
         );
     }
 
-    public function version(): string
+    public function versionCommand(): ?string
     {
-        $version = $this->service->server->ssh()->exec(
-            '/usr/bin/php'.$this->service->version.' -r \'echo PHP_VERSION;\' 2>/dev/null'
+        return sprintf(
+            '/usr/bin/php%s -r %s 2>/dev/null',
+            escapeshellarg($this->service->version),
+            escapeshellarg('echo PHP_VERSION;')
         );
+    }
 
-        if (preg_match('/(\d+\.\d+\.\d+)/', $version, $matches)) {
+    public function parseVersionOutput(string $output): ?string
+    {
+        if (preg_match('/(\d+\.\d+\.\d+)/', $output, $matches)) {
             return $matches[1];
         }
 
-        return trim($version);
+        return null;
     }
 
     public function logs(): array

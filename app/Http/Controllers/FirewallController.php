@@ -6,6 +6,7 @@ use App\Actions\FirewallRule\ManageRule;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Tables\Servers\FirewallRuleTable;
+use App\Tables\Servers\ServerNetworkRuleTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,6 +29,9 @@ class FirewallController extends Controller
 
         return Inertia::render('firewall/index', [
             'rules' => FirewallRuleTable::make($server->firewallRules())->simplePaginate(),
+            'networkRules' => ServerNetworkRuleTable::make($server->networkRules())
+                ->identifier('networkRules')
+                ->simplePaginate(),
         ]);
     }
 

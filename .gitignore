@@ -10,6 +10,7 @@
 /vendor
 /build
 /storage/database.sqlite
+/storage/database.sqlite.bak*
 /storage/database-test.sqlite
 /storage/database.sqlite-journal
 /storage/database-test.sqlite-journal
