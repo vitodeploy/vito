@@ -1,6 +1,9 @@
 <?php
 
 use App\Helpers\EnvParser;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('parse simple env', function () {
     $raw = "APP_NAME=Laravel\nAPP_ENV=production";
