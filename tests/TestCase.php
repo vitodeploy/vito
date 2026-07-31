@@ -44,6 +44,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        $this->withoutVite();
         Sleep::fake();
         config()->set('queue.connections.ssh.driver', 'sync');
         config()->set('queue.connections.default.driver', 'sync');

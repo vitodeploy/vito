@@ -12,7 +12,6 @@ use React\EventLoop\Loop;
 uses(RefreshDatabase::class);
 
 test('see console page', function () {
-    $this->withoutVite();
     $this->actingAs($this->user);
 
     $this->get(route('console', $this->server))
