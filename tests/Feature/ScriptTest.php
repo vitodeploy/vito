@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\ScriptExecutionStatus;
 use App\Facades\SSH;
 use App\Models\Script;
@@ -10,187 +8,175 @@ use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
-use Tests\TestCase;
 
-class ScriptTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_see_scripts(): void
-    {
-        $this->actingAs($this->user);
+test('see scripts', function () {
+    $this->actingAs($this->user);
 
-        Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->get(route('scripts'))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('scripts/index'));
-    }
+    $this->get(route('scripts'))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('scripts/index'));
+});
 
-    public function test_create_script(): void
-    {
-        $this->actingAs($this->user);
+test('create script', function () {
+    $this->actingAs($this->user);
 
-        $this->post(route('scripts.store'), [
-            'name' => 'Test Script',
-            'content' => 'echo "Hello, World!"',
-        ])
-            ->assertSessionDoesntHaveErrors();
+    $this->post(route('scripts.store'), [
+        'name' => 'Test Script',
+        'content' => 'echo "Hello, World!"',
+    ])
+        ->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('scripts', [
-            'name' => 'Test Script',
-            'content' => 'echo "Hello, World!"',
-        ]);
-    }
+    $this->assertDatabaseHas('scripts', [
+        'name' => 'Test Script',
+        'content' => 'echo "Hello, World!"',
+    ]);
+});
 
-    public function test_edit_script(): void
-    {
-        $this->actingAs($this->user);
+test('edit script', function () {
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->put(route('scripts.update', $script), [
-            'name' => 'New Name',
-            'content' => 'echo "Hello, new World!"',
-        ])
-            ->assertSessionDoesntHaveErrors();
+    $this->put(route('scripts.update', $script), [
+        'name' => 'New Name',
+        'content' => 'echo "Hello, new World!"',
+    ])
+        ->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('scripts', [
-            'id' => $script->id,
-            'name' => 'New Name',
-            'content' => 'echo "Hello, new World!"',
-        ]);
-    }
+    $this->assertDatabaseHas('scripts', [
+        'id' => $script->id,
+        'name' => 'New Name',
+        'content' => 'echo "Hello, new World!"',
+    ]);
+});
 
-    public function test_delete_script(): void
-    {
-        $this->actingAs($this->user);
+test('delete script', function () {
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $scriptExecution = ScriptExecution::factory()->create([
-            'script_id' => $script->id,
-            'status' => ScriptExecutionStatus::EXECUTING,
-        ]);
+    $scriptExecution = ScriptExecution::factory()->create([
+        'script_id' => $script->id,
+        'status' => ScriptExecutionStatus::EXECUTING,
+    ]);
 
-        $this->delete(route('scripts.destroy', $script->id));
+    $this->delete(route('scripts.destroy', $script->id));
 
-        $this->assertDatabaseMissing('scripts', [
-            'id' => $script->id,
-        ]);
+    $this->assertDatabaseMissing('scripts', [
+        'id' => $script->id,
+    ]);
 
-        $this->assertDatabaseMissing('script_executions', [
-            'id' => $scriptExecution->id,
-        ]);
-    }
+    $this->assertDatabaseMissing('script_executions', [
+        'id' => $scriptExecution->id,
+    ]);
+});
 
-    public function test_execute_script_and_view_log(): void
-    {
-        SSH::fake('script output');
+test('execute script and view log', function () {
+    SSH::fake('script output');
 
-        $this->actingAs($this->user);
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->post(route('scripts.execute', $script), [
-            'server' => $this->server->id,
-            'user' => 'root',
-        ])
-            ->assertSessionDoesntHaveErrors();
+    $this->post(route('scripts.execute', $script), [
+        'server' => $this->server->id,
+        'user' => 'root',
+    ])
+        ->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('script_executions', [
-            'script_id' => $script->id,
-            'status' => ScriptExecutionStatus::COMPLETED,
-            'user' => 'root',
-        ]);
+    $this->assertDatabaseHas('script_executions', [
+        'script_id' => $script->id,
+        'status' => ScriptExecutionStatus::COMPLETED,
+        'user' => 'root',
+    ]);
 
-        $this->assertDatabaseHas('server_logs', [
-            'server_id' => $this->server->id,
-        ]);
+    $this->assertDatabaseHas('server_logs', [
+        'server_id' => $this->server->id,
+    ]);
 
-        $this->get(route('scripts.show', $script))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('scripts/show'));
-    }
+    $this->get(route('scripts.show', $script))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('scripts/show'));
+});
 
-    public function test_execute_script_as_isolated_user(): void
-    {
-        SSH::fake('script output');
+test('execute script as isolated user', function () {
+    SSH::fake('script output');
 
-        $this->actingAs($this->user);
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'example',
-        ]);
+    Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'example',
+    ]);
 
-        $this->post(route('scripts.execute', $script), [
-            'server' => $this->server->id,
-            'user' => 'example',
-        ])
-            ->assertSessionDoesntHaveErrors();
+    $this->post(route('scripts.execute', $script), [
+        'server' => $this->server->id,
+        'user' => 'example',
+    ])
+        ->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('script_executions', [
-            'script_id' => $script->id,
-            'status' => ScriptExecutionStatus::COMPLETED,
-            'user' => 'example',
-        ]);
-    }
+    $this->assertDatabaseHas('script_executions', [
+        'script_id' => $script->id,
+        'status' => ScriptExecutionStatus::COMPLETED,
+        'user' => 'example',
+    ]);
+});
 
-    public function test_cannot_execute_script_as_non_existing_user(): void
-    {
-        $this->actingAs($this->user);
+test('cannot execute script as non existing user', function () {
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->post(route('scripts.execute', $script), [
-            'server' => $this->server->id,
-            'user' => 'example',
-        ])
-            ->assertSessionHasErrors();
+    $this->post(route('scripts.execute', $script), [
+        'server' => $this->server->id,
+        'user' => 'example',
+    ])
+        ->assertSessionHasErrors();
 
-        $this->assertDatabaseMissing('script_executions', [
-            'script_id' => $script->id,
-            'user' => 'example',
-        ]);
-    }
+    $this->assertDatabaseMissing('script_executions', [
+        'script_id' => $script->id,
+        'user' => 'example',
+    ]);
+});
 
-    public function test_cannot_execute_script_as_user_not_on_server(): void
-    {
-        $this->actingAs($this->user);
+test('cannot execute script as user not on server', function () {
+    $this->actingAs($this->user);
 
-        $script = Script::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+    $script = Script::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        Site::factory()->create([
-            'server_id' => Server::factory()->create(['user_id' => 1])->id,
-            'user' => 'example',
-        ]);
+    Site::factory()->create([
+        'server_id' => Server::factory()->create(['user_id' => 1])->id,
+        'user' => 'example',
+    ]);
 
-        $this->post(route('scripts.execute', $script), [
-            'server' => $this->server->id,
-            'user' => 'example',
-        ])
-            ->assertSessionHasErrors();
+    $this->post(route('scripts.execute', $script), [
+        'server' => $this->server->id,
+        'user' => 'example',
+    ])
+        ->assertSessionHasErrors();
 
-        $this->assertDatabaseMissing('script_executions', [
-            'script_id' => $script->id,
-            'user' => 'example',
-        ]);
-    }
-}
+    $this->assertDatabaseMissing('script_executions', [
+        'script_id' => $script->id,
+        'user' => 'example',
+    ]);
+});

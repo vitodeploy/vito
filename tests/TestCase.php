@@ -26,15 +26,15 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
-    protected User $user;
+    public User $user;
 
-    protected Server $server;
+    public Server $server;
 
-    protected Site $site;
+    public Site $site;
 
-    protected Redirect $redirect;
+    public Redirect $redirect;
 
-    protected NotificationChannel $notificationChannel;
+    public NotificationChannel $notificationChannel;
 
     public const EXPECT_SUCCESS = true;
 

@@ -1,289 +1,260 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Actions\Worker\RestartSiteWorkers;
 use App\Enums\WorkerStatus;
-use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Models\ServerLog;
 use App\Models\Worker;
-use App\Services\ProcessManager\Supervisor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
+use Tests\Feature\ThrowingSupervisor;
 
-class RestartSiteWorkersTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_failed_worker_restart_is_non_fatal_and_records_error(): void
-    {
-        Storage::fake(config('core.logs_disk'));
+test('failed worker restart is non fatal and records error', function () {
+    Storage::fake(config('core.logs_disk'));
 
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
 
-        SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (no such file)");
+    SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (no such file)");
 
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
 
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::FAILED);
+    expect($worker->error)->toBe("{$worker->id}:{$worker->id}_00: ERROR (no such file)");
+});
+
+test('successful restart marks running and clears error', function () {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::FAILED,
+        'error' => 'stale error',
+    ]);
+
+    SSH::fake(
+        "{$worker->id}:{$worker->id}_00: stopped\n".
+        "{$worker->id}:{$worker->id}_00: started"
+    );
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::RUNNING);
+    expect($worker->error)->toBeNull();
+});
+
+test('worker left stopped is marked stopped with generic error', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake("{$worker->id}:{$worker->id}_00: stopped");
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::STOPPED);
+    expect($worker->error)->toBe('Unable to restart (stopped)');
+});
+
+test('worker absent from output is not marked running', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake('error: some unexpected supervisor failure');
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::FAILED);
+    expect($worker->error)->toBe('Unable to restart');
+});
+
+test('worker with only benign statuses is not marked running', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (not running)");
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::STOPPED);
+    expect($worker->error)->toBe('Unable to restart (stopped)');
+});
+
+test('multiprocess worker all started is running', function () {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::FAILED,
+        'error' => 'stale error',
+    ]);
+
+    SSH::fake(
+        "{$worker->id}:{$worker->id}_00: stopped\n".
+        "{$worker->id}:{$worker->id}_00: started\n".
+        "{$worker->id}:{$worker->id}_01: stopped\n".
+        "{$worker->id}:{$worker->id}_01: started\n".
+        "{$worker->id}:{$worker->id}_02: stopped\n".
+        "{$worker->id}:{$worker->id}_02: started"
+    );
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::RUNNING);
+    expect($worker->error)->toBeNull();
+});
+
+test('multiprocess worker with one errored process records only that error', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake(
+        "{$worker->id}:{$worker->id}_00: stopped\n".
+        "{$worker->id}:{$worker->id}_00: started\n".
+        "{$worker->id}:{$worker->id}_01: stopped\n".
+        "{$worker->id}:{$worker->id}_01: ERROR (abnormal termination)"
+    );
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::FAILED);
+    expect($worker->error)->toBe("{$worker->id}:{$worker->id}_01: ERROR (abnormal termination)");
+});
+
+test('multiprocess worker with one started one stopped is not running', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake(
+        "{$worker->id}:{$worker->id}_00: started\n".
+        "{$worker->id}:{$worker->id}_01: stopped"
+    );
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $worker->refresh();
+    expect($worker->status)->toBe(WorkerStatus::STOPPED);
+    expect($worker->error)->toBe('Unable to restart (stopped)');
+});
+
+test('restart attributes errors to the failing worker only', function () {
+    Storage::fake(config('core.logs_disk'));
+
+    $healthy = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+    $broken = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    SSH::fake(
+        "{$healthy->id}:{$healthy->id}_00: stopped\n".
+        "{$healthy->id}:{$healthy->id}_00: started\n".
+        "{$broken->id}:{$broken->id}_00: ERROR (abnormal termination)"
+    );
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $healthy->refresh();
+    expect($healthy->status)->toBe(WorkerStatus::RUNNING);
+    expect($healthy->error)->toBeNull();
+
+    $broken->refresh();
+    expect($broken->status)->toBe(WorkerStatus::FAILED);
+    expect($broken->error)->toBe("{$broken->id}:{$broken->id}_00: ERROR (abnormal termination)");
+});
+
+test('thrown restart error marks all workers failed', function () {
+    SSH::fake();
+    Storage::fake(config('core.logs_disk'));
+    config(['service.services.supervisor.handler' => ThrowingSupervisor::class]);
+
+    $workers = Worker::factory()->count(2)->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    foreach ($workers as $worker) {
         $worker->refresh();
-        $this->assertSame(WorkerStatus::FAILED, $worker->status);
-        $this->assertSame("{$worker->id}:{$worker->id}_00: ERROR (no such file)", $worker->error);
+        expect($worker->status)->toBe(WorkerStatus::FAILED);
     }
+});
 
-    public function test_successful_restart_marks_running_and_clears_error(): void
-    {
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::FAILED,
-            'error' => 'stale error',
-        ]);
+test('restart rewrites worker config before restarting', function () {
+    Storage::fake(config('core.logs_disk'));
 
-        SSH::fake(
-            "{$worker->id}:{$worker->id}_00: stopped\n".
-            "{$worker->id}:{$worker->id}_00: started"
-        );
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
 
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
+    $ssh = SSH::fake(
+        "{$worker->id}:{$worker->id}_00: stopped\n".
+        "{$worker->id}:{$worker->id}_00: started"
+    );
 
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::RUNNING, $worker->status);
-        $this->assertNull($worker->error);
-    }
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
 
-    public function test_worker_left_stopped_is_marked_stopped_with_generic_error(): void
-    {
-        Storage::fake(config('core.logs_disk'));
+    $ssh->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+});
 
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
+test('restart failure is written to the deploy log', function () {
+    Storage::fake(config('core.logs_disk'));
 
-        SSH::fake("{$worker->id}:{$worker->id}_00: stopped");
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+    ]);
 
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
+    SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (abnormal termination)");
 
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::STOPPED, $worker->status);
-        $this->assertSame('Unable to restart (stopped)', $worker->error);
-    }
+    $log = ServerLog::newLog($this->server, 'deploy-test');
+    $log->save();
 
-    public function test_worker_absent_from_output_is_not_marked_running(): void
-    {
-        Storage::fake(config('core.logs_disk'));
+    app(RestartSiteWorkers::class)->restart($this->site->fresh(), $log);
 
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake('error: some unexpected supervisor failure');
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::FAILED, $worker->status);
-        $this->assertSame('Unable to restart', $worker->error);
-    }
-
-    public function test_worker_with_only_benign_statuses_is_not_marked_running(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (not running)");
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::STOPPED, $worker->status);
-        $this->assertSame('Unable to restart (stopped)', $worker->error);
-    }
-
-    public function test_multiprocess_worker_all_started_is_running(): void
-    {
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::FAILED,
-            'error' => 'stale error',
-        ]);
-
-        SSH::fake(
-            "{$worker->id}:{$worker->id}_00: stopped\n".
-            "{$worker->id}:{$worker->id}_00: started\n".
-            "{$worker->id}:{$worker->id}_01: stopped\n".
-            "{$worker->id}:{$worker->id}_01: started\n".
-            "{$worker->id}:{$worker->id}_02: stopped\n".
-            "{$worker->id}:{$worker->id}_02: started"
-        );
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::RUNNING, $worker->status);
-        $this->assertNull($worker->error);
-    }
-
-    public function test_multiprocess_worker_with_one_errored_process_records_only_that_error(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake(
-            "{$worker->id}:{$worker->id}_00: stopped\n".
-            "{$worker->id}:{$worker->id}_00: started\n".
-            "{$worker->id}:{$worker->id}_01: stopped\n".
-            "{$worker->id}:{$worker->id}_01: ERROR (abnormal termination)"
-        );
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::FAILED, $worker->status);
-        $this->assertSame("{$worker->id}:{$worker->id}_01: ERROR (abnormal termination)", $worker->error);
-    }
-
-    public function test_multiprocess_worker_with_one_started_one_stopped_is_not_running(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake(
-            "{$worker->id}:{$worker->id}_00: started\n".
-            "{$worker->id}:{$worker->id}_01: stopped"
-        );
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $worker->refresh();
-        $this->assertSame(WorkerStatus::STOPPED, $worker->status);
-        $this->assertSame('Unable to restart (stopped)', $worker->error);
-    }
-
-    public function test_restart_attributes_errors_to_the_failing_worker_only(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $healthy = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-        $broken = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake(
-            "{$healthy->id}:{$healthy->id}_00: stopped\n".
-            "{$healthy->id}:{$healthy->id}_00: started\n".
-            "{$broken->id}:{$broken->id}_00: ERROR (abnormal termination)"
-        );
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $healthy->refresh();
-        $this->assertSame(WorkerStatus::RUNNING, $healthy->status);
-        $this->assertNull($healthy->error);
-
-        $broken->refresh();
-        $this->assertSame(WorkerStatus::FAILED, $broken->status);
-        $this->assertSame("{$broken->id}:{$broken->id}_00: ERROR (abnormal termination)", $broken->error);
-    }
-
-    public function test_thrown_restart_error_marks_all_workers_failed(): void
-    {
-        SSH::fake();
-        Storage::fake(config('core.logs_disk'));
-        config(['service.services.supervisor.handler' => ThrowingSupervisor::class]);
-
-        $workers = Worker::factory()->count(2)->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        foreach ($workers as $worker) {
-            $worker->refresh();
-            $this->assertSame(WorkerStatus::FAILED, $worker->status);
-        }
-    }
-
-    public function test_restart_rewrites_worker_config_before_restarting(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        $ssh = SSH::fake(
-            "{$worker->id}:{$worker->id}_00: stopped\n".
-            "{$worker->id}:{$worker->id}_00: started"
-        );
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh());
-
-        $ssh->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
-    }
-
-    public function test_restart_failure_is_written_to_the_deploy_log(): void
-    {
-        Storage::fake(config('core.logs_disk'));
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        SSH::fake("{$worker->id}:{$worker->id}_00: ERROR (abnormal termination)");
-
-        $log = ServerLog::newLog($this->server, 'deploy-test');
-        $log->save();
-
-        app(RestartSiteWorkers::class)->restart($this->site->fresh(), $log);
-
-        $this->assertStringContainsString('Failed to restart worker(s): '.$worker->id, (string) $log->getContent());
-    }
-}
-
-class ThrowingSupervisor extends Supervisor
-{
-    public function restartMany(array $ids, ?int $siteId = null): string
-    {
-        $log = ServerLog::log($this->service->server, 'restart-workers', '');
-
-        throw new SSHCommandError(message: 'restart failed', log: $log);
-    }
-}
+    $this->assertStringContainsString('Failed to restart worker(s): '.$worker->id, (string) $log->getContent());
+});

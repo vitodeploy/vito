@@ -11,7 +11,7 @@
 
 ## Stack
 
-Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 12
+Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, Pest 5 / PHPUnit 13
 
 ## Laravel Boost MCP Tools
 
@@ -78,7 +78,7 @@ Vito has a specific architecture. Match these patterns exactly:
 
 ## Testing
 
-- PHPUnit only. Create with `php artisan make:test --phpunit`.
+- Pest 5 only. Create with `php artisan make:test --pest`.
 - `TestCase` provides `$this->user`, `$this->server`, `$this->site` pre-configured.
 - Test logic only, not framework. Use factories. RefreshDatabase trait.
 - Add to existing test files when possible. Run minimal tests with `--filter`.

@@ -52,7 +52,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/4.x/scripts/in
 - ReactJS
 - Shadcn UI
 - PHPSecLib
-- PHPUnit
+- Pest
 - Tailwindcss
 - Vite
 - Prettier

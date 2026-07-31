@@ -1,6 +1,6 @@
 # Copilot Instructions — Vito
 
-Vito is a self-hosted server management tool. Stack: Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 12.
+Vito is a self-hosted server management tool. Stack: Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, Pest 5 / PHPUnit 13.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Vito is a self-hosted server management tool. Stack: Laravel 13 (L10 structure),
 
 ## Testing
 
-- PHPUnit only. `RefreshDatabase` trait. Use factories.
+- Pest 5 only. `RefreshDatabase` trait. Use factories.
 - `TestCase` provides `$this->user`, `$this->server`, `$this->site` with services pre-configured.
 - Use `SSH::fake()` for SSH operations, `Http::fake()` for HTTP calls.
 - Don't over-test trivial logic that PHP handles natively.

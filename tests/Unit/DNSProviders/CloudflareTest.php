@@ -1,782 +1,737 @@
 <?php
 
-namespace Tests\Unit\DNSProviders;
-
 use App\DNSProviders\Cloudflare;
 use App\Models\DNSProvider as DNSProviderModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
 
-class CloudflareTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private DNSProviderModel $dnsProvider;
+beforeEach(function () {
+    $this->dnsProvider = DNSProviderModel::factory()->create([
+        'provider' => 'cloudflare',
+        'credentials' => [
+            'token' => 'test-token-123',
+        ],
+    ]);
 
-    private Cloudflare $cloudflare;
+    $this->cloudflare = new Cloudflare($this->dnsProvider);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('id returns cloudflare', function () {
+    expect(Cloudflare::id())->toBe('cloudflare');
+});
 
-        $this->dnsProvider = DNSProviderModel::factory()->create([
-            'provider' => 'cloudflare',
-            'credentials' => [
-                'token' => 'test-token-123',
+test('validation rules', function () {
+    $rules = $this->cloudflare->validationRules([]);
+
+    expect($rules)->toBe([
+        'token' => 'required|string',
+    ]);
+});
+
+test('credential data', function () {
+    $input = [
+        'token' => 'test-token-456',
+    ];
+
+    $credentialData = $this->cloudflare->credentialData($input);
+
+    expect($credentialData)->toBe([
+        'token' => 'test-token-456',
+    ]);
+});
+
+test('connect success', function () {
+    Http::fake([
+        'api.cloudflare.com/client/v4/zones*' => Http::response([
+            'success' => true,
+            'result' => [],
+        ], 200),
+    ]);
+
+    $credentials = ['token' => 'test-token-123'];
+
+    $result = $this->cloudflare->connect($credentials);
+
+    expect($result)->toBeTrue();
+
+    Http::assertSent(function (Request $request) {
+        return str_contains($request->url(), 'api.cloudflare.com/client/v4/zones')
+            && str_contains($request->url(), 'per_page=1')
+            && $request->header('Authorization')[0] === 'Bearer test-token-123'
+            && $request->header('Content-Type')[0] === 'application/json';
+    });
+});
+
+test('connect failure invalid response', function () {
+    Http::fake([
+        'api.cloudflare.com/client/v4/zones*' => Http::response([
+            'success' => false,
+            'errors' => [
+                ['message' => 'Invalid token'],
             ],
-        ]);
+        ], 200),
+    ]);
 
-        $this->cloudflare = new Cloudflare($this->dnsProvider);
-    }
+    $credentials = ['token' => 'invalid-token'];
 
-    public function test_id_returns_cloudflare(): void
-    {
-        $this->assertSame('cloudflare', Cloudflare::id());
-    }
+    $result = $this->cloudflare->connect($credentials);
 
-    public function test_validation_rules(): void
-    {
-        $rules = $this->cloudflare->validationRules([]);
+    expect($result)->toBeFalse();
+});
 
-        $this->assertSame([
-            'token' => 'required|string',
-        ], $rules);
-    }
+test('connect failure http error', function () {
+    Http::fake([
+        'api.cloudflare.com/client/v4/zones*' => Http::response([], 401),
+    ]);
 
-    public function test_credential_data(): void
-    {
-        $input = [
-            'token' => 'test-token-456',
-        ];
+    $credentials = ['token' => 'invalid-token'];
 
-        $credentialData = $this->cloudflare->credentialData($input);
+    $result = $this->cloudflare->connect($credentials);
 
-        $this->assertSame([
-            'token' => 'test-token-456',
-        ], $credentialData);
-    }
+    expect($result)->toBeFalse();
+});
 
-    public function test_connect_success(): void
-    {
-        Http::fake([
-            'api.cloudflare.com/client/v4/zones*' => Http::response([
-                'success' => true,
-                'result' => [],
-            ], 200),
-        ]);
+test('connect exception', function () {
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
 
-        $credentials = ['token' => 'test-token-123'];
+    $credentials = ['token' => 'test-token'];
 
-        $result = $this->cloudflare->connect($credentials);
+    $result = $this->cloudflare->connect($credentials);
 
-        $this->assertTrue($result);
+    expect($result)->toBeFalse();
+});
 
-        Http::assertSent(function (Request $request) {
-            return str_contains($request->url(), 'api.cloudflare.com/client/v4/zones')
-                && str_contains($request->url(), 'per_page=1')
-                && $request->header('Authorization')[0] === 'Bearer test-token-123'
-                && $request->header('Content-Type')[0] === 'application/json';
-        });
-    }
-
-    public function test_connect_failure_invalid_response(): void
-    {
-        Http::fake([
-            'api.cloudflare.com/client/v4/zones*' => Http::response([
-                'success' => false,
-                'errors' => [
-                    ['message' => 'Invalid token'],
-                ],
-            ], 200),
-        ]);
-
-        $credentials = ['token' => 'invalid-token'];
-
-        $result = $this->cloudflare->connect($credentials);
-
-        $this->assertFalse($result);
-    }
-
-    public function test_connect_failure_http_error(): void
-    {
-        Http::fake([
-            'api.cloudflare.com/client/v4/zones*' => Http::response([], 401),
-        ]);
-
-        $credentials = ['token' => 'invalid-token'];
-
-        $result = $this->cloudflare->connect($credentials);
-
-        $this->assertFalse($result);
-    }
-
-    public function test_connect_exception(): void
-    {
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
-
-        $credentials = ['token' => 'test-token'];
-
-        $result = $this->cloudflare->connect($credentials);
-
-        $this->assertFalse($result);
-    }
-
-    public function test_get_domains_success(): void
-    {
-        Http::fake([
-            'api.cloudflare.com/client/v4/zones*' => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'zone-1',
-                        'name' => 'example.com',
-                        'status' => 'active',
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                    [
-                        'id' => 'zone-2',
-                        'name' => 'test.com',
-                        'status' => 'pending',
-                        'created_on' => '2023-01-03T00:00:00Z',
-                        'modified_on' => '2023-01-04T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $domains = $this->cloudflare->getDomains();
-
-        $expected = [
-            [
-                'id' => 'zone-1',
-                'name' => 'example.com',
-                'status' => 'active',
-                'created_on' => '2023-01-01T00:00:00Z',
-                'modified_on' => '2023-01-02T00:00:00Z',
-            ],
-            [
-                'id' => 'zone-2',
-                'name' => 'test.com',
-                'status' => 'pending',
-                'created_on' => '2023-01-03T00:00:00Z',
-                'modified_on' => '2023-01-04T00:00:00Z',
-            ],
-        ];
-
-        $this->assertSame($expected, $domains);
-
-        Http::assertSent(function (Request $request) {
-            return str_contains($request->url(), 'api.cloudflare.com/client/v4/zones')
-                && $request->data()['per_page'] === 100;
-        });
-    }
-
-    public function test_get_domains_failure(): void
-    {
-        Http::fake([
-            'api.cloudflare.com/client/v4/zones*' => Http::response([], 401),
-        ]);
-
-        $domains = $this->cloudflare->getDomains();
-
-        $this->assertSame([], $domains);
-    }
-
-    public function test_get_domains_exception(): void
-    {
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
-
-        $domains = $this->cloudflare->getDomains();
-
-        $this->assertSame([], $domains);
-    }
-
-    public function test_get_domain_success(): void
-    {
-        $domainId = 'zone-123';
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}" => Http::response([
-                'success' => true,
-                'result' => [
-                    'id' => 'zone-123',
+test('get domains success', function () {
+    Http::fake([
+        'api.cloudflare.com/client/v4/zones*' => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'zone-1',
                     'name' => 'example.com',
                     'status' => 'active',
                     'created_on' => '2023-01-01T00:00:00Z',
                     'modified_on' => '2023-01-02T00:00:00Z',
                 ],
-            ], 200),
-        ]);
+                [
+                    'id' => 'zone-2',
+                    'name' => 'test.com',
+                    'status' => 'pending',
+                    'created_on' => '2023-01-03T00:00:00Z',
+                    'modified_on' => '2023-01-04T00:00:00Z',
+                ],
+            ],
+        ], 200),
+    ]);
 
-        $domain = $this->cloudflare->getDomain($domainId);
+    $domains = $this->cloudflare->getDomains();
 
-        $expected = [
-            'id' => 'zone-123',
+    $expected = [
+        [
+            'id' => 'zone-1',
             'name' => 'example.com',
             'status' => 'active',
             'created_on' => '2023-01-01T00:00:00Z',
             'modified_on' => '2023-01-02T00:00:00Z',
-        ];
+        ],
+        [
+            'id' => 'zone-2',
+            'name' => 'test.com',
+            'status' => 'pending',
+            'created_on' => '2023-01-03T00:00:00Z',
+            'modified_on' => '2023-01-04T00:00:00Z',
+        ],
+    ];
 
-        $this->assertSame($expected, $domain);
-    }
+    expect($domains)->toBe($expected);
 
-    public function test_get_domain_failure(): void
-    {
-        $domainId = 'invalid-zone';
+    Http::assertSent(function (Request $request) {
+        return str_contains($request->url(), 'api.cloudflare.com/client/v4/zones')
+            && $request->data()['per_page'] === 100;
+    });
+});
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}" => Http::response([], 404),
-        ]);
+test('get domains failure', function () {
+    Http::fake([
+        'api.cloudflare.com/client/v4/zones*' => Http::response([], 401),
+    ]);
 
-        $domain = $this->cloudflare->getDomain($domainId);
+    $domains = $this->cloudflare->getDomains();
 
-        $this->assertSame([], $domain);
-    }
+    expect($domains)->toBe([]);
+});
 
-    public function test_get_domain_exception(): void
-    {
-        $domainId = 'zone-123';
+test('get domains exception', function () {
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
 
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
+    $domains = $this->cloudflare->getDomains();
 
-        $domain = $this->cloudflare->getDomain($domainId);
+    expect($domains)->toBe([]);
+});
 
-        $this->assertSame([], $domain);
-    }
+test('get domain success', function () {
+    $domainId = 'zone-123';
 
-    public function test_get_records_success(): void
-    {
-        $domainId = 'zone-123';
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'record-1',
-                        'type' => 'A',
-                        'name' => 'example.com',
-                        'content' => '192.168.1.1',
-                        'ttl' => 300,
-                        'proxied' => false,
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                    [
-                        'id' => 'record-2',
-                        'type' => 'CNAME',
-                        'name' => 'www.example.com',
-                        'content' => 'example.com',
-                        'ttl' => 1,
-                        'proxied' => true,
-                        'created_on' => '2023-01-03T00:00:00Z',
-                        'modified_on' => '2023-01-04T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $records = $this->cloudflare->getRecords($domainId);
-
-        $expected = [
-            [
-                'id' => 'record-1',
-                'type' => 'A',
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}" => Http::response([
+            'success' => true,
+            'result' => [
+                'id' => 'zone-123',
                 'name' => 'example.com',
-                'content' => '192.168.1.1',
-                'ttl' => 300,
-                'proxied' => false,
-                'priority' => null,
+                'status' => 'active',
                 'created_on' => '2023-01-01T00:00:00Z',
                 'modified_on' => '2023-01-02T00:00:00Z',
             ],
-            [
-                'id' => 'record-2',
-                'type' => 'CNAME',
-                'name' => 'www.example.com',
-                'content' => 'example.com',
-                'ttl' => 1,
-                'proxied' => true,
-                'priority' => null,
-                'created_on' => '2023-01-03T00:00:00Z',
-                'modified_on' => '2023-01-04T00:00:00Z',
-            ],
-        ];
+        ], 200),
+    ]);
 
-        $this->assertSame($expected, $records);
-    }
+    $domain = $this->cloudflare->getDomain($domainId);
 
-    public function test_get_records_mx_priority_is_parsed(): void
-    {
-        $domainId = 'zone-123';
+    $expected = [
+        'id' => 'zone-123',
+        'name' => 'example.com',
+        'status' => 'active',
+        'created_on' => '2023-01-01T00:00:00Z',
+        'modified_on' => '2023-01-02T00:00:00Z',
+    ];
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'record-mx',
-                        'type' => 'MX',
-                        'name' => 'example.com',
-                        'content' => 'mail.example.com',
-                        'ttl' => 3600,
-                        'proxied' => false,
-                        'priority' => 10,
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
+    expect($domain)->toBe($expected);
+});
 
-        $records = $this->cloudflare->getRecords($domainId);
+test('get domain failure', function () {
+    $domainId = 'invalid-zone';
 
-        $this->assertCount(1, $records);
-        $this->assertSame('MX', $records[0]['type']);
-        $this->assertSame(10, $records[0]['priority']);
-    }
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}" => Http::response([], 404),
+    ]);
 
-    public function test_get_records_mx_priority_zero_is_preserved(): void
-    {
-        $domainId = 'zone-123';
+    $domain = $this->cloudflare->getDomain($domainId);
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'record-mx',
-                        'type' => 'MX',
-                        'name' => 'example.com',
-                        'content' => 'mail.example.com',
-                        'ttl' => 3600,
-                        'proxied' => false,
-                        'priority' => 0,
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
+    expect($domain)->toBe([]);
+});
 
-        $records = $this->cloudflare->getRecords($domainId);
+test('get domain exception', function () {
+    $domainId = 'zone-123';
 
-        $this->assertCount(1, $records);
-        $this->assertSame('MX', $records[0]['type']);
-        $this->assertSame(0, $records[0]['priority']);
-    }
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
 
-    public function test_get_records_non_mx_priority_is_always_null(): void
-    {
-        $domainId = 'zone-123';
+    $domain = $this->cloudflare->getDomain($domainId);
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'record-a',
-                        'type' => 'A',
-                        'name' => 'example.com',
-                        'content' => '192.168.1.1',
-                        'ttl' => 300,
-                        'proxied' => false,
-                        'priority' => 5,
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                    [
-                        'id' => 'record-cname',
-                        'type' => 'CNAME',
-                        'name' => 'www.example.com',
-                        'content' => 'example.com',
-                        'ttl' => 1,
-                        'proxied' => true,
-                        'priority' => 10,
-                        'created_on' => '2023-01-03T00:00:00Z',
-                        'modified_on' => '2023-01-04T00:00:00Z',
-                    ],
-                    [
-                        'id' => 'record-txt',
-                        'type' => 'TXT',
-                        'name' => 'example.com',
-                        'content' => 'v=spf1 include:example.com ~all',
-                        'ttl' => 600,
-                        'proxied' => false,
-                        'priority' => 0,
-                        'created_on' => '2023-01-05T00:00:00Z',
-                        'modified_on' => '2023-01-06T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
+    expect($domain)->toBe([]);
+});
 
-        $records = $this->cloudflare->getRecords($domainId);
+test('get records success', function () {
+    $domainId = 'zone-123';
 
-        $this->assertCount(3, $records);
-
-        foreach ($records as $record) {
-            $this->assertNull($record['priority'], "Expected null priority for {$record['type']} record, got {$record['priority']}");
-        }
-    }
-
-    public function test_get_records_mx_without_priority_returns_null(): void
-    {
-        $domainId = 'zone-123';
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => true,
-                'result' => [
-                    [
-                        'id' => 'record-mx',
-                        'type' => 'MX',
-                        'name' => 'example.com',
-                        'content' => 'mail.example.com',
-                        'ttl' => 3600,
-                        'proxied' => false,
-                        'created_on' => '2023-01-01T00:00:00Z',
-                        'modified_on' => '2023-01-02T00:00:00Z',
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $records = $this->cloudflare->getRecords($domainId);
-
-        $this->assertCount(1, $records);
-        $this->assertSame('MX', $records[0]['type']);
-        $this->assertNull($records[0]['priority']);
-    }
-
-    public function test_get_records_failure(): void
-    {
-        $domainId = 'invalid-zone';
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
-                'success' => false,
-                'errors' => [
-                    ['message' => 'Zone not found'],
-                ],
-            ], 404),
-        ]);
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Failed to fetch DNS records: Zone not found');
-
-        $this->cloudflare->getRecords($domainId);
-    }
-
-    public function test_get_records_exception(): void
-    {
-        $domainId = 'zone-123';
-
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Network error');
-
-        $this->cloudflare->getRecords($domainId);
-    }
-
-    public function test_create_record_success(): void
-    {
-        $domainId = 'zone-123';
-        $input = [
-            'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
-            'ttl' => 300,
-            'proxied' => false,
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
-                'success' => true,
-                'result' => [
-                    'id' => 'new-record-123',
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'record-1',
                     'type' => 'A',
-                    'name' => 'test.example.com',
-                    'content' => '192.168.1.100',
+                    'name' => 'example.com',
+                    'content' => '192.168.1.1',
                     'ttl' => 300,
                     'proxied' => false,
+                    'created_on' => '2023-01-01T00:00:00Z',
+                    'modified_on' => '2023-01-02T00:00:00Z',
                 ],
-            ], 200),
-        ]);
+                [
+                    'id' => 'record-2',
+                    'type' => 'CNAME',
+                    'name' => 'www.example.com',
+                    'content' => 'example.com',
+                    'ttl' => 1,
+                    'proxied' => true,
+                    'created_on' => '2023-01-03T00:00:00Z',
+                    'modified_on' => '2023-01-04T00:00:00Z',
+                ],
+            ],
+        ], 200),
+    ]);
 
-        $result = $this->cloudflare->createRecord($domainId, $input);
+    $records = $this->cloudflare->getRecords($domainId);
 
-        $expected = [
-            'id' => 'new-record-123',
+    $expected = [
+        [
+            'id' => 'record-1',
             'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
+            'name' => 'example.com',
+            'content' => '192.168.1.1',
             'ttl' => 300,
             'proxied' => false,
-        ];
-
-        $this->assertSame($expected, $result);
-    }
-
-    public function test_create_record_with_defaults(): void
-    {
-        $domainId = 'zone-123';
-        $input = [
-            'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
-                'success' => true,
-                'result' => [],
-            ], 200),
-        ]);
-
-        $this->cloudflare->createRecord($domainId, $input);
-
-        Http::assertSent(function (Request $request) use ($domainId) {
-            return $request->url() === "https://api.cloudflare.com/client/v4/zones/{$domainId}/dns_records"
-                && $request->data()['ttl'] === 1
-                && $request->data()['proxied'] === false;
-        });
-    }
-
-    public function test_create_record_failure(): void
-    {
-        $domainId = 'zone-123';
-        $input = [
-            'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
-                'success' => false,
-                'errors' => [
-                    ['message' => 'Invalid record data'],
-                ],
-            ], 400),
-        ]);
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Failed to create DNS record: Invalid record data');
-
-        $this->cloudflare->createRecord($domainId, $input);
-    }
-
-    public function test_create_record_failure_unknown_error(): void
-    {
-        $domainId = 'zone-123';
-        $input = [
-            'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
-                'success' => false,
-                'errors' => [],
-            ], 400),
-        ]);
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Failed to create DNS record: Unknown error');
-
-        $this->cloudflare->createRecord($domainId, $input);
-    }
-
-    public function test_create_record_exception(): void
-    {
-        $domainId = 'zone-123';
-        $input = [
-            'type' => 'A',
-            'name' => 'test.example.com',
-            'content' => '192.168.1.100',
-        ];
-
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Failed to create DNS record: Network error');
-
-        $this->cloudflare->createRecord($domainId, $input);
-    }
-
-    public function test_update_record_success(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
-        $input = [
-            'type' => 'A',
-            'name' => 'updated.example.com',
-            'content' => '192.168.1.200',
-            'ttl' => 600,
+            'priority' => null,
+            'created_on' => '2023-01-01T00:00:00Z',
+            'modified_on' => '2023-01-02T00:00:00Z',
+        ],
+        [
+            'id' => 'record-2',
+            'type' => 'CNAME',
+            'name' => 'www.example.com',
+            'content' => 'example.com',
+            'ttl' => 1,
             'proxied' => true,
-        ];
+            'priority' => null,
+            'created_on' => '2023-01-03T00:00:00Z',
+            'modified_on' => '2023-01-04T00:00:00Z',
+        ],
+    ];
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
-                'success' => true,
-                'result' => [
-                    'id' => 'record-456',
+    expect($records)->toBe($expected);
+});
+
+test('get records mx priority is parsed', function () {
+    $domainId = 'zone-123';
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'record-mx',
+                    'type' => 'MX',
+                    'name' => 'example.com',
+                    'content' => 'mail.example.com',
+                    'ttl' => 3600,
+                    'proxied' => false,
+                    'priority' => 10,
+                    'created_on' => '2023-01-01T00:00:00Z',
+                    'modified_on' => '2023-01-02T00:00:00Z',
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $records = $this->cloudflare->getRecords($domainId);
+
+    expect($records)->toHaveCount(1);
+    expect($records[0]['type'])->toBe('MX');
+    expect($records[0]['priority'])->toBe(10);
+});
+
+test('get records mx priority zero is preserved', function () {
+    $domainId = 'zone-123';
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'record-mx',
+                    'type' => 'MX',
+                    'name' => 'example.com',
+                    'content' => 'mail.example.com',
+                    'ttl' => 3600,
+                    'proxied' => false,
+                    'priority' => 0,
+                    'created_on' => '2023-01-01T00:00:00Z',
+                    'modified_on' => '2023-01-02T00:00:00Z',
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $records = $this->cloudflare->getRecords($domainId);
+
+    expect($records)->toHaveCount(1);
+    expect($records[0]['type'])->toBe('MX');
+    expect($records[0]['priority'])->toBe(0);
+});
+
+test('get records non mx priority is always null', function () {
+    $domainId = 'zone-123';
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'record-a',
                     'type' => 'A',
-                    'name' => 'updated.example.com',
-                    'content' => '192.168.1.200',
-                    'ttl' => 600,
+                    'name' => 'example.com',
+                    'content' => '192.168.1.1',
+                    'ttl' => 300,
+                    'proxied' => false,
+                    'priority' => 5,
+                    'created_on' => '2023-01-01T00:00:00Z',
+                    'modified_on' => '2023-01-02T00:00:00Z',
+                ],
+                [
+                    'id' => 'record-cname',
+                    'type' => 'CNAME',
+                    'name' => 'www.example.com',
+                    'content' => 'example.com',
+                    'ttl' => 1,
                     'proxied' => true,
+                    'priority' => 10,
+                    'created_on' => '2023-01-03T00:00:00Z',
+                    'modified_on' => '2023-01-04T00:00:00Z',
                 ],
-            ], 200),
-        ]);
-
-        $result = $this->cloudflare->updateRecord($domainId, $recordId, $input);
-
-        $expected = [
-            'id' => 'record-456',
-            'type' => 'A',
-            'name' => 'updated.example.com',
-            'content' => '192.168.1.200',
-            'ttl' => 600,
-            'proxied' => true,
-        ];
-
-        $this->assertSame($expected, $result);
-    }
-
-    public function test_update_record_with_defaults(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
-        $input = [
-            'type' => 'A',
-            'name' => 'updated.example.com',
-            'content' => '192.168.1.200',
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
-                'success' => true,
-                'result' => [],
-            ], 200),
-        ]);
-
-        $this->cloudflare->updateRecord($domainId, $recordId, $input);
-
-        Http::assertSent(function (Request $request) use ($domainId, $recordId) {
-            return $request->url() === "https://api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}"
-                && $request->data()['ttl'] === 1
-                && $request->data()['proxied'] === false;
-        });
-    }
-
-    public function test_update_record_failure(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
-        $input = [
-            'type' => 'A',
-            'name' => 'updated.example.com',
-            'content' => '192.168.1.200',
-        ];
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
-                'success' => false,
-                'errors' => [
-                    ['message' => 'Record not found'],
+                [
+                    'id' => 'record-txt',
+                    'type' => 'TXT',
+                    'name' => 'example.com',
+                    'content' => 'v=spf1 include:example.com ~all',
+                    'ttl' => 600,
+                    'proxied' => false,
+                    'priority' => 0,
+                    'created_on' => '2023-01-05T00:00:00Z',
+                    'modified_on' => '2023-01-06T00:00:00Z',
                 ],
-            ], 404),
-        ]);
+            ],
+        ], 200),
+    ]);
 
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Failed to update DNS record: Record not found');
+    $records = $this->cloudflare->getRecords($domainId);
 
-        $this->cloudflare->updateRecord($domainId, $recordId, $input);
+    expect($records)->toHaveCount(3);
+
+    foreach ($records as $record) {
+        expect($record['priority'])->toBeNull("Expected null priority for {$record['type']} record, got {$record['priority']}");
     }
+});
 
-    public function test_update_record_exception(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
-        $input = [
-            'type' => 'A',
-            'name' => 'updated.example.com',
-            'content' => '192.168.1.200',
-        ];
+test('get records mx without priority returns null', function () {
+    $domainId = 'zone-123';
 
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Failed to update DNS record: Network error');
-
-        $this->cloudflare->updateRecord($domainId, $recordId, $input);
-    }
-
-    public function test_delete_record_success(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
-
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
-                'success' => true,
-                'result' => [
-                    'id' => 'record-456',
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => true,
+            'result' => [
+                [
+                    'id' => 'record-mx',
+                    'type' => 'MX',
+                    'name' => 'example.com',
+                    'content' => 'mail.example.com',
+                    'ttl' => 3600,
+                    'proxied' => false,
+                    'created_on' => '2023-01-01T00:00:00Z',
+                    'modified_on' => '2023-01-02T00:00:00Z',
                 ],
-            ], 200),
-        ]);
+            ],
+        ], 200),
+    ]);
 
-        $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+    $records = $this->cloudflare->getRecords($domainId);
 
-        $this->assertTrue($result);
-    }
+    expect($records)->toHaveCount(1);
+    expect($records[0]['type'])->toBe('MX');
+    expect($records[0]['priority'])->toBeNull();
+});
 
-    public function test_delete_record_failure(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'invalid-record';
+test('get records failure', function () {
+    $domainId = 'invalid-zone';
 
-        Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([], 404),
-        ]);
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+            'success' => false,
+            'errors' => [
+                ['message' => 'Zone not found'],
+            ],
+        ], 404),
+    ]);
 
-        $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+    $this->expectException(RuntimeException::class);
+    $this->expectExceptionMessage('Failed to fetch DNS records: Zone not found');
 
-        $this->assertFalse($result);
-    }
+    $this->cloudflare->getRecords($domainId);
+});
 
-    public function test_delete_record_exception(): void
-    {
-        $domainId = 'zone-123';
-        $recordId = 'record-456';
+test('get records exception', function () {
+    $domainId = 'zone-123';
 
-        Http::fake(function () {
-            throw new \Exception('Network error');
-        });
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
 
-        $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+    $this->expectException(Exception::class);
+    $this->expectExceptionMessage('Network error');
 
-        $this->assertFalse($result);
-    }
-}
+    $this->cloudflare->getRecords($domainId);
+});
+
+test('create record success', function () {
+    $domainId = 'zone-123';
+    $input = [
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+        'ttl' => 300,
+        'proxied' => false,
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
+            'success' => true,
+            'result' => [
+                'id' => 'new-record-123',
+                'type' => 'A',
+                'name' => 'test.example.com',
+                'content' => '192.168.1.100',
+                'ttl' => 300,
+                'proxied' => false,
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->cloudflare->createRecord($domainId, $input);
+
+    $expected = [
+        'id' => 'new-record-123',
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+        'ttl' => 300,
+        'proxied' => false,
+    ];
+
+    expect($result)->toBe($expected);
+});
+
+test('create record with defaults', function () {
+    $domainId = 'zone-123';
+    $input = [
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
+            'success' => true,
+            'result' => [],
+        ], 200),
+    ]);
+
+    $this->cloudflare->createRecord($domainId, $input);
+
+    Http::assertSent(function (Request $request) use ($domainId) {
+        return $request->url() === "https://api.cloudflare.com/client/v4/zones/{$domainId}/dns_records"
+            && $request->data()['ttl'] === 1
+            && $request->data()['proxied'] === false;
+    });
+});
+
+test('create record failure', function () {
+    $domainId = 'zone-123';
+    $input = [
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
+            'success' => false,
+            'errors' => [
+                ['message' => 'Invalid record data'],
+            ],
+        ], 400),
+    ]);
+
+    $this->expectException(ValidationException::class);
+    $this->expectExceptionMessage('Failed to create DNS record: Invalid record data');
+
+    $this->cloudflare->createRecord($domainId, $input);
+});
+
+test('create record failure unknown error', function () {
+    $domainId = 'zone-123';
+    $input = [
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records" => Http::response([
+            'success' => false,
+            'errors' => [],
+        ], 400),
+    ]);
+
+    $this->expectException(ValidationException::class);
+    $this->expectExceptionMessage('Failed to create DNS record: Unknown error');
+
+    $this->cloudflare->createRecord($domainId, $input);
+});
+
+test('create record exception', function () {
+    $domainId = 'zone-123';
+    $input = [
+        'type' => 'A',
+        'name' => 'test.example.com',
+        'content' => '192.168.1.100',
+    ];
+
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
+
+    $this->expectException(ValidationException::class);
+    $this->expectExceptionMessage('Failed to create DNS record: Network error');
+
+    $this->cloudflare->createRecord($domainId, $input);
+});
+
+test('update record success', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+    $input = [
+        'type' => 'A',
+        'name' => 'updated.example.com',
+        'content' => '192.168.1.200',
+        'ttl' => 600,
+        'proxied' => true,
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
+            'success' => true,
+            'result' => [
+                'id' => 'record-456',
+                'type' => 'A',
+                'name' => 'updated.example.com',
+                'content' => '192.168.1.200',
+                'ttl' => 600,
+                'proxied' => true,
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->cloudflare->updateRecord($domainId, $recordId, $input);
+
+    $expected = [
+        'id' => 'record-456',
+        'type' => 'A',
+        'name' => 'updated.example.com',
+        'content' => '192.168.1.200',
+        'ttl' => 600,
+        'proxied' => true,
+    ];
+
+    expect($result)->toBe($expected);
+});
+
+test('update record with defaults', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+    $input = [
+        'type' => 'A',
+        'name' => 'updated.example.com',
+        'content' => '192.168.1.200',
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
+            'success' => true,
+            'result' => [],
+        ], 200),
+    ]);
+
+    $this->cloudflare->updateRecord($domainId, $recordId, $input);
+
+    Http::assertSent(function (Request $request) use ($domainId, $recordId) {
+        return $request->url() === "https://api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}"
+            && $request->data()['ttl'] === 1
+            && $request->data()['proxied'] === false;
+    });
+});
+
+test('update record failure', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+    $input = [
+        'type' => 'A',
+        'name' => 'updated.example.com',
+        'content' => '192.168.1.200',
+    ];
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
+            'success' => false,
+            'errors' => [
+                ['message' => 'Record not found'],
+            ],
+        ], 404),
+    ]);
+
+    $this->expectException(ValidationException::class);
+    $this->expectExceptionMessage('Failed to update DNS record: Record not found');
+
+    $this->cloudflare->updateRecord($domainId, $recordId, $input);
+});
+
+test('update record exception', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+    $input = [
+        'type' => 'A',
+        'name' => 'updated.example.com',
+        'content' => '192.168.1.200',
+    ];
+
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
+
+    $this->expectException(ValidationException::class);
+    $this->expectExceptionMessage('Failed to update DNS record: Network error');
+
+    $this->cloudflare->updateRecord($domainId, $recordId, $input);
+});
+
+test('delete record success', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([
+            'success' => true,
+            'result' => [
+                'id' => 'record-456',
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+
+    expect($result)->toBeTrue();
+});
+
+test('delete record failure', function () {
+    $domainId = 'zone-123';
+    $recordId = 'invalid-record';
+
+    Http::fake([
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([], 404),
+    ]);
+
+    $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+
+    expect($result)->toBeFalse();
+});
+
+test('delete record exception', function () {
+    $domainId = 'zone-123';
+    $recordId = 'record-456';
+
+    Http::fake(function () {
+        throw new Exception('Network error');
+    });
+
+    $result = $this->cloudflare->deleteRecord($domainId, $recordId);
+
+    expect($result)->toBeFalse();
+});

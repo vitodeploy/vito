@@ -1,62 +1,52 @@
 <?php
 
-namespace Tests\Unit\Helpers;
-
 use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
 
-class SSHTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_write_propagates_the_failure_and_cleans_up_the_local_temporary_file(): void
-    {
-        Storage::fake('local');
+test('write propagates the failure and cleans up the local temporary file', function () {
+    Storage::fake('local');
 
-        $ssh = SSH::fake();
-        $ssh->execWillFail();
+    $ssh = SSH::fake();
+    $ssh->execWillFail();
 
-        try {
-            $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
-            $this->fail('Expected the write to throw when the remote command fails.');
-        } catch (SSHCommandError) {
-            // expected
-        }
-
-        $this->assertEmpty(Storage::disk('local')->files());
-    }
-
-    public function test_write_cleans_up_the_local_temporary_file_on_success(): void
-    {
-        Storage::fake('local');
-
-        SSH::fake();
-
+    try {
         $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
-
-        $this->assertEmpty(Storage::disk('local')->files());
+        $this->fail('Expected the write to throw when the remote command fails.');
+    } catch (SSHCommandError) {
+        // expected
     }
 
-    public function test_write_removes_the_remote_temporary_file_on_both_branches(): void
-    {
-        SSH::fake();
+    expect(Storage::disk('local')->files())->toBeEmpty();
+});
 
-        $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
+test('write cleans up the local temporary file on success', function () {
+    Storage::fake('local');
 
-        SSH::assertExecutedContains("> '/home/vito/example.com/.env'; then");
-        SSH::assertExecutedContains("else\n    rm -f ");
-        SSH::assertExecutedContains('exit 1');
-    }
+    SSH::fake();
 
-    public function test_write_quotes_the_destination_path(): void
-    {
-        SSH::fake();
+    $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
 
-        $this->server->ssh()->write('/home/vito/legacy path/.env', 'APP_NAME=TestApp', 'vito');
+    expect(Storage::disk('local')->files())->toBeEmpty();
+});
 
-        SSH::assertExecutedContains("> '/home/vito/legacy path/.env'");
-    }
-}
+test('write removes the remote temporary file on both branches', function () {
+    SSH::fake();
+
+    $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
+
+    SSH::assertExecutedContains("> '/home/vito/example.com/.env'; then");
+    SSH::assertExecutedContains("else\n    rm -f ");
+    SSH::assertExecutedContains('exit 1');
+});
+
+test('write quotes the destination path', function () {
+    SSH::fake();
+
+    $this->server->ssh()->write('/home/vito/legacy path/.env', 'APP_NAME=TestApp', 'vito');
+
+    SSH::assertExecutedContains("> '/home/vito/legacy path/.env'");
+});

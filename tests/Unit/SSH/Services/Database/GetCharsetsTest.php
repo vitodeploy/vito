@@ -1,21 +1,14 @@
 <?php
 
-namespace Tests\Unit\SSH\Services\Database;
-
 use App\Facades\SSH;
 use App\Services\Database\Database;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
-class GetCharsetsTest extends TestCase
+uses(RefreshDatabase::class);
+
+function vitoPestUnitSSHServicesDatabaseGetCharsetsTestMysqlCharsets(): array
 {
-    use RefreshDatabase;
-
-    /**
-     * @var array<string, array<string, string|array<string>>>
-     */
-    protected static array $mysqlCharsets = [
+    return [
         'armscii8' => [
             'default' => 'armscii8_general_ci',
             'list' => [
@@ -38,37 +31,32 @@ class GetCharsetsTest extends TestCase
             ],
         ],
     ];
+}
 
-    /**
-     * @param  array<string, array{default: string|null, list: array<int, string>}>  $expected
-     */
-    #[DataProvider('data')]
-    public function test_update_charsets(string $name, string $version, string $output, array $expected): void
-    {
-        $database = $this->server->database();
-        $database->name = $name;
-        $database->version = $version;
-        $database->save();
+test('update charsets', function (string $name, string $version, string $output, array $expected) {
+    $database = $this->server->database();
+    $database->name = $name;
+    $database->version = $version;
+    $database->save();
 
-        SSH::fake($output);
+    SSH::fake($output);
 
-        /** @var Database $databaseHandler */
-        $databaseHandler = $database->handler();
-        $charsets = $databaseHandler->getCharsets();
+    /** @var Database $databaseHandler */
+    $databaseHandler = $database->handler();
+    $charsets = $databaseHandler->getCharsets();
 
-        $this->assertEquals($expected, $charsets['charsets']);
-    }
+    expect($charsets['charsets'])->toEqual($expected);
+})->with('data');
 
-    /**
-     * @return array<int, array<int, mixed>>
-     */
-    public static function data(): array
-    {
-        return [
-            [
-                'mysql',
-                '8.0',
-                <<<'EOD'
+/**
+ * @return array<int, array<int, mixed>>
+ */
+dataset('data', function () {
+    return [
+        [
+            'mysql',
+            '8.0',
+            <<<'EOD'
                 Collation	Charset	Id	Default	Compiled	Sortlen	Pad_attribute
                 armscii8_bin	armscii8	64		Yes	1	PAD SPACE
                 armscii8_general_ci	armscii8	32	Yes	Yes	1	PAD SPACE
@@ -77,12 +65,12 @@ class GetCharsetsTest extends TestCase
                 big5_bin	big5	84		Yes	1	PAD SPACE
                 big5_chinese_ci	big5	1	Yes	Yes	1	PAD SPACE
                 EOD,
-                static::$mysqlCharsets,
-            ],
-            [
-                'mysql',
-                '5.7',
-                <<<'EOD'
+            vitoPestUnitSSHServicesDatabaseGetCharsetsTestMysqlCharsets(),
+        ],
+        [
+            'mysql',
+            '5.7',
+            <<<'EOD'
                 Collation	Charset	Id	Default	Compiled	Sortlen	Pad_attribute
                 armscii8_bin	armscii8	64		Yes	1	PAD SPACE
                 armscii8_general_ci	armscii8	32	Yes	Yes	1	PAD SPACE
@@ -91,12 +79,12 @@ class GetCharsetsTest extends TestCase
                 big5_bin	big5	84		Yes	1	PAD SPACE
                 big5_chinese_ci	big5	1	Yes	Yes	1	PAD SPACE
                 EOD,
-                static::$mysqlCharsets,
-            ],
-            [
-                'mariadb',
-                '10.5',
-                <<<'EOD'
+            vitoPestUnitSSHServicesDatabaseGetCharsetsTestMysqlCharsets(),
+        ],
+        [
+            'mariadb',
+            '10.5',
+            <<<'EOD'
                 Collation	Charset	Id	Default	Compiled	Sortlen	Pad_attribute
                 armscii8_bin	armscii8	64		Yes	1	PAD SPACE
                 armscii8_general_ci	armscii8	32	Yes	Yes	1	PAD SPACE
@@ -105,12 +93,12 @@ class GetCharsetsTest extends TestCase
                 big5_bin	big5	84		Yes	1	PAD SPACE
                 big5_chinese_ci	big5	1	Yes	Yes	1	PAD SPACE
                 EOD,
-                static::$mysqlCharsets,
-            ],
-            [
-                'mariadb',
-                '11.4',
-                <<<'EOD'
+            vitoPestUnitSSHServicesDatabaseGetCharsetsTestMysqlCharsets(),
+        ],
+        [
+            'mariadb',
+            '11.4',
+            <<<'EOD'
                 Collation	Charset	Id	Default	Compiled	Sortlen
                 big5_chinese_ci	big5	1	Yes	Yes	1
                 big5_bin	big5	84		Yes	1
@@ -119,27 +107,27 @@ class GetCharsetsTest extends TestCase
                 uca1400_ai_ci	NULL	NULL	NULL	Yes	8
                 uca1400_ai_cs	NULL	NULL	NULL	Yes	8
                 EOD,
-                [
-                    'big5' => [
-                        'default' => 'big5_chinese_ci',
-                        'list' => [
-                            'big5_chinese_ci',
-                            'big5_bin',
-                        ],
+            [
+                'big5' => [
+                    'default' => 'big5_chinese_ci',
+                    'list' => [
+                        'big5_chinese_ci',
+                        'big5_bin',
                     ],
-                    'utf8mb4' => [
-                        'default' => null,
-                        'list' => [
-                            'utf8mb4_general_ci',
-                            'utf8mb4_bin',
-                        ],
+                ],
+                'utf8mb4' => [
+                    'default' => null,
+                    'list' => [
+                        'utf8mb4_general_ci',
+                        'utf8mb4_bin',
                     ],
                 ],
             ],
-            [
-                'postgresql',
-                '16',
-                <<<'EOD'
+        ],
+        [
+            'postgresql',
+            '16',
+            <<<'EOD'
                  collation  | charset | id | default | compiled | sortlen | pad_attribute
                 ------------+---------+----+---------+----------+---------+---------------
                  ucs_basic  | UTF8    |    |         | Yes      |         |
@@ -148,22 +136,22 @@ class GetCharsetsTest extends TestCase
                  en_US      | UTF8    |    |         | Yes      |         |
                 (4 rows)
                 EOD,
-                [
-                    'UTF8' => [
-                        'default' => null,
-                        'list' => [
-                            'ucs_basic',
-                            'C.utf8',
-                            'en_US.utf8',
-                            'en_US',
-                        ],
+            [
+                'UTF8' => [
+                    'default' => null,
+                    'list' => [
+                        'ucs_basic',
+                        'C.utf8',
+                        'en_US.utf8',
+                        'en_US',
                     ],
                 ],
             ],
-            [
-                'postgresql',
-                '18',
-                <<<'EOD'
+        ],
+        [
+            'postgresql',
+            '18',
+            <<<'EOD'
                  collation   | charset | id | default | compiled | sortlen | pad_attribute
                 -------------+---------+----+---------+----------+---------+---------------
                  C           | UTF8    |    |         | Yes      |         |
@@ -175,21 +163,20 @@ class GetCharsetsTest extends TestCase
                  en_US.utf8  | UTF8    |    |         | Yes      |         |
                 (7 rows)
                 EOD,
-                [
-                    'UTF8' => [
-                        'default' => null,
-                        'list' => [
-                            'C',
-                            'POSIX',
-                            'ucs_basic',
-                            'pg_c_utf8',
-                            'unicode',
-                            'en-US-x-icu',
-                            'en_US.utf8',
-                        ],
+            [
+                'UTF8' => [
+                    'default' => null,
+                    'list' => [
+                        'C',
+                        'POSIX',
+                        'ucs_basic',
+                        'pg_c_utf8',
+                        'unicode',
+                        'en-US-x-icu',
+                        'en_US.utf8',
                     ],
                 ],
             ],
-        ];
-    }
-}
+        ],
+    ];
+});

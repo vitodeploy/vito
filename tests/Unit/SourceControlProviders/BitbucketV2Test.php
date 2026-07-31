@@ -1,180 +1,165 @@
 <?php
 
-namespace Tests\Unit\SourceControlProviders;
-
 use App\Models\SourceControl;
 use App\SourceControlProviders\BitbucketV2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class BitbucketV2Test extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_id_returns_bitbucket_v2(): void
-    {
-        $this->assertSame('bitbucket-v2', BitbucketV2::id());
-    }
+test('id returns bitbucket v2', function () {
+    expect(BitbucketV2::id())->toBe('bitbucket-v2');
+});
 
-    public function test_default_bitbucket_repo_url(): void
-    {
-        $repo = 'test/repo';
-        $key = 'TEST_KEY';
+test('default bitbucket repo url', function () {
+    $repo = 'test/repo';
+    $key = 'TEST_KEY';
 
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $this->assertSame('git@bitbucket.org-TEST_KEY:test/repo.git', $bitbucketV2->fullRepoUrl($repo, $key));
-    }
+    expect($bitbucketV2->fullRepoUrl($repo, $key))->toBe('git@bitbucket.org-TEST_KEY:test/repo.git');
+});
 
-    public function test_create_rules_returns_required_key_and_secret(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+test('create rules returns required key and secret', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $rules = $bitbucketV2->createRules([]);
+    $rules = $bitbucketV2->createRules([]);
 
-        $this->assertArrayHasKey('key', $rules);
-        $this->assertArrayHasKey('secret', $rules);
-        $this->assertSame('required', $rules['key']);
-        $this->assertSame('required', $rules['secret']);
-    }
+    expect($rules)->toHaveKey('key');
+    expect($rules)->toHaveKey('secret');
+    expect($rules['key'])->toBe('required');
+    expect($rules['secret'])->toBe('required');
+});
 
-    public function test_create_data_processes_input_correctly(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+test('create data processes input correctly', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $input = [
-            'key' => 'my-key',
-            'secret' => 'my-secret',
-        ];
+    $input = [
+        'key' => 'my-key',
+        'secret' => 'my-secret',
+    ];
 
-        $data = $bitbucketV2->createData($input);
+    $data = $bitbucketV2->createData($input);
 
-        $this->assertSame('my-key', $data['key']);
-        $this->assertSame('my-secret', $data['secret']);
-    }
+    expect($data['key'])->toBe('my-key');
+    expect($data['secret'])->toBe('my-secret');
+});
 
-    public function test_create_data_handles_missing_input(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+test('create data handles missing input', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $data = $bitbucketV2->createData([]);
+    $data = $bitbucketV2->createData([]);
 
-        $this->assertSame('', $data['key']);
-        $this->assertSame('', $data['secret']);
-    }
+    expect($data['key'])->toBe('');
+    expect($data['secret'])->toBe('');
+});
 
-    public function test_data_retrieves_stored_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'stored-key',
-                    'secret' => 'stored-secret',
-                ],
-            ]);
+test('data retrieves stored provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'stored-key',
+                'secret' => 'stored-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $data = $bitbucketV2->data();
+    $data = $bitbucketV2->data();
 
-        $this->assertSame('stored-key', $data['key']);
-        $this->assertSame('stored-secret', $data['secret']);
-    }
+    expect($data['key'])->toBe('stored-key');
+    expect($data['secret'])->toBe('stored-secret');
+});
 
-    public function test_data_handles_missing_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [],
-            ]);
+test('data handles missing provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $data = $bitbucketV2->data();
+    $data = $bitbucketV2->data();
 
-        $this->assertSame('', $data['key']);
-        $this->assertSame('', $data['secret']);
-    }
+    expect($data['key'])->toBe('');
+    expect($data['secret'])->toBe('');
+});
 
-    public function test_get_webhook_branch_extracts_branch_from_payload(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+test('get webhook branch extracts branch from payload', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $payload = [
-            'push' => [
-                'changes' => [
-                    [
-                        'new' => [
-                            'name' => 'main',
-                        ],
+    $payload = [
+        'push' => [
+            'changes' => [
+                [
+                    'new' => [
+                        'name' => 'main',
                     ],
                 ],
             ],
-        ];
+        ],
+    ];
 
-        $this->assertSame('main', $bitbucketV2->getWebhookBranch($payload));
-    }
+    expect($bitbucketV2->getWebhookBranch($payload))->toBe('main');
+});
 
-    public function test_get_webhook_branch_returns_default_when_missing(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => BitbucketV2::id(),
-                'provider_data' => [
-                    'key' => 'test-key',
-                    'secret' => 'test-secret',
-                ],
-            ]);
+test('get webhook branch returns default when missing', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => BitbucketV2::id(),
+            'provider_data' => [
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+            ],
+        ]);
 
-        $bitbucketV2 = new BitbucketV2($sourceControlModel);
+    $bitbucketV2 = new BitbucketV2($sourceControlModel);
 
-        $this->assertSame('default-branch', $bitbucketV2->getWebhookBranch([]));
-    }
-}
+    expect($bitbucketV2->getWebhookBranch([]))->toBe('default-branch');
+});

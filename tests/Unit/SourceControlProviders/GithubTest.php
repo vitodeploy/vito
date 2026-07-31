@@ -1,272 +1,251 @@
 <?php
 
-namespace Tests\Unit\SourceControlProviders;
-
 use App\Models\SourceControl;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Tests\TestCase;
 
-class GithubTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_id_returns_github(): void
-    {
-        $this->assertSame('github', Github::id());
-    }
+test('id returns github', function () {
+    expect(Github::id())->toBe('github');
+});
 
-    public function test_default_github_repo_url(): void
-    {
-        $repo = 'test/repo';
-        $key = 'TEST_KEY';
+test('default github repo url', function () {
+    $repo = 'test/repo';
+    $key = 'TEST_KEY';
 
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-        $github = new Github($sourceControlModel);
+    $github = new Github($sourceControlModel);
 
-        $this->assertSame('git@github.com-TEST_KEY:test/repo.git', $github->fullRepoUrl($repo, $key));
-    }
+    expect($github->fullRepoUrl($repo, $key))->toBe('git@github.com-TEST_KEY:test/repo.git');
+});
 
-    public function test_create_rules_returns_required_token(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
+test('create rules returns required token', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-        $github = new Github($sourceControlModel);
+    $github = new Github($sourceControlModel);
 
-        $rules = $github->createRules([]);
+    $rules = $github->createRules([]);
 
-        $this->assertArrayHasKey('token', $rules);
-        $this->assertSame('required', $rules['token']);
-    }
+    expect($rules)->toHaveKey('token');
+    expect($rules['token'])->toBe('required');
+});
 
-    public function test_create_data_processes_input_correctly(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
+test('create data processes input correctly', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-        $github = new Github($sourceControlModel);
+    $github = new Github($sourceControlModel);
 
-        $input = [
-            'token' => 'my-token',
-        ];
+    $input = [
+        'token' => 'my-token',
+    ];
 
-        $data = $github->createData($input);
+    $data = $github->createData($input);
 
-        $this->assertSame('my-token', $data['token']);
-    }
+    expect($data['token'])->toBe('my-token');
+});
 
-    public function test_create_data_handles_missing_input(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
+test('create data handles missing input', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-        $github = new Github($sourceControlModel);
+    $github = new Github($sourceControlModel);
 
-        $data = $github->createData([]);
+    $data = $github->createData([]);
 
-        $this->assertSame('', $data['token']);
-    }
+    expect($data['token'])->toBe('');
+});
 
-    public function test_data_retrieves_stored_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'stored-token',
-                ],
-            ]);
-
-        $github = new Github($sourceControlModel);
-
-        $data = $github->data();
-
-        $this->assertSame('stored-token', $data['token']);
-    }
-
-    public function test_data_handles_missing_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [],
-                'access_token' => null,
-            ]);
-
-        $github = new Github($sourceControlModel);
-
-        $data = $github->data();
-
-        $this->assertSame('', $data['token']);
-    }
-
-    public function test_get_webhook_branch_extracts_branch_from_payload(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
-
-        $github = new Github($sourceControlModel);
-
-        $payload = [
-            'ref' => 'refs/heads/main',
-        ];
-
-        $this->assertSame('main', $github->getWebhookBranch($payload));
-    }
-
-    public function test_get_webhook_branch_returns_empty_when_missing(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create();
-
-        $github = new Github($sourceControlModel);
-
-        $this->assertSame('', $github->getWebhookBranch([]));
-    }
-
-    public function test_get_repos_returns_cached_repos_when_cache_exists(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
-
-        $github = new Github($sourceControlModel);
-        $cacheKey = 'github_repos_'.md5('test-token');
-        $cachedRepos = ['user/repo1', 'user/repo2'];
-
-        Cache::put($cacheKey, $cachedRepos, 900);
-
-        $repos = $github->getRepos();
-
-        $this->assertSame($cachedRepos, $repos);
-    }
-
-    public function test_get_repos_fetches_from_api_when_cache_missing(): void
-    {
-        Http::fake([
-            'api.github.com/user/repos*' => Http::sequence()
-                ->push([
-                    ['full_name' => 'user/repo1'],
-                    ['full_name' => 'user/repo2'],
-                ], 200, ['Link' => '']),
+test('data retrieves stored provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'stored-token',
+            ],
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $github = new Github($sourceControlModel);
 
-        $github = new Github($sourceControlModel);
+    $data = $github->data();
 
-        $repos = $github->getRepos(false);
+    expect($data['token'])->toBe('stored-token');
+});
 
-        $this->assertSame(['user/repo1', 'user/repo2'], $repos);
-    }
-
-    public function test_get_repos_returns_empty_array_on_error(): void
-    {
-        Http::fake([
-            'api.github.com/user/repos*' => Http::response([], 500),
+test('data handles missing provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [],
+            'access_token' => null,
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $github = new Github($sourceControlModel);
 
-        $github = new Github($sourceControlModel);
+    $data = $github->data();
 
-        $repos = $github->getRepos(false);
+    expect($data['token'])->toBe('');
+});
 
-        $this->assertSame([], $repos);
-    }
+test('get webhook branch extracts branch from payload', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-    public function test_get_branches_returns_cached_branches_when_cache_exists(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $github = new Github($sourceControlModel);
 
-        $github = new Github($sourceControlModel);
-        $repo = 'user/repo';
-        $cacheKey = 'github_branches_'.md5($repo.'test-token');
-        $cachedBranches = ['main', 'develop'];
+    $payload = [
+        'ref' => 'refs/heads/main',
+    ];
 
-        Cache::put($cacheKey, $cachedBranches, 900);
+    expect($github->getWebhookBranch($payload))->toBe('main');
+});
 
-        $branches = $github->getBranches($repo);
+test('get webhook branch returns empty when missing', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create();
 
-        $this->assertSame($cachedBranches, $branches);
-    }
+    $github = new Github($sourceControlModel);
 
-    public function test_get_branches_fetches_from_api_when_cache_missing(): void
-    {
-        Http::fake([
-            'api.github.com/repos/user/repo/branches*' => Http::sequence()
-                ->push([
-                    ['name' => 'main'],
-                    ['name' => 'develop'],
-                ], 200, ['Link' => '']),
+    expect($github->getWebhookBranch([]))->toBe('');
+});
+
+test('get repos returns cached repos when cache exists', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $github = new Github($sourceControlModel);
+    $cacheKey = 'github_repos_'.md5('test-token');
+    $cachedRepos = ['user/repo1', 'user/repo2'];
 
-        $github = new Github($sourceControlModel);
+    Cache::put($cacheKey, $cachedRepos, 900);
 
-        $branches = $github->getBranches('user/repo', false);
+    $repos = $github->getRepos();
 
-        $this->assertSame(['main', 'develop'], $branches);
-    }
+    expect($repos)->toBe($cachedRepos);
+});
 
-    public function test_get_branches_returns_empty_array_on_error(): void
-    {
-        Http::fake([
-            'api.github.com/repos/user/repo/branches*' => Http::response([], 500),
+test('get repos fetches from api when cache missing', function () {
+    Http::fake([
+        'api.github.com/user/repos*' => Http::sequence()
+            ->push([
+                ['full_name' => 'user/repo1'],
+                ['full_name' => 'user/repo2'],
+            ], 200, ['Link' => '']),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->github()
-            ->create([
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $github = new Github($sourceControlModel);
 
-        $github = new Github($sourceControlModel);
+    $repos = $github->getRepos(false);
 
-        $branches = $github->getBranches('user/repo', false);
+    expect($repos)->toBe(['user/repo1', 'user/repo2']);
+});
 
-        $this->assertSame([], $branches);
-    }
-}
+test('get repos returns empty array on error', function () {
+    Http::fake([
+        'api.github.com/user/repos*' => Http::response([], 500),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $github = new Github($sourceControlModel);
+
+    $repos = $github->getRepos(false);
+
+    expect($repos)->toBe([]);
+});
+
+test('get branches returns cached branches when cache exists', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $github = new Github($sourceControlModel);
+    $repo = 'user/repo';
+    $cacheKey = 'github_branches_'.md5($repo.'test-token');
+    $cachedBranches = ['main', 'develop'];
+
+    Cache::put($cacheKey, $cachedBranches, 900);
+
+    $branches = $github->getBranches($repo);
+
+    expect($branches)->toBe($cachedBranches);
+});
+
+test('get branches fetches from api when cache missing', function () {
+    Http::fake([
+        'api.github.com/repos/user/repo/branches*' => Http::sequence()
+            ->push([
+                ['name' => 'main'],
+                ['name' => 'develop'],
+            ], 200, ['Link' => '']),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $github = new Github($sourceControlModel);
+
+    $branches = $github->getBranches('user/repo', false);
+
+    expect($branches)->toBe(['main', 'develop']);
+});
+
+test('get branches returns empty array on error', function () {
+    Http::fake([
+        'api.github.com/repos/user/repo/branches*' => Http::response([], 500),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->github()
+        ->create([
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $github = new Github($sourceControlModel);
+
+    $branches = $github->getBranches('user/repo', false);
+
+    expect($branches)->toBe([]);
+});

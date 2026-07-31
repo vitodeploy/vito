@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\DeploymentStatus;
 use App\Enums\WorkerStatus;
 use App\Events\SocketEvent;
@@ -14,249 +12,228 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
-use Tests\TestCase;
 
-class SiteSettingsProxiedSiteTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private Site $proxiedSite;
+beforeEach(function () {
+    $this->proxiedSite = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'isolated-foo',
+        'path' => '/home/isolated-foo/app.test',
+        'type' => NodeSite::id(),
+        'port' => 3000,
+        'type_data' => [
+            'node_version' => '22',
+            'package_manager' => 'npm',
+            'start_command' => 'npm start',
+        ],
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->actingAs($this->user);
+});
 
-        $this->proxiedSite = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'isolated-foo',
-            'path' => '/home/isolated-foo/app.test',
-            'type' => NodeSite::id(),
-            'port' => 3000,
-            'type_data' => [
-                'node_version' => '22',
-                'package_manager' => 'npm',
-                'start_command' => 'npm start',
-            ],
-        ]);
+test('settings page exposes proxied site flags', function () {
+    $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $a) => $a
+            ->component('site-settings/index')
+            ->where('site.is_proxied_site_type', true)
+            ->where('site.start_command', 'npm start')
+            ->where('site.port', 3000)
+        );
+});
 
-        $this->actingAs($this->user);
-    }
+test('update port updates site and regenerates vhost', function () {
+    SSH::fake();
+    Event::fake([SocketEvent::class]);
 
-    public function test_settings_page_exposes_proxied_site_flags(): void
-    {
-        $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]))
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $a) => $a
-                ->component('site-settings/index')
-                ->where('site.is_proxied_site_type', true)
-                ->where('site.start_command', 'npm start')
-                ->where('site.port', 3000)
-            );
-    }
+    $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'port' => 4000,
+    ])->assertRedirect();
 
-    public function test_update_port_updates_site_and_regenerates_vhost(): void
-    {
-        SSH::fake();
-        Event::fake([SocketEvent::class]);
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->port)->toBe(4000);
 
-        $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'port' => 4000,
-        ])->assertRedirect();
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event) => $event->data->type === 'site.updated');
+});
 
-        $this->proxiedSite->refresh();
-        $this->assertSame(4000, $this->proxiedSite->port);
+test('update port validates', function () {
+    SSH::fake();
 
-        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event) => $event->data->type === 'site.updated');
-    }
+    $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'port' => 99999,
+    ])->assertSessionHasErrors('port');
+});
 
-    public function test_update_port_validates(): void
-    {
-        SSH::fake();
+test('update start command rejects newline injection', function () {
+    SSH::fake();
 
-        $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'port' => 99999,
-        ])->assertSessionHasErrors('port');
-    }
+    $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'start_command' => "npm start\nuser=root",
+    ])->assertSessionHasErrors('start_command');
 
-    public function test_update_start_command_rejects_newline_injection(): void
-    {
-        SSH::fake();
+    $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'start_command' => "npm start\rcommand=/bin/sh",
+    ])->assertSessionHasErrors('start_command');
 
-        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'start_command' => "npm start\nuser=root",
-        ])->assertSessionHasErrors('start_command');
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->type_data['start_command'])->toBe('npm start');
+});
 
-        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'start_command' => "npm start\rcommand=/bin/sh",
-        ])->assertSessionHasErrors('start_command');
+test('update start command pre first deploy stores only', function () {
+    SSH::fake();
 
-        $this->proxiedSite->refresh();
-        $this->assertSame('npm start', $this->proxiedSite->type_data['start_command']);
-    }
+    $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'start_command' => 'pnpm start',
+    ])->assertRedirect()
+        ->assertSessionHas('info');
 
-    public function test_update_start_command_pre_first_deploy_stores_only(): void
-    {
-        SSH::fake();
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->type_data['start_command'])->toBe('pnpm start');
+    expect($this->proxiedSite->workers()->where('name', 'app')->first())->toBeNull();
+});
 
-        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'start_command' => 'pnpm start',
-        ])->assertRedirect()
-            ->assertSessionHas('info');
+test('update start command with existing worker updates conf no restart', function () {
+    $fake = SSH::fake();
 
-        $this->proxiedSite->refresh();
-        $this->assertSame('pnpm start', $this->proxiedSite->type_data['start_command']);
-        $this->assertNull($this->proxiedSite->workers()->where('name', 'app')->first());
-    }
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'npm start',
+        'status' => WorkerStatus::RUNNING,
+    ]);
+    $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
 
-    public function test_update_start_command_with_existing_worker_updates_conf_no_restart(): void
-    {
-        $fake = SSH::fake();
+    $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'start_command' => 'pnpm start',
+    ])->assertRedirect()
+        ->assertSessionHas('warning');
 
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'npm start',
-            'status' => WorkerStatus::RUNNING,
-        ]);
-        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+    $worker->refresh();
+    expect($worker->command)->toBe('pnpm start');
 
-        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'start_command' => 'pnpm start',
-        ])->assertRedirect()
-            ->assertSessionHas('warning');
+    $fake->assertNotExecutedContains('supervisorctl restart');
+});
 
-        $worker->refresh();
-        $this->assertSame('pnpm start', $worker->command);
+test('update start command with restart rewrites config and restarts', function () {
+    $fake = SSH::fake();
 
-        $fake->assertNotExecutedContains('supervisorctl restart');
-    }
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'npm start',
+        'status' => WorkerStatus::RUNNING,
+    ]);
+    $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
 
-    public function test_update_start_command_with_restart_rewrites_config_and_restarts(): void
-    {
-        $fake = SSH::fake();
+    $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'start_command' => 'pnpm start',
+        'restart' => true,
+    ])->assertRedirect()
+        ->assertSessionHas('info');
 
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'npm start',
-            'status' => WorkerStatus::RUNNING,
-        ]);
-        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+    $worker->refresh();
+    expect($worker->command)->toBe('pnpm start');
 
-        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'start_command' => 'pnpm start',
-            'restart' => true,
-        ])->assertRedirect()
-            ->assertSessionHas('info');
+    $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+    $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
+});
 
-        $worker->refresh();
-        $this->assertSame('pnpm start', $worker->command);
+test('worker env pre deploy returns masked site variables', function () {
+    $this->proxiedSite->worker_environment = [
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+    ];
+    $this->proxiedSite->save();
 
-        $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
-        $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
-    }
-
-    public function test_worker_env_pre_deploy_returns_masked_site_variables(): void
-    {
-        $this->proxiedSite->worker_environment = [
-            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
-        ];
-        $this->proxiedSite->save();
-
-        $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]))
-            ->assertOk()
-            ->assertJson([
-                'variables' => [
-                    ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-                    ['key' => 'API_KEY', 'value' => '', 'is_secret' => true],
-                ],
-            ]);
-    }
-
-    public function test_update_worker_env_pre_deploy_stores_encrypted_on_site(): void
-    {
-        $fake = SSH::fake();
-
-        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+    $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]))
+        ->assertOk()
+        ->assertJson([
             'variables' => [
                 ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+                ['key' => 'API_KEY', 'value' => '', 'is_secret' => true],
             ],
-        ])->assertRedirect()
-            ->assertSessionHas('info');
-
-        $this->proxiedSite->refresh();
-        $this->assertEquals([
-            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-        ], $this->proxiedSite->worker_environment);
-
-        $raw = (string) DB::table('sites')->where('id', $this->proxiedSite->id)->value('worker_environment');
-        $this->assertStringNotContainsString('production', $raw);
-
-        $fake->assertNotExecutedContains('supervisor');
-    }
-
-    public function test_update_worker_env_with_existing_worker_delegates_to_worker(): void
-    {
-        $fake = SSH::fake();
-
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'npm start',
-            'status' => WorkerStatus::RUNNING,
         ]);
-        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+});
 
-        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
-            'variables' => [
-                ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-            ],
-            'restart' => true,
-        ])->assertRedirect()
-            ->assertSessionHas('info');
+test('update worker env pre deploy stores encrypted on site', function () {
+    $fake = SSH::fake();
 
-        $worker->refresh();
-        $this->assertEquals([
+    $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'variables' => [
             ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-        ], $worker->environment);
-        $this->assertNull($this->proxiedSite->refresh()->worker_environment);
+        ],
+    ])->assertRedirect()
+        ->assertSessionHas('info');
 
-        $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
-        $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
-    }
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->worker_environment)->toEqual([
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+    ]);
 
-    public function test_worker_env_endpoints_404_for_non_proxied_site(): void
-    {
-        $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->site]))
-            ->assertNotFound();
+    $raw = (string) DB::table('sites')->where('id', $this->proxiedSite->id)->value('worker_environment');
+    $this->assertStringNotContainsString('production', $raw);
 
-        $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->site]), [
-            'variables' => [],
-        ])->assertNotFound();
-    }
+    $fake->assertNotExecutedContains('supervisor');
+});
 
-    public function test_needs_first_deploy_warning_present_until_finished_deployment(): void
-    {
-        $beforeDeploy = $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]));
-        $beforeDeploy->assertInertia(fn (AssertableInertia $a) => $a
-            ->where('site.warnings', fn ($warnings) => collect($warnings)->contains(fn ($w) => $w['key'] === 'needs_first_deploy'))
-        );
+test('update worker env with existing worker delegates to worker', function () {
+    $fake = SSH::fake();
 
-        Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::FINISHED,
-        ]);
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'npm start',
+        'status' => WorkerStatus::RUNNING,
+    ]);
+    $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
 
-        $afterDeploy = $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]));
-        $afterDeploy->assertInertia(fn (AssertableInertia $a) => $a
-            ->where('site.warnings', fn ($warnings) => ! collect($warnings)->contains(fn ($w) => $w['key'] === 'needs_first_deploy'))
-        );
-    }
-}
+    $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'variables' => [
+            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ],
+        'restart' => true,
+    ])->assertRedirect()
+        ->assertSessionHas('info');
+
+    $worker->refresh();
+    expect($worker->environment)->toEqual([
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+    ]);
+    expect($this->proxiedSite->refresh()->worker_environment)->toBeNull();
+
+    $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+    $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
+});
+
+test('worker env endpoints 404 for non proxied site', function () {
+    $this->get(route('site-settings.worker-env', ['server' => $this->server, 'site' => $this->site]))
+        ->assertNotFound();
+
+    $this->patch(route('site-settings.update-worker-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [],
+    ])->assertNotFound();
+});
+
+test('needs first deploy warning present until finished deployment', function () {
+    $beforeDeploy = $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]));
+    $beforeDeploy->assertInertia(fn (AssertableInertia $a) => $a
+        ->where('site.warnings', fn ($warnings) => collect($warnings)->contains(fn ($w) => $w['key'] === 'needs_first_deploy'))
+    );
+
+    Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::FINISHED,
+    ]);
+
+    $afterDeploy = $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]));
+    $afterDeploy->assertInertia(fn (AssertableInertia $a) => $a
+        ->where('site.warnings', fn ($warnings) => ! collect($warnings)->contains(fn ($w) => $w['key'] === 'needs_first_deploy'))
+    );
+});

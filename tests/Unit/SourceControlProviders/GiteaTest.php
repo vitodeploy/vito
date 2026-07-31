@@ -1,350 +1,321 @@
 <?php
 
-namespace Tests\Unit\SourceControlProviders;
-
 use App\Models\SourceControl;
 use App\SourceControlProviders\Gitea;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
-class GiteaTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_id_returns_gitea(): void
-    {
-        $this->assertSame('gitea', Gitea::id());
-    }
+test('id returns gitea', function () {
+    expect(Gitea::id())->toBe('gitea');
+});
 
-    public function test_default_gitea_url(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $this->assertSame('https://gitea.com/api/v1', $gitea->getApiUrl());
-    }
-
-    public function test_default_gitea_repo_url(): void
-    {
-        $repo = 'test/repo';
-        $key = 'TEST_KEY';
-
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $this->assertSame('git@gitea.com-TEST_KEY:test/repo.git', $gitea->fullRepoUrl($repo, $key));
-    }
-
-    #[DataProvider('customUrlData')]
-    public function test_custom_url(string $url, string $expected): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'url' => $url,
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $this->assertSame($expected, $gitea->getApiUrl());
-    }
-
-    #[DataProvider('customRepoUrlData')]
-    public function test_custom_full_repository_url(string $url, string $expected): void
-    {
-        $repo = 'test/repo';
-        $key = 'TEST_KEY';
-
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'url' => $url,
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $this->assertSame($expected, $gitea->fullRepoUrl($repo, $key));
-    }
-
-    public function test_create_rules_returns_required_token_and_optional_url(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $rules = $gitea->createRules([]);
-
-        $this->assertArrayHasKey('token', $rules);
-        $this->assertSame('required', $rules['token']);
-        $this->assertArrayHasKey('url', $rules);
-        $this->assertIsArray($rules['url']);
-        $this->assertContains('nullable', $rules['url']);
-        $this->assertContains('url:http,https', $rules['url']);
-        $this->assertContains('ends_with:/', $rules['url']);
-    }
-
-    public function test_create_data_processes_input_correctly(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $input = [
-            'token' => 'my-token',
-            'url' => 'https://git.example.com/',
-        ];
-
-        $data = $gitea->createData($input);
-
-        $this->assertSame('my-token', $data['token']);
-    }
-
-    public function test_create_data_handles_missing_input(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $data = $gitea->createData([]);
-
-        $this->assertSame('', $data['token']);
-    }
-
-    public function test_data_retrieves_stored_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'stored-token',
-                ],
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $data = $gitea->data();
-
-        $this->assertSame('stored-token', $data['token']);
-    }
-
-    public function test_data_handles_missing_provider_data(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [],
-                'access_token' => null,
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $data = $gitea->data();
-
-        $this->assertSame('', $data['token']);
-    }
-
-    public function test_get_webhook_branch_extracts_branch_from_payload(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $payload = [
-            'ref' => 'refs/heads/main',
-        ];
-
-        $this->assertSame('main', $gitea->getWebhookBranch($payload));
-    }
-
-    public function test_get_webhook_branch_returns_empty_when_missing(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-
-        $this->assertSame('', $gitea->getWebhookBranch([]));
-    }
-
-    public function test_get_repos_returns_cached_repos_when_cache_exists(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-        $cacheKey = 'gitea_repos_'.md5($gitea->getApiUrl().'test-token');
-        $cachedRepos = ['user/repo1', 'user/repo2'];
-
-        Cache::put($cacheKey, $cachedRepos, 900);
-
-        $repos = $gitea->getRepos();
-
-        $this->assertSame($cachedRepos, $repos);
-    }
-
-    public function test_get_repos_fetches_from_api_when_cache_missing(): void
-    {
-        Http::fake([
-            'gitea.com/api/v1/user/repos*' => Http::response([
-                ['full_name' => 'user/repo1'],
-                ['full_name' => 'user/repo2'],
-            ], 200),
+test('default gitea url', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $gitea = new Gitea($sourceControlModel);
 
-        $gitea = new Gitea($sourceControlModel);
+    expect($gitea->getApiUrl())->toBe('https://gitea.com/api/v1');
+});
 
-        $repos = $gitea->getRepos(false);
+test('default gitea repo url', function () {
+    $repo = 'test/repo';
+    $key = 'TEST_KEY';
 
-        $this->assertSame(['user/repo1', 'user/repo2'], $repos);
-    }
-
-    public function test_get_repos_returns_empty_array_on_error(): void
-    {
-        Http::fake([
-            'gitea.com/api/v1/user/repos*' => Http::response([], 500),
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $gitea = new Gitea($sourceControlModel);
 
-        $gitea = new Gitea($sourceControlModel);
+    expect($gitea->fullRepoUrl($repo, $key))->toBe('git@gitea.com-TEST_KEY:test/repo.git');
+});
 
-        $repos = $gitea->getRepos(false);
-
-        $this->assertSame([], $repos);
-    }
-
-    public function test_get_branches_returns_cached_branches_when_cache_exists(): void
-    {
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
-
-        $gitea = new Gitea($sourceControlModel);
-        $repo = 'user/repo';
-        $cacheKey = 'gitea_branches_'.md5($repo.$gitea->getApiUrl().'test-token');
-        $cachedBranches = ['main', 'develop'];
-
-        Cache::put($cacheKey, $cachedBranches, 900);
-
-        $branches = $gitea->getBranches($repo);
-
-        $this->assertSame($cachedBranches, $branches);
-    }
-
-    public function test_get_branches_fetches_from_api_when_cache_missing(): void
-    {
-        Http::fake([
-            'gitea.com/api/v1/repos/user/repo/branches*' => Http::response([
-                ['name' => 'main'],
-                ['name' => 'develop'],
-            ], 200),
+test('custom url', function (string $url, string $expected) {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'url' => $url,
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $gitea = new Gitea($sourceControlModel);
 
-        $gitea = new Gitea($sourceControlModel);
+    expect($gitea->getApiUrl())->toBe($expected);
+})->with('customUrlData');
 
-        $branches = $gitea->getBranches('user/repo', false);
+test('custom full repository url', function (string $url, string $expected) {
+    $repo = 'test/repo';
+    $key = 'TEST_KEY';
 
-        $this->assertSame(['main', 'develop'], $branches);
-    }
-
-    public function test_get_branches_returns_empty_array_on_error(): void
-    {
-        Http::fake([
-            'gitea.com/api/v1/repos/user/repo/branches*' => Http::response([], 500),
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'url' => $url,
         ]);
 
-        $sourceControlModel = SourceControl::factory()
-            ->create([
-                'provider' => Gitea::id(),
-                'provider_data' => [
-                    'token' => 'test-token',
-                ],
-            ]);
+    $gitea = new Gitea($sourceControlModel);
 
-        $gitea = new Gitea($sourceControlModel);
+    expect($gitea->fullRepoUrl($repo, $key))->toBe($expected);
+})->with('customRepoUrlData');
 
-        $branches = $gitea->getBranches('user/repo', false);
+test('create rules returns required token and optional url', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+        ]);
 
-        $this->assertSame([], $branches);
-    }
+    $gitea = new Gitea($sourceControlModel);
 
-    /**
-     * @return array<int, array<int, string>>
-     */
-    public static function customRepoUrlData(): array
-    {
-        return [
-            ['https://git.example.com/', 'git@git.example.com-TEST_KEY:test/repo.git'],
-            ['https://git.test.example.com/', 'git@git.test.example.com-TEST_KEY:test/repo.git'],
-            ['https://git.example.co.uk/', 'git@git.example.co.uk-TEST_KEY:test/repo.git'],
-        ];
-    }
+    $rules = $gitea->createRules([]);
 
-    /**
-     * @return array<int, array<int, string>>
-     */
-    public static function customUrlData(): array
-    {
-        return [
-            ['https://git.example.com/', 'https://git.example.com/api/v1'],
-            ['https://git.test.example.com/', 'https://git.test.example.com/api/v1'],
-            ['https://git.example.co.uk/', 'https://git.example.co.uk/api/v1'],
-        ];
-    }
-}
+    expect($rules)->toHaveKey('token');
+    expect($rules['token'])->toBe('required');
+    expect($rules)->toHaveKey('url');
+    expect($rules['url'])->toBeArray();
+    expect($rules['url'])->toContain('nullable');
+    expect($rules['url'])->toContain('url:http,https');
+    expect($rules['url'])->toContain('ends_with:/');
+});
+
+test('create data processes input correctly', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $input = [
+        'token' => 'my-token',
+        'url' => 'https://git.example.com/',
+    ];
+
+    $data = $gitea->createData($input);
+
+    expect($data['token'])->toBe('my-token');
+});
+
+test('create data handles missing input', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $data = $gitea->createData([]);
+
+    expect($data['token'])->toBe('');
+});
+
+test('data retrieves stored provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'stored-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $data = $gitea->data();
+
+    expect($data['token'])->toBe('stored-token');
+});
+
+test('data handles missing provider data', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [],
+            'access_token' => null,
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $data = $gitea->data();
+
+    expect($data['token'])->toBe('');
+});
+
+test('get webhook branch extracts branch from payload', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $payload = [
+        'ref' => 'refs/heads/main',
+    ];
+
+    expect($gitea->getWebhookBranch($payload))->toBe('main');
+});
+
+test('get webhook branch returns empty when missing', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    expect($gitea->getWebhookBranch([]))->toBe('');
+});
+
+test('get repos returns cached repos when cache exists', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+    $cacheKey = 'gitea_repos_'.md5($gitea->getApiUrl().'test-token');
+    $cachedRepos = ['user/repo1', 'user/repo2'];
+
+    Cache::put($cacheKey, $cachedRepos, 900);
+
+    $repos = $gitea->getRepos();
+
+    expect($repos)->toBe($cachedRepos);
+});
+
+test('get repos fetches from api when cache missing', function () {
+    Http::fake([
+        'gitea.com/api/v1/user/repos*' => Http::response([
+            ['full_name' => 'user/repo1'],
+            ['full_name' => 'user/repo2'],
+        ], 200),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $repos = $gitea->getRepos(false);
+
+    expect($repos)->toBe(['user/repo1', 'user/repo2']);
+});
+
+test('get repos returns empty array on error', function () {
+    Http::fake([
+        'gitea.com/api/v1/user/repos*' => Http::response([], 500),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $repos = $gitea->getRepos(false);
+
+    expect($repos)->toBe([]);
+});
+
+test('get branches returns cached branches when cache exists', function () {
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+    $repo = 'user/repo';
+    $cacheKey = 'gitea_branches_'.md5($repo.$gitea->getApiUrl().'test-token');
+    $cachedBranches = ['main', 'develop'];
+
+    Cache::put($cacheKey, $cachedBranches, 900);
+
+    $branches = $gitea->getBranches($repo);
+
+    expect($branches)->toBe($cachedBranches);
+});
+
+test('get branches fetches from api when cache missing', function () {
+    Http::fake([
+        'gitea.com/api/v1/repos/user/repo/branches*' => Http::response([
+            ['name' => 'main'],
+            ['name' => 'develop'],
+        ], 200),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $branches = $gitea->getBranches('user/repo', false);
+
+    expect($branches)->toBe(['main', 'develop']);
+});
+
+test('get branches returns empty array on error', function () {
+    Http::fake([
+        'gitea.com/api/v1/repos/user/repo/branches*' => Http::response([], 500),
+    ]);
+
+    $sourceControlModel = SourceControl::factory()
+        ->create([
+            'provider' => Gitea::id(),
+            'provider_data' => [
+                'token' => 'test-token',
+            ],
+        ]);
+
+    $gitea = new Gitea($sourceControlModel);
+
+    $branches = $gitea->getBranches('user/repo', false);
+
+    expect($branches)->toBe([]);
+});
+
+/**
+ * @return array<int, array<int, string>>
+ */
+dataset('customRepoUrlData', function () {
+    return [
+        ['https://git.example.com/', 'git@git.example.com-TEST_KEY:test/repo.git'],
+        ['https://git.test.example.com/', 'git@git.test.example.com-TEST_KEY:test/repo.git'],
+        ['https://git.example.co.uk/', 'git@git.example.co.uk-TEST_KEY:test/repo.git'],
+    ];
+});
+
+/**
+ * @return array<int, array<int, string>>
+ */
+dataset('customUrlData', function () {
+    return [
+        ['https://git.example.com/', 'https://git.example.com/api/v1'],
+        ['https://git.test.example.com/', 'https://git.test.example.com/api/v1'],
+        ['https://git.example.co.uk/', 'https://git.example.co.uk/api/v1'],
+    ];
+});

@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Unit\Actions\SSL;
-
 use App\Actions\SSL\DeleteSsl;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
@@ -12,111 +10,98 @@ use App\Models\Ssl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
 
-class DeleteSslTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private DeleteSsl $action;
+beforeEach(function () {
+    $this->action = new DeleteSsl;
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->action = new DeleteSsl;
-    }
+test('deletes server level ssl', function () {
+    SSH::fake('SSL DELETED SUCCESSFULLY');
 
-    public function test_deletes_server_level_ssl(): void
-    {
-        SSH::fake('SSL DELETED SUCCESSFULLY');
+    $ssl = Ssl::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => null,
+        'status' => SslStatus::CREATED,
+    ]);
 
-        $ssl = Ssl::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => null,
-            'status' => SslStatus::CREATED,
-        ]);
+    $this->action->delete($ssl);
 
-        $this->action->delete($ssl);
+    $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
+});
 
-        $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
-    }
+test('deletes site level ssl', function () {
+    SSH::fake();
 
-    public function test_deletes_site_level_ssl(): void
-    {
-        SSH::fake();
+    $ssl = Ssl::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => SslStatus::CREATED,
+    ]);
 
-        $ssl = Ssl::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->site->id,
-            'status' => SslStatus::CREATED,
-        ]);
+    $this->action->delete($ssl);
 
-        $this->action->delete($ssl);
+    $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
+});
 
-        $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
-    }
+test('prevents deletion when in use by hosted domain', function () {
+    $ssl = Ssl::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => null,
+        'status' => SslStatus::CREATED,
+        'domains' => ['*.example.com'],
+    ]);
 
-    public function test_prevents_deletion_when_in_use_by_hosted_domain(): void
-    {
-        $ssl = Ssl::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => null,
-            'status' => SslStatus::CREATED,
-            'domains' => ['*.example.com'],
-        ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'app.example.com',
+        'ssl_id' => $ssl->id,
+        'status' => HostedDomainStatus::ACTIVE,
+    ]);
 
-        HostedDomain::factory()->create([
-            'site_id' => $this->site->id,
-            'domain' => 'app.example.com',
-            'ssl_id' => $ssl->id,
-            'status' => HostedDomainStatus::ACTIVE,
-        ]);
+    $this->expectException(ValidationException::class);
 
-        $this->expectException(ValidationException::class);
+    $this->action->delete($ssl);
+});
 
-        $this->action->delete($ssl);
-    }
+test('allows deletion when no hosted domains reference ssl', function () {
+    SSH::fake('SSL DELETED SUCCESSFULLY');
 
-    public function test_allows_deletion_when_no_hosted_domains_reference_ssl(): void
-    {
-        SSH::fake('SSL DELETED SUCCESSFULLY');
+    $ssl = Ssl::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => null,
+        'status' => SslStatus::CREATED,
+        'domains' => ['*.example.com'],
+    ]);
 
-        $ssl = Ssl::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => null,
-            'status' => SslStatus::CREATED,
-            'domains' => ['*.example.com'],
-        ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'app.example.com',
+        'ssl_id' => null,
+        'status' => HostedDomainStatus::ACTIVE,
+    ]);
 
-        HostedDomain::factory()->create([
-            'site_id' => $this->site->id,
-            'domain' => 'app.example.com',
-            'ssl_id' => null,
-            'status' => HostedDomainStatus::ACTIVE,
-        ]);
+    $this->action->delete($ssl);
 
-        $this->action->delete($ssl);
+    $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
+});
 
-        $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
-    }
+test('deletion dispatches job for server level', function () {
+    Bus::fake();
 
-    public function test_deletion_dispatches_job_for_server_level(): void
-    {
-        Bus::fake();
+    $ssl = Ssl::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => null,
+        'status' => SslStatus::CREATED,
+    ]);
 
-        $ssl = Ssl::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => null,
-            'status' => SslStatus::CREATED,
-        ]);
+    $this->action->delete($ssl);
 
-        $this->action->delete($ssl);
+    $this->assertDatabaseHas('ssls', [
+        'id' => $ssl->id,
+        'status' => SslStatus::DELETING,
+    ]);
 
-        $this->assertDatabaseHas('ssls', [
-            'id' => $ssl->id,
-            'status' => SslStatus::DELETING,
-        ]);
-
-        Bus::assertDispatched(DeleteServerSslJob::class);
-    }
-}
+    Bus::assertDispatched(DeleteServerSslJob::class);
+});
