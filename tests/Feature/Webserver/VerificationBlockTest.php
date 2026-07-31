@@ -55,16 +55,7 @@ test('nginx acme location renders outside basic auth', function () {
 });
 
 test('caddy renders verification handle when key present', function () {
-    $this->server->services()->where('type', 'webserver')->delete();
-    $this->server->services()->create([
-        'type' => Caddy::type(),
-        'name' => Caddy::id(),
-        'version' => 'latest',
-    ]);
-    $this->server->services()->update([
-        'status' => ServiceStatus::READY,
-    ]);
-    $this->server->refresh();
+    vitoPestFeatureWebserverVerificationBlockTestSwitchToCaddy();
 
     HostedDomain::factory()->primary()->create([
         'site_id' => $this->site->id,

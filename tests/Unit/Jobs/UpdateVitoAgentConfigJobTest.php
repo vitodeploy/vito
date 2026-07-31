@@ -32,7 +32,7 @@ test('updates config and restarts agent', function () {
     $config = json_decode(SSH::getUploadedContent(), true);
     expect($config['url'])->toBe('https://vito.test/agent-endpoint');
     expect($config['secret'])->toBe('agent-secret');
-    $this->assertArrayNotHasKey('data_retention', $config);
+    expect($config)->not->toHaveKey('data_retention');
 
     $units = array_column($config['services'], 'unit', 'id');
     expect($units)->toHaveCount(6);
@@ -43,7 +43,7 @@ test('updates config and restarts agent', function () {
     expect($units)->toContain('supervisor');
     expect($units)->toContain('redis-server');
     expect($units)->not->toContain('');
-    $this->assertArrayNotHasKey($agent->id, $units);
+    expect($units)->not->toHaveKey($agent->id);
 });
 
 test('does nothing without vito agent', function () {
@@ -88,16 +88,8 @@ test('dispatch for never throws into the calling job', function () {
 function vitoPestUnitJobsUpdateVitoAgentConfigJobTestCreateAgent(ServiceStatus $status): Service
 {
     /** @var Service $service */
-    $service = Service::factory()->create([
+    $service = Service::factory()->vitoAgent()->create([
         'server_id' => test()->server->id,
-        'name' => 'vito-agent',
-        'type' => 'monitoring',
-        'type_data' => [
-            'url' => 'https://vito.test/agent-endpoint',
-            'secret' => 'agent-secret',
-            'data_retention' => 7,
-        ],
-        'version' => 'latest',
         'status' => $status,
     ]);
 

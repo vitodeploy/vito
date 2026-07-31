@@ -9,6 +9,7 @@ use App\Jobs\Service\UpdateVitoAgentConfigJob;
 use App\Models\Database;
 use App\Models\Service;
 use App\Models\Worker;
+use App\Services\Webserver\Caddy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\ValidationException;
@@ -39,18 +40,7 @@ test('uninstalling service dispatches agent config update', function () {
     SSH::fake();
     Bus::fake([UpdateVitoAgentConfigJob::class]);
 
-    Service::factory()->create([
-        'server_id' => $this->server->id,
-        'name' => 'vito-agent',
-        'type' => 'monitoring',
-        'type_data' => [
-            'url' => 'https://vito.test/agent-endpoint',
-            'secret' => 'agent-secret',
-            'data_retention' => 7,
-        ],
-        'version' => 'latest',
-        'status' => ServiceStatus::READY,
-    ]);
+    Service::factory()->vitoAgent()->create(['server_id' => $this->server->id]);
 
     $redis = $this->server->services()->where('name', 'redis')->firstOrFail();
 
@@ -90,9 +80,12 @@ test('cannot uninstall nginx', function () {
 test('cannot uninstall caddy', function () {
     SSH::fake();
 
+    $caddy = $this->server->webserver();
+    $caddy->update(['name' => Caddy::id()]);
+
     $this->expectException(ValidationException::class);
 
-    app(Uninstall::class)->uninstall($this->server->webserver());
+    app(Uninstall::class)->uninstall($caddy);
 });
 
 test('cannot uninstall mysql', function () {

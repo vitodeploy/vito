@@ -14,10 +14,9 @@ test('user can invite others', function () {
 
     $this->actingAs($this->user);
 
-    // make sure the user has default project
     $project = $this->user->ensureHasDefaultProject();
 
-    test()
+    $this
         ->from(route('projects'))
         ->post(route('projects.users.store', ['project' => $project]), [
             'email' => 'new-user@example.com',
@@ -38,7 +37,6 @@ test('user can invite others', function () {
 test('can remove registered user from project', function () {
     $this->actingAs($this->user);
 
-    // make sure the user has default project
     $project = $this->user->ensureHasDefaultProject();
 
     /** @var User $newUser */
@@ -50,7 +48,7 @@ test('can remove registered user from project', function () {
         'role' => UserRole::USER,
     ]);
 
-    test()
+    $this
         ->from(route('projects'))
         ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $userProject->id]))
         ->assertRedirect(route('projects'))
@@ -66,12 +64,11 @@ test('can remove registered user from project', function () {
 test('can remove owner from project', function () {
     $this->actingAs($this->user);
 
-    // make sure the user has default project
     $project = $this->user->ensureHasDefaultProject();
 
     $id = $project->users()->where('user_id', $this->user->id)->first()->id;
 
-    test()
+    $this
         ->from(route('projects'))
         ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $id]))
         ->assertSessionHas([
@@ -82,7 +79,6 @@ test('can remove owner from project', function () {
 test('can remove invited user from project', function () {
     $this->actingAs($this->user);
 
-    // make sure the user has default project
     $project = $this->user->ensureHasDefaultProject();
 
     $userProject = $project->users()->create([
@@ -91,7 +87,7 @@ test('can remove invited user from project', function () {
         'role' => UserRole::USER,
     ]);
 
-    test()
+    $this
         ->from(route('projects'))
         ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $userProject->id]))
         ->assertRedirect(route('projects'))
@@ -116,7 +112,7 @@ test('user can accept invitation', function () {
         'role' => UserRole::USER,
     ]);
 
-    test()
+    $this
         ->from(route('projects'))
         ->get(route('projects.invitations.accept', ['project' => $ownerProject]))
         ->assertRedirect(route('projects'))
@@ -135,7 +131,7 @@ test('user cannot join without invitation', function () {
 
     $this->actingAs($this->user);
 
-    test()
+    $this
         ->from(route('projects'))
         ->get(route('projects.invitations.accept', ['project' => $ownerProject]))
         ->assertNotFound();
@@ -158,7 +154,7 @@ test('user can leave project', function () {
         'role' => UserRole::USER,
     ]);
 
-    test()
+    $this
         ->from(route('projects'))
         ->delete(route('projects.leave', ['project' => $ownerProject]))
         ->assertRedirect(route('projects'))
@@ -177,7 +173,7 @@ test('user can leave project that is not invited', function () {
 
     $this->actingAs($this->user);
 
-    test()
+    $this
         ->from(route('projects'))
         ->delete(route('projects.leave', ['project' => $ownerProject]))
         ->assertNotFound();

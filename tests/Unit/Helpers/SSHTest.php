@@ -13,12 +13,8 @@ test('write propagates the failure and cleans up the local temporary file', func
     $ssh = SSH::fake();
     $ssh->execWillFail();
 
-    try {
-        $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito');
-        $this->fail('Expected the write to throw when the remote command fails.');
-    } catch (SSHCommandError) {
-        // expected
-    }
+    expect(fn () => $this->server->ssh()->write('/home/vito/example.com/.env', 'APP_NAME=TestApp', 'vito'))
+        ->toThrow(SSHCommandError::class);
 
     expect(Storage::disk('local')->files())->toBeEmpty();
 });

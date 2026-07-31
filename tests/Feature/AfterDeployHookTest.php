@@ -126,16 +126,10 @@ test('after deploy refuses to adopt user worker with custom command', function (
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // bootstrapWorker() should return null (command doesn't match a known
-    // default) so afterDeploy() attempts to create a new worker. Worker
-    // name uniqueness then surfaces the conflict — the user must rename
-    // their custom worker before deploy can succeed.
     $type = $this->proxiedSite->type();
-
-    $this->expectException(ValidationException::class);
 
     $type->afterDeploy(Deployment::factory()->create([
         'site_id' => $this->proxiedSite->id,
         'status' => DeploymentStatus::DEPLOYING,
     ]));
-});
+})->throws(ValidationException::class);

@@ -75,7 +75,6 @@ test('lock uses legacy key shape for cross deploy compat', function () {
     $lock = $iuser->lock();
     expect($lock->get())->toBeTrue('iuser lock should be acquirable initially');
 
-    // Same logical lock as the legacy `Server::isolatedUserLock($username)`.
     $legacyClash = Cache::lock("isolate:{$this->server->id}:alpha", 60);
     expect($legacyClash->get())->toBeFalse('legacy-shaped lock should clash with the iuser lock');
 

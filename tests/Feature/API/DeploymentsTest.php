@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\Traits\PrepareLoadBalancer;
 
-uses(PrepareLoadBalancer::class);
-
-uses(RefreshDatabase::class);
+uses(PrepareLoadBalancer::class, RefreshDatabase::class);
 
 beforeEach(function () {
     $this->prepare();

@@ -285,14 +285,13 @@ test('auto update runner dispatches only due servers', function () {
 
     Queue::assertPushed(UpdateJob::class, 1);
     Queue::assertPushed(UpdateJob::class, fn (UpdateJob $job) => vitoPestFeatureSecurityTestJobServerId($job) === $this->server->id);
-    $this->assertNotEquals($notDue->id, $this->server->id);
+    Queue::assertNotPushed(UpdateJob::class, fn (UpdateJob $job) => vitoPestFeatureSecurityTestJobServerId($job) === $notDue->id);
 });
 
 function vitoPestFeatureSecurityTestJobServerId(UpdateJob $job): int
 {
     $reflection = new ReflectionClass($job);
     $property = $reflection->getProperty('server');
-    $property->setAccessible(true);
 
     /** @var Server $server */
     $server = $property->getValue($job);

@@ -11,6 +11,7 @@ use App\Enums\ServerStatus;
 use App\Facades\SSH;
 use App\Jobs\Backup\DeleteFileJob;
 use App\Jobs\Backup\RestoreDatabaseJob;
+use App\Jobs\Backup\RestoreFileJob;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
@@ -28,7 +29,6 @@ use Inertia\Testing\AssertableInertia;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Additional setup for file restore tests
     $this->storageProvider = StorageProvider::factory()->create([
         'user_id' => $this->user->id,
     ]);
@@ -293,15 +293,10 @@ test('file restore dispatches job', function () {
         'permissions' => '755',
     ]);
 
-    // The job dispatch is tested by checking that the status is set correctly
-    // and the restored_to field is populated
-    $this->backupFile->refresh();
-    expect($this->backupFile->status)->toEqual(BackupFileStatus::RESTORING);
-    expect($this->backupFile->restored_to)->toEqual('/home/vito/restored-x.com');
+    Bus::assertDispatched(RestoreFileJob::class);
 });
 
 test('database restore validation requires database', function () {
-    // Create a database backup instead
     $databaseBackup = Backup::factory()->create([
         'type' => BackupType::DATABASE,
         'server_id' => $this->server->id,
@@ -321,7 +316,6 @@ test('database restore validation requires database', function () {
 });
 
 test('database restore validation database must exist', function () {
-    // Create a database backup instead
     $databaseBackup = Backup::factory()->create([
         'type' => BackupType::DATABASE,
         'server_id' => $this->server->id,
@@ -338,7 +332,7 @@ test('database restore validation database must exist', function () {
     $this->expectExceptionMessage('The selected database is invalid.');
 
     app(RestoreBackup::class)->restore($databaseBackupFile, [
-        'database' => 999, // Non-existent database
+        'database' => 999,
     ]);
 });
 

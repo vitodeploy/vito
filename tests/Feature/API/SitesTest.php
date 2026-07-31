@@ -367,7 +367,6 @@ test('show env unauthorized', function () {
 
     Sanctum::actingAs($this->user, []);
 
-    // no abilities
     /** @var Site $site */
     $site = Site::factory()->create([
         'server_id' => $this->server->id,

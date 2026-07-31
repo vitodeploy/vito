@@ -335,7 +335,3 @@ test('pagination works correctly', function () {
     // Should have pagination links since we have more than 25 workflow runs
     expect($response->json('links.next'))->not->toBeNull();
 });
-
-afterEach(function () {
-    Mockery::close();
-});

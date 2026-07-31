@@ -35,17 +35,19 @@ test('vacuums when disk space is sufficient', function () {
     $database = tempnam(sys_get_temp_dir(), 'vito-vacuum-test-');
     file_put_contents($database, 'x');
 
-    $connection = Mockery::mock(Connection::class);
-    $connection->shouldReceive('getDriverName')->andReturn('sqlite');
-    $connection->shouldReceive('getDatabaseName')->andReturn($database);
-    $connection->shouldReceive('statement')->once()->with('VACUUM');
+    try {
+        $connection = Mockery::mock(Connection::class);
+        $connection->shouldReceive('getDriverName')->andReturn('sqlite');
+        $connection->shouldReceive('getDatabaseName')->andReturn($database);
+        $connection->shouldReceive('statement')->once()->with('VACUUM');
 
-    DB::shouldReceive('connection')->andReturn($connection);
+        DB::shouldReceive('connection')->andReturn($connection);
 
-    $this->artisan('db:vacuum')
-        ->expectsOutput('Vacuuming the database...')
-        ->expectsOutput('Database vacuumed!')
-        ->assertSuccessful();
-
-    unlink($database);
+        $this->artisan('db:vacuum')
+            ->expectsOutput('Vacuuming the database...')
+            ->expectsOutput('Database vacuumed!')
+            ->assertSuccessful();
+    } finally {
+        unlink($database);
+    }
 });

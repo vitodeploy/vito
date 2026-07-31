@@ -441,9 +441,10 @@ test('change php version', function () {
 
     $site = Site::factory()->create([
         'server_id' => $this->server->id,
+        'php_version' => '8.3',
     ]);
 
-    $this->delete(route('site-settings.update-php-version', [
+    $this->patch(route('site-settings.update-php-version', [
         'server' => $this->server->id,
         'site' => $site->id,
     ]), [
@@ -772,10 +773,7 @@ test('create site rejects directory traversal', function () {
     ]);
 });
 
-/**
- * @return array<array<int, mixed>>
- */
-dataset('failure_create_data', function () {
+dataset('failure_create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
     return [
         [
             [
@@ -852,17 +850,11 @@ dataset('failure_create_data', function () {
     ];
 });
 
-/**
- * @return array<array<array<string, mixed>>>
- */
-dataset('create_data', function () {
+dataset('create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
     return vitoPestSiteCreateData();
 });
 
-/**
- * @return array<array<int>>
- */
-dataset('create_failure_data', function () {
+dataset('create_failure_data', /** @return array<int, array{0: int}> */ function (): array {
     return [
         [401],
         [403],

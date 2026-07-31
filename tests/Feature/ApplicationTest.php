@@ -934,9 +934,6 @@ test('git hook deployment invalid secret', function () {
     ]);
 });
 
-/**
- * @return array<array<int, mixed>>
- */
 dataset('hookData', function () {
     return [
         [
@@ -1235,9 +1232,6 @@ test('read only member can read the default env path', function () {
     ]))->assertOk();
 });
 
-/**
- * @return array<string, array<int, string>>
- */
 dataset('rejectedEnvPathProvider', function () {
     return [
         'absolute path outside the site' => ['/etc/passwd'],

@@ -48,7 +48,6 @@ test('install vito agent failed', function () {
         'version' => 'latest',
     ]);
 
-    // Wait for the job to complete and check the service status
     $service->refresh();
     expect($service->status)->toEqual(ServiceStatus::INSTALLATION_FAILED);
 });
@@ -166,7 +165,7 @@ test('installing service dispatches agent config update', function () {
     SSH::fake('Active: active');
     Bus::fake([UpdateVitoAgentConfigJob::class]);
 
-    vitoPestUnitActionsServiceInstallTestCreateVitoAgent();
+    Service::factory()->vitoAgent()->create(['server_id' => $this->server->id]);
     $this->server->memoryDatabase()->delete();
 
     app(Install::class)->install($this->server, [
@@ -182,7 +181,7 @@ test('installing service without unit does not dispatch agent config update', fu
     SSH::fake('Active: active');
     Bus::fake([UpdateVitoAgentConfigJob::class]);
 
-    vitoPestUnitActionsServiceInstallTestCreateVitoAgent();
+    Service::factory()->vitoAgent()->create(['server_id' => $this->server->id]);
     $this->server->services()->where('name', 'nodejs')->delete();
 
     app(Install::class)->install($this->server, [
@@ -198,7 +197,7 @@ test('failed install does not dispatch agent config update', function () {
     SSH::fake('inactive');
     Bus::fake([UpdateVitoAgentConfigJob::class]);
 
-    vitoPestUnitActionsServiceInstallTestCreateVitoAgent();
+    Service::factory()->vitoAgent()->create(['server_id' => $this->server->id]);
     $this->server->memoryDatabase()->delete();
 
     app(Install::class)->install($this->server, [
@@ -253,19 +252,3 @@ test('installing vito agent writes config with services', function () {
 
     Bus::assertNotDispatched(UpdateVitoAgentConfigJob::class);
 });
-
-function vitoPestUnitActionsServiceInstallTestCreateVitoAgent(): void
-{
-    Service::factory()->create([
-        'server_id' => test()->server->id,
-        'name' => 'vito-agent',
-        'type' => 'monitoring',
-        'type_data' => [
-            'url' => 'https://vito.test/agent-endpoint',
-            'secret' => 'agent-secret',
-            'data_retention' => 7,
-        ],
-        'version' => 'latest',
-        'status' => ServiceStatus::READY,
-    ]);
-}

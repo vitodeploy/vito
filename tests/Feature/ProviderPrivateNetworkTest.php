@@ -470,10 +470,7 @@ test('aws mapper falls back to vpc id when untagged', function () {
     expect($networks[0]->name)->toBe('vpc-9');
 });
 
-/**
- * @return array<string, array{0: ?string}>
- */
-dataset('untrustedAddresses', function () {
+dataset('untrustedAddresses', /** @return array<string, array{0: string}> */ function (): array {
     return [
         'command substitution' => ['10.0.0.2 $(id)'],
         'command chaining' => ['10.0.0.2; rm -rf /'],

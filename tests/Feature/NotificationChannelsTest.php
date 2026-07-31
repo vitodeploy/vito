@@ -7,13 +7,10 @@ use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
 use App\NotificationChannels\Telegram;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
-
-uses(WithFaker::class);
 
 test('add email channel', function () {
     $this->actingAs($this->user);

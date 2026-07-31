@@ -16,7 +16,6 @@ uses(RefreshDatabase::class);
 test('connect provider', function (string $provider, ?string $customUrl, array $input) {
     $this->actingAs($this->user);
 
-    // Configure HTTP fake responses for BitbucketV2 OAuth flow
     if ($provider === BitbucketV2::id()) {
         Http::fake([
             'bitbucket.org/site/oauth2/access_token' => Http::response([
@@ -40,7 +39,8 @@ test('connect provider', function (string $provider, ?string $customUrl, array $
         $input['url'] = $customUrl;
     }
 
-    $this->post(route('source-controls.store'), $input);
+    $this->post(route('source-controls.store'), $input)
+        ->assertSessionDoesntHaveErrors();
 
     $this->assertDatabaseHas('source_controls', [
         'provider' => $provider,
@@ -194,7 +194,8 @@ test('cannot manipulate user id on creation', function () {
         'user_id' => $otherUser->id,
     ];
 
-    $this->post(route('source-controls.store'), $data);
+    $this->post(route('source-controls.store'), $data)
+        ->assertSessionDoesntHaveErrors();
 
     $this->assertDatabaseHas('source_controls', [
         'profile' => 'test',
@@ -432,10 +433,7 @@ test('clone script renders default port 22', function () {
     $this->assertStringContainsString('ssh-keyscan -T 5 -p 22 -H gitea.example.com', $rendered);
 });
 
-/**
- * @return array<int, mixed>
- */
-dataset('data', function () {
+dataset('data', /** @return array<int, array{0: string, 1: ?string, 2: array<string, mixed>}> */ function (): array {
     return [
         [Github::id(), null, ['token' => 'test']],
         [Github::id(), null, ['token' => 'test', 'global' => true]],

@@ -10,7 +10,6 @@ use App\Models\Worker;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SourceControlProviders\Github;
-use App\Support\Testing\SSHFake;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -129,16 +128,9 @@ test('refresh rewrites conf for worker on origin site', function () {
     $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
     $this->assertStringContainsString(
         '/home/isolated-foo/.local/share/mise/shims',
-        vitoPestFeatureWorkerToolingTestLastUploadedContent($fake),
+        $fake->getUploadedContent(),
     );
 });
-
-function vitoPestFeatureWorkerToolingTestLastUploadedContent(SSHFake $fake): string
-{
-    $ref = new ReflectionProperty($fake, 'uploadedContent');
-
-    return (string) $ref->getValue($fake);
-}
 
 test('refresh propagates to sibling site workers', function () {
     $fake = SSH::fake();

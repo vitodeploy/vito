@@ -18,11 +18,15 @@ test('create user', function () {
         'email' => 'john@doe.com',
     ]);
 
-    /** @var User $user */
-    $user = User::query()->where('email', 'john@doe.com')->first();
+    $user = User::query()->where('email', 'john@doe.com')->firstOrFail();
 
     $this->assertDatabaseHas('projects', [
         'name' => 'default',
+    ]);
+
+    $this->assertDatabaseHas('user_project', [
+        'user_id' => $user->id,
+        'project_id' => $user->refresh()->current_project_id,
     ]);
 });
 
@@ -41,8 +45,7 @@ test('create user and project', function () {
         'email' => 'john@doe.com',
     ]);
 
-    /** @var User $user */
-    $user = User::query()->where('email', 'john@doe.com')->first();
+    $user = User::query()->where('email', 'john@doe.com')->firstOrFail();
 
     $this->assertDatabaseHas('projects', [
         'name' => 'default',

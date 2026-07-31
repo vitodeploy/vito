@@ -134,21 +134,18 @@ test('get php ini', function (string $version, PHPIniType $type) {
 
     $this->actingAs($this->user);
 
-    $php = $this->server->php('8.2');
+    $php = $this->server->php($version);
 
     $this->get(route('php.ini', [
         'server' => $this->server,
         'service' => $php->id,
-        'version' => '8.2',
+        'version' => $version,
         'type' => $type->value,
     ]))
         ->assertSessionDoesntHaveErrors();
 })->with('php_ini_data');
 
-/**
- * @return array<array<int, string>>
- */
-dataset('php_ini_data', function () {
+dataset('php_ini_data', /** @return array<int, array{0: string, 1: PHPIniType}> */ function (): array {
     return [
         ['8.2', PHPIniType::FPM],
         ['8.2', PHPIniType::CLI],

@@ -10,6 +10,7 @@ uses(RefreshDatabase::class);
 
 test('should have default service', function () {
     $php = $this->server->defaultService('php');
+    $this->assertNotNull($php);
     $php->update(['is_default' => false]);
     expect($this->server->defaultService('php'))->not->toBeNull();
     $php->refresh();

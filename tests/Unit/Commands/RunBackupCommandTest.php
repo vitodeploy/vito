@@ -25,9 +25,12 @@ function vitoPestUnitCommandsRunBackupCommandTestFakeStorageHttp(): void
     ]);
 }
 
+/**
+ * @param  array{interval: string, enabled?: bool, status?: BackupStatus|null, server_id?: int}  $attributes
+ */
 function vitoPestUnitCommandsRunBackupCommandTestCreateBackup(array $attributes): Backup
 {
-    $database = Database::factory()->create(['server_id' => test()->server]);
+    $database = Database::factory()->create(['server_id' => test()->server->id]);
     $storage = StorageProvider::factory()->dropbox()->create(['user_id' => test()->user->id]);
 
     return Backup::factory()->create(array_merge([

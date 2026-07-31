@@ -13,7 +13,6 @@ test('user can enable two factor authentication', function () {
 
     $this->actingAs($user);
 
-    // Enable two-factor authentication
     $this->post(route('two-factor.enable'))
         ->assertSessionDoesntHaveErrors();
 
@@ -22,16 +21,13 @@ test('user can enable two factor authentication', function () {
     expect($user->two_factor_secret)->not->toBeNull();
     expect($user->two_factor_confirmed_at)->toBeNull();
 
-    // Generate a valid TOTP code from the secret
     $google2fa = new Google2FA;
     $validCode = $google2fa->getCurrentOtp(decrypt($user->two_factor_secret));
 
-    // Submit the code to confirm 2FA
     $this->post(route('two-factor.confirm'), [
         'code' => $validCode,
     ])->assertSessionDoesntHaveErrors();
 
-    // Assert the user is now confirmed
     expect($user->refresh()->two_factor_confirmed_at)->not->toBeNull();
 });
 
@@ -42,22 +38,18 @@ test('user can disable two factor authentication', function () {
 
     $this->actingAs($user);
 
-    // First, enable 2FA
     $this->post(route('two-factor.enable'))
         ->assertSessionDoesntHaveErrors();
 
     $user = $user->refresh();
 
-    // Ensure 2FA secret is set
     expect($user->two_factor_secret)->not->toBeNull();
 
-    // Now disable 2FA
     $this->delete(route('two-factor.disable'))
         ->assertSessionDoesntHaveErrors();
 
     $user = $user->refresh();
 
-    // Ensure 2FA is fully removed
     expect($user->two_factor_secret)->toBeNull();
     expect($user->two_factor_confirmed_at)->toBeNull();
     expect($user->two_factor_recovery_codes ?? [])->toBeEmpty();
@@ -77,10 +69,8 @@ test('see two factor challenge', function () {
         'password' => 'password',
     ]);
 
-    // Should redirect to the two-factor challenge page
     $response->assertRedirect(route('two-factor.login'));
 
-    // Simulate entering 2FA code
     $loginId = session('login.id');
     expect($loginId)->not->toBeNull();
 
@@ -95,6 +85,5 @@ test('see two factor challenge', function () {
         ->assertSessionDoesntHaveErrors();
 
     $response->assertRedirect(route('servers'));
-    // or your expected redirect route
     $this->assertAuthenticatedAs($user);
 });

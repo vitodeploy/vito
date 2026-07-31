@@ -354,12 +354,8 @@ test('malformed provider response fails the sweep instead of pruning', function 
 
     $this->malformed = true;
 
-    try {
-        vitoPestFeatureNetworkProviderSyncTestSync();
-        $this->fail('A malformed provider response must fail the sweep.');
-    } catch (PrivateNetworkSyncError) {
-        // expected
-    }
+    expect(fn () => vitoPestFeatureNetworkProviderSyncTestSync())
+        ->toThrow(PrivateNetworkSyncError::class);
 
     expect(Network::query()->find($network->id))->not->toBeNull('A network must not be pruned on the strength of an unreadable response.');
 });
@@ -372,9 +368,8 @@ test('a network that cannot be persisted fails the sweep', function () {
         ['id' => 102, 'private_net' => [['network' => 4711, 'ip' => '10.0.0.2']]],
     ]);
 
-    $this->expectException(PrivateNetworkPersistError::class);
-
-    vitoPestFeatureNetworkProviderSyncTestSync();
+    expect(fn () => vitoPestFeatureNetworkProviderSyncTestSync())
+        ->toThrow(PrivateNetworkPersistError::class);
 
     expect($peer)->not->toBeNull();
 });

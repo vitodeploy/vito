@@ -11,11 +11,14 @@ use Illuminate\Support\Facades\Event;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->server->services()->delete();
+});
+
 test('updates changed statuses and dispatches events', function () {
     SSH::fake("active\ninactive\nfailed");
     Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::READY);
     $mysql = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('database', 'mysql', ServiceStatus::READY);
     $redis = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('memory_database', 'redis', ServiceStatus::STOPPED);
@@ -41,7 +44,6 @@ test('disabled service reported inactive stays disabled', function () {
     SSH::fake('inactive');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::DISABLED);
 
     app(CheckServiceStatuses::class)->check($this->server);
@@ -54,7 +56,6 @@ test('disabled service reported active becomes ready', function () {
     SSH::fake('active');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::DISABLED);
 
     app(CheckServiceStatuses::class)->check($this->server);
@@ -69,7 +70,6 @@ test('transitional and unitless services are not checked', function () {
     SSH::fake('active');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::INSTALLING);
     vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('nodejs', 'nodejs', ServiceStatus::READY);
     vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('log_analysis', 'goaccess', ServiceStatus::READY);
@@ -90,7 +90,6 @@ test('skips ssh when no pollable services', function () {
     SSH::fake('active');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('nodejs', 'nodejs', ServiceStatus::READY);
 
     app(CheckServiceStatuses::class)->check($this->server);
@@ -103,7 +102,6 @@ test('mismatched output updates nothing', function () {
     SSH::fake('active');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::STOPPED);
     $mysql = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('database', 'mysql', ServiceStatus::STOPPED);
 
@@ -118,7 +116,6 @@ test('single inactive reading does not change status', function () {
     SSH::fake('inactive');
     Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::READY);
 
     app(CheckServiceStatuses::class)->check($this->server);
@@ -131,7 +128,6 @@ test('single inactive reading does not change status', function () {
 test('restart flap does not change status', function () {
     Event::fake([ServiceStatusChanged::class, SocketEvent::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::READY);
 
     SSH::fake('inactive');
@@ -151,7 +147,6 @@ test('two consecutive inactive readings change status', function () {
     SSH::fake('inactive');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::READY);
 
     app(CheckServiceStatuses::class)->check($this->server);
@@ -165,7 +160,6 @@ test('recovery to active applies immediately', function () {
     SSH::fake('active');
     Event::fake([ServiceStatusChanged::class]);
 
-    $this->server->services()->delete();
     $nginx = vitoPestUnitActionsServiceCheckServiceStatusesTestCreateService('webserver', 'nginx', ServiceStatus::STOPPED);
 
     app(CheckServiceStatuses::class)->check($this->server);

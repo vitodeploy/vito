@@ -50,9 +50,15 @@ test('start command returns default', function () {
 });
 
 test('start command from type data', function () {
-    $reflection = new ReflectionMethod($this->siteType, 'startCommand');
+    $this->bunSite->update([
+        'type_data' => array_merge($this->bunSite->type_data, [
+            'start_command' => 'bun run start:prod',
+        ]),
+    ]);
+    $siteType = new BunSite($this->bunSite->refresh());
+    $reflection = new ReflectionMethod($siteType, 'startCommand');
 
-    expect($reflection->invoke($this->siteType))->toEqual('bun run start');
+    expect($reflection->invoke($siteType))->toEqual('bun run start:prod');
 });
 
 test('start command defaults', function () {

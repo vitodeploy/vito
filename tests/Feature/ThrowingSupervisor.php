@@ -8,6 +8,9 @@ use App\Services\ProcessManager\Supervisor;
 
 class ThrowingSupervisor extends Supervisor
 {
+    /**
+     * @param  array<int, int>  $ids
+     */
     public function restartMany(array $ids, ?int $siteId = null): string
     {
         $log = ServerLog::log($this->service->server, 'restart-workers', '');

@@ -25,7 +25,8 @@ test('create', function (array $input) {
         SFTP::fake();
     }
 
-    $this->post(route('storage-providers.store'), $input);
+    $this->post(route('storage-providers.store'), $input)
+        ->assertSessionDoesntHaveErrors();
 
     if ($input['provider'] === App\StorageProviders\FTP::id()) {
         FTP::assertConnected($input['host']);
@@ -163,7 +164,7 @@ test('cannot delete provider', function () {
     $this->actingAs($this->user);
 
     $database = Database::factory()->create([
-        'server_id' => $this->server,
+        'server_id' => $this->server->id,
     ]);
 
     $provider = StorageProviderModel::factory()->create([
@@ -300,10 +301,7 @@ test('user can only see own storage providers in list', function () {
     );
 });
 
-/**
- * @return array<int, mixed>
- */
-dataset('createData', function () {
+dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
     return [
         [
             [

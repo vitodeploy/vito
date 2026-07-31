@@ -15,7 +15,6 @@ uses(RefreshDatabase::class);
 test('create site action fails with foreign server', function () {
     SSH::fake();
 
-    // Create a second project with a server that the user has no access to
     $otherUser = User::factory()->create();
     $otherProject = Project::factory()->create();
     $otherProject->users()->create([
@@ -27,7 +26,6 @@ test('create site action fails with foreign server', function () {
         'project_id' => $otherProject->id,
     ]);
 
-    // Create a workflow in the user's own project
     $workflow = Workflow::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,

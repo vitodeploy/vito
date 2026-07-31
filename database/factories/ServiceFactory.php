@@ -23,4 +23,19 @@ class ServiceFactory extends Factory
             'status' => ServiceStatus::READY,
         ];
     }
+
+    public function vitoAgent(): static
+    {
+        return $this->state(fn (): array => [
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'type_data' => [
+                'url' => 'https://vito.test/agent-endpoint',
+                'secret' => 'agent-secret',
+                'data_retention' => 7,
+            ],
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+    }
 }

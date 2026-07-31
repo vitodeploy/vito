@@ -86,9 +86,7 @@ test('show specific dns provider', function () {
         ]);
 });
 
-test('delete dns provider', function (string $provider, array $input) {
-    unset($input);
-
+test('delete dns provider', function (string $provider) {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
     /** @var DNSProvider $dnsProvider */
@@ -632,19 +630,15 @@ test('dns provider update ignores project id manipulation', function () {
         ->assertSuccessful()
         ->assertJsonFragment([
             'name' => 'Updated Name',
-            'project_id' => $this->user->current_project_id, // Should remain unchanged
+            'project_id' => $this->user->current_project_id,
         ]);
 
     $dnsProvider->refresh();
     expect($dnsProvider->name)->toEqual('Updated Name');
     expect($dnsProvider->project_id)->toEqual($this->user->current_project_id);
-    // Should remain unchanged
 });
 
-/**
- * @return array<array<int, mixed>>
- */
-dataset('data', function () {
+dataset('data', /** @return array<int, array{0: string, 1: array<string, mixed>}> */ function (): array {
     return [
         [Cloudflare::id(), ['token' => 'test-token']],
         [Cloudflare::id(), ['token' => 'test-token', 'global' => true]],

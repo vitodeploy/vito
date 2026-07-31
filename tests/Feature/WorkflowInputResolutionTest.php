@@ -30,7 +30,7 @@ test('resolve inputs replaces placeholders with previous outputs', function () {
         'server_id' => 123,
         'server_ip' => '192.168.1.100',
         'server_status' => 'active',
-        'command' => 'echo "Hello from server 123"', // String interpolation now handled
+        'command' => 'echo "Hello from server 123"',
         'user' => 'root',
         'custom_value' => 'static_value',
     ]);
@@ -56,7 +56,7 @@ test('resolve inputs handles missing placeholders', function () {
 
     expect($result)->toEqual([
         'server_id' => 123,
-        'missing_key' => '{missing_key}', // Kept as placeholder since not found in previous outputs
+        'missing_key' => '{missing_key}',
         'regular_value' => 'test',
     ]);
 });
@@ -106,7 +106,6 @@ test('resolve inputs merges previous outputs with action inputs', function () {
 
     $result = $method->invoke($runWorkflow, $previousOutputs, $actionInputs);
 
-    // Should include all previous outputs plus resolved action inputs
     expect($result)->toEqual([
         'server_id' => 123,
         'service_id' => 456,
@@ -156,9 +155,9 @@ test('resolve inputs handles mixed placeholders and interpolation', function () 
     ];
 
     $actionInputs = [
-        'server_id' => '{server_id}', // Exact placeholder
-        'command' => 'echo "Server {server_id} at {server_ip}"', // String interpolation
-        'missing_placeholder' => 'echo {missing_key}', // Missing placeholder
+        'server_id' => '{server_id}',
+        'command' => 'echo "Server {server_id} at {server_ip}"',
+        'missing_placeholder' => 'echo {missing_key}',
     ];
 
     $result = $method->invoke($runWorkflow, $previousOutputs, $actionInputs);
@@ -167,7 +166,7 @@ test('resolve inputs handles mixed placeholders and interpolation', function () 
         'server_id' => 123,
         'server_ip' => '192.168.1.100',
         'command' => 'echo "Server 123 at 192.168.1.100"',
-        'missing_placeholder' => 'echo {missing_key}', // Kept as-is since missing_key not found
+        'missing_placeholder' => 'echo {missing_key}',
     ]);
 });
 
@@ -183,9 +182,9 @@ test('resolve inputs handles double curly braces', function () {
     ];
 
     $actionInputs = [
-        'service_id' => '{{service_id}}', // Exact double placeholder
-        'command' => 'echo "${{service_id}} installed"', // String interpolation with double braces
-        'server_id' => '{{server_id}}', // Exact double placeholder
+        'service_id' => '{{service_id}}',
+        'command' => 'echo "${{service_id}} installed"',
+        'server_id' => '{{server_id}}',
     ];
 
     $result = $method->invoke($runWorkflow, $previousOutputs, $actionInputs);
@@ -197,19 +196,19 @@ test('resolve inputs handles double curly braces', function () {
     ]);
 });
 
-test('resolve inputs prioritizes previous outputs over action inputs', function () {
+test('resolve inputs keeps action values while interpolating previous outputs', function () {
     $runWorkflow = new RunWorkflow;
 
     $reflection = new ReflectionClass($runWorkflow);
     $method = $reflection->getMethod('resolveInputs');
 
     $previousOutputs = [
-        'server_id' => 123, // This should take priority
+        'server_id' => 123,
         'server_ip' => '192.168.1.100',
     ];
 
     $actionInputs = [
-        'server_id' => 999, // This should be overridden
+        'server_id' => 999,
         'command' => 'echo "Using server {server_id}"',
     ];
 

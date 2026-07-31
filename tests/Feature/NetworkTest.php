@@ -45,7 +45,7 @@ test('network persists and casts enums', function () {
     $network->refresh();
     expect($network->type)->toBeInstanceOf(NetworkType::class);
     expect($network->status)->toBeInstanceOf(NetworkStatus::class);
-    expect($network->port === 51820)->toBeTrue();
+    expect($network->port)->toBe(51820);
 });
 
 test('network relations', function () {

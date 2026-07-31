@@ -10,7 +10,16 @@ use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\Wordpress;
 use Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+pest()->extend(TestCase::class)->in(
+    'Feature',
+    'Unit/*/',
+    'Unit/AbstractProxiedSiteTypeTest.php',
+    'Unit/BunSiteTest.php',
+    'Unit/IsolatedUserModelTest.php',
+    'Unit/NodeSiteTest.php',
+    'Unit/SiteEnvPathTest.php',
+    'Unit/SiteShellEnvironmentTest.php',
+);
 
 /**
  * @return array<array<array<string, mixed>>>

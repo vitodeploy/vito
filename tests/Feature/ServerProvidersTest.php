@@ -478,18 +478,8 @@ test('linode plans grey classes unsupported by region', function () {
     $this->assertStringNotContainsString('/mo', $plans['g7-premium-2']['label']);
 });
 
-/**
- * @return array<string, array<int, array<string, mixed>>>
- */
-dataset('data', function () {
+dataset('data', /** @return array<int, array{0: string, 1: array<string, mixed>}> */ function (): array {
     return [
-        // [
-        //     ServerProvider::AWS,
-        //     [
-        //         'key' => 'key',
-        //         'secret' => 'secret',
-        //     ],
-        // ],
         [
             Linode::id(),
             [

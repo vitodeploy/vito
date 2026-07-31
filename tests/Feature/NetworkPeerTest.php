@@ -277,7 +277,7 @@ test('byo public key validation', function () {
     $this->post(route('networks.peers.store', $network), ['name' => 'bad', 'public_key' => 'not-base64!!'])
         ->assertSessionHasErrors('public_key');
 
-    $memberKey = $network->servers()->first()->public_key;
+    $memberKey = $network->servers()->firstOrFail()->public_key;
     $this->post(route('networks.peers.store', $network), ['name' => 'collide-member', 'public_key' => $memberKey])
         ->assertSessionHasErrors('public_key');
 
