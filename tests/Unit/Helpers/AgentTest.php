@@ -1,6 +1,9 @@
 <?php
 
 use App\Helpers\Agent;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->operatingSystems = [
