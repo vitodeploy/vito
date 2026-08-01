@@ -1,79 +1,70 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\Worker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 
-class WorkerEnvironmentMigrationTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_transform_converts_plaintext_map_rows_to_encrypted_list(): void
-    {
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
+test('transform converts plaintext map rows to encrypted list', function () {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+    ]);
 
-        DB::table('workers')->where('id', $worker->id)->update([
-            'environment' => json_encode([
-                'API_KEY' => 'secret-value',
-                'NODE_ENV' => 'production',
-            ]),
-        ]);
+    DB::table('workers')->where('id', $worker->id)->update([
+        'environment' => json_encode([
+            'API_KEY' => 'secret-value',
+            'NODE_ENV' => 'production',
+        ]),
+    ]);
 
-        $this->runMigration();
+    vitoPestFeatureWorkerEnvironmentMigrationTestRunMigration();
 
-        $environment = Worker::query()->findOrFail($worker->id)->environment;
+    $environment = Worker::query()->findOrFail($worker->id)->environment;
 
-        $this->assertEquals([
-            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+    expect($environment)->toEqual([
+        ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+    ]);
+
+    $raw = (string) DB::table('workers')->where('id', $worker->id)->value('environment');
+    $this->assertStringNotContainsString('secret-value', $raw);
+});
+
+test('transform re encrypts plaintext empty rows', function () {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+    ]);
+
+    DB::table('workers')->where('id', $worker->id)->update([
+        'environment' => '[]',
+    ]);
+
+    vitoPestFeatureWorkerEnvironmentMigrationTestRunMigration();
+
+    expect(Worker::query()->findOrFail($worker->id)->environment)->toBe([]);
+});
+
+test('transform skips already encrypted rows', function () {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'environment' => [
             ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-        ], $environment);
+        ],
+    ]);
 
-        $raw = (string) DB::table('workers')->where('id', $worker->id)->value('environment');
-        $this->assertStringNotContainsString('secret-value', $raw);
-    }
+    $encrypted = (string) DB::table('workers')->where('id', $worker->id)->value('environment');
 
-    public function test_transform_re_encrypts_plaintext_empty_rows(): void
-    {
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
+    vitoPestFeatureWorkerEnvironmentMigrationTestRunMigration();
 
-        DB::table('workers')->where('id', $worker->id)->update([
-            'environment' => '[]',
-        ]);
+    expect((string) DB::table('workers')->where('id', $worker->id)->value('environment'))->toBe($encrypted);
+});
 
-        $this->runMigration();
+function vitoPestFeatureWorkerEnvironmentMigrationTestRunMigration(): void
+{
+    $paths = glob(database_path('migrations/*_add_worker_environment_support.php')) ?: [];
+    expect($paths)->not->toBeEmpty('Worker environment migration not found.');
 
-        $this->assertSame([], Worker::query()->findOrFail($worker->id)->environment);
-    }
-
-    public function test_transform_skips_already_encrypted_rows(): void
-    {
-        $worker = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'environment' => [
-                ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-            ],
-        ]);
-
-        $encrypted = (string) DB::table('workers')->where('id', $worker->id)->value('environment');
-
-        $this->runMigration();
-
-        $this->assertSame($encrypted, (string) DB::table('workers')->where('id', $worker->id)->value('environment'));
-    }
-
-    private function runMigration(): void
-    {
-        $paths = glob(database_path('migrations/*_add_worker_environment_support.php')) ?: [];
-        $this->assertNotEmpty($paths, 'Worker environment migration not found.');
-
-        $migration = require $paths[0];
-        $migration->up();
-    }
+    $migration = require $paths[0];
+    $migration->up();
 }

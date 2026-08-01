@@ -1,119 +1,108 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class ServiceConfigFileTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_get_config_file(): void
-    {
-        $this->actingAs($this->user);
+test('get config file', function () {
+    $this->actingAs($this->user);
 
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'name' => 'mysql',
-            'type' => 'database',
+    $service = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'name' => 'mysql',
+        'type' => 'database',
+    ]);
+
+    SSH::fake('config file content');
+
+    $response = $this->get(route('services.config', [
+        'server' => $this->server,
+        'service' => $service->id,
+        'config_name' => 'my.cnf',
+    ]));
+
+    $response->assertSuccessful()
+        ->assertJson([
+            'content' => 'config file content',
         ]);
+});
 
-        SSH::fake('config file content');
+test('get config file not found', function () {
+    $this->actingAs($this->user);
 
-        $response = $this->get(route('services.config', [
-            'server' => $this->server,
-            'service' => $service->id,
-            'config_name' => 'my.cnf',
-        ]));
+    $service = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'name' => 'mysql',
+        'type' => 'database',
+    ]);
 
-        $response->assertSuccessful()
-            ->assertJson([
-                'content' => 'config file content',
-            ]);
-    }
+    $response = $this->get(route('services.config', [
+        'server' => $this->server,
+        'service' => $service->id,
+        'config_name' => 'nonexistent.conf',
+    ]));
 
-    public function test_get_config_file_not_found(): void
-    {
-        $this->actingAs($this->user);
+    $response->assertSessionHasErrors(['config_name']);
+});
 
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'name' => 'mysql',
-            'type' => 'database',
-        ]);
+test('update config file', function () {
+    $this->actingAs($this->user);
 
-        $response = $this->get(route('services.config', [
-            'server' => $this->server,
-            'service' => $service->id,
-            'config_name' => 'nonexistent.conf',
-        ]));
+    $service = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'name' => 'mysql',
+        'type' => 'database',
+    ]);
 
-        $response->assertSessionHasErrors(['config_name']);
-    }
+    SSH::fake('Active: active');
 
-    public function test_update_config_file(): void
-    {
-        $this->actingAs($this->user);
+    $response = $this->patch(route('services.config.update', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]), [
+        'config_name' => 'my.cnf',
+        'content' => 'new config content',
+    ]);
 
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'name' => 'mysql',
-            'type' => 'database',
-        ]);
+    $response->assertSessionDoesntHaveErrors()
+        ->assertRedirect();
+});
 
-        SSH::fake('Active: active');
+test('update config file validates input', function () {
+    $this->actingAs($this->user);
 
-        $response = $this->patch(route('services.config.update', [
-            'server' => $this->server,
-            'service' => $service->id,
-        ]), [
-            'config_name' => 'my.cnf',
-            'content' => 'new config content',
-        ]);
+    $service = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'name' => 'mysql',
+        'type' => 'database',
+    ]);
 
-        $response->assertSessionDoesntHaveErrors()
-            ->assertRedirect();
-    }
+    $response = $this->patch(route('services.config.update', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]), [
+        'config_name' => 'my.cnf',
+    ]);
 
-    public function test_update_config_file_validates_input(): void
-    {
-        $this->actingAs($this->user);
+    $response->assertSessionHasErrors(['content']);
+});
 
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'name' => 'mysql',
-            'type' => 'database',
-        ]);
+test('service without config paths returns error', function () {
+    $this->actingAs($this->user);
 
-        $response = $this->patch(route('services.config.update', [
-            'server' => $this->server,
-            'service' => $service->id,
-        ]), [
-            'config_name' => 'my.cnf',
-        ]);
+    $service = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'name' => 'vito-agent',
+        'type' => 'monitoring',
+    ]);
 
-        $response->assertSessionHasErrors(['content']);
-    }
+    $response = $this->get(route('services.config', [
+        'server' => $this->server,
+        'service' => $service->id,
+        'config_name' => 'test.conf',
+    ]));
 
-    public function test_service_without_config_paths_returns_error(): void
-    {
-        $this->actingAs($this->user);
-
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'name' => 'vito-agent',
-            'type' => 'monitoring',
-        ]);
-
-        $response = $this->get(route('services.config', [
-            'server' => $this->server,
-            'service' => $service->id,
-            'config_name' => 'test.conf',
-        ]));
-
-        $response->assertSessionHasErrors(['config_paths']);
-    }
-}
+    $response->assertSessionHasErrors(['config_paths']);
+});

@@ -1,407 +1,361 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Helpers\EnvParser;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 
-class EnvParserTest extends TestCase
-{
-    public function test_parse_simple_env(): void
-    {
-        $raw = "APP_NAME=Laravel\nAPP_ENV=production";
-        $result = EnvParser::parse($raw);
+test('parse simple env', function () {
+    $raw = "APP_NAME=Laravel\nAPP_ENV=production";
+    $result = EnvParser::parse($raw);
 
-        $this->assertCount(2, $result);
-        $this->assertEquals('APP_NAME', $result[0]['key']);
-        $this->assertEquals('Laravel', $result[0]['value']);
-        $this->assertFalse($result[0]['is_secret']);
-        $this->assertEquals('APP_ENV', $result[1]['key']);
-        $this->assertEquals('production', $result[1]['value']);
+    expect($result)->toHaveCount(2);
+    expect($result[0]['key'])->toEqual('APP_NAME');
+    expect($result[0]['value'])->toEqual('Laravel');
+    expect($result[0]['is_secret'])->toBeFalse();
+    expect($result[1]['key'])->toEqual('APP_ENV');
+    expect($result[1]['value'])->toEqual('production');
+});
+
+test('parse quoted values', function () {
+    $raw = 'APP_NAME="My Laravel App"';
+    $result = EnvParser::parse($raw);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]['value'])->toEqual('My Laravel App');
+});
+
+test('parse single quoted values', function () {
+    $raw = "APP_NAME='My Laravel App'";
+    $result = EnvParser::parse($raw);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]['value'])->toEqual('My Laravel App');
+});
+
+test('parse skips comments', function () {
+    $raw = "# This is a comment\nAPP_NAME=Laravel\n# Another comment";
+    $result = EnvParser::parse($raw);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]['key'])->toEqual('APP_NAME');
+});
+
+test('parse skips empty lines', function () {
+    $raw = "APP_NAME=Laravel\n\n\nAPP_ENV=production";
+    $result = EnvParser::parse($raw);
+
+    expect($result)->toHaveCount(2);
+});
+
+test('parse handles value with equals', function () {
+    $raw = 'APP_KEY=base64:abc=123=def=';
+    $result = EnvParser::parse($raw);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]['value'])->toEqual('base64:abc=123=def=');
+});
+
+test('is secret key detects password', function () {
+    $raw = 'DB_PASSWORD=secret123';
+    $result = EnvParser::parse($raw);
+
+    expect($result[0]['is_secret'])->toBeTrue();
+});
+
+test('is secret key detects secret', function () {
+    $raw = 'APP_SECRET=abc123';
+    $result = EnvParser::parse($raw);
+
+    expect($result[0]['is_secret'])->toBeTrue();
+});
+
+test('is secret key detects token', function () {
+    $raw = 'API_TOKEN=xyz789';
+    $result = EnvParser::parse($raw);
+
+    expect($result[0]['is_secret'])->toBeTrue();
+});
+
+test('is secret key detects key', function () {
+    $raw = 'APP_KEY=base64:abc123';
+    $result = EnvParser::parse($raw);
+
+    expect($result[0]['is_secret'])->toBeTrue();
+});
+
+test('is secret key detects private', function () {
+    $raw = 'PRIVATE_KEY=-----BEGIN RSA-----';
+    $result = EnvParser::parse($raw);
+
+    expect($result[0]['is_secret'])->toBeTrue();
+});
+
+test('stringify simple variables', function () {
+    $variables = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel'],
+        ['key' => 'APP_ENV', 'value' => 'production'],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual("APP_NAME=Laravel\nAPP_ENV=production");
+});
+
+test('stringify quotes values with spaces', function () {
+    $variables = [
+        ['key' => 'APP_NAME', 'value' => 'My Laravel App'],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual('APP_NAME="My Laravel App"');
+});
+
+test('stringify quotes values with newlines', function () {
+    $variables = [
+        ['key' => 'MULTILINE', 'value' => "line1\nline2"],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual('MULTILINE="line1\nline2"');
+});
+
+test('stringify skips empty keys', function () {
+    $variables = [
+        ['key' => '', 'value' => 'empty'],
+        ['key' => 'APP_NAME', 'value' => 'Laravel'],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual('APP_NAME=Laravel');
+});
+
+test('roundtrip preserves data', function () {
+    $original = "APP_NAME=Laravel\nDB_PASSWORD=secret123\nAPP_KEY=base64:abc=123=";
+    $parsed = EnvParser::parse($original);
+    $stringified = EnvParser::stringify($parsed);
+    $reParsed = EnvParser::parse($stringified);
+
+    expect($reParsed)->toHaveCount(count($parsed));
+    foreach ($parsed as $i => $var) {
+        expect($reParsed[$i]['key'])->toEqual($var['key']);
+        expect($reParsed[$i]['value'])->toEqual($var['value']);
     }
+});
+
+/**
+ * @return array<string, array<int, string>>
+ */
+dataset('roundtripValueProvider', function () {
+    return [
+        'double quote' => ['he said "hi"'],
+        'literal backslash n unquoted' => ['C:\name'],
+        'literal backslash n quoted' => ['%h \n %t'],
+        'hash' => ['#fff'],
+        'spaces' => ['My Laravel App'],
+        'trailing backslash inside quotes' => ['abc def\\'],
+        'trailing backslash unquoted' => ['trail\\'],
+        'multi line' => ["line1\nline2"],
+        'empty' => [''],
+        'base64 padding' => ['base64:abc=123='],
+        'backslash and quote' => ['C:\dir "x"'],
+    ];
+});
+
+test('roundtrip preserves every value shape', function (string $value) {
+    $stringified = EnvParser::stringify([['key' => 'K', 'value' => $value]]);
+    $reParsed = EnvParser::parse($stringified);
+
+    expect($reParsed)->toHaveCount(1);
+    expect($reParsed[0]['key'])->toEqual('K');
+    expect($reParsed[0]['value'])->toEqual($value);
+})->with('roundtripValueProvider');
+
+/**
+ * @return array<string, array<int, string>>
+ */
+dataset('representableContentProvider', function () {
+    return [
+        'comments and blank lines' => ["# Application\n\nAPP_NAME=TestApp"],
+        'crlf line endings' => ["APP_NAME=TestApp\r\nAPP_ENV=production"],
+        'single quoted value' => ["A='single quoted'"],
+        'duplicate keys' => ["A=1\nA=2"],
+        'whitespace around equals' => [' A = 1 '],
+        'dashed key' => ['MY-KEY=1'],
+        'dotted key' => ['MY.KEY=1'],
+        'leading digit key' => ['2FA_ENABLED=1'],
+        'empty value' => ['DB_PASSWORD='],
+        'escaped quotes' => ['K="he said \\"hi\\""'],
+    ];
+});
+
+test('is representable accepts content the form can hold', function (string $content) {
+    expect(EnvParser::isRepresentable($content, EnvParser::parse($content)))->toBeTrue();
+})->with('representableContentProvider');
+
+/**
+ * @return array<string, array<int, string>>
+ */
+dataset('unrepresentableContentProvider', function () {
+    return [
+        'pem block' => ["KEY=\"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n-----END RSA PRIVATE KEY-----\""],
+        'continuation line containing equals' => ["EXTRA_CONFIG=\"foo=1\nbar=2\""],
+        'single quoted multi line' => ["A='foo=1\nbar=2'"],
+        'escaped closing quote' => ["A=\"foo\\\"\nb=2\""],
+        'export prefix' => ['export FOO=bar'],
+    ];
+});
+
+test('is representable rejects content the form would mangle', function (string $content) {
+    expect(EnvParser::isRepresentable($content, EnvParser::parse($content)))->toBeFalse();
+})->with('unrepresentableContentProvider');
+
+test('mask secrets hides secret values', function () {
+    $variables = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ['key' => 'DB_PASSWORD', 'value' => 'supersecret', 'is_secret' => true],
+        ['key' => 'API_TOKEN', 'value' => 'token123', 'is_secret' => true],
+    ];
+
+    $masked = EnvParser::maskSecrets($variables);
+
+    expect($masked[0]['value'])->toEqual('Laravel');
+    expect($masked[1]['value'])->toEqual('');
+    expect($masked[2]['value'])->toEqual('');
+});
+
+test('merge with live preserves empty secret values', function () {
+    $live = [
+        ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+    ];
+
+    $incoming = [
+        ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+        ['key' => 'APP_NAME', 'value' => 'NewName', 'is_secret' => false],
+    ];
+
+    $merged = EnvParser::mergeWithLive($incoming, $live);
+
+    expect($merged[0]['value'])->toEqual('original_secret');
+    expect($merged[1]['value'])->toEqual('NewName');
+});
+
+test('merge with live allows updating secret values', function () {
+    $live = [
+        ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
+    ];
 
-    public function test_parse_quoted_values(): void
-    {
-        $raw = 'APP_NAME="My Laravel App"';
-        $result = EnvParser::parse($raw);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals('My Laravel App', $result[0]['value']);
-    }
-
-    public function test_parse_single_quoted_values(): void
-    {
-        $raw = "APP_NAME='My Laravel App'";
-        $result = EnvParser::parse($raw);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals('My Laravel App', $result[0]['value']);
-    }
-
-    public function test_parse_skips_comments(): void
-    {
-        $raw = "# This is a comment\nAPP_NAME=Laravel\n# Another comment";
-        $result = EnvParser::parse($raw);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals('APP_NAME', $result[0]['key']);
-    }
-
-    public function test_parse_skips_empty_lines(): void
-    {
-        $raw = "APP_NAME=Laravel\n\n\nAPP_ENV=production";
-        $result = EnvParser::parse($raw);
-
-        $this->assertCount(2, $result);
-    }
-
-    public function test_parse_handles_value_with_equals(): void
-    {
-        $raw = 'APP_KEY=base64:abc=123=def=';
-        $result = EnvParser::parse($raw);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals('base64:abc=123=def=', $result[0]['value']);
-    }
-
-    public function test_is_secret_key_detects_password(): void
-    {
-        $raw = 'DB_PASSWORD=secret123';
-        $result = EnvParser::parse($raw);
-
-        $this->assertTrue($result[0]['is_secret']);
-    }
-
-    public function test_is_secret_key_detects_secret(): void
-    {
-        $raw = 'APP_SECRET=abc123';
-        $result = EnvParser::parse($raw);
-
-        $this->assertTrue($result[0]['is_secret']);
-    }
-
-    public function test_is_secret_key_detects_token(): void
-    {
-        $raw = 'API_TOKEN=xyz789';
-        $result = EnvParser::parse($raw);
-
-        $this->assertTrue($result[0]['is_secret']);
-    }
-
-    public function test_is_secret_key_detects_key(): void
-    {
-        $raw = 'APP_KEY=base64:abc123';
-        $result = EnvParser::parse($raw);
-
-        $this->assertTrue($result[0]['is_secret']);
-    }
-
-    public function test_is_secret_key_detects_private(): void
-    {
-        $raw = 'PRIVATE_KEY=-----BEGIN RSA-----';
-        $result = EnvParser::parse($raw);
-
-        $this->assertTrue($result[0]['is_secret']);
-    }
-
-    public function test_stringify_simple_variables(): void
-    {
-        $variables = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel'],
-            ['key' => 'APP_ENV', 'value' => 'production'],
-        ];
-        $result = EnvParser::stringify($variables);
-
-        $this->assertEquals("APP_NAME=Laravel\nAPP_ENV=production", $result);
-    }
-
-    public function test_stringify_quotes_values_with_spaces(): void
-    {
-        $variables = [
-            ['key' => 'APP_NAME', 'value' => 'My Laravel App'],
-        ];
-        $result = EnvParser::stringify($variables);
-
-        $this->assertEquals('APP_NAME="My Laravel App"', $result);
-    }
-
-    public function test_stringify_quotes_values_with_newlines(): void
-    {
-        $variables = [
-            ['key' => 'MULTILINE', 'value' => "line1\nline2"],
-        ];
-        $result = EnvParser::stringify($variables);
-
-        $this->assertEquals('MULTILINE="line1\nline2"', $result);
-    }
-
-    public function test_stringify_skips_empty_keys(): void
-    {
-        $variables = [
-            ['key' => '', 'value' => 'empty'],
-            ['key' => 'APP_NAME', 'value' => 'Laravel'],
-        ];
-        $result = EnvParser::stringify($variables);
-
-        $this->assertEquals('APP_NAME=Laravel', $result);
-    }
-
-    public function test_roundtrip_preserves_data(): void
-    {
-        $original = "APP_NAME=Laravel\nDB_PASSWORD=secret123\nAPP_KEY=base64:abc=123=";
-        $parsed = EnvParser::parse($original);
-        $stringified = EnvParser::stringify($parsed);
-        $reParsed = EnvParser::parse($stringified);
-
-        $this->assertCount(count($parsed), $reParsed);
-        foreach ($parsed as $i => $var) {
-            $this->assertEquals($var['key'], $reParsed[$i]['key']);
-            $this->assertEquals($var['value'], $reParsed[$i]['value']);
-        }
-    }
-
-    /**
-     * @return array<string, array<int, string>>
-     */
-    public static function roundtripValueProvider(): array
-    {
-        return [
-            'double quote' => ['he said "hi"'],
-            'literal backslash n unquoted' => ['C:\name'],
-            'literal backslash n quoted' => ['%h \n %t'],
-            'hash' => ['#fff'],
-            'spaces' => ['My Laravel App'],
-            'trailing backslash inside quotes' => ['abc def\\'],
-            'trailing backslash unquoted' => ['trail\\'],
-            'multi line' => ["line1\nline2"],
-            'empty' => [''],
-            'base64 padding' => ['base64:abc=123='],
-            'backslash and quote' => ['C:\dir "x"'],
-        ];
-    }
-
-    #[DataProvider('roundtripValueProvider')]
-    public function test_roundtrip_preserves_every_value_shape(string $value): void
-    {
-        $stringified = EnvParser::stringify([['key' => 'K', 'value' => $value]]);
-        $reParsed = EnvParser::parse($stringified);
-
-        $this->assertCount(1, $reParsed);
-        $this->assertEquals('K', $reParsed[0]['key']);
-        $this->assertEquals($value, $reParsed[0]['value']);
-    }
-
-    /**
-     * @return array<string, array<int, string>>
-     */
-    public static function representableContentProvider(): array
-    {
-        return [
-            'comments and blank lines' => ["# Application\n\nAPP_NAME=TestApp"],
-            'crlf line endings' => ["APP_NAME=TestApp\r\nAPP_ENV=production"],
-            'single quoted value' => ["A='single quoted'"],
-            'duplicate keys' => ["A=1\nA=2"],
-            'whitespace around equals' => [' A = 1 '],
-            'dashed key' => ['MY-KEY=1'],
-            'dotted key' => ['MY.KEY=1'],
-            'leading digit key' => ['2FA_ENABLED=1'],
-            'empty value' => ['DB_PASSWORD='],
-            'escaped quotes' => ['K="he said \\"hi\\""'],
-        ];
-    }
-
-    #[DataProvider('representableContentProvider')]
-    public function test_is_representable_accepts_content_the_form_can_hold(string $content): void
-    {
-        $this->assertTrue(EnvParser::isRepresentable($content, EnvParser::parse($content)));
-    }
-
-    /**
-     * @return array<string, array<int, string>>
-     */
-    public static function unrepresentableContentProvider(): array
-    {
-        return [
-            'pem block' => ["KEY=\"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n-----END RSA PRIVATE KEY-----\""],
-            'continuation line containing equals' => ["EXTRA_CONFIG=\"foo=1\nbar=2\""],
-            'single quoted multi line' => ["A='foo=1\nbar=2'"],
-            'escaped closing quote' => ["A=\"foo\\\"\nb=2\""],
-            'export prefix' => ['export FOO=bar'],
-        ];
-    }
-
-    #[DataProvider('unrepresentableContentProvider')]
-    public function test_is_representable_rejects_content_the_form_would_mangle(string $content): void
-    {
-        $this->assertFalse(EnvParser::isRepresentable($content, EnvParser::parse($content)));
-    }
-
-    public function test_mask_secrets_hides_secret_values(): void
-    {
-        $variables = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-            ['key' => 'DB_PASSWORD', 'value' => 'supersecret', 'is_secret' => true],
-            ['key' => 'API_TOKEN', 'value' => 'token123', 'is_secret' => true],
-        ];
-
-        $masked = EnvParser::maskSecrets($variables);
-
-        $this->assertEquals('Laravel', $masked[0]['value']);
-        $this->assertEquals('', $masked[1]['value']);
-        $this->assertEquals('', $masked[2]['value']);
-    }
-
-    public function test_merge_with_live_preserves_empty_secret_values(): void
-    {
-        $live = [
-            ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-        ];
-
-        $incoming = [
-            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
-            ['key' => 'APP_NAME', 'value' => 'NewName', 'is_secret' => false],
-        ];
-
-        $merged = EnvParser::mergeWithLive($incoming, $live);
-
-        $this->assertEquals('original_secret', $merged[0]['value']);
-        $this->assertEquals('NewName', $merged[1]['value']);
-    }
-
-    public function test_merge_with_live_allows_updating_secret_values(): void
-    {
-        $live = [
-            ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
-        ];
-
-        $incoming = [
-            ['key' => 'DB_PASSWORD', 'value' => 'new_secret', 'is_secret' => true],
-        ];
-
-        $merged = EnvParser::mergeWithLive($incoming, $live);
-
-        $this->assertEquals('new_secret', $merged[0]['value']);
-    }
-
-    public function test_merge_with_empty_live_returns_incoming(): void
-    {
-        $incoming = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-        ];
-
-        $this->assertEquals($incoming, EnvParser::mergeWithLive($incoming, []));
-    }
-
-    public function test_merge_restores_secret_from_live_file_value(): void
-    {
-        $live = [
-            ['key' => 'DB_PASSWORD', 'value' => 'rotated_secret', 'is_secret' => true],
-        ];
-
-        $incoming = [
-            ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
-        ];
-
-        $merged = EnvParser::mergeWithLive($incoming, $live);
-
-        $this->assertEquals('rotated_secret', $merged[0]['value']);
-    }
-
-    public function test_merge_does_not_restore_non_secret_empty_values(): void
-    {
-        $live = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-        ];
-
-        $incoming = [
-            ['key' => 'APP_NAME', 'value' => '', 'is_secret' => false],
-        ];
-
-        $merged = EnvParser::mergeWithLive($incoming, $live);
-
-        $this->assertEquals('', $merged[0]['value']);
-    }
-
-    public function test_secret_keys_from_flat_list(): void
-    {
-        $this->assertEquals(['APP_KEY', 'JWT_SECRET'], EnvParser::secretKeys(['APP_KEY', 'JWT_SECRET']));
-    }
-
-    public function test_secret_keys_from_legacy_variable_array(): void
-    {
-        $legacy = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-            ['key' => 'DB_PASSWORD', 'value' => 'secret', 'is_secret' => true],
-            ['key' => 'APP_KEY', 'value' => 'base64:abc', 'is_secret' => true],
-        ];
-
-        $this->assertEquals(['DB_PASSWORD', 'APP_KEY'], EnvParser::secretKeys($legacy));
-    }
-
-    public function test_secret_keys_deduplicates(): void
-    {
-        $this->assertEquals(['APP_KEY'], EnvParser::secretKeys(['APP_KEY', 'APP_KEY']));
-    }
-
-    public function test_secret_keys_from_null_returns_empty(): void
-    {
-        $this->assertEquals([], EnvParser::secretKeys(null));
-    }
-
-    public function test_classify_marks_only_stored_secret_keys(): void
-    {
-        $parsed = [
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
-        ];
-
-        $classified = EnvParser::classify($parsed, ['APP_NAME']);
-
-        $this->assertTrue($classified[0]['is_secret']);
-        $this->assertFalse($classified[1]['is_secret']);
-    }
-
-    public function test_classify_reads_legacy_stored_shape(): void
-    {
-        $parsed = [
-            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => false],
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-        ];
-
-        $legacy = [
-            ['key' => 'DB_PASSWORD', 'value' => 'old', 'is_secret' => true],
-            ['key' => 'APP_NAME', 'value' => 'old', 'is_secret' => false],
-        ];
-
-        $classified = EnvParser::classify($parsed, $legacy);
-
-        $this->assertTrue($classified[0]['is_secret']);
-        $this->assertFalse($classified[1]['is_secret']);
-    }
-
-    public function test_classify_with_null_stored_falls_back_to_auto_detection(): void
-    {
-        $parsed = [
-            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
-            ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
-        ];
-
-        $classified = EnvParser::classify($parsed, null);
-
-        $this->assertTrue($classified[0]['is_secret']);
-        $this->assertFalse($classified[1]['is_secret']);
-    }
-
-    public function test_classify_with_empty_stored_list_is_authoritative(): void
-    {
-        $parsed = [
-            ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
-        ];
-
-        $classified = EnvParser::classify($parsed, []);
-
-        $this->assertFalse($classified[0]['is_secret']);
-    }
-}
+    $incoming = [
+        ['key' => 'DB_PASSWORD', 'value' => 'new_secret', 'is_secret' => true],
+    ];
+
+    $merged = EnvParser::mergeWithLive($incoming, $live);
+
+    expect($merged[0]['value'])->toEqual('new_secret');
+});
+
+test('merge with empty live returns incoming', function () {
+    $incoming = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+    ];
+
+    expect(EnvParser::mergeWithLive($incoming, []))->toEqual($incoming);
+});
+
+test('merge restores secret from live file value', function () {
+    $live = [
+        ['key' => 'DB_PASSWORD', 'value' => 'rotated_secret', 'is_secret' => true],
+    ];
+
+    $incoming = [
+        ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+    ];
+
+    $merged = EnvParser::mergeWithLive($incoming, $live);
+
+    expect($merged[0]['value'])->toEqual('rotated_secret');
+});
+
+test('merge does not restore non secret empty values', function () {
+    $live = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+    ];
+
+    $incoming = [
+        ['key' => 'APP_NAME', 'value' => '', 'is_secret' => false],
+    ];
+
+    $merged = EnvParser::mergeWithLive($incoming, $live);
+
+    expect($merged[0]['value'])->toEqual('');
+});
+
+test('secret keys from flat list', function () {
+    expect(EnvParser::secretKeys(['APP_KEY', 'JWT_SECRET']))->toEqual(['APP_KEY', 'JWT_SECRET']);
+});
+
+test('secret keys from legacy variable array', function () {
+    $legacy = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ['key' => 'DB_PASSWORD', 'value' => 'secret', 'is_secret' => true],
+        ['key' => 'APP_KEY', 'value' => 'base64:abc', 'is_secret' => true],
+    ];
+
+    expect(EnvParser::secretKeys($legacy))->toEqual(['DB_PASSWORD', 'APP_KEY']);
+});
+
+test('secret keys deduplicates', function () {
+    expect(EnvParser::secretKeys(['APP_KEY', 'APP_KEY']))->toEqual(['APP_KEY']);
+});
+
+test('secret keys from null returns empty', function () {
+    expect(EnvParser::secretKeys(null))->toEqual([]);
+});
+
+test('classify marks only stored secret keys', function () {
+    $parsed = [
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+        ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+    ];
+
+    $classified = EnvParser::classify($parsed, ['APP_NAME']);
+
+    expect($classified[0]['is_secret'])->toBeTrue();
+    expect($classified[1]['is_secret'])->toBeFalse();
+});
+
+test('classify reads legacy stored shape', function () {
+    $parsed = [
+        ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => false],
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+    ];
+
+    $legacy = [
+        ['key' => 'DB_PASSWORD', 'value' => 'old', 'is_secret' => true],
+        ['key' => 'APP_NAME', 'value' => 'old', 'is_secret' => false],
+    ];
+
+    $classified = EnvParser::classify($parsed, $legacy);
+
+    expect($classified[0]['is_secret'])->toBeTrue();
+    expect($classified[1]['is_secret'])->toBeFalse();
+});
+
+test('classify with null stored falls back to auto detection', function () {
+    $parsed = [
+        ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+        ['key' => 'APP_NAME', 'value' => 'Laravel', 'is_secret' => false],
+    ];
+
+    $classified = EnvParser::classify($parsed, null);
+
+    expect($classified[0]['is_secret'])->toBeTrue();
+    expect($classified[1]['is_secret'])->toBeFalse();
+});
+
+test('classify with empty stored list is authoritative', function () {
+    $parsed = [
+        ['key' => 'DB_PASSWORD', 'value' => 'plain', 'is_secret' => true],
+    ];
+
+    $classified = EnvParser::classify($parsed, []);
+
+    expect($classified[0]['is_secret'])->toBeFalse();
+});

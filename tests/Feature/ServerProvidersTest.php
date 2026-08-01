@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Events\SocketEvent;
 use App\Models\ServerProvider;
 use App\Models\User;
@@ -13,549 +11,505 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
-class ServerProvidersTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    #[DataProvider('data')]
-    public function test_connect_provider(string $provider, array $input): void
-    {
-        $this->actingAs($this->user);
+test('connect provider', function (string $provider, array $input) {
+    $this->actingAs($this->user);
 
-        Http::fake();
+    Http::fake();
 
-        $data = array_merge(
-            [
-                'provider' => $provider,
-                'name' => 'profile',
-            ],
-            $input
-        );
-        $this->post(route('server-providers.store'), $data)
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseHas('server_providers', [
+    $data = array_merge(
+        [
             'provider' => $provider,
-            'profile' => 'profile',
-            'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
-        ]);
-    }
+            'name' => 'profile',
+        ],
+        $input
+    );
+    $this->post(route('server-providers.store'), $data)
+        ->assertSessionDoesntHaveErrors();
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    #[DataProvider('data')]
-    public function test_cannot_connect_to_provider(string $provider, array $input): void
-    {
-        $this->actingAs($this->user);
+    $this->assertDatabaseHas('server_providers', [
+        'provider' => $provider,
+        'profile' => 'profile',
+        'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
+    ]);
+})->with('data');
 
-        Http::fake([
-            '*' => Http::response([], 401),
-        ]);
+test('cannot connect to provider', function (string $provider, array $input) {
+    $this->actingAs($this->user);
 
-        $data = array_merge(
-            [
-                'provider' => $provider,
-                'name' => 'profile',
-            ],
-            $input
-        );
-        $this->post(route('server-providers.store'), $data)
-            ->assertSessionHasErrors('provider');
+    Http::fake([
+        '*' => Http::response([], 401),
+    ]);
 
-        $this->assertDatabaseMissing('server_providers', [
+    $data = array_merge(
+        [
             'provider' => $provider,
-            'profile' => 'profile',
-        ]);
-    }
+            'name' => 'profile',
+        ],
+        $input
+    );
+    $this->post(route('server-providers.store'), $data)
+        ->assertSessionHasErrors('provider');
 
-    public function test_see_providers_list(): void
-    {
-        $this->actingAs($this->user);
+    $this->assertDatabaseMissing('server_providers', [
+        'provider' => $provider,
+        'profile' => 'profile',
+    ]);
+})->with('data');
 
-        ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+test('see providers list', function () {
+    $this->actingAs($this->user);
 
-        $this->get(route('server-providers'))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
-    }
+    ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-    #[DataProvider('data')]
-    public function test_delete_provider(string $provider, array $input): void
-    {
-        unset($input);
+    $this->get(route('server-providers'))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
+});
 
-        $this->actingAs($this->user);
+test('delete provider', function (string $provider, array $input) {
+    unset($input);
 
-        $provider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => $provider,
-        ]);
+    $this->actingAs($this->user);
 
-        $this->delete(route('server-providers.destroy', $provider))
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('server-providers'));
+    $provider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => $provider,
+    ]);
 
-        $this->assertDatabaseMissing('server_providers', [
-            'id' => $provider->id,
-        ]);
-    }
+    $this->delete(route('server-providers.destroy', $provider))
+        ->assertSessionDoesntHaveErrors()
+        ->assertRedirect(route('server-providers'));
 
-    #[DataProvider('data')]
-    public function test_cannot_delete_provider(string $provider, array $input): void
-    {
-        unset($input);
+    $this->assertDatabaseMissing('server_providers', [
+        'id' => $provider->id,
+    ]);
+})->with('data');
 
-        $this->actingAs($this->user);
+test('cannot delete provider', function (string $provider, array $input) {
+    unset($input);
 
-        $provider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => $provider,
-        ]);
+    $this->actingAs($this->user);
 
-        $this->server->update([
-            'provider_id' => $provider->id,
-        ]);
+    $provider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => $provider,
+    ]);
 
-        $this->delete(route('server-providers.destroy', $provider))
-            ->assertSessionHasErrors([
-                'provider' => 'This server provider is being used by a server.',
-            ]);
+    $this->server->update([
+        'provider_id' => $provider->id,
+    ]);
 
-        $this->assertDatabaseHas('server_providers', [
-            'id' => $provider->id,
-        ]);
-    }
-
-    public function test_user_cannot_access_other_users_server_provider(): void
-    {
-        $this->actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $otherUser->id,
+    $this->delete(route('server-providers.destroy', $provider))
+        ->assertSessionHasErrors([
+            'provider' => 'This server provider is being used by a server.',
         ]);
 
-        $this->get(route('server-providers.regions', $serverProvider))
-            ->assertForbidden();
-    }
+    $this->assertDatabaseHas('server_providers', [
+        'id' => $provider->id,
+    ]);
+})->with('data');
 
-    public function test_user_cannot_update_other_users_server_provider(): void
-    {
-        $this->actingAs($this->user);
+test('user cannot access other users server provider', function () {
+    $this->actingAs($this->user);
 
-        $otherUser = User::factory()->create();
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $otherUser->id,
-        ]);
+    $otherUser = User::factory()->create();
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->patch(route('server-providers.update', $serverProvider), [
-            'name' => 'hacked',
-        ])
-            ->assertForbidden();
-    }
+    $this->get(route('server-providers.regions', $serverProvider))
+        ->assertForbidden();
+});
 
-    public function test_user_cannot_delete_other_users_server_provider(): void
-    {
-        $this->actingAs($this->user);
+test('user cannot update other users server provider', function () {
+    $this->actingAs($this->user);
 
-        $otherUser = User::factory()->create();
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $otherUser->id,
-        ]);
+    $otherUser = User::factory()->create();
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->delete(route('server-providers.destroy', $serverProvider))
-            ->assertForbidden();
-    }
+    $this->patch(route('server-providers.update', $serverProvider), [
+        'name' => 'hacked',
+    ])
+        ->assertForbidden();
+});
 
-    public function test_guest_cannot_access_server_providers(): void
-    {
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+test('user cannot delete other users server provider', function () {
+    $this->actingAs($this->user);
 
-        $this->get(route('server-providers'))
-            ->assertRedirect('/');
+    $otherUser = User::factory()->create();
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->get(route('server-providers.regions', $serverProvider))
-            ->assertRedirect('/');
+    $this->delete(route('server-providers.destroy', $serverProvider))
+        ->assertForbidden();
+});
 
-        $this->post(route('server-providers.store'), [])
-            ->assertRedirect('/');
+test('guest cannot access server providers', function () {
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->patch(route('server-providers.update', $serverProvider), [])
-            ->assertRedirect('/');
+    $this->get(route('server-providers'))
+        ->assertRedirect('/');
 
-        $this->delete(route('server-providers.destroy', $serverProvider))
-            ->assertRedirect('/');
-    }
+    $this->get(route('server-providers.regions', $serverProvider))
+        ->assertRedirect('/');
 
-    public function test_cannot_manipulate_user_id_on_creation(): void
-    {
-        $this->actingAs($this->user);
+    $this->post(route('server-providers.store'), [])
+        ->assertRedirect('/');
 
-        $otherUser = User::factory()->create();
+    $this->patch(route('server-providers.update', $serverProvider), [])
+        ->assertRedirect('/');
 
-        Http::fake();
+    $this->delete(route('server-providers.destroy', $serverProvider))
+        ->assertRedirect('/');
+});
 
-        $data = [
-            'provider' => DigitalOcean::id(),
-            'name' => 'test',
-            'token' => 'fake-token',
-            'user_id' => $otherUser->id,
-        ];
+test('cannot manipulate user id on creation', function () {
+    $this->actingAs($this->user);
 
-        $this->post(route('server-providers.store'), $data)
-            ->assertSessionDoesntHaveErrors();
+    $otherUser = User::factory()->create();
 
-        $this->assertDatabaseHas('server_providers', [
-            'profile' => 'test',
-            'provider' => DigitalOcean::id(),
-            'user_id' => $this->user->id,
-        ]);
+    Http::fake();
 
-        $this->assertDatabaseMissing('server_providers', [
-            'profile' => 'test',
-            'provider' => DigitalOcean::id(),
-            'user_id' => $otherUser->id,
-        ]);
-    }
+    $data = [
+        'provider' => DigitalOcean::id(),
+        'name' => 'test',
+        'token' => 'fake-token',
+        'user_id' => $otherUser->id,
+    ];
 
-    public function test_cannot_transfer_ownership_via_update(): void
-    {
-        $this->actingAs($this->user);
+    $this->post(route('server-providers.store'), $data)
+        ->assertSessionDoesntHaveErrors();
 
-        $otherUser = User::factory()->create();
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'profile' => 'original',
-        ]);
+    $this->assertDatabaseHas('server_providers', [
+        'profile' => 'test',
+        'provider' => DigitalOcean::id(),
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->patch(route('server-providers.update', $serverProvider), [
-            'name' => 'updated',
-            'user_id' => $otherUser->id,
-        ]);
+    $this->assertDatabaseMissing('server_providers', [
+        'profile' => 'test',
+        'provider' => DigitalOcean::id(),
+        'user_id' => $otherUser->id,
+    ]);
+});
 
-        $serverProvider->refresh();
+test('cannot transfer ownership via update', function () {
+    $this->actingAs($this->user);
 
-        $this->assertEquals($this->user->id, $serverProvider->user_id);
-        $this->assertNotEquals($otherUser->id, $serverProvider->user_id);
-    }
+    $otherUser = User::factory()->create();
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'original',
+    ]);
 
-    public function test_user_can_only_see_own_server_providers_in_list(): void
-    {
-        $this->actingAs($this->user);
+    $this->patch(route('server-providers.update', $serverProvider), [
+        'name' => 'updated',
+        'user_id' => $otherUser->id,
+    ]);
 
-        $otherUser = User::factory()->create();
+    $serverProvider->refresh();
 
-        $ownProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'profile' => 'own-provider',
-        ]);
+    expect($serverProvider->user_id)->toEqual($this->user->id);
+    $this->assertNotEquals($otherUser->id, $serverProvider->user_id);
+});
 
-        $otherProvider = ServerProvider::factory()->create([
-            'user_id' => $otherUser->id,
-            'profile' => 'other-provider',
-        ]);
+test('user can only see own server providers in list', function () {
+    $this->actingAs($this->user);
 
-        $response = $this->get(route('server-providers'))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
+    $otherUser = User::factory()->create();
 
-        $response->assertInertia(fn (AssertableInertia $page) => $page->has('serverProviders.data')
-            ->where('serverProviders.data.0.id', $ownProvider->id)
-            ->whereNot('serverProviders.data.0.id', $otherProvider->id)
-        );
-    }
+    $ownProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'own-provider',
+    ]);
 
-    public function test_creating_server_provider_dispatches_socket_event(): void
-    {
-        Event::fake([SocketEvent::class]);
-        $this->actingAs($this->user);
-        Http::fake();
+    $otherProvider = ServerProvider::factory()->create([
+        'user_id' => $otherUser->id,
+        'profile' => 'other-provider',
+    ]);
 
-        $this->post(route('server-providers.store'), [
-            'provider' => Hetzner::id(),
-            'name' => 'hetty',
-            'token' => 'token',
-        ])->assertSessionDoesntHaveErrors();
+    $response = $this->get(route('server-providers'))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
 
-        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.created'
-            && $event->data->data['name'] === 'hetty');
-    }
+    $response->assertInertia(fn (AssertableInertia $page) => $page->has('serverProviders.data')
+        ->where('serverProviders.data.0.id', $ownProvider->id)
+        ->whereNot('serverProviders.data.0.id', $otherProvider->id)
+    );
+});
 
-    public function test_deleting_server_provider_dispatches_socket_event(): void
-    {
-        Event::fake([SocketEvent::class]);
-        $this->actingAs($this->user);
+test('creating server provider dispatches socket event', function () {
+    Event::fake([SocketEvent::class]);
+    $this->actingAs($this->user);
+    Http::fake();
 
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
+    $this->post(route('server-providers.store'), [
+        'provider' => Hetzner::id(),
+        'name' => 'hetty',
+        'token' => 'token',
+    ])->assertSessionDoesntHaveErrors();
 
-        $this->delete(route('server-providers.destroy', $serverProvider))->assertSessionDoesntHaveErrors();
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.created'
+        && $event->data->data['name'] === 'hetty');
+});
 
-        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.deleted'
-            && $event->data->data['id'] === $serverProvider->id);
-    }
+test('deleting server provider dispatches socket event', function () {
+    Event::fake([SocketEvent::class]);
+    $this->actingAs($this->user);
 
-    public function test_hetzner_plans_expose_availability_and_order_available_first(): void
-    {
-        $this->actingAs($this->user);
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+    ]);
 
-        Http::fake([
-            '*' => Http::response([
-                'server_types' => [
-                    [
-                        'name' => 'cpx22', 'cores' => 2, 'memory' => 4, 'disk' => 80,
-                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '9.4900000000']]],
-                        'locations' => [
-                            ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
-                        ],
-                    ],
-                    [
-                        'name' => 'ccx13', 'cores' => 2, 'memory' => 8, 'disk' => 80,
-                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '18.4900000000']]],
-                        'locations' => [
-                            ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
-                        ],
-                    ],
-                    [
-                        'name' => 'cax11', 'cores' => 2, 'memory' => 4, 'disk' => 40,
-                        'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '5.4900000000']]],
-                        'locations' => [
-                            ['name' => 'fsn1', 'available' => false, 'deprecation' => null],
-                        ],
-                    ],
-                    [
-                        'name' => 'cpx12', 'cores' => 1, 'memory' => 2, 'disk' => 40,
-                        'prices' => [['location' => 'sin', 'price_monthly' => ['net' => '9.4900000000']]],
-                        'locations' => [
-                            ['name' => 'sin', 'available' => true, 'deprecation' => null],
-                        ],
-                    ],
-                ],
-            ], 200),
-        ]);
+    $this->delete(route('server-providers.destroy', $serverProvider))->assertSessionDoesntHaveErrors();
 
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-            'provider' => Hetzner::id(),
-            'credentials' => ['token' => 'token'],
-        ]);
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.deleted'
+        && $event->data->data['id'] === $serverProvider->id);
+});
 
-        $plans = $this->get(route('server-providers.plans', [
-            'serverProvider' => $serverProvider->id,
-            'region' => 'fsn1',
-        ]))
-            ->assertSuccessful()
-            ->json();
+test('hetzner plans expose availability and order available first', function () {
+    $this->actingAs($this->user);
 
-        $this->assertSame(['cpx22', 'ccx13', 'cax11'], array_keys($plans));
-        $this->assertTrue($plans['ccx13']['available']);
-        $this->assertStringContainsString('(18.49/mo)', $plans['ccx13']['label']);
-        $this->assertFalse($plans['cax11']['available']);
-        $this->assertStringNotContainsString('/mo', $plans['cax11']['label']);
-        $this->assertArrayNotHasKey('cpx12', $plans);
-    }
-
-    public function test_digital_ocean_plans_show_every_size_and_grey_unavailable(): void
-    {
-        $this->actingAs($this->user);
-
-        Http::fake([
-            '*' => Http::response([
-                'sizes' => [
-                    [
-                        'slug' => 's-1vcpu-1gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 1024, 'disk' => 25,
-                        'price_monthly' => 6, 'available' => true, 'regions' => ['lon1', 'nyc1'],
-                    ],
-                    [
-                        'slug' => 's-2vcpu-4gb', 'description' => 'Basic', 'vcpus' => 2, 'memory' => 4096, 'disk' => 80,
-                        'price_monthly' => 24, 'available' => true, 'regions' => ['lon1'],
-                    ],
-                    [
-                        'slug' => 's-1vcpu-512mb-10gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 512, 'disk' => 10,
-                        'price_monthly' => 4, 'available' => true, 'regions' => ['nyc1'],
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-            'provider' => DigitalOcean::id(),
-            'credentials' => ['token' => 'token'],
-        ]);
-
-        $plans = $this->get(route('server-providers.plans', [
-            'serverProvider' => $serverProvider->id,
-            'region' => 'lon1',
-        ]))
-            ->assertSuccessful()
-            ->json();
-
-        $this->assertSame(['s-1vcpu-1gb', 's-2vcpu-4gb', 's-1vcpu-512mb-10gb'], array_keys($plans));
-        $this->assertTrue($plans['s-1vcpu-1gb']['available']);
-        $this->assertStringContainsString('(6.00/mo)', $plans['s-1vcpu-1gb']['label']);
-        $this->assertFalse($plans['s-1vcpu-512mb-10gb']['available']);
-        $this->assertStringNotContainsString('/mo', $plans['s-1vcpu-512mb-10gb']['label']);
-    }
-
-    public function test_vultr_plans_show_every_plan_and_grey_unavailable(): void
-    {
-        $this->actingAs($this->user);
-
-        Http::fake([
-            '*' => Http::response([
-                'plans' => [
-                    [
-                        'id' => 'vc2-1c-1gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 1024, 'disk' => 25,
-                        'monthly_cost' => 5, 'locations' => ['ams', 'ewr'],
-                    ],
-                    [
-                        'id' => 'vc2-2c-4gb', 'type' => 'vc2', 'vcpu_count' => 2, 'ram' => 4096, 'disk' => 80,
-                        'monthly_cost' => 20, 'locations' => ['ams'],
-                    ],
-                    [
-                        'id' => 'vc2-1c-0.5gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 512, 'disk' => 10,
-                        'monthly_cost' => 2.5, 'locations' => ['ewr'],
-                    ],
-                ],
-            ], 200),
-        ]);
-
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-            'provider' => Vultr::id(),
-            'credentials' => ['token' => 'token'],
-        ]);
-
-        $plans = $this->get(route('server-providers.plans', [
-            'serverProvider' => $serverProvider->id,
-            'region' => 'ams',
-        ]))
-            ->assertSuccessful()
-            ->json();
-
-        $this->assertSame(['vc2-1c-1gb', 'vc2-2c-4gb', 'vc2-1c-0.5gb'], array_keys($plans));
-        $this->assertTrue($plans['vc2-1c-1gb']['available']);
-        $this->assertStringContainsString('(5.00/mo)', $plans['vc2-1c-1gb']['label']);
-        $this->assertFalse($plans['vc2-1c-0.5gb']['available']);
-        $this->assertStringNotContainsString('/mo', $plans['vc2-1c-0.5gb']['label']);
-    }
-
-    public function test_linode_plans_grey_classes_unsupported_by_region(): void
-    {
-        $this->actingAs($this->user);
-
-        Http::fake([
-            'api.linode.com/v4/linode/types*' => Http::response([
-                'data' => [
-                    [
-                        'id' => 'g6-standard-1', 'label' => 'Linode 2GB', 'class' => 'standard',
-                        'vcpus' => 1, 'memory' => 2048, 'disk' => 51200,
-                        'price' => ['monthly' => 12.0, 'hourly' => 0.018], 'region_prices' => [],
-                    ],
-                    [
-                        'id' => 'g1-gpu-rtx6000-1', 'label' => 'RTX6000 GPU', 'class' => 'gpu',
-                        'vcpus' => 8, 'memory' => 32768, 'disk' => 655360,
-                        'price' => ['monthly' => 1000.0, 'hourly' => 1.5], 'region_prices' => [],
-                    ],
-                    [
-                        'id' => 'g7-premium-2', 'label' => 'Premium 4GB', 'class' => 'premium',
-                        'vcpus' => 2, 'memory' => 4096, 'disk' => 81920,
-                        'price' => ['monthly' => 36.0, 'hourly' => 0.054],
-                        'region_prices' => [['id' => 'eu-test', 'monthly' => 40.0, 'hourly' => 0.06]],
-                    ],
-                ],
-            ], 200),
-            'api.linode.com/v4/regions*' => Http::response([
-                'data' => [
-                    ['id' => 'eu-test', 'label' => 'Test', 'capabilities' => ['Linodes']],
-                ],
-            ], 200),
-        ]);
-
-        $serverProvider = ServerProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-            'provider' => Linode::id(),
-            'credentials' => ['token' => 'token'],
-        ]);
-
-        $plans = $this->get(route('server-providers.plans', [
-            'serverProvider' => $serverProvider->id,
-            'region' => 'eu-test',
-        ]))
-            ->assertSuccessful()
-            ->json();
-
-        $this->assertSame(['g6-standard-1', 'g1-gpu-rtx6000-1', 'g7-premium-2'], array_keys($plans));
-        $this->assertTrue($plans['g6-standard-1']['available']);
-        $this->assertStringContainsString('50 Disk', $plans['g6-standard-1']['label']);
-        $this->assertStringContainsString('(12.00/mo)', $plans['g6-standard-1']['label']);
-        $this->assertFalse($plans['g1-gpu-rtx6000-1']['available']);
-        $this->assertFalse($plans['g7-premium-2']['available']);
-        $this->assertStringNotContainsString('/mo', $plans['g7-premium-2']['label']);
-    }
-
-    /**
-     * @return array<string, array<int, array<string, mixed>>>
-     */
-    public static function data(): array
-    {
-        return [
-            // [
-            //     ServerProvider::AWS,
-            //     [
-            //         'key' => 'key',
-            //         'secret' => 'secret',
-            //     ],
-            // ],
-            [
-                Linode::id(),
+    Http::fake([
+        '*' => Http::response([
+            'server_types' => [
                 [
-                    'token' => 'token',
+                    'name' => 'cpx22', 'cores' => 2, 'memory' => 4, 'disk' => 80,
+                    'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '9.4900000000']]],
+                    'locations' => [
+                        ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
+                    ],
+                ],
+                [
+                    'name' => 'ccx13', 'cores' => 2, 'memory' => 8, 'disk' => 80,
+                    'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '18.4900000000']]],
+                    'locations' => [
+                        ['name' => 'fsn1', 'available' => true, 'deprecation' => null],
+                    ],
+                ],
+                [
+                    'name' => 'cax11', 'cores' => 2, 'memory' => 4, 'disk' => 40,
+                    'prices' => [['location' => 'fsn1', 'price_monthly' => ['net' => '5.4900000000']]],
+                    'locations' => [
+                        ['name' => 'fsn1', 'available' => false, 'deprecation' => null],
+                    ],
+                ],
+                [
+                    'name' => 'cpx12', 'cores' => 1, 'memory' => 2, 'disk' => 40,
+                    'prices' => [['location' => 'sin', 'price_monthly' => ['net' => '9.4900000000']]],
+                    'locations' => [
+                        ['name' => 'sin', 'available' => true, 'deprecation' => null],
+                    ],
                 ],
             ],
-            [
-                Linode::id(),
+        ], 200),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => Hetzner::id(),
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $plans = $this->get(route('server-providers.plans', [
+        'serverProvider' => $serverProvider->id,
+        'region' => 'fsn1',
+    ]))
+        ->assertSuccessful()
+        ->json();
+
+    expect(array_keys($plans))->toBe(['cpx22', 'ccx13', 'cax11']);
+    expect($plans['ccx13']['available'])->toBeTrue();
+    $this->assertStringContainsString('(18.49/mo)', $plans['ccx13']['label']);
+    expect($plans['cax11']['available'])->toBeFalse();
+    $this->assertStringNotContainsString('/mo', $plans['cax11']['label']);
+    $this->assertArrayNotHasKey('cpx12', $plans);
+});
+
+test('digital ocean plans show every size and grey unavailable', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*' => Http::response([
+            'sizes' => [
                 [
-                    'token' => 'token',
-                    'global' => 1,
+                    'slug' => 's-1vcpu-1gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 1024, 'disk' => 25,
+                    'price_monthly' => 6, 'available' => true, 'regions' => ['lon1', 'nyc1'],
+                ],
+                [
+                    'slug' => 's-2vcpu-4gb', 'description' => 'Basic', 'vcpus' => 2, 'memory' => 4096, 'disk' => 80,
+                    'price_monthly' => 24, 'available' => true, 'regions' => ['lon1'],
+                ],
+                [
+                    'slug' => 's-1vcpu-512mb-10gb', 'description' => 'Basic', 'vcpus' => 1, 'memory' => 512, 'disk' => 10,
+                    'price_monthly' => 4, 'available' => true, 'regions' => ['nyc1'],
                 ],
             ],
-            [
-                DigitalOcean::id(),
+        ], 200),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => DigitalOcean::id(),
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $plans = $this->get(route('server-providers.plans', [
+        'serverProvider' => $serverProvider->id,
+        'region' => 'lon1',
+    ]))
+        ->assertSuccessful()
+        ->json();
+
+    expect(array_keys($plans))->toBe(['s-1vcpu-1gb', 's-2vcpu-4gb', 's-1vcpu-512mb-10gb']);
+    expect($plans['s-1vcpu-1gb']['available'])->toBeTrue();
+    $this->assertStringContainsString('(6.00/mo)', $plans['s-1vcpu-1gb']['label']);
+    expect($plans['s-1vcpu-512mb-10gb']['available'])->toBeFalse();
+    $this->assertStringNotContainsString('/mo', $plans['s-1vcpu-512mb-10gb']['label']);
+});
+
+test('vultr plans show every plan and grey unavailable', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*' => Http::response([
+            'plans' => [
                 [
-                    'token' => 'token',
+                    'id' => 'vc2-1c-1gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 1024, 'disk' => 25,
+                    'monthly_cost' => 5, 'locations' => ['ams', 'ewr'],
+                ],
+                [
+                    'id' => 'vc2-2c-4gb', 'type' => 'vc2', 'vcpu_count' => 2, 'ram' => 4096, 'disk' => 80,
+                    'monthly_cost' => 20, 'locations' => ['ams'],
+                ],
+                [
+                    'id' => 'vc2-1c-0.5gb', 'type' => 'vc2', 'vcpu_count' => 1, 'ram' => 512, 'disk' => 10,
+                    'monthly_cost' => 2.5, 'locations' => ['ewr'],
                 ],
             ],
-            [
-                Vultr::id(),
+        ], 200),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => Vultr::id(),
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $plans = $this->get(route('server-providers.plans', [
+        'serverProvider' => $serverProvider->id,
+        'region' => 'ams',
+    ]))
+        ->assertSuccessful()
+        ->json();
+
+    expect(array_keys($plans))->toBe(['vc2-1c-1gb', 'vc2-2c-4gb', 'vc2-1c-0.5gb']);
+    expect($plans['vc2-1c-1gb']['available'])->toBeTrue();
+    $this->assertStringContainsString('(5.00/mo)', $plans['vc2-1c-1gb']['label']);
+    expect($plans['vc2-1c-0.5gb']['available'])->toBeFalse();
+    $this->assertStringNotContainsString('/mo', $plans['vc2-1c-0.5gb']['label']);
+});
+
+test('linode plans grey classes unsupported by region', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        'api.linode.com/v4/linode/types*' => Http::response([
+            'data' => [
                 [
-                    'token' => 'token',
+                    'id' => 'g6-standard-1', 'label' => 'Linode 2GB', 'class' => 'standard',
+                    'vcpus' => 1, 'memory' => 2048, 'disk' => 51200,
+                    'price' => ['monthly' => 12.0, 'hourly' => 0.018], 'region_prices' => [],
+                ],
+                [
+                    'id' => 'g1-gpu-rtx6000-1', 'label' => 'RTX6000 GPU', 'class' => 'gpu',
+                    'vcpus' => 8, 'memory' => 32768, 'disk' => 655360,
+                    'price' => ['monthly' => 1000.0, 'hourly' => 1.5], 'region_prices' => [],
+                ],
+                [
+                    'id' => 'g7-premium-2', 'label' => 'Premium 4GB', 'class' => 'premium',
+                    'vcpus' => 2, 'memory' => 4096, 'disk' => 81920,
+                    'price' => ['monthly' => 36.0, 'hourly' => 0.054],
+                    'region_prices' => [['id' => 'eu-test', 'monthly' => 40.0, 'hourly' => 0.06]],
                 ],
             ],
-            [
-                Hetzner::id(),
-                [
-                    'token' => 'token',
-                ],
+        ], 200),
+        'api.linode.com/v4/regions*' => Http::response([
+            'data' => [
+                ['id' => 'eu-test', 'label' => 'Test', 'capabilities' => ['Linodes']],
             ],
-        ];
-    }
-}
+        ], 200),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => Linode::id(),
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $plans = $this->get(route('server-providers.plans', [
+        'serverProvider' => $serverProvider->id,
+        'region' => 'eu-test',
+    ]))
+        ->assertSuccessful()
+        ->json();
+
+    expect(array_keys($plans))->toBe(['g6-standard-1', 'g1-gpu-rtx6000-1', 'g7-premium-2']);
+    expect($plans['g6-standard-1']['available'])->toBeTrue();
+    $this->assertStringContainsString('50 Disk', $plans['g6-standard-1']['label']);
+    $this->assertStringContainsString('(12.00/mo)', $plans['g6-standard-1']['label']);
+    expect($plans['g1-gpu-rtx6000-1']['available'])->toBeFalse();
+    expect($plans['g7-premium-2']['available'])->toBeFalse();
+    $this->assertStringNotContainsString('/mo', $plans['g7-premium-2']['label']);
+});
+
+dataset('data', /** @return array<int, array{0: string, 1: array<string, mixed>}> */ function (): array {
+    return [
+        [
+            Linode::id(),
+            [
+                'token' => 'token',
+            ],
+        ],
+        [
+            Linode::id(),
+            [
+                'token' => 'token',
+                'global' => 1,
+            ],
+        ],
+        [
+            DigitalOcean::id(),
+            [
+                'token' => 'token',
+            ],
+        ],
+        [
+            Vultr::id(),
+            [
+                'token' => 'token',
+            ],
+        ],
+        [
+            Hetzner::id(),
+            [
+                'token' => 'token',
+            ],
+        ],
+    ];
+});

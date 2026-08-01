@@ -80,8 +80,8 @@ function display_help {
     echo "  ${GREEN}sail debug queue:work${NC}"
     echo
     echo "${YELLOW}Running Tests:${NC}"
-    echo "  ${GREEN}sail test${NC}          Run the PHPUnit tests via the Artisan test command"
-    echo "  ${GREEN}sail phpunit ...${NC}   Run PHPUnit"
+    echo "  ${GREEN}sail test${NC}          Run the tests via the Artisan test command"
+    echo "  ${GREEN}sail pest ...${NC}      Run Pest"
     echo "  ${GREEN}sail pint ...${NC}      Run Pint"
     echo "  ${GREEN}sail dusk${NC}          Run the Dusk tests (Requires the laravel/dusk package)"
     echo "  ${GREEN}sail dusk:fails${NC}    Re-run previously failed Dusk tests (Requires the laravel/dusk package)"
@@ -273,14 +273,14 @@ elif [ "$1" == "test" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "phpunit" command to "php vendor/bin/phpunit"...
-elif [ "$1" == "phpunit" ]; then
+# Proxy the "pest" command to "php vendor/bin/pest"...
+elif [ "$1" == "pest" ]; then
     shift 1
 
     if [ "$EXEC" == "yes" ]; then
         ARGS+=(exec -u sail)
         [ ! -t 0 ] && ARGS+=(-T)
-        ARGS+=("$APP_SERVICE" php vendor/bin/phpunit "$@")
+        ARGS+=("$APP_SERVICE" php vendor/bin/pest "$@")
     else
         sail_is_not_running
     fi

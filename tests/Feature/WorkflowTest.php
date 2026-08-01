@@ -1,74 +1,64 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\Workflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
-use Tests\TestCase;
 
-class WorkflowTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_see_workflows_list(): void
-    {
-        $this->actingAs($this->user);
+test('see workflows list', function () {
+    $this->actingAs($this->user);
 
-        Workflow::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
+    Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+    ]);
 
-        $this->get(route('workflows'))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('workflows/index'));
-    }
+    $this->get(route('workflows'))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('workflows/index'));
+});
 
-    public function test_see_workflow(): void
-    {
-        $this->actingAs($this->user);
+test('see workflow', function () {
+    $this->actingAs($this->user);
 
-        /** @var Workflow $workflow */
-        $workflow = Workflow::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
+    /** @var Workflow $workflow */
+    $workflow = Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+    ]);
 
-        $this->get(route('workflows.show', $workflow))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('workflows/show'));
-    }
+    $this->get(route('workflows.show', $workflow))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('workflows/show'));
+});
 
-    public function test_create_workflow(): void
-    {
-        $this->actingAs($this->user);
+test('create workflow', function () {
+    $this->actingAs($this->user);
 
-        $this->post(route('workflows.store'), [
-            'name' => 'My Workflow',
-        ])->assertRedirect();
+    $this->post(route('workflows.store'), [
+        'name' => 'My Workflow',
+    ])->assertRedirect();
 
-        $this->assertDatabaseHas('workflows', [
-            'project_id' => $this->user->current_project_id,
-            'name' => 'My Workflow',
-        ]);
-    }
+    $this->assertDatabaseHas('workflows', [
+        'project_id' => $this->user->current_project_id,
+        'name' => 'My Workflow',
+    ]);
+});
 
-    public function test_delete_workflow(): void
-    {
-        $this->actingAs($this->user);
+test('delete workflow', function () {
+    $this->actingAs($this->user);
 
-        /** @var Workflow $workflow */
-        $workflow = Workflow::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
+    /** @var Workflow $workflow */
+    $workflow = Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+    ]);
 
-        $this->delete(route('workflows.destroy', $workflow))
-            ->assertRedirect();
+    $this->delete(route('workflows.destroy', $workflow))
+        ->assertRedirect();
 
-        $this->assertSoftDeleted('workflows', [
-            'id' => $workflow->id,
-        ]);
-    }
-}
+    $this->assertSoftDeleted('workflows', [
+        'id' => $workflow->id,
+    ]);
+});

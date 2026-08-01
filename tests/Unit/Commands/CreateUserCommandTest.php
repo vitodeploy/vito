@@ -1,72 +1,66 @@
 <?php
 
-namespace Tests\Unit\Commands;
-
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class CreateUserCommandTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_create_user(): void
-    {
-        $this->artisan('user:create', [
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-            'password' => 'password',
-        ])->expectsOutput('User created!');
+test('create user', function () {
+    $this->artisan('user:create', [
+        'name' => 'John Doe',
+        'email' => 'john@doe.com',
+        'password' => 'password',
+    ])->expectsOutput('User created!');
 
-        $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-        ]);
+    $this->assertDatabaseHas('users', [
+        'name' => 'John Doe',
+        'email' => 'john@doe.com',
+    ]);
 
-        /** @var User $user */
-        $user = User::query()->where('email', 'john@doe.com')->first();
+    $user = User::query()->where('email', 'john@doe.com')->firstOrFail();
 
-        $this->assertDatabaseHas('projects', [
-            'name' => 'default',
-        ]);
-    }
+    $this->assertDatabaseHas('projects', [
+        'name' => 'default',
+    ]);
 
-    public function test_create_user_and_project(): void
-    {
-        Project::query()->delete();
-        User::query()->delete();
+    $this->assertDatabaseHas('user_project', [
+        'user_id' => $user->id,
+        'project_id' => $user->refresh()->current_project_id,
+    ]);
+});
 
-        $this->artisan('user:create', [
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-            'password' => 'password',
-        ])->expectsOutput('User created!');
+test('create user and project', function () {
+    Project::query()->delete();
+    User::query()->delete();
 
-        $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-        ]);
+    $this->artisan('user:create', [
+        'name' => 'John Doe',
+        'email' => 'john@doe.com',
+        'password' => 'password',
+    ])->expectsOutput('User created!');
 
-        /** @var User $user */
-        $user = User::query()->where('email', 'john@doe.com')->first();
+    $this->assertDatabaseHas('users', [
+        'name' => 'John Doe',
+        'email' => 'john@doe.com',
+    ]);
 
-        $this->assertDatabaseHas('projects', [
-            'name' => 'default',
-        ]);
+    $user = User::query()->where('email', 'john@doe.com')->firstOrFail();
 
-        $this->assertDatabaseHas('user_project', [
-            'user_id' => $user->id,
-            'project_id' => $user->refresh()->current_project_id,
-        ]);
-    }
+    $this->assertDatabaseHas('projects', [
+        'name' => 'default',
+    ]);
 
-    public function test_skip_existing_user(): void
-    {
-        $this->artisan('user:create', [
-            'name' => 'John Doe',
-            'email' => $this->user->email,
-            'password' => 'password',
-        ])->expectsOutput('User already exists. Skipping...');
-    }
-}
+    $this->assertDatabaseHas('user_project', [
+        'user_id' => $user->id,
+        'project_id' => $user->refresh()->current_project_id,
+    ]);
+});
+
+test('skip existing user', function () {
+    $this->artisan('user:create', [
+        'name' => 'John Doe',
+        'email' => $this->user->email,
+        'password' => 'password',
+    ])->expectsOutput('User already exists. Skipping...');
+});

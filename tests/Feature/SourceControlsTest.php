@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\SourceControl;
 use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
@@ -12,476 +10,439 @@ use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
-class SourceControlsTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    #[DataProvider('data')]
-    public function test_connect_provider(string $provider, ?string $customUrl, array $input): void
-    {
-        $this->actingAs($this->user);
+test('connect provider', function (string $provider, ?string $customUrl, array $input) {
+    $this->actingAs($this->user);
 
-        // Configure HTTP fake responses for BitbucketV2 OAuth flow
-        if ($provider === BitbucketV2::id()) {
-            Http::fake([
-                'bitbucket.org/site/oauth2/access_token' => Http::response([
-                    'access_token' => 'fake-access-token',
-                    'token_type' => 'Bearer',
-                ], 200),
-                'api.bitbucket.org/2.0/user' => Http::response([
-                    'username' => 'test-user',
-                ], 200),
-            ]);
-        } else {
-            Http::fake();
-        }
+    if ($provider === BitbucketV2::id()) {
+        Http::fake([
+            'bitbucket.org/site/oauth2/access_token' => Http::response([
+                'access_token' => 'fake-access-token',
+                'token_type' => 'Bearer',
+            ], 200),
+            'api.bitbucket.org/2.0/user' => Http::response([
+                'username' => 'test-user',
+            ], 200),
+        ]);
+    } else {
+        Http::fake();
+    }
 
-        $input = array_merge([
-            'name' => 'test',
-            'provider' => $provider,
-        ], $input);
+    $input = array_merge([
+        'name' => 'test',
+        'provider' => $provider,
+    ], $input);
 
-        if ($customUrl !== null) {
-            $input['url'] = $customUrl;
-        }
+    if ($customUrl !== null) {
+        $input['url'] = $customUrl;
+    }
 
-        $this->post(route('source-controls.store'), $input);
+    $this->post(route('source-controls.store'), $input)
+        ->assertSessionDoesntHaveErrors();
 
+    $this->assertDatabaseHas('source_controls', [
+        'provider' => $provider,
+        'url' => $customUrl,
+    ]);
+
+    if (isset($input['global']) && $input['global']) {
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
             'url' => $customUrl,
+            'project_id' => null,
         ]);
-
-        if (isset($input['global']) && $input['global']) {
-            $this->assertDatabaseHas('source_controls', [
-                'provider' => $provider,
-                'url' => $customUrl,
-                'project_id' => null,
-            ]);
-        } else {
-            $this->assertDatabaseHas('source_controls', [
-                'provider' => $provider,
-                'url' => $customUrl,
-                'project_id' => $this->user->current_project_id,
-            ]);
-        }
-    }
-
-    #[DataProvider('data')]
-    public function test_delete_provider(string $provider, ?string $url, array $input): void
-    {
-        unset($url, $input);
-
-        $this->actingAs($this->user);
-
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => $provider,
-            'profile' => 'test',
-            'user_id' => $this->user->id,
-        ]);
-
-        $this->delete(route('source-controls.destroy', $sourceControl))
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('source-controls'));
-
-        $this->assertSoftDeleted('source_controls', [
-            'id' => $sourceControl->id,
-        ]);
-    }
-
-    #[DataProvider('data')]
-    public function test_cannot_delete_provider(string $provider, ?string $url, array $input): void
-    {
-        unset($url, $input);
-
-        $this->actingAs($this->user);
-
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => $provider,
-            'profile' => 'test',
-            'user_id' => $this->user->id,
-        ]);
-
-        $this->site->update([
-            'source_control_id' => $sourceControl->id,
-        ]);
-
-        $this->delete(route('source-controls.destroy', $sourceControl))
-            ->assertSessionHasErrors([
-                'source_control' => 'This source control is being used by a site.',
-            ]);
-
-        $this->assertNotSoftDeleted('source_controls', [
-            'id' => $sourceControl->id,
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    #[DataProvider('data')]
-    public function test_edit_source_control(string $provider, ?string $url, array $input): void
-    {
-        Http::fake();
-
-        $this->actingAs($this->user);
-
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => $provider,
-            'profile' => 'old-name',
-            'url' => $url,
-            'user_id' => $this->user->id,
-        ]);
-
-        $input['name'] = 'new-name';
-
-        $this->patch(route('source-controls.update', $sourceControl), $input)
-            ->assertSessionDoesntHaveErrors();
-
-        $sourceControl->refresh();
-
-        $this->assertEquals('new-name', $sourceControl->profile);
-        $this->assertEquals($url, $sourceControl->url);
-    }
-
-    public function test_user_cannot_update_other_users_source_control(): void
-    {
-        $this->actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $sourceControl = SourceControl::factory()->create([
-            'user_id' => $otherUser->id,
-        ]);
-
-        Http::fake();
-
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'hacked',
-            'token' => 'hacked-token',
-        ])
-            ->assertForbidden();
-    }
-
-    public function test_user_cannot_delete_other_users_source_control(): void
-    {
-        $this->actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $sourceControl = SourceControl::factory()->create([
-            'user_id' => $otherUser->id,
-        ]);
-
-        $this->delete(route('source-controls.destroy', $sourceControl))
-            ->assertForbidden();
-    }
-
-    public function test_guest_cannot_access_source_controls(): void
-    {
-        $sourceControl = SourceControl::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
-
-        $this->get(route('source-controls'))
-            ->assertRedirect('/');
-
-        $this->post(route('source-controls.store'), [])
-            ->assertRedirect('/');
-
-        $this->patch(route('source-controls.update', $sourceControl), [])
-            ->assertRedirect('/');
-
-        $this->delete(route('source-controls.destroy', $sourceControl))
-            ->assertRedirect('/');
-    }
-
-    public function test_cannot_manipulate_user_id_on_creation(): void
-    {
-        $this->actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-
-        Http::fake();
-
-        $data = [
-            'provider' => Github::id(),
-            'name' => 'test',
-            'token' => 'fake-token',
-            'user_id' => $otherUser->id,
-        ];
-
-        $this->post(route('source-controls.store'), $data);
-
+    } else {
         $this->assertDatabaseHas('source_controls', [
-            'profile' => 'test',
-            'provider' => Github::id(),
-            'user_id' => $this->user->id,
-        ]);
-
-        $this->assertDatabaseMissing('source_controls', [
-            'profile' => 'test',
-            'provider' => Github::id(),
-            'user_id' => $otherUser->id,
+            'provider' => $provider,
+            'url' => $customUrl,
+            'project_id' => $this->user->current_project_id,
         ]);
     }
+})->with('data');
 
-    public function test_cannot_transfer_ownership_via_update(): void
-    {
-        Http::fake();
+test('delete provider', function (string $provider, ?string $url, array $input) {
+    unset($url, $input);
 
-        $this->actingAs($this->user);
+    $this->actingAs($this->user);
 
-        $otherUser = User::factory()->create();
-        $sourceControl = SourceControl::factory()->create([
-            'user_id' => $this->user->id,
-            'profile' => 'original',
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => $provider,
+        'profile' => 'test',
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->delete(route('source-controls.destroy', $sourceControl))
+        ->assertSessionDoesntHaveErrors()
+        ->assertRedirect(route('source-controls'));
+
+    $this->assertSoftDeleted('source_controls', [
+        'id' => $sourceControl->id,
+    ]);
+})->with('data');
+
+test('cannot delete provider', function (string $provider, ?string $url, array $input) {
+    unset($url, $input);
+
+    $this->actingAs($this->user);
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => $provider,
+        'profile' => 'test',
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->site->update([
+        'source_control_id' => $sourceControl->id,
+    ]);
+
+    $this->delete(route('source-controls.destroy', $sourceControl))
+        ->assertSessionHasErrors([
+            'source_control' => 'This source control is being used by a site.',
         ]);
 
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'updated',
-            'token' => 'new-token',
-            'user_id' => $otherUser->id,
-        ]);
+    $this->assertNotSoftDeleted('source_controls', [
+        'id' => $sourceControl->id,
+    ]);
+})->with('data');
 
-        $sourceControl->refresh();
+test('edit source control', function (string $provider, ?string $url, array $input) {
+    Http::fake();
 
-        $this->assertEquals($this->user->id, $sourceControl->user_id);
-        $this->assertNotEquals($otherUser->id, $sourceControl->user_id);
-    }
+    $this->actingAs($this->user);
 
-    public function test_user_can_only_see_own_source_controls_in_list(): void
-    {
-        $this->actingAs($this->user);
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => $provider,
+        'profile' => 'old-name',
+        'url' => $url,
+        'user_id' => $this->user->id,
+    ]);
 
-        $otherUser = User::factory()->create();
+    $input['name'] = 'new-name';
 
-        $ownSourceControl = SourceControl::factory()->create([
-            'user_id' => $this->user->id,
-            'profile' => 'own-source-control',
-        ]);
+    $this->patch(route('source-controls.update', $sourceControl), $input)
+        ->assertSessionDoesntHaveErrors();
 
-        $otherSourceControl = SourceControl::factory()->create([
-            'user_id' => $otherUser->id,
-            'profile' => 'other-source-control',
-        ]);
+    $sourceControl->refresh();
 
-        $response = $this->get(route('source-controls'))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('source-controls/index'));
+    expect($sourceControl->profile)->toEqual('new-name');
+    expect($sourceControl->url)->toEqual($url);
+})->with('data');
 
-        $response->assertInertia(fn (AssertableInertia $page) => $page->has('sourceControls.data')
-            ->where('sourceControls.data.0.id', $ownSourceControl->id)
-            ->whereNot('sourceControls.data.0.id', $otherSourceControl->id)
-        );
-    }
+test('user cannot update other users source control', function () {
+    $this->actingAs($this->user);
 
-    public function test_connect_gitea_persists_ssh_port_in_provider_data(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+    $otherUser = User::factory()->create();
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->post(route('source-controls.store'), [
-            'name' => 'gitea-custom-port',
-            'provider' => Gitea::id(),
-            'token' => 'test-token',
-            'url' => 'https://gitea.example.com/',
-            'ssh_port' => 2222,
-        ])->assertSessionDoesntHaveErrors();
+    Http::fake();
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::query()
-            ->where('provider', Gitea::id())
-            ->where('profile', 'gitea-custom-port')
-            ->firstOrFail();
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'hacked',
+        'token' => 'hacked-token',
+    ])
+        ->assertForbidden();
+});
 
-        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
-        $this->assertSame('test-token', $sourceControl->provider_data['token']);
-        $this->assertSame(2222, $sourceControl->provider()->getSshPort());
-    }
+test('user cannot delete other users source control', function () {
+    $this->actingAs($this->user);
 
-    public function test_connect_gitea_without_ssh_port_defaults_to_22(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+    $otherUser = User::factory()->create();
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->post(route('source-controls.store'), [
-            'name' => 'gitea-default',
-            'provider' => Gitea::id(),
-            'token' => 'test-token',
-        ])->assertSessionDoesntHaveErrors();
+    $this->delete(route('source-controls.destroy', $sourceControl))
+        ->assertForbidden();
+});
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::query()
-            ->where('provider', Gitea::id())
-            ->where('profile', 'gitea-default')
-            ->firstOrFail();
+test('guest cannot access source controls', function () {
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->assertSame(22, $sourceControl->provider_data['ssh_port']);
-        $this->assertSame(22, $sourceControl->provider()->getSshPort());
-    }
+    $this->get(route('source-controls'))
+        ->assertRedirect('/');
 
-    public function test_edit_gitea_updates_ssh_port(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+    $this->post(route('source-controls.store'), [])
+        ->assertRedirect('/');
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => Gitea::id(),
-            'user_id' => $this->user->id,
-            'profile' => 'gitea',
-            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
-        ]);
+    $this->patch(route('source-controls.update', $sourceControl), [])
+        ->assertRedirect('/');
 
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'gitea',
-            'ssh_port' => 2222,
-        ])->assertSessionDoesntHaveErrors();
+    $this->delete(route('source-controls.destroy', $sourceControl))
+        ->assertRedirect('/');
+});
 
-        $sourceControl->refresh();
+test('cannot manipulate user id on creation', function () {
+    $this->actingAs($this->user);
 
-        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
-        $this->assertSame('original-token', $sourceControl->provider_data['token']);
-    }
+    $otherUser = User::factory()->create();
 
-    public function test_edit_cannot_clobber_token_via_extra_input(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+    Http::fake();
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => Gitea::id(),
-            'user_id' => $this->user->id,
-            'profile' => 'gitea',
-            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
-        ]);
+    $data = [
+        'provider' => Github::id(),
+        'name' => 'test',
+        'token' => 'fake-token',
+        'user_id' => $otherUser->id,
+    ];
 
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'gitea',
-            'ssh_port' => 2222,
-            'token' => 'stolen-token',
-        ])->assertSessionDoesntHaveErrors();
+    $this->post(route('source-controls.store'), $data)
+        ->assertSessionDoesntHaveErrors();
 
-        $sourceControl->refresh();
+    $this->assertDatabaseHas('source_controls', [
+        'profile' => 'test',
+        'provider' => Github::id(),
+        'user_id' => $this->user->id,
+    ]);
 
-        $this->assertSame('original-token', $sourceControl->provider_data['token']);
-        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
-    }
+    $this->assertDatabaseMissing('source_controls', [
+        'profile' => 'test',
+        'provider' => Github::id(),
+        'user_id' => $otherUser->id,
+    ]);
+});
 
-    public function test_edit_gitlab_cannot_clobber_token_via_extra_input(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+test('cannot transfer ownership via update', function () {
+    Http::fake();
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => Gitlab::id(),
-            'user_id' => $this->user->id,
-            'profile' => 'gitlab',
-            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
-        ]);
+    $this->actingAs($this->user);
 
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'gitlab',
-            'ssh_port' => 2222,
-            'token' => 'stolen-token',
-        ])->assertSessionDoesntHaveErrors();
+    $otherUser = User::factory()->create();
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'original',
+    ]);
 
-        $sourceControl->refresh();
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'updated',
+        'token' => 'new-token',
+        'user_id' => $otherUser->id,
+    ]);
 
-        $this->assertSame('original-token', $sourceControl->provider_data['token']);
-        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
-    }
+    $sourceControl->refresh();
 
-    public function test_edit_gitea_rejects_out_of_range_ssh_port(): void
-    {
-        Http::fake();
-        $this->actingAs($this->user);
+    expect($sourceControl->user_id)->toEqual($this->user->id);
+    $this->assertNotEquals($otherUser->id, $sourceControl->user_id);
+});
 
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => Gitea::id(),
-            'user_id' => $this->user->id,
-            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
-        ]);
+test('user can only see own source controls in list', function () {
+    $this->actingAs($this->user);
 
-        $this->patch(route('source-controls.update', $sourceControl), [
-            'name' => 'gitea',
-            'ssh_port' => 70000,
-        ])->assertSessionHasErrors(['ssh_port']);
+    $otherUser = User::factory()->create();
 
-        $sourceControl->refresh();
-        $this->assertSame(22, $sourceControl->provider_data['ssh_port']);
-    }
+    $ownSourceControl = SourceControl::factory()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'own-source-control',
+    ]);
 
-    public function test_legacy_row_without_ssh_port_falls_back_to_22(): void
-    {
-        /** @var SourceControl $sourceControl */
-        $sourceControl = SourceControl::factory()->create([
-            'provider' => Gitea::id(),
-            'user_id' => $this->user->id,
-            'provider_data' => ['token' => 'legacy-token'],
-        ]);
+    $otherSourceControl = SourceControl::factory()->create([
+        'user_id' => $otherUser->id,
+        'profile' => 'other-source-control',
+    ]);
 
-        $this->assertSame(22, $sourceControl->provider()->getSshPort());
-        $this->assertSame(22, $sourceControl->provider()->data()['ssh_port']);
-    }
+    $response = $this->get(route('source-controls'))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('source-controls/index'));
 
-    public function test_clone_script_renders_custom_port(): void
-    {
-        $rendered = view('ssh.git.clone', [
-            'host' => 'gitea.example.com',
-            'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
-            'path' => '/home/vito/test',
-            'branch' => 'main',
-            'key' => 'site_1',
-            'port' => 2222,
-        ])->render();
+    $response->assertInertia(fn (AssertableInertia $page) => $page->has('sourceControls.data')
+        ->where('sourceControls.data.0.id', $ownSourceControl->id)
+        ->whereNot('sourceControls.data.0.id', $otherSourceControl->id)
+    );
+});
 
-        $this->assertStringContainsString('Port 2222', $rendered);
-        $this->assertStringContainsString('ssh-keyscan -T 5 -p 2222 -H gitea.example.com', $rendered);
-        $this->assertStringContainsString("alias_name='gitea.example.com-site_1'", $rendered);
-    }
+test('connect gitea persists ssh port in provider data', function () {
+    Http::fake();
+    $this->actingAs($this->user);
 
-    public function test_clone_script_renders_default_port_22(): void
-    {
-        $rendered = view('ssh.git.clone', [
-            'host' => 'gitea.example.com',
-            'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
-            'path' => '/home/vito/test',
-            'branch' => 'main',
-            'key' => 'site_1',
-            'port' => 22,
-        ])->render();
+    $this->post(route('source-controls.store'), [
+        'name' => 'gitea-custom-port',
+        'provider' => Gitea::id(),
+        'token' => 'test-token',
+        'url' => 'https://gitea.example.com/',
+        'ssh_port' => 2222,
+    ])->assertSessionDoesntHaveErrors();
 
-        $this->assertStringContainsString('Port 22', $rendered);
-        $this->assertStringContainsString('ssh-keyscan -T 5 -p 22 -H gitea.example.com', $rendered);
-    }
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::query()
+        ->where('provider', Gitea::id())
+        ->where('profile', 'gitea-custom-port')
+        ->firstOrFail();
 
-    /**
-     * @return array<int, mixed>
-     */
-    public static function data(): array
-    {
-        return [
-            [Github::id(), null, ['token' => 'test']],
-            [Github::id(), null, ['token' => 'test', 'global' => true]],
-            [Gitlab::id(), null, ['token' => 'test']],
-            [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
-            [Gitlab::id(), 'https://git.example.com/', ['token' => 'test', 'ssh_port' => 2222]],
-            [Gitea::id(), null, ['token' => 'test']],
-            [Gitea::id(), 'https://gitea.example.com/', ['token' => 'test', 'ssh_port' => 222]],
-            [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
-            [BitbucketV2::id(), null, ['key' => 'test', 'secret' => 'test']],
-        ];
-    }
-}
+    expect($sourceControl->provider_data['ssh_port'])->toBe(2222);
+    expect($sourceControl->provider_data['token'])->toBe('test-token');
+    expect($sourceControl->provider()->getSshPort())->toBe(2222);
+});
+
+test('connect gitea without ssh port defaults to 22', function () {
+    Http::fake();
+    $this->actingAs($this->user);
+
+    $this->post(route('source-controls.store'), [
+        'name' => 'gitea-default',
+        'provider' => Gitea::id(),
+        'token' => 'test-token',
+    ])->assertSessionDoesntHaveErrors();
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::query()
+        ->where('provider', Gitea::id())
+        ->where('profile', 'gitea-default')
+        ->firstOrFail();
+
+    expect($sourceControl->provider_data['ssh_port'])->toBe(22);
+    expect($sourceControl->provider()->getSshPort())->toBe(22);
+});
+
+test('edit gitea updates ssh port', function () {
+    Http::fake();
+    $this->actingAs($this->user);
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => Gitea::id(),
+        'user_id' => $this->user->id,
+        'profile' => 'gitea',
+        'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+    ]);
+
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'gitea',
+        'ssh_port' => 2222,
+    ])->assertSessionDoesntHaveErrors();
+
+    $sourceControl->refresh();
+
+    expect($sourceControl->provider_data['ssh_port'])->toBe(2222);
+    expect($sourceControl->provider_data['token'])->toBe('original-token');
+});
+
+test('edit cannot clobber token via extra input', function () {
+    Http::fake();
+    $this->actingAs($this->user);
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => Gitea::id(),
+        'user_id' => $this->user->id,
+        'profile' => 'gitea',
+        'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+    ]);
+
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'gitea',
+        'ssh_port' => 2222,
+        'token' => 'stolen-token',
+    ])->assertSessionDoesntHaveErrors();
+
+    $sourceControl->refresh();
+
+    expect($sourceControl->provider_data['token'])->toBe('original-token');
+    expect($sourceControl->provider_data['ssh_port'])->toBe(2222);
+});
+
+test('edit gitlab cannot clobber token via extra input', function () {
+    Http::fake();
+    $this->actingAs($this->user);
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+        'profile' => 'gitlab',
+        'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+    ]);
+
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'gitlab',
+        'ssh_port' => 2222,
+        'token' => 'stolen-token',
+    ])->assertSessionDoesntHaveErrors();
+
+    $sourceControl->refresh();
+
+    expect($sourceControl->provider_data['token'])->toBe('original-token');
+    expect($sourceControl->provider_data['ssh_port'])->toBe(2222);
+});
+
+test('edit gitea rejects out of range ssh port', function () {
+    Http::fake();
+    $this->actingAs($this->user);
+
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => Gitea::id(),
+        'user_id' => $this->user->id,
+        'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+    ]);
+
+    $this->patch(route('source-controls.update', $sourceControl), [
+        'name' => 'gitea',
+        'ssh_port' => 70000,
+    ])->assertSessionHasErrors(['ssh_port']);
+
+    $sourceControl->refresh();
+    expect($sourceControl->provider_data['ssh_port'])->toBe(22);
+});
+
+test('legacy row without ssh port falls back to 22', function () {
+    /** @var SourceControl $sourceControl */
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => Gitea::id(),
+        'user_id' => $this->user->id,
+        'provider_data' => ['token' => 'legacy-token'],
+    ]);
+
+    expect($sourceControl->provider()->getSshPort())->toBe(22);
+    expect($sourceControl->provider()->data()['ssh_port'])->toBe(22);
+});
+
+test('clone script renders custom port', function () {
+    $rendered = view('ssh.git.clone', [
+        'host' => 'gitea.example.com',
+        'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
+        'path' => '/home/vito/test',
+        'branch' => 'main',
+        'key' => 'site_1',
+        'port' => 2222,
+    ])->render();
+
+    $this->assertStringContainsString('Port 2222', $rendered);
+    $this->assertStringContainsString('ssh-keyscan -T 5 -p 2222 -H gitea.example.com', $rendered);
+    $this->assertStringContainsString("alias_name='gitea.example.com-site_1'", $rendered);
+});
+
+test('clone script renders default port 22', function () {
+    $rendered = view('ssh.git.clone', [
+        'host' => 'gitea.example.com',
+        'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
+        'path' => '/home/vito/test',
+        'branch' => 'main',
+        'key' => 'site_1',
+        'port' => 22,
+    ])->render();
+
+    $this->assertStringContainsString('Port 22', $rendered);
+    $this->assertStringContainsString('ssh-keyscan -T 5 -p 22 -H gitea.example.com', $rendered);
+});
+
+dataset('data', /** @return array<int, array{0: string, 1: ?string, 2: array<string, mixed>}> */ function (): array {
+    return [
+        [Github::id(), null, ['token' => 'test']],
+        [Github::id(), null, ['token' => 'test', 'global' => true]],
+        [Gitlab::id(), null, ['token' => 'test']],
+        [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
+        [Gitlab::id(), 'https://git.example.com/', ['token' => 'test', 'ssh_port' => 2222]],
+        [Gitea::id(), null, ['token' => 'test']],
+        [Gitea::id(), 'https://gitea.example.com/', ['token' => 'test', 'ssh_port' => 222]],
+        [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
+        [BitbucketV2::id(), null, ['key' => 'test', 'secret' => 'test']],
+    ];
+});

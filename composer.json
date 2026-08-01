@@ -32,7 +32,6 @@
     "tightenco/ziggy": "^2.5"
   },
   "require-dev": {
-    "brianium/paratest": "^7.8.5",
     "fakerphp/faker": "^1.9.1",
     "larastan/larastan": "^3.1",
     "laravel/boost": "^2.0",
@@ -41,7 +40,8 @@
     "laravel/sail": "^1.18",
     "mockery/mockery": "^1.4.4",
     "nunomaduro/collision": "^8.1",
-    "phpunit/phpunit": "^12.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
     "rector/rector": "^2.0",
     "spatie/laravel-ignition": "^2.0"
   },

@@ -1,99 +1,88 @@
 <?php
 
-namespace Tests\Feature\API;
-
 use App\Enums\UserRole;
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class ProjectsTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_create_project(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
+test('create project', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('POST', '/api/projects', [
-            'name' => 'test',
-        ])
-            ->assertSuccessful();
+    $this->json('POST', '/api/projects', [
+        'name' => 'test',
+    ])
+        ->assertSuccessful();
 
-        $this->assertDatabaseHas('projects', [
-            'name' => 'test',
+    $this->assertDatabaseHas('projects', [
+        'name' => 'test',
+    ]);
+});
+
+test('see projects list', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    /** @var Project $project */
+    $project = Project::factory()->create();
+    $project->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::ADMIN,
+    ]);
+
+    $this->json('GET', '/api/projects')
+        ->assertSuccessful()
+        ->assertJsonFragment([
+            'name' => $project->name,
         ]);
-    }
+});
 
-    public function test_see_projects_list(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
+test('delete project', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
 
-        /** @var Project $project */
-        $project = Project::factory()->create();
-        $project->users()->create([
-            'user_id' => $this->user->id,
-            'role' => UserRole::ADMIN,
-        ]);
+    /** @var Project $project */
+    $project = Project::factory()->create();
+    $project->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::OWNER,
+    ]);
 
-        $this->json('GET', '/api/projects')
-            ->assertSuccessful()
-            ->assertJsonFragment([
-                'name' => $project->name,
-            ]);
-    }
+    $this->json('DELETE', '/api/projects/'.$project->id)
+        ->assertSuccessful();
 
-    public function test_delete_project(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
+    $this->assertDatabaseMissing('projects', [
+        'id' => $project->id,
+    ]);
+});
 
-        /** @var Project $project */
-        $project = Project::factory()->create();
-        $project->users()->create([
-            'user_id' => $this->user->id,
-            'role' => UserRole::OWNER,
-        ]);
+test('edit project', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('DELETE', '/api/projects/'.$project->id)
-            ->assertSuccessful();
+    /** @var Project $project */
+    $project = Project::factory()->create();
+    $project->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::ADMIN,
+    ]);
 
-        $this->assertDatabaseMissing('projects', [
-            'id' => $project->id,
-        ]);
-    }
+    $this->json('PUT', "/api/projects/{$project->id}", [
+        'name' => 'new-name',
+    ])
+        ->assertSuccessful();
 
-    public function test_edit_project(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
+    $this->assertDatabaseHas('projects', [
+        'id' => $project->id,
+        'name' => 'new-name',
+    ]);
+});
 
-        /** @var Project $project */
-        $project = Project::factory()->create();
-        $project->users()->create([
-            'user_id' => $this->user->id,
-            'role' => UserRole::ADMIN,
-        ]);
+test('cannot delete last project', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('PUT', "/api/projects/{$project->id}", [
-            'name' => 'new-name',
-        ])
-            ->assertSuccessful();
+    $this->json('DELETE', "/api/projects/{$this->user->currentProject->id}")
+        ->assertJsonValidationErrorFor('name');
 
-        $this->assertDatabaseHas('projects', [
-            'id' => $project->id,
-            'name' => 'new-name',
-        ]);
-    }
-
-    public function test_cannot_delete_last_project(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
-
-        $this->json('DELETE', "/api/projects/{$this->user->currentProject->id}")
-            ->assertJsonValidationErrorFor('name');
-
-        $this->assertDatabaseHas('projects', [
-            'id' => $this->user->currentProject->id,
-        ]);
-    }
-}
+    $this->assertDatabaseHas('projects', [
+        'id' => $this->user->currentProject->id,
+    ]);
+});

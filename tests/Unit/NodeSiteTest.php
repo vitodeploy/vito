@@ -1,78 +1,55 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Models\Site;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class NodeSiteTest extends TestCase
+uses(RefreshDatabase::class);
+
+function vitoPestUnitNodeSiteTestSiteType(string $packageManager): NodeSite
 {
-    use RefreshDatabase;
+    $site = Site::factory()->create([
+        'server_id' => test()->server->id,
+        'user' => 'testuser',
+        'path' => '/home/testuser/example.com',
+        'type' => NodeSite::id(),
+        'type_data' => [
+            'node_version' => '22',
+            'package_manager' => $packageManager,
+        ],
+    ]);
 
-    private function siteType(string $packageManager): NodeSite
-    {
-        $site = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'testuser',
-            'path' => '/home/testuser/example.com',
-            'type' => NodeSite::id(),
-            'type_data' => [
-                'node_version' => '22',
-                'package_manager' => $packageManager,
-            ],
-        ]);
-
-        return new NodeSite($site);
-    }
-
-    public function test_id_and_language(): void
-    {
-        $this->assertSame('node', NodeSite::id());
-        $this->assertSame('nodejs', $this->siteType('npm')->language());
-    }
-
-    public function test_deploy_commands_for_npm(): void
-    {
-        $siteType = $this->siteType('npm');
-        $reflection = new \ReflectionMethod($siteType, 'deployCommands');
-
-        $this->assertSame(
-            ['npm ci', 'npm run build'],
-            $reflection->invoke($siteType),
-        );
-    }
-
-    public function test_deploy_commands_for_pnpm(): void
-    {
-        $siteType = $this->siteType('pnpm');
-        $reflection = new \ReflectionMethod($siteType, 'deployCommands');
-
-        $this->assertSame(
-            ['pnpm install --frozen-lockfile', 'pnpm run build'],
-            $reflection->invoke($siteType),
-        );
-    }
-
-    public function test_deploy_commands_for_yarn(): void
-    {
-        $siteType = $this->siteType('yarn');
-        $reflection = new \ReflectionMethod($siteType, 'deployCommands');
-
-        $this->assertSame(
-            ['yarn install --frozen-lockfile', 'yarn build'],
-            $reflection->invoke($siteType),
-        );
-    }
-
-    public function test_default_deployment_script_for_pnpm(): void
-    {
-        $script = $this->siteType('pnpm')->defaultDeploymentScript();
-
-        $this->assertSame(
-            "git pull origin \$BRANCH\n\npnpm install --frozen-lockfile\n\npnpm run build\n",
-            $script,
-        );
-    }
+    return new NodeSite($site);
 }
+
+test('id and language', function () {
+    expect(NodeSite::id())->toBe('node');
+    expect(vitoPestUnitNodeSiteTestSiteType('npm')->language())->toBe('nodejs');
+});
+
+test('deploy commands for npm', function () {
+    $siteType = vitoPestUnitNodeSiteTestSiteType('npm');
+    $reflection = new ReflectionMethod($siteType, 'deployCommands');
+
+    expect($reflection->invoke($siteType))->toBe(['npm ci', 'npm run build']);
+});
+
+test('deploy commands for pnpm', function () {
+    $siteType = vitoPestUnitNodeSiteTestSiteType('pnpm');
+    $reflection = new ReflectionMethod($siteType, 'deployCommands');
+
+    expect($reflection->invoke($siteType))->toBe(['pnpm install --frozen-lockfile', 'pnpm run build']);
+});
+
+test('deploy commands for yarn', function () {
+    $siteType = vitoPestUnitNodeSiteTestSiteType('yarn');
+    $reflection = new ReflectionMethod($siteType, 'deployCommands');
+
+    expect($reflection->invoke($siteType))->toBe(['yarn install --frozen-lockfile', 'yarn build']);
+});
+
+test('default deployment script for pnpm', function () {
+    $script = vitoPestUnitNodeSiteTestSiteType('pnpm')->defaultDeploymentScript();
+
+    expect($script)->toBe("git pull origin \$BRANCH\n\npnpm install --frozen-lockfile\n\npnpm run build\n");
+});

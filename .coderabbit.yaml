@@ -99,7 +99,7 @@ reviews:
 
     - path: "tests/**"
       instructions: |
-        - PHPUnit 12 only. `RefreshDatabase` trait, factories, `assertDatabaseHas()` for DB assertions.
+        - Pest 5 only. `RefreshDatabase` trait, factories, `assertDatabaseHas()` for DB assertions.
         - `TestCase` provides `$this->user`, `$this->server`, `$this->site` pre-configured.
         - Use `SSH::fake()` for SSH and `Http::fake()` for HTTP — never real connections.
         - Don't over-test trivial logic that PHP handles natively. Flag removed tests.

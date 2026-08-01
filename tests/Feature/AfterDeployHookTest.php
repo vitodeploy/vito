@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\DeploymentStatus;
 use App\Enums\WorkerStatus;
 use App\Facades\SSH;
@@ -11,147 +9,127 @@ use App\Models\Worker;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
 
-class AfterDeployHookTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private Site $proxiedSite;
+beforeEach(function () {
+    $this->proxiedSite = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'isolated-foo',
+        'path' => '/home/isolated-foo/app.test',
+        'type' => NodeSite::id(),
+        'port' => 3000,
+        'type_data' => [
+            'node_version' => '22',
+            'package_manager' => 'npm',
+            'start_command' => 'npm start',
+        ],
+    ]);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('after deploy creates worker when none exists', function () {
+    SSH::fake();
 
-        $this->proxiedSite = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'isolated-foo',
-            'path' => '/home/isolated-foo/app.test',
-            'type' => NodeSite::id(),
-            'port' => 3000,
-            'type_data' => [
-                'node_version' => '22',
-                'package_manager' => 'npm',
-                'start_command' => 'npm start',
-            ],
-        ]);
-    }
+    $type = $this->proxiedSite->type();
+    $type->afterDeploy(Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::DEPLOYING,
+    ]));
 
-    public function test_after_deploy_creates_worker_when_none_exists(): void
-    {
-        SSH::fake();
+    $worker = $this->proxiedSite->workers()->where('name', 'app')->first();
+    expect($worker)->not->toBeNull();
+    expect($worker->command)->toBe('npm start');
 
-        $type = $this->proxiedSite->type();
-        $type->afterDeploy(Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]));
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->type_data['bootstrap_worker_id'])->toBe($worker->id);
+});
 
-        $worker = $this->proxiedSite->workers()->where('name', 'app')->first();
-        $this->assertNotNull($worker);
-        $this->assertSame('npm start', $worker->command);
+test('after deploy copies site worker environment to worker', function () {
+    SSH::fake();
 
-        $this->proxiedSite->refresh();
-        $this->assertSame($worker->id, $this->proxiedSite->type_data['bootstrap_worker_id']);
-    }
+    $this->proxiedSite->worker_environment = [
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+    ];
+    $this->proxiedSite->save();
 
-    public function test_after_deploy_copies_site_worker_environment_to_worker(): void
-    {
-        SSH::fake();
+    $type = $this->proxiedSite->type();
+    $type->afterDeploy(Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::DEPLOYING,
+    ]));
 
-        $this->proxiedSite->worker_environment = [
-            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
-        ];
-        $this->proxiedSite->save();
+    $worker = $this->proxiedSite->workers()->where('name', 'app')->first();
+    expect($worker)->not->toBeNull();
+    expect($worker->environment)->toEqual([
+        ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
+        ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
+    ]);
+    expect($worker->effectiveEnvironment()['NODE_ENV'])->toBe('production');
+    expect($worker->effectiveEnvironment()['API_KEY'])->toBe('secret-value');
+});
 
-        $type = $this->proxiedSite->type();
-        $type->afterDeploy(Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]));
+test('after deploy is idempotent when worker already recorded', function () {
+    SSH::fake();
 
-        $worker = $this->proxiedSite->workers()->where('name', 'app')->first();
-        $this->assertNotNull($worker);
-        $this->assertEquals([
-            ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
-            ['key' => 'API_KEY', 'value' => 'secret-value', 'is_secret' => true],
-        ], $worker->environment);
-        $this->assertSame('production', $worker->effectiveEnvironment()['NODE_ENV']);
-        $this->assertSame('secret-value', $worker->effectiveEnvironment()['API_KEY']);
-    }
+    $existing = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'npm start',
+        'status' => WorkerStatus::RUNNING,
+    ]);
+    $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $existing->id);
 
-    public function test_after_deploy_is_idempotent_when_worker_already_recorded(): void
-    {
-        SSH::fake();
+    $type = $this->proxiedSite->type();
+    $type->afterDeploy(Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::DEPLOYING,
+    ]));
 
-        $existing = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'npm start',
-            'status' => WorkerStatus::RUNNING,
-        ]);
-        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $existing->id);
+    expect($this->proxiedSite->workers()->where('name', 'app')->count())->toBe(1);
+});
 
-        $type = $this->proxiedSite->type();
-        $type->afterDeploy(Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]));
+test('after deploy backfills by known default command', function () {
+    SSH::fake();
 
-        $this->assertSame(1, $this->proxiedSite->workers()->where('name', 'app')->count());
-    }
+    $existing = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'npm start',
+        'status' => WorkerStatus::RUNNING,
+    ]);
 
-    public function test_after_deploy_backfills_by_known_default_command(): void
-    {
-        SSH::fake();
+    $type = $this->proxiedSite->type();
+    $type->afterDeploy(Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::DEPLOYING,
+    ]));
 
-        $existing = Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'npm start',
-            'status' => WorkerStatus::RUNNING,
-        ]);
+    $this->proxiedSite->refresh();
+    expect($this->proxiedSite->type_data['bootstrap_worker_id'])->toBe($existing->id);
+    expect($this->proxiedSite->workers()->where('name', 'app')->count())->toBe(1);
+});
 
-        $type = $this->proxiedSite->type();
-        $type->afterDeploy(Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]));
+test('after deploy refuses to adopt user worker with custom command', function () {
+    SSH::fake();
 
-        $this->proxiedSite->refresh();
-        $this->assertSame($existing->id, $this->proxiedSite->type_data['bootstrap_worker_id']);
-        $this->assertSame(1, $this->proxiedSite->workers()->where('name', 'app')->count());
-    }
+    Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->proxiedSite->id,
+        'user' => 'isolated-foo',
+        'name' => 'app',
+        'command' => 'node custom-server.js',
+        'status' => WorkerStatus::RUNNING,
+    ]);
 
-    public function test_after_deploy_refuses_to_adopt_user_worker_with_custom_command(): void
-    {
-        SSH::fake();
+    $type = $this->proxiedSite->type();
 
-        Worker::factory()->create([
-            'server_id' => $this->server->id,
-            'site_id' => $this->proxiedSite->id,
-            'user' => 'isolated-foo',
-            'name' => 'app',
-            'command' => 'node custom-server.js',
-            'status' => WorkerStatus::RUNNING,
-        ]);
-
-        // bootstrapWorker() should return null (command doesn't match a known
-        // default) so afterDeploy() attempts to create a new worker. Worker
-        // name uniqueness then surfaces the conflict — the user must rename
-        // their custom worker before deploy can succeed.
-        $type = $this->proxiedSite->type();
-
-        $this->expectException(ValidationException::class);
-
-        $type->afterDeploy(Deployment::factory()->create([
-            'site_id' => $this->proxiedSite->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]));
-    }
-}
+    $type->afterDeploy(Deployment::factory()->create([
+        'site_id' => $this->proxiedSite->id,
+        'status' => DeploymentStatus::DEPLOYING,
+    ]));
+})->throws(ValidationException::class);

@@ -1,172 +1,153 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Enums\PHPIniType;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
-class PHPTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_install_does_not_install_global_composer(): void
-    {
-        SSH::fake();
-        Event::fake();
+test('install does not install global composer', function () {
+    SSH::fake();
+    Event::fake();
 
-        $php = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'type' => 'php',
-            'type_data' => [
-                'extensions' => [],
-            ],
-            'name' => 'php',
-            'version' => '8.3',
-            'status' => ServiceStatus::READY,
-        ]);
+    $php = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'type' => 'php',
+        'type_data' => [
+            'extensions' => [],
+        ],
+        'name' => 'php',
+        'version' => '8.3',
+        'status' => ServiceStatus::READY,
+    ]);
 
-        $php->handler()->install();
+    $php->handler()->install();
 
-        Event::assertDispatched('service.installed');
-        SSH::assertNotExecutedContains('getcomposer.org');
-    }
+    Event::assertDispatched('service.installed');
+    SSH::assertNotExecutedContains('getcomposer.org');
+});
 
-    public function test_change_default_php_cli(): void
-    {
-        SSH::fake();
+test('change default php cli', function () {
+    SSH::fake();
 
-        $this->actingAs($this->user);
+    $this->actingAs($this->user);
 
-        $php = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'type' => 'php',
-            'type_data' => [
-                'extensions' => [],
-            ],
-            'name' => 'php',
-            'version' => '8.1',
-            'status' => ServiceStatus::READY,
-            'is_default' => false,
-        ]);
+    $php = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'type' => 'php',
+        'type_data' => [
+            'extensions' => [],
+        ],
+        'name' => 'php',
+        'version' => '8.1',
+        'status' => ServiceStatus::READY,
+        'is_default' => false,
+    ]);
 
-        $this->post(route('php.default-cli', [
-            'server' => $this->server,
-            'service' => $php->id,
-        ]), [
-            'version' => '8.1',
-        ])
-            ->assertSessionDoesntHaveErrors();
+    $this->post(route('php.default-cli', [
+        'server' => $this->server,
+        'service' => $php->id,
+    ]), [
+        'version' => '8.1',
+    ])
+        ->assertSessionDoesntHaveErrors();
 
-        $php->refresh();
+    $php->refresh();
 
-        $this->assertTrue($php->is_default);
-    }
+    expect($php->is_default)->toBeTrue();
+});
 
-    public function test_extensions_validation_array_extension(): void
-    {
-        SSH::fake('output... [PHP Modules] grcp');
+test('extensions validation array extension', function () {
+    SSH::fake('output... [PHP Modules] grcp');
 
-        $this->actingAs($this->user);
+    $this->actingAs($this->user);
 
-        $php = $this->server->php('8.2');
+    $php = $this->server->php('8.2');
 
-        $php->type_data = [
-            'available_extensions' => ['grcp'],
-        ];
-        $php->save();
+    $php->type_data = [
+        'available_extensions' => ['grcp'],
+    ];
+    $php->save();
 
-        Event::listen('php.extensions.list', function (Service $service, array $availableExtensions) {
-            return [
-                'service' => $service,
-                'available_extensions' => $service->type_data['available_extensions'] ?? $availableExtensions,
-            ];
-        });
-
-        $this->post(route('php.install-extension', [
-            'server' => $this->server,
-            'service' => $php->id,
-        ]), [
-            'version' => '8.2',
-            'extension' => 'grcp',
-        ])
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertContains('grcp', $php->refresh()->type_data['extensions']);
-    }
-
-    public function test_invalid_extension_validation(): void
-    {
-        SSH::fake('output... [PHP Modules] invalid');
-
-        $this->actingAs($this->user);
-
-        $php = $this->server->php('8.2');
-
-        $this->post(route('php.install-extension', [
-            'server' => $this->server,
-            'service' => $php->id,
-        ]), [
-            'version' => '8.2',
-            'extension' => 'invalid',
-        ])
-            ->assertSessionHasErrors([
-                'extension' => 'The selected extension is invalid.',
-            ]);
-
-    }
-
-    public function test_install_extension(): void
-    {
-        SSH::fake('output... [PHP Modules] gmp');
-
-        $this->actingAs($this->user);
-
-        $php = $this->server->php('8.2');
-
-        $this->post(route('php.install-extension', [
-            'server' => $this->server,
-            'service' => $php->id,
-        ]), [
-            'version' => '8.2',
-            'extension' => 'gmp',
-        ])
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertContains('gmp', $php->refresh()->type_data['extensions']);
-    }
-
-    #[DataProvider('php_ini_data')]
-    public function test_get_php_ini(string $version, PHPIniType $type): void
-    {
-        SSH::fake('[PHP ini]');
-
-        $this->actingAs($this->user);
-
-        $php = $this->server->php('8.2');
-
-        $this->get(route('php.ini', [
-            'server' => $this->server,
-            'service' => $php->id,
-            'version' => '8.2',
-            'type' => $type->value,
-        ]))
-            ->assertSessionDoesntHaveErrors();
-    }
-
-    /**
-     * @return array<array<int, string>>
-     */
-    public static function php_ini_data(): array
-    {
+    Event::listen('php.extensions.list', function (Service $service, array $availableExtensions) {
         return [
-            ['8.2', PHPIniType::FPM],
-            ['8.2', PHPIniType::CLI],
+            'service' => $service,
+            'available_extensions' => $service->type_data['available_extensions'] ?? $availableExtensions,
         ];
-    }
-}
+    });
+
+    $this->post(route('php.install-extension', [
+        'server' => $this->server,
+        'service' => $php->id,
+    ]), [
+        'version' => '8.2',
+        'extension' => 'grcp',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($php->refresh()->type_data['extensions'])->toContain('grcp');
+});
+
+test('invalid extension validation', function () {
+    SSH::fake('output... [PHP Modules] invalid');
+
+    $this->actingAs($this->user);
+
+    $php = $this->server->php('8.2');
+
+    $this->post(route('php.install-extension', [
+        'server' => $this->server,
+        'service' => $php->id,
+    ]), [
+        'version' => '8.2',
+        'extension' => 'invalid',
+    ])
+        ->assertSessionHasErrors([
+            'extension' => 'The selected extension is invalid.',
+        ]);
+});
+
+test('install extension', function () {
+    SSH::fake('output... [PHP Modules] gmp');
+
+    $this->actingAs($this->user);
+
+    $php = $this->server->php('8.2');
+
+    $this->post(route('php.install-extension', [
+        'server' => $this->server,
+        'service' => $php->id,
+    ]), [
+        'version' => '8.2',
+        'extension' => 'gmp',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($php->refresh()->type_data['extensions'])->toContain('gmp');
+});
+
+test('get php ini', function (string $version, PHPIniType $type) {
+    SSH::fake('[PHP ini]');
+
+    $this->actingAs($this->user);
+
+    $php = $this->server->php($version);
+
+    $this->get(route('php.ini', [
+        'server' => $this->server,
+        'service' => $php->id,
+        'version' => $version,
+        'type' => $type->value,
+    ]))
+        ->assertSessionDoesntHaveErrors();
+})->with('php_ini_data');
+
+dataset('php_ini_data', /** @return array<int, array{0: string, 1: PHPIniType}> */ function (): array {
+    return [
+        ['8.2', PHPIniType::FPM],
+        ['8.2', PHPIniType::CLI],
+    ];
+});

@@ -1,93 +1,83 @@
 <?php
 
-namespace Tests\Unit\NotificationChannels;
-
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Discord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Tests\TestCase;
+use Tests\Unit\NotificationChannels\TestNotification;
 
-class DiscordTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_create_rules(): void
-    {
-        $provider = new Discord(NotificationChannel::factory()->create([
-            'provider' => 'discord',
-        ]));
+test('create rules', function () {
+    $provider = new Discord(NotificationChannel::factory()->create([
+        'provider' => 'discord',
+    ]));
 
-        $this->assertSame([
-            'webhook_url' => [
-                'required',
-                'url',
-            ],
-        ], $provider->createRules([]));
-    }
+    expect($provider->createRules([]))->toBe([
+        'webhook_url' => [
+            'required',
+            'url',
+        ],
+    ]);
+});
 
-    public function test_create_data(): void
-    {
-        $provider = new Discord(NotificationChannel::factory()->create([
-            'provider' => 'discord',
-        ]));
+test('create data', function () {
+    $provider = new Discord(NotificationChannel::factory()->create([
+        'provider' => 'discord',
+    ]));
 
-        $this->assertSame([
+    expect($provider->createData([
+        'webhook_url' => 'https://discord.com/xxxxx',
+    ]))->toBe([
+        'webhook_url' => 'https://discord.com/xxxxx',
+    ]);
+});
+
+test('data', function () {
+    $provider = new Discord(NotificationChannel::factory()->create([
+        'provider' => 'discord',
+        'data' => [
             'webhook_url' => 'https://discord.com/xxxxx',
-        ], $provider->createData([
+        ],
+    ]));
+
+    expect($provider->data())->toBe([
+        'webhook_url' => 'https://discord.com/xxxxx',
+    ]);
+});
+
+test('connect', function () {
+    $provider = new Discord(NotificationChannel::factory()->create([
+        'provider' => 'discord',
+        'data' => [
             'webhook_url' => 'https://discord.com/xxxxx',
-        ]));
-    }
+        ],
+    ]));
 
-    public function test_data(): void
-    {
-        $provider = new Discord(NotificationChannel::factory()->create([
-            'provider' => 'discord',
-            'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx',
-            ],
-        ]));
+    Http::fake();
 
-        $this->assertSame([
+    expect($provider->connect())->toBeTrue();
+
+    Http::assertSent(function ($request) {
+        return $request->url() === 'https://discord.com/xxxxx';
+    });
+});
+
+test('send', function () {
+    $channel = NotificationChannel::factory()->create([
+        'provider' => 'discord',
+        'data' => [
             'webhook_url' => 'https://discord.com/xxxxx',
-        ], $provider->data());
-    }
+        ],
+    ]);
+    $provider = new Discord($channel);
 
-    public function test_connect(): void
-    {
-        $provider = new Discord(NotificationChannel::factory()->create([
-            'provider' => 'discord',
-            'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx',
-            ],
-        ]));
+    Http::fake();
 
-        Http::fake();
+    $provider->send($channel, new TestNotification);
 
-        $this->assertTrue($provider->connect());
-
-        Http::assertSent(function ($request) {
-            return $request->url() === 'https://discord.com/xxxxx';
-        });
-    }
-
-    public function test_send(): void
-    {
-        $channel = NotificationChannel::factory()->create([
-            'provider' => 'discord',
-            'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx',
-            ],
-        ]);
-        $provider = new Discord($channel);
-
-        Http::fake();
-
-        $provider->send($channel, new TestNotification);
-
-        Http::assertSent(function (Request $request) {
-            return $request->body() === '{"content":"Hello"}';
-        });
-    }
-}
+    Http::assertSent(function (Request $request) {
+        return $request->body() === '{"content":"Hello"}';
+    });
+});

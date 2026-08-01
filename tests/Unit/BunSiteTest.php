@@ -1,163 +1,136 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Models\Site;
 use App\SiteTypes\BunSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class BunSiteTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    protected Site $bunSite;
-
-    protected BunSite $siteType;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->bunSite = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'testuser',
-            'path' => '/home/testuser/example.com',
-            'type' => BunSite::id(),
-            'type_data' => [
-                'bun_version' => '1.2',
-                'build_command' => 'bun run build',
-                'start_command' => 'bun run start',
-            ],
-        ]);
-        $this->siteType = new BunSite($this->bunSite);
-    }
-
-    public function test_id(): void
-    {
-        $this->assertEquals('bun', BunSite::id());
-    }
-
-    public function test_language(): void
-    {
-        $this->assertEquals('bun', $this->siteType->language());
-    }
-
-    public function test_required_services(): void
-    {
-        $this->assertEquals(['webserver', 'process_manager'], $this->siteType->requiredServices());
-    }
-
-    public function test_create_time_tools_returns_bun(): void
-    {
-        $this->assertSame(['bun'], BunSite::createTimeTools());
-    }
-
-    public function test_deploy_commands(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'deployCommands');
-
-        $this->assertSame(
-            ['bun install --frozen-lockfile', 'bun run build'],
-            $reflection->invoke($this->siteType),
-        );
-    }
-
-    public function test_start_command_returns_default(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'startCommand');
-
-        $this->assertEquals('bun run start', $reflection->invoke($this->siteType));
-    }
-
-    public function test_start_command_from_type_data(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'startCommand');
-
-        $this->assertEquals('bun run start', $reflection->invoke($this->siteType));
-    }
-
-    public function test_start_command_defaults(): void
-    {
-        $site = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'testuser',
-            'path' => '/home/testuser/example.com',
-            'type' => BunSite::id(),
-            'type_data' => [],
-        ]);
-        $siteType = new BunSite($site);
-        $reflection = new \ReflectionMethod($siteType, 'startCommand');
-
-        $this->assertEquals('bun run start', $reflection->invoke($siteType));
-    }
-
-    public function test_data_with_defaults(): void
-    {
-        $data = $this->siteType->data([]);
-
-        $this->assertEquals([
+beforeEach(function () {
+    $this->bunSite = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'testuser',
+        'path' => '/home/testuser/example.com',
+        'type' => BunSite::id(),
+        'type_data' => [
             'bun_version' => '1.2',
+            'build_command' => 'bun run build',
             'start_command' => 'bun run start',
-        ], $data);
-    }
+        ],
+    ]);
+    $this->siteType = new BunSite($this->bunSite);
+});
 
-    public function test_data_with_custom_commands(): void
-    {
-        $data = $this->siteType->data([
-            'bun_version' => '1.1',
+test('id', function () {
+    expect(BunSite::id())->toEqual('bun');
+});
+
+test('language', function () {
+    expect($this->siteType->language())->toEqual('bun');
+});
+
+test('required services', function () {
+    expect($this->siteType->requiredServices())->toEqual(['webserver', 'process_manager']);
+});
+
+test('create time tools returns bun', function () {
+    expect(BunSite::createTimeTools())->toBe(['bun']);
+});
+
+test('deploy commands', function () {
+    $reflection = new ReflectionMethod($this->siteType, 'deployCommands');
+
+    expect($reflection->invoke($this->siteType))->toBe(['bun install --frozen-lockfile', 'bun run build']);
+});
+
+test('start command returns default', function () {
+    $reflection = new ReflectionMethod($this->siteType, 'startCommand');
+
+    expect($reflection->invoke($this->siteType))->toEqual('bun run start');
+});
+
+test('start command from type data', function () {
+    $this->bunSite->update([
+        'type_data' => array_merge($this->bunSite->type_data, [
             'start_command' => 'bun run start:prod',
-        ]);
+        ]),
+    ]);
+    $siteType = new BunSite($this->bunSite->refresh());
+    $reflection = new ReflectionMethod($siteType, 'startCommand');
 
-        $this->assertEquals([
-            'bun_version' => '1.1',
-            'start_command' => 'bun run start:prod',
-        ], $data);
-    }
+    expect($reflection->invoke($siteType))->toEqual('bun run start:prod');
+});
 
-    public function test_create_fields(): void
-    {
-        $fields = $this->siteType->createFields([
-            'source_control' => '1',
-            'repository' => 'org/repo',
-            'branch' => 'main',
-            'port' => '3000',
-        ]);
+test('start command defaults', function () {
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'testuser',
+        'path' => '/home/testuser/example.com',
+        'type' => BunSite::id(),
+        'type_data' => [],
+    ]);
+    $siteType = new BunSite($site);
+    $reflection = new ReflectionMethod($siteType, 'startCommand');
 
-        $this->assertEquals([
-            'source_control_id' => '1',
-            'repository' => 'org/repo',
-            'branch' => 'main',
-            'port' => '3000',
-        ], $fields);
-    }
+    expect($reflection->invoke($siteType))->toEqual('bun run start');
+});
 
-    public function test_create_rules_contain_bun_version(): void
-    {
-        $rules = $this->siteType->createRules([]);
+test('data with defaults', function () {
+    $data = $this->siteType->data([]);
 
-        $this->assertArrayHasKey('bun_version', $rules);
-        $this->assertArrayHasKey('source_control', $rules);
-        $this->assertArrayHasKey('repository', $rules);
-        $this->assertArrayHasKey('branch', $rules);
-        $this->assertArrayHasKey('port', $rules);
-        $this->assertArrayNotHasKey('build_command', $rules);
-        $this->assertArrayHasKey('start_command', $rules);
-        $this->assertArrayNotHasKey('package_manager', $rules);
-    }
+    expect($data)->toEqual([
+        'bun_version' => '1.2',
+        'start_command' => 'bun run start',
+    ]);
+});
 
-    public function test_base_commands_returns_empty_array(): void
-    {
-        $this->assertEquals([], $this->siteType->baseCommands());
-    }
+test('data with custom commands', function () {
+    $data = $this->siteType->data([
+        'bun_version' => '1.1',
+        'start_command' => 'bun run start:prod',
+    ]);
 
-    public function test_default_deployment_script_contains_git_pull_then_deploy_commands(): void
-    {
-        $script = $this->siteType->defaultDeploymentScript();
+    expect($data)->toEqual([
+        'bun_version' => '1.1',
+        'start_command' => 'bun run start:prod',
+    ]);
+});
 
-        $this->assertSame(
-            "git pull origin \$BRANCH\n\nbun install --frozen-lockfile\n\nbun run build\n",
-            $script,
-        );
-    }
-}
+test('create fields', function () {
+    $fields = $this->siteType->createFields([
+        'source_control' => '1',
+        'repository' => 'org/repo',
+        'branch' => 'main',
+        'port' => '3000',
+    ]);
+
+    expect($fields)->toEqual([
+        'source_control_id' => '1',
+        'repository' => 'org/repo',
+        'branch' => 'main',
+        'port' => '3000',
+    ]);
+});
+
+test('create rules contain bun version', function () {
+    $rules = $this->siteType->createRules([]);
+
+    expect($rules)->toHaveKey('bun_version');
+    expect($rules)->toHaveKey('source_control');
+    expect($rules)->toHaveKey('repository');
+    expect($rules)->toHaveKey('branch');
+    expect($rules)->toHaveKey('port');
+    $this->assertArrayNotHasKey('build_command', $rules);
+    expect($rules)->toHaveKey('start_command');
+    $this->assertArrayNotHasKey('package_manager', $rules);
+});
+
+test('base commands returns empty array', function () {
+    expect($this->siteType->baseCommands())->toEqual([]);
+});
+
+test('default deployment script contains git pull then deploy commands', function () {
+    $script = $this->siteType->defaultDeploymentScript();
+
+    expect($script)->toBe("git pull origin \$BRANCH\n\nbun install --frozen-lockfile\n\nbun run build\n");
+});

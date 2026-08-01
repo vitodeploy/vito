@@ -1,94 +1,82 @@
 <?php
 
-namespace Tests\Unit;
-
 use App\Models\IsolatedUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use Tests\TestCase;
 
-class IsolatedUserModelTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_tooling_version_round_trips_via_set_and_get(): void
-    {
-        $iuser = IsolatedUser::factory()->create([
-            'server_id' => $this->server->id,
-            'username' => 'alpha',
-        ]);
+test('tooling version round trips via set and get', function () {
+    $iuser = IsolatedUser::factory()->create([
+        'server_id' => $this->server->id,
+        'username' => 'alpha',
+    ]);
 
-        $this->assertNull($iuser->toolingVersion('node'));
+    expect($iuser->toolingVersion('node'))->toBeNull();
 
-        $iuser->setToolingVersion('node', '22');
+    $iuser->setToolingVersion('node', '22');
 
-        $this->assertSame('22', $iuser->toolingVersion('node'));
-        $this->assertSame('22', $iuser->fresh()->toolingVersion('node'));
-    }
+    expect($iuser->toolingVersion('node'))->toBe('22');
+    expect($iuser->fresh()->toolingVersion('node'))->toBe('22');
+});
 
-    public function test_tooling_status_round_trips(): void
-    {
-        $iuser = IsolatedUser::factory()->create([
-            'server_id' => $this->server->id,
-            'username' => 'alpha',
-        ]);
+test('tooling status round trips', function () {
+    $iuser = IsolatedUser::factory()->create([
+        'server_id' => $this->server->id,
+        'username' => 'alpha',
+    ]);
 
-        $iuser->setToolingStatus('bun', 'installing');
-        $this->assertSame('installing', $iuser->fresh()->toolingStatus('bun'));
+    $iuser->setToolingStatus('bun', 'installing');
+    expect($iuser->fresh()->toolingStatus('bun'))->toBe('installing');
 
-        $iuser->setToolingStatus('bun', null);
-        $this->assertNull($iuser->fresh()->toolingStatus('bun'));
-    }
+    $iuser->setToolingStatus('bun', null);
+    expect($iuser->fresh()->toolingStatus('bun'))->toBeNull();
+});
 
-    public function test_set_version_and_status_for_different_tools_does_not_clobber_each_other(): void
-    {
-        $iuser = IsolatedUser::factory()->create([
-            'server_id' => $this->server->id,
-            'username' => 'alpha',
-        ]);
+test('set version and status for different tools does not clobber each other', function () {
+    $iuser = IsolatedUser::factory()->create([
+        'server_id' => $this->server->id,
+        'username' => 'alpha',
+    ]);
 
-        $iuser->setToolingVersion('node', '22');
-        $iuser->setToolingVersion('bun', '1.2');
-        $iuser->setToolingStatus('node', 'installing');
+    $iuser->setToolingVersion('node', '22');
+    $iuser->setToolingVersion('bun', '1.2');
+    $iuser->setToolingStatus('node', 'installing');
 
-        $fresh = $iuser->fresh();
-        $this->assertSame('22', $fresh->toolingVersion('node'));
-        $this->assertSame('installing', $fresh->toolingStatus('node'));
-        $this->assertSame('1.2', $fresh->toolingVersion('bun'));
-        $this->assertNull($fresh->toolingStatus('bun'));
-    }
+    $fresh = $iuser->fresh();
+    expect($fresh->toolingVersion('node'))->toBe('22');
+    expect($fresh->toolingStatus('node'))->toBe('installing');
+    expect($fresh->toolingVersion('bun'))->toBe('1.2');
+    expect($fresh->toolingStatus('bun'))->toBeNull();
+});
 
-    public function test_clear_tooling_removes_only_the_named_tool(): void
-    {
-        $iuser = IsolatedUser::factory()->create([
-            'server_id' => $this->server->id,
-            'username' => 'alpha',
-        ]);
+test('clear tooling removes only the named tool', function () {
+    $iuser = IsolatedUser::factory()->create([
+        'server_id' => $this->server->id,
+        'username' => 'alpha',
+    ]);
 
-        $iuser->setToolingVersion('node', '22');
-        $iuser->setToolingVersion('bun', '1.2');
+    $iuser->setToolingVersion('node', '22');
+    $iuser->setToolingVersion('bun', '1.2');
 
-        $iuser->clearTooling('node');
+    $iuser->clearTooling('node');
 
-        $fresh = $iuser->fresh();
-        $this->assertNull($fresh->toolingVersion('node'));
-        $this->assertSame('1.2', $fresh->toolingVersion('bun'));
-    }
+    $fresh = $iuser->fresh();
+    expect($fresh->toolingVersion('node'))->toBeNull();
+    expect($fresh->toolingVersion('bun'))->toBe('1.2');
+});
 
-    public function test_lock_uses_legacy_key_shape_for_cross_deploy_compat(): void
-    {
-        $iuser = IsolatedUser::factory()->create([
-            'server_id' => $this->server->id,
-            'username' => 'alpha',
-        ]);
+test('lock uses legacy key shape for cross deploy compat', function () {
+    $iuser = IsolatedUser::factory()->create([
+        'server_id' => $this->server->id,
+        'username' => 'alpha',
+    ]);
 
-        $lock = $iuser->lock();
-        $this->assertTrue($lock->get(), 'iuser lock should be acquirable initially');
+    $lock = $iuser->lock();
+    expect($lock->get())->toBeTrue('iuser lock should be acquirable initially');
 
-        // Same logical lock as the legacy `Server::isolatedUserLock($username)`.
-        $legacyClash = Cache::lock("isolate:{$this->server->id}:alpha", 60);
-        $this->assertFalse($legacyClash->get(), 'legacy-shaped lock should clash with the iuser lock');
+    $legacyClash = Cache::lock("isolate:{$this->server->id}:alpha", 60);
+    expect($legacyClash->get())->toBeFalse('legacy-shaped lock should clash with the iuser lock');
 
-        $lock->release();
-    }
-}
+    $lock->release();
+});
