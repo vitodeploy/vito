@@ -57,7 +57,7 @@ it('declares an explicit return type on every method', function (): void {
     $exempt = ArchTestCase::except('foundation.missing-return-type');
     $offenders = [];
 
-    foreach (vitoArchClasses() as $class) {
+    foreach (vitoArchTypes() as $class) {
         if (in_array($class, $exempt, true)) {
             continue;
         }
@@ -77,3 +77,24 @@ it('declares an explicit return type on every method', function (): void {
 
     expect($offenders)->toBe([]);
 });
+
+/**
+ * Every concrete class plus every app-owned trait, so methods flattened from
+ * App\Traits are checked in the file that declares them.
+ *
+ * @return array<int, class-string>
+ */
+function vitoArchTypes(): array
+{
+    $types = vitoArchClasses();
+
+    foreach (vitoArchFiles('Traits') as $file) {
+        $trait = 'App\\Traits\\'.str_replace('.php', '', $file->getRelativePathname());
+
+        if (trait_exists($trait)) {
+            $types[] = $trait;
+        }
+    }
+
+    return $types;
+}

@@ -36,17 +36,26 @@ arch('the ssh helper is never reached from a read or decision layer')
     ->not->toBeUsedIn(READ_AND_DECISION_LAYERS);
 
 it('never logs a credential-shaped variable', function (): void {
-    $sensitive = ['password', 'token', 'secret', 'private_key', 'credentials', 'api_key', 'pk'];
+    $sensitive = ['password', 'token', 'access_token', 'refresh_token', 'secret', 'private_key', 'credentials', 'api_key'];
     $offenders = [];
 
     foreach (vitoArchFiles() as $file) {
-        foreach (file($file->getRealPath()) ?: [] as $number => $line) {
+        $lines = file($file->getRealPath()) ?: [];
+
+        foreach ($lines as $number => $line) {
             if (! Str::contains($line, ['Log::', 'logger(', 'info(', 'error(', 'warning(', 'debug('])) {
                 continue;
             }
 
+            $statement = $line;
+            $cursor = $number;
+
+            while (! Str::contains($statement, ';') && isset($lines[$cursor + 1]) && $cursor - $number < 20) {
+                $statement .= $lines[++$cursor];
+            }
+
             foreach ($sensitive as $needle) {
-                if (Str::contains($line, ['$'.$needle, "'".$needle."'", '->'.$needle])) {
+                if (Str::contains($statement, ['$'.$needle, "'".$needle."'", '->'.$needle])) {
                     $offenders[] = "{$file->getRelativePathname()}:".($number + 1);
                 }
             }

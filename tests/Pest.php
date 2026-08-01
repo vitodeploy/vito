@@ -28,14 +28,17 @@ pest()->extend(TestCase::class)->in(
 );
 
 /**
- * Every PHP file under the given app/ sub-directory.
+ * Every PHP file under the given sub-directory, relative to app/ unless another
+ * base directory is given.
  *
  * @return array<int, SplFileInfo>
  */
-function vitoArchFiles(string $directory = ''): array
+function vitoArchFiles(string $directory = '', ?string $base = null): array
 {
+    $path = ($base ?? app_path()).($directory === '' ? '' : DIRECTORY_SEPARATOR.$directory);
+
     return iterator_to_array(
-        Finder::create()->files()->in(app_path($directory))->name('*.php'),
+        Finder::create()->files()->in($path)->name('*.php'),
         false
     );
 }

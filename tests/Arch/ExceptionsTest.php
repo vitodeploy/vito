@@ -1,6 +1,5 @@
 <?php
 
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Tests\ArchTestCase;
 
@@ -69,8 +68,5 @@ it('rejects an unknown architecture exception key', function (): void {
  */
 function vitoArchTestFiles(): array
 {
-    return iterator_to_array(
-        Finder::create()->files()->in(__DIR__)->name('*.php'),
-        false
-    );
+    return vitoArchFiles('', __DIR__);
 }

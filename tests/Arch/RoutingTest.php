@@ -100,5 +100,17 @@ function applicationRoutes(): array
 
 function isPublicRoute(Route $route): bool
 {
-    return Str::startsWith($route->uri(), ArchTestCase::except('routing.public-endpoints')) || $route->uri() === '/';
+    $uri = $route->uri();
+
+    if ($uri === '/') {
+        return true;
+    }
+
+    foreach (ArchTestCase::except('routing.public-endpoints') as $prefix) {
+        if ($uri === $prefix || str_starts_with($uri, $prefix.'/')) {
+            return true;
+        }
+    }
+
+    return false;
 }

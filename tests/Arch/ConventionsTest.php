@@ -54,9 +54,13 @@ it('busts the bootstrap version whenever bootstrap-backed state is written', fun
             $writes = Str::contains($contents, [
                 "{$model}::create(",
                 "{$model}::query()->create(",
+                "{$model}::updateOrCreate(",
+                "{$model}::query()->update(",
                 'new '.$model.'(',
                 '$'.lcfirst($model).'->save()',
+                '$'.lcfirst($model).'->update([',
                 '$'.lcfirst($model).'->delete()',
+                '$'.lcfirst($model).'->forceDelete()',
             ]);
 
             if ($writes && ! Str::contains($contents, 'forgetVersion()')) {
