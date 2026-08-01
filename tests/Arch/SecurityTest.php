@@ -47,12 +47,16 @@ it('never logs a credential-shaped variable', function (): void {
                 continue;
             }
 
-            $statement = $line;
+            $statement = '';
+            $depth = 0;
             $cursor = $number;
 
-            while (! Str::contains($statement, ';') && isset($lines[$cursor + 1]) && $cursor - $number < 20) {
-                $statement .= $lines[++$cursor];
-            }
+            do {
+                $statement .= $lines[$cursor];
+                $bare = preg_replace('/([\'"])(?:\\\\.|(?!\\1).)*\\1/', '', $lines[$cursor]) ?? '';
+                $depth += substr_count($bare, '(') - substr_count($bare, ')');
+                $cursor++;
+            } while ($depth > 0 && isset($lines[$cursor]) && $cursor - $number < 50);
 
             foreach ($sensitive as $needle) {
                 if (Str::contains($statement, ['$'.$needle, "'".$needle."'", '->'.$needle])) {

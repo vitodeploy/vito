@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Str;
 use Tests\ArchTestCase;
 
 arch('php best practices are followed')
@@ -79,20 +80,28 @@ it('declares an explicit return type on every method', function (): void {
 });
 
 /**
- * Every concrete class plus every app-owned trait, so methods flattened from
- * App\Traits are checked in the file that declares them.
+ * Every type declared under app/ — classes, interfaces, enums and traits, at any
+ * nesting depth — so a method is checked in the file that declares it.
  *
  * @return array<int, class-string>
  */
 function vitoArchTypes(): array
 {
-    $types = vitoArchClasses();
+    $types = [];
 
-    foreach (vitoArchFiles('Traits') as $file) {
-        $trait = 'App\\Traits\\'.str_replace('.php', '', $file->getRelativePathname());
+    foreach (vitoArchFiles() as $file) {
+        if (preg_match('/^(?:final |abstract |readonly )*(?:class|interface|enum|trait) /m', $file->getContents()) !== 1) {
+            continue;
+        }
 
-        if (trait_exists($trait)) {
-            $types[] = $trait;
+        $type = Str::of($file->getRealPath())
+            ->after(app_path().DIRECTORY_SEPARATOR)
+            ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', ''])
+            ->prepend('App\\')
+            ->toString();
+
+        if (class_exists($type) || interface_exists($type) || enum_exists($type) || trait_exists($type)) {
+            $types[] = $type;
         }
     }
 

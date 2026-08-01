@@ -51,11 +51,10 @@ it('busts the bootstrap version whenever bootstrap-backed state is written', fun
         foreach (vitoArchFiles($namespace) as $file) {
             $contents = (string) file_get_contents($file->getRealPath());
 
-            $writes = Str::contains($contents, [
-                "{$model}::create(",
-                "{$model}::query()->create(",
-                "{$model}::updateOrCreate(",
-                "{$model}::query()->update(",
+            $writes = preg_match(
+                '/\b'.$model.'::(?:[a-zA-Z_]+\([^;]{0,200}\)->)*(?:create|updateOrCreate|update|delete|forceDelete)\(/',
+                $contents
+            ) === 1 || Str::contains($contents, [
                 'new '.$model.'(',
                 '$'.lcfirst($model).'->save()',
                 '$'.lcfirst($model).'->update([',
