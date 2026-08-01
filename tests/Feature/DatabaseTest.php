@@ -137,6 +137,47 @@ class DatabaseTest extends TestCase
         ]);
     }
 
+    public function test_delete_database_keeps_linked_user_databases_a_list(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        foreach (['db_one', 'db_two', 'db_three'] as $name) {
+            Database::factory()->create([
+                'server_id' => $this->server->id,
+                'name' => $name,
+            ]);
+        }
+
+        /** @var DatabaseUser $databaseUser */
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server->id,
+            'databases' => ['db_one', 'db_two', 'db_three'],
+        ]);
+
+        /** @var Database $middle */
+        $middle = Database::query()->where('name', 'db_two')->firstOrFail();
+
+        $this->delete(route('databases.destroy', [
+            'server' => $this->server,
+            'database' => $middle,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $databaseUser->refresh();
+
+        $this->assertSame(['db_one', 'db_three'], $databaseUser->databases);
+        $this->assertSame('["db_one","db_three"]', json_encode($databaseUser->databases));
+
+        $this->get(route('database-users', $this->server))
+            ->assertSuccessful()
+            ->assertInertia(function (AssertableInertia $page): void {
+                $rows = $page->toArray()['props']['databaseUsers']['data'];
+
+                $this->assertSame('["db_one","db_three"]', json_encode($rows[0]['databases']));
+            });
+    }
+
     public function test_sync_databases(): void
     {
         $this->actingAs($this->user);

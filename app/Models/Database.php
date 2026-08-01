@@ -50,7 +50,7 @@ class Database extends AbstractModel
                 $databases = $user->databases;
                 if ($databases && in_array($database->name, $databases)) {
                     unset($databases[array_search($database->name, $databases)]);
-                    $user->databases = $databases;
+                    $user->databases = array_values($databases);
                     $user->save();
                 }
             });
