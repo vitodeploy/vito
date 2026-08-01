@@ -43,6 +43,24 @@ class DatabaseUserDatabasesMigrationTest extends TestCase
         $this->assertSame($before, (string) DB::table('database_users')->where('id', $databaseUser->id)->value('databases'));
     }
 
+    public function test_manual_recovery_statement_reindexes_rows(): void
+    {
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        DB::table('database_users')->where('id', $databaseUser->id)->update([
+            'databases' => '{"0":"db_one","2":"db_three","5":"db_six"}',
+        ]);
+
+        DatabaseUser::all()->each(fn (DatabaseUser $u) => $u->update(['databases' => array_values($u->databases ?? [])]));
+
+        $this->assertSame(
+            '["db_one","db_three","db_six"]',
+            (string) DB::table('database_users')->where('id', $databaseUser->id)->value('databases')
+        );
+    }
+
     private function runMigration(): void
     {
         $paths = glob(database_path('migrations/*_reindex_database_users_databases.php')) ?: [];
