@@ -8,7 +8,13 @@ use App\SiteTypes\NodeSite;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\Wordpress;
+use Illuminate\Support\Str;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
+use Tests\ArchTestCase;
 use Tests\TestCase;
+
+pest()->extend(ArchTestCase::class)->in('Arch');
 
 pest()->extend(TestCase::class)->in(
     'Feature',
@@ -20,6 +26,49 @@ pest()->extend(TestCase::class)->in(
     'Unit/SiteEnvPathTest.php',
     'Unit/SiteShellEnvironmentTest.php',
 );
+
+/**
+ * Every PHP file under the given app/ sub-directory.
+ *
+ * @return array<int, SplFileInfo>
+ */
+function vitoArchFiles(string $directory = ''): array
+{
+    return iterator_to_array(
+        Finder::create()->files()->in(app_path($directory))->name('*.php'),
+        false
+    );
+}
+
+/**
+ * Every concrete, autoloadable class under the given app/ sub-directory.
+ *
+ * @return array<int, class-string>
+ */
+function vitoArchClasses(string $directory = ''): array
+{
+    $classes = [];
+
+    foreach (vitoArchFiles($directory) as $file) {
+        if (preg_match('/^(?:final |abstract |readonly )*class /m', $file->getContents()) !== 1) {
+            continue;
+        }
+
+        $class = Str::of($file->getRealPath())
+            ->after(app_path().DIRECTORY_SEPARATOR)
+            ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', ''])
+            ->prepend('App\\')
+            ->toString();
+
+        if (! class_exists($class) || (new ReflectionClass($class))->isAbstract()) {
+            continue;
+        }
+
+        $classes[] = $class;
+    }
+
+    return $classes;
+}
 
 /**
  * @return array<array<array<string, mixed>>>

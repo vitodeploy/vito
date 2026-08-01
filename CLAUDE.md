@@ -87,6 +87,15 @@ Vito has a specific architecture. Match these patterns exactly:
 - Use `SSH::fake()` for SSH operations and `Http::fake()` for HTTP — never make real connections.
 - Use `assertDatabaseHas()` for DB assertions.
 
+## Architecture Tests
+
+- `tests/Arch/` enforces the rules in this file as executable Pest tests. **A failing architecture rule means the code is wrong — fix the code, don't exempt it.**
+- Every exception lives in ONE registry: `ArchTestCase::EXCEPTIONS` in `tests/ArchTestCase.php`, keyed and referenced via `ArchTestCase::except('key')`.
+- **NEVER add an entry to `EXCEPTIONS` without the user's explicit permission.** The only acceptable case is when you are adding or changing a rule and existing code cannot be brought into line in that same change.
+- Before asking permission, tell the user: which rule stops applying and to which classes, what that rule was protecting against, that the exemption is permanent until deliberately removed, and what fixing the code instead would cost. A general "sounds good" on surrounding work is not permission.
+- Removing entries after fixing the code needs no permission — lists may shrink freely, never grow.
+- **Read `.github/instructions/architecture-tests.instructions.md` before adding or changing any architecture rule.** It covers the Pest gotcha where negative dependency rules silently pass when given an array of source namespaces, and the requirement to prove a new rule can actually fail.
+
 ## API
 
 - Consider API endpoints for new features but ask user first.
