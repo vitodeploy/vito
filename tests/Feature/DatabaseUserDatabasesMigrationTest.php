@@ -45,20 +45,32 @@ class DatabaseUserDatabasesMigrationTest extends TestCase
 
     public function test_manual_recovery_statement_reindexes_rows(): void
     {
-        $databaseUser = DatabaseUser::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
+        $databaseUser = DatabaseUser::factory()->create(['server_id' => $this->server->id]);
+        $nullUser = DatabaseUser::factory()->create(['server_id' => $this->server->id]);
+        $scalarUser = DatabaseUser::factory()->create(['server_id' => $this->server->id]);
 
         DB::table('database_users')->where('id', $databaseUser->id)->update([
             'databases' => '{"0":"db_one","2":"db_three","5":"db_six"}',
         ]);
+        DB::table('database_users')->where('id', $nullUser->id)->update(['databases' => null]);
+        DB::table('database_users')->where('id', $scalarUser->id)->update(['databases' => '"not-an-array"']);
 
-        DatabaseUser::all()->each(fn (DatabaseUser $u) => $u->update(['databases' => array_values($u->databases ?? [])]));
+        DatabaseUser::all()->filter(fn (DatabaseUser $u) => is_array($u->databases))->each(fn (DatabaseUser $u) => $u->update(['databases' => array_values($u->databases)]));
 
-        $this->assertSame(
-            '["db_one","db_three","db_six"]',
-            (string) DB::table('database_users')->where('id', $databaseUser->id)->value('databases')
-        );
+        $this->assertDatabaseHas('database_users', [
+            'id' => $databaseUser->id,
+            'databases' => '["db_one","db_three","db_six"]',
+        ]);
+
+        $this->assertDatabaseHas('database_users', [
+            'id' => $nullUser->id,
+            'databases' => null,
+        ]);
+
+        $this->assertDatabaseHas('database_users', [
+            'id' => $scalarUser->id,
+            'databases' => '"not-an-array"',
+        ]);
     }
 
     private function runMigration(): void
