@@ -2,12 +2,21 @@
 
 namespace App\StorageProviders;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 
 interface StorageProvider
 {
     public static function id(): string;
+
+    /**
+     * Fields rendered by the edit form. Secret fields should be declared here
+     * too, so they can be replaced without ever being sent back to the client.
+     *
+     * @return array<int, DynamicField>
+     */
+    public static function editFields(): array;
 
     /**
      * @return array<string, string>
@@ -44,7 +53,10 @@ interface StorageProvider
      */
     public function editValidationRules(array $input): array;
 
-    public function connect(): bool;
+    /**
+     * @param  array<string, mixed>  $credentials
+     */
+    public function connect(array $credentials): bool;
 
     public function ssh(Server $server): Storage;
 }

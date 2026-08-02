@@ -24,8 +24,8 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
   const label = config?.label || defaultLabel;
   const [initialValue, setInitialValue] = useState(false);
 
-  if (!value) {
-    value = config?.default || '';
+  if (value === undefined || value === null) {
+    value = config?.default ?? '';
   }
 
   useEffect(() => {

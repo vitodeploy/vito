@@ -7,8 +7,8 @@ use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
 use App\Models\User;
 use App\StorageProviders\Dropbox;
-use App\StorageProviders\Local;
 use App\StorageProviders\FTP as FTPProvider;
+use App\StorageProviders\Local;
 use App\StorageProviders\S3;
 use App\StorageProviders\SFTP as SFTPProvider;
 use App\Support\Testing\SFTPFake;
@@ -21,22 +21,22 @@ uses(RefreshDatabase::class);
 test('create', function (array $input) {
     $this->actingAs($this->user);
 
-    if ($input['provider'] === App\StorageProviders\FTP::id()) {
+    if ($input['provider'] === FTPProvider::id()) {
         FTP::fake();
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::fake();
     }
 
     $this->post(route('storage-providers.store'), $input)
         ->assertSessionDoesntHaveErrors();
 
-    if ($input['provider'] === App\StorageProviders\FTP::id()) {
+    if ($input['provider'] === FTPProvider::id()) {
         FTP::assertConnected($input['host']);
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::assertConnected($input['host']);
     }
 
@@ -461,6 +461,54 @@ test('providers list survives a provider with no registered handler', function (
         ->assertOk();
 });
 
+test('update rejects a provider with no registered handler', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => 'removed-plugin-provider',
+        'profile' => 'original',
+        'credentials' => ['key' => 'value'],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+    ])
+        ->assertSessionHasErrors('provider');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->profile)->toBe('original');
+});
+
+test('update rejects a non boolean value for a checkbox credential', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+            'ssl' => true,
+            'passive' => true,
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'ssl' => 'false',
+    ])
+        ->assertSessionHasErrors('ssl');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['ssl'])->toBeTrue();
+});
+
 test('providers list exposes editable data to the dialog', function () {
     $this->actingAs($this->user);
 
@@ -484,8 +532,10 @@ test('providers list exposes editable data to the dialog', function () {
 
     $rows = $response->viewData('page')['props']['storageProviders']['data'];
 
-    expect($rows[0]['editable_data']['bucket'])->toBe('test-bucket')
-        ->and($rows[0]['editable_data'])->not->toHaveKey('secret');
+    $editableData = (array) $rows[0]['editable_data'];
+
+    expect($editableData['bucket'])->toBe('test-bucket')
+        ->and($editableData)->not->toHaveKey('secret');
 });
 
 test('update validates provider fields', function () {
@@ -643,7 +693,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\FTP::id(),
+                'provider' => FTPProvider::id(),
                 'name' => 'ftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -656,7 +706,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\FTP::id(),
+                'provider' => FTPProvider::id(),
                 'name' => 'ftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -670,7 +720,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -681,7 +731,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',

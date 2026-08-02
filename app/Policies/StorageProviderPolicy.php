@@ -6,6 +6,7 @@ use App\Models\PersonalAccessToken;
 use App\Models\StorageProvider;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Laravel\Sanctum\TransientToken;
 
 class StorageProviderPolicy
 {
@@ -37,7 +38,7 @@ class StorageProviderPolicy
      */
     public function revealCredentials(User $user, StorageProvider $storageProvider): bool
     {
-        /** @var PersonalAccessToken|null $token */
+        /** @var PersonalAccessToken|TransientToken|null $token */
         $token = $user->currentAccessToken();
 
         if ($token !== null && ! $token->can('write')) {

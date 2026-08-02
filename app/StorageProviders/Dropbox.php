@@ -59,9 +59,9 @@ class Dropbox extends AbstractStorageProvider
         }
     }
 
-    public function connect(): bool
+    public function connect(array $credentials): bool
     {
-        $res = Http::withToken($this->accessToken())
+        $res = Http::withToken($this->fetchAccessToken($credentials))
             ->post($this->apiUrl.'/check/user', [
                 'query' => '',
             ]);
@@ -74,9 +74,12 @@ class Dropbox extends AbstractStorageProvider
         return "dropbox_token_{$this->storageProvider->id}";
     }
 
-    private function fetchAccessToken(): string
+    /**
+     * @param  array<string, mixed>|null  $credentials
+     */
+    private function fetchAccessToken(?array $credentials = null): string
     {
-        $credentials = $this->storageProvider->credentials;
+        $credentials ??= $this->storageProvider->credentials;
 
         if (! isset($credentials['app_key'], $credentials['app_secret'], $credentials['refresh_token'])) {
             throw new RuntimeException('Dropbox credentials are incomplete, please reconnect.');

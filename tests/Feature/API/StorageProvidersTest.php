@@ -33,7 +33,7 @@ test('create', function (array $input) {
         FTP::fake();
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::fake();
     }
 
@@ -411,7 +411,7 @@ dataset('createData', function () {
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -422,7 +422,7 @@ dataset('createData', function () {
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',

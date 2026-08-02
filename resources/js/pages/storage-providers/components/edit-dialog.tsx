@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StorageProvider } from '@/types/storage-provider';
 import DynamicField from '@/components/ui/dynamic-field';
-import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import { DynamicFieldConfig, DynamicFieldValue } from '@/types/dynamic-field-config';
 import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function StorageProviderEditDialog({
@@ -26,10 +26,10 @@ export default function StorageProviderEditDialog({
   const configs = useConfigs()!;
   const editFields: DynamicFieldConfig[] = configs.storage_provider.providers[storageProvider.provider]?.edit_form ?? [];
 
-  const form = useForm<Record<string, string | number | boolean | string[]>>({
+  const form = useForm<{ name: string; global: boolean } & Record<string, DynamicFieldValue>>({
+    ...Object.fromEntries(editFields.map((field) => [field.name, storageProvider.editable_data?.[field.name] ?? ''])),
     name: storageProvider.name,
     global: storageProvider.global,
-    ...Object.fromEntries(editFields.map((field) => [field.name, storageProvider.editable_data?.[field.name] ?? ''])),
   });
 
   const submit = (e: FormEvent) => {
@@ -50,13 +50,7 @@ export default function StorageProviderEditDialog({
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input
-                type="text"
-                id="name"
-                name="name"
-                value={form.data.name as string}
-                onChange={(e) => form.setData('name', e.target.value)}
-              />
+              <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
             {editFields.map((field) => (
@@ -73,14 +67,16 @@ export default function StorageProviderEditDialog({
                 <Checkbox
                   id="global"
                   name="global"
-                  checked={form.data.global as boolean}
+                  checked={form.data.global}
                   onCheckedChange={(checked) => form.setData('global', Boolean(checked))}
                 />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
               <InputError message={form.errors.global} />
             </FormField>
-            <InputError message={form.errors.provider} />
+            <FormField>
+              <InputError message={form.errors.provider} />
+            </FormField>
           </FormFields>
         </Form>
         <DialogFooter>

@@ -9,6 +9,11 @@ abstract class AbstractStorageProvider implements StorageProviderContract
 {
     public function __construct(protected StorageProvider $storageProvider) {}
 
+    public static function editFields(): array
+    {
+        return [];
+    }
+
     /**
      * Credential keys that are safe to send back to the client for editing.
      *
@@ -47,8 +52,14 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         $createRules = $this->validationRules();
         $rules = [];
 
+        $checkboxFields = static::checkboxFields();
+
         foreach ($this->editableFields() as $field) {
             $rules[$field] = ['sometimes', ...(array) ($createRules[$field] ?? 'nullable')];
+
+            if (in_array($field, $checkboxFields, true)) {
+                $rules[$field][] = 'boolean';
+            }
         }
 
         foreach ($this->secretFields() as $field) {
@@ -67,17 +78,20 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     {
         $credentials = $this->storageProvider->credentials;
         $needsReconnect = false;
+        $checkboxFields = static::checkboxFields();
 
         foreach ($this->editableFields() as $field) {
             if (! array_key_exists($field, $input)) {
                 continue;
             }
 
-            if ($this->isUnchanged($credentials[$field] ?? null, $input[$field])) {
+            $value = in_array($field, $checkboxFields, true) ? (bool) $input[$field] : $input[$field];
+
+            if ($this->isUnchanged($credentials[$field] ?? null, $value)) {
                 continue;
             }
 
-            $credentials[$field] = $input[$field];
+            $credentials[$field] = $value;
             $needsReconnect = true;
         }
 
@@ -91,6 +105,24 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         }
 
         return [$credentials, $needsReconnect];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function checkboxFields(): array
+    {
+        $fields = [];
+
+        foreach (static::editFields() as $field) {
+            $config = $field->toArray();
+
+            if (($config['type'] ?? null) === 'checkbox') {
+                $fields[] = $config['name'];
+            }
+        }
+
+        return $fields;
     }
 
     private function isUnchanged(mixed $current, mixed $new): bool

@@ -60,16 +60,13 @@ class StorageProvider extends AbstractModel
         return is_string($providerClass) && class_exists($providerClass);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function editableData(): array
+    public function editableDataFor(?User $user): object
     {
-        if (! $this->hasProviderHandler()) {
-            return [];
+        if (! $this->hasProviderHandler() || ! $user?->can('revealCredentials', $this)) {
+            return (object) [];
         }
 
-        return $this->provider()->editableData();
+        return (object) $this->provider()->editableData();
     }
 
     /**

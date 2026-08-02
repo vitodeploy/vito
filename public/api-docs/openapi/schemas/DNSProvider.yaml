@@ -23,7 +23,7 @@ properties:
   editable_data:
     type: object
     additionalProperties: true
-    description: 'Provider-specific editable settings. Empty for providers (e.g. Cloudflare) that expose no editable fields.'
+    description: 'Provider-specific editable settings. Empty for providers (e.g. Cloudflare) that expose no editable fields, and empty unless the caller owns the provider and, for API tokens, the token also carries the write ability.'
     example: {}
   created_at:
     type: string

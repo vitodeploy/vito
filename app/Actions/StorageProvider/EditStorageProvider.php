@@ -3,6 +3,8 @@
 namespace App\Actions\StorageProvider;
 
 use App\Models\StorageProvider;
+use App\StorageProviders\StorageProvider as StorageProviderContract;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -16,6 +18,12 @@ class EditStorageProvider
      */
     public function edit(StorageProvider $storageProvider, array $input): StorageProvider
     {
+        if (! $storageProvider->hasProviderHandler()) {
+            throw ValidationException::withMessages([
+                'provider' => __('This storage provider is no longer available.'),
+            ]);
+        }
+
         $provider = $storageProvider->provider();
 
         $rules = array_merge(
@@ -28,7 +36,7 @@ class EditStorageProvider
         [$credentials, $needsReconnect] = $provider->mergeEditData($input);
 
         if ($needsReconnect) {
-            $this->verify($storageProvider, $credentials);
+            $this->verify($storageProvider, $provider, $credentials);
         }
 
         $storageProvider->profile = $input['name'];
@@ -48,17 +56,18 @@ class EditStorageProvider
      *
      * @throws ValidationException
      */
-    private function verify(StorageProvider $storageProvider, array $credentials): void
+    private function verify(StorageProvider $storageProvider, StorageProviderContract $provider, array $credentials): void
     {
-        $original = $storageProvider->credentials;
-        $storageProvider->credentials = $credentials;
-
         try {
-            $connected = $storageProvider->provider()->connect();
-        } catch (Throwable) {
+            $connected = $provider->connect($credentials);
+        } catch (Throwable $e) {
+            Log::error('Failed to verify storage provider credentials', [
+                'storage_provider_id' => $storageProvider->id,
+                'provider' => $storageProvider->provider,
+                'exception' => get_class($e),
+            ]);
+
             $connected = false;
-        } finally {
-            $storageProvider->credentials = $original;
         }
 
         if (! $connected) {
