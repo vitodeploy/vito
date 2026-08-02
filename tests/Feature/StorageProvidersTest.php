@@ -553,6 +553,67 @@ test('ftp connection is closed when the login fails', function () {
         ->and($closed)->toBe(1);
 });
 
+test('update changes dropbox credentials and reconnects', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*oauth2/token' => Http::response(['access_token' => 'fresh-access', 'expires_in' => 14400]),
+        '*' => Http::response([], 200),
+    ]);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'app_key' => 'new-app-key',
+        'app_secret' => 'new-app-secret',
+        'refresh_token' => '',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['app_key'])->toBe('new-app-key')
+        ->and($storageProvider->credentials['app_secret'])->toBe('new-app-secret')
+        ->and($storageProvider->credentials['refresh_token'])->toBe('test-refresh-token');
+});
+
+test('update rejects dropbox credentials that fail to connect', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*oauth2/token' => Http::response([], 401),
+    ]);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'original',
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'app_secret' => 'bad-app-secret',
+    ])
+        ->assertSessionHasErrors('provider');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['app_secret'])->toBe('test-app-secret')
+        ->and($storageProvider->profile)->toBe('original');
+});
+
+test('dropbox editable data excludes its secrets', function () {
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $editableData = (array) $storageProvider->editableDataFor($this->user);
+
+    expect($editableData)->toBe(['app_key' => 'test-app-key']);
+});
+
 test('editing a provider forgets its cached state', function () {
     $this->actingAs($this->user);
 

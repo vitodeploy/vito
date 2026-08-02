@@ -2,6 +2,7 @@
 
 namespace App\StorageProviders;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,33 @@ class Dropbox extends AbstractStorageProvider
     public static function id(): string
     {
         return 'dropbox';
+    }
+
+    public static function editFields(): array
+    {
+        return [
+            DynamicField::make('app_key')
+                ->text()
+                ->label('App key'),
+            DynamicField::make('app_secret')
+                ->passwordWithToggle()
+                ->label('App secret')
+                ->description('Leave empty to keep the current app secret'),
+            DynamicField::make('refresh_token')
+                ->passwordWithToggle()
+                ->label('Refresh token')
+                ->description('Leave empty to keep the current refresh token'),
+        ];
+    }
+
+    protected function editableFields(): array
+    {
+        return ['app_key'];
+    }
+
+    protected function secretFields(): array
+    {
+        return ['app_secret', 'refresh_token'];
     }
 
     public function validationRules(): array
