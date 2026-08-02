@@ -1,11 +1,32 @@
 <?php
 
+use App\DNSProviders\AbstractDNSProvider;
 use App\Models\DNSProvider;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
+
+class EditableTestDNSProvider extends AbstractDNSProvider
+{
+    public static function id(): string
+    {
+        return 'editable-test';
+    }
+
+    public function editableData(): array
+    {
+        return [
+            'api_url' => $this->dnsProvider->credentials['api_url'] ?? '',
+        ];
+    }
+
+    public function connect(array $credentials): bool
+    {
+        return true;
+    }
+}
 
 test('authenticated user can view dns providers index', function () {
     $this->actingAs($this->user);
@@ -26,6 +47,60 @@ test('authenticated user can view dns providers index', function () {
         ->where('dnsProviders.data.0.provider', $dnsProvider->provider)
         ->where('dnsProviders.data.0.connected', $dnsProvider->connected)
     );
+});
+
+test('dns providers index exposes editable data to the edit dialog', function () {
+    $this->actingAs($this->user);
+
+    config(['dns-provider.providers.editable-test' => [
+        'label' => 'Editable Test',
+        'handler' => EditableTestDNSProvider::class,
+        'form' => [],
+        'edit_form' => [],
+    ]]);
+
+    $dnsProvider = DNSProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'editable-test',
+        'credentials' => ['api_url' => 'https://dns.example.com', 'token' => 'super-secret'],
+    ]);
+
+    $response = $this->get(route('dns-providers'));
+
+    $response->assertSuccessful();
+    $response->assertDontSee('super-secret');
+    $response->assertInertia(fn ($page) => $page
+        ->where('dnsProviders.data.0.id', $dnsProvider->id)
+        ->where('dnsProviders.data.0.editable_data.api_url', 'https://dns.example.com')
+        ->etc()
+    );
+});
+
+test('dns providers index survives a provider with no registered handler', function () {
+    $this->actingAs($this->user);
+
+    DNSProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+    ]);
+
+    $this->get(route('dns-providers'))
+        ->assertSuccessful();
+});
+
+test('dns providers json survives a provider with no registered handler', function () {
+    $this->actingAs($this->user);
+
+    DNSProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+    ]);
+
+    $this->get(route('dns-providers.json'))
+        ->assertSuccessful();
 });
 
 test('authenticated user can view dns providers json', function () {

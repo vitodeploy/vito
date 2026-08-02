@@ -43,7 +43,7 @@ export default function DNSProviders() {
         <VitoTable
           tableData={page.props.dnsProviders}
           actions={(row: Row) => {
-            const dnsProvider = asRow<DNSProvider>(row, ['id', 'name', 'global']);
+            const dnsProvider = asRow<DNSProvider>(row, ['id', 'name', 'global', 'provider', 'editable_data']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

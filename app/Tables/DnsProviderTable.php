@@ -30,6 +30,7 @@ class DnsProviderTable extends Table
                 ->sortable(),
             Column::data('global', fn ($m) => $m->project_id === null),
             Column::data('connected'),
+            Column::data('editable_data', fn ($m) => (object) $m->editableData()),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             ActionsColumn::make(),
         ];
