@@ -8,6 +8,8 @@ use App\Models\StorageProvider as StorageProviderModel;
 use App\Models\User;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\Local;
+use App\StorageProviders\S3;
+use App\StorageProviders\SFTP as SFTPProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -31,7 +33,7 @@ test('create', function (array $input) {
         FTP::fake();
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::fake();
     }
 
@@ -103,6 +105,110 @@ test('cannot delete provider', function () {
         'storageProvider' => $provider->id,
     ]))
         ->assertJsonValidationErrorFor('provider');
+});
+
+test('api editable data excludes secrets', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'test-key',
+            'secret' => 'super-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'test-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $this->json('GET', route('api.projects.storage-providers.show', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]))
+        ->assertOk()
+        ->assertJsonPath('editable_data.bucket', 'test-bucket')
+        ->assertJsonMissingPath('editable_data.secret')
+        ->assertDontSee('super-secret');
+});
+
+test('api read only token cannot read editable data', function () {
+    Sanctum::actingAs($this->user, ['read']);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'test-key',
+            'secret' => 'super-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'test-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $this->json('GET', route('api.projects.storage-providers.show', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', [])
+        ->assertDontSee('test-bucket');
+});
+
+test('api show survives a provider with no registered handler', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+        'credentials' => ['key' => 'value'],
+    ]);
+
+    $this->json('GET', route('api.projects.storage-providers.show', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', []);
+});
+
+test('api update merges credentials without exposing secrets', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    SFTP::fake();
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => SFTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $this->json('PUT', route('api.projects.storage-providers.update', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]), [
+        'name' => 'updated',
+        'host' => '5.6.7.8',
+    ])
+        ->assertOk();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['host'])->toBe('5.6.7.8')
+        ->and($storageProvider->credentials['password'])->toBe('original-password');
 });
 
 test('api user cannot update other users storage provider', function () {
@@ -305,7 +411,7 @@ dataset('createData', function () {
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -316,7 +422,7 @@ dataset('createData', function () {
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',

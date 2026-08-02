@@ -2,6 +2,7 @@
 
 namespace App\StorageProviders;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 
@@ -26,7 +27,21 @@ class Local extends AbstractStorageProvider
         ];
     }
 
-    public function connect(): bool
+    public static function editFields(): array
+    {
+        return [
+            DynamicField::make('path')
+                ->text()
+                ->label('Path'),
+        ];
+    }
+
+    protected function editableFields(): array
+    {
+        return ['path'];
+    }
+
+    public function connect(array $credentials): bool
     {
         return true;
     }

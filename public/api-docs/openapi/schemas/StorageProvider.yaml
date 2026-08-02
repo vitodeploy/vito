@@ -20,6 +20,16 @@ properties:
   provider:
     type: string
     example: 's3'
+  editable_data:
+    type: object
+    additionalProperties: true
+    description: 'Non-sensitive provider credentials that can be edited. Secrets (passwords, secret keys) are never included. The object is empty unless the caller owns the provider and, for API tokens, the token also carries the write ability.'
+    example:
+      api_url: ''
+      key: 'AKIAIOSFODNN7EXAMPLE'
+      region: 'us-east-1'
+      bucket: 'my-bucket'
+      path: '/backups'
   created_at:
     type: string
     format: date-time

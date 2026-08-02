@@ -3,7 +3,9 @@
 namespace App\Policies;
 
 use App\Models\DNSProvider;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
+use Laravel\Sanctum\TransientToken;
 
 class DNSProviderPolicy
 {
@@ -37,6 +39,22 @@ class DNSProviderPolicy
     public function update(User $user, DNSProvider $dnsProvider): bool
     {
         return $user->id === $dnsProvider->user_id;
+    }
+
+    /**
+     * Non-secret credential values are only for callers who can already
+     * rewrite them. API tokens must additionally carry the write ability.
+     */
+    public function revealCredentials(User $user, DNSProvider $dnsProvider): bool
+    {
+        /** @var PersonalAccessToken|TransientToken|null $token */
+        $token = $user->currentAccessToken();
+
+        if ($token !== null && ! $token->can('write')) {
+            return false;
+        }
+
+        return $this->update($user, $dnsProvider);
     }
 
     /**

@@ -1,3 +1,5 @@
+export type DynamicFieldValue = string | number | boolean | string[];
+
 export interface DynamicFieldConfig {
   type:
     | 'text'

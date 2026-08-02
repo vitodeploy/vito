@@ -2,6 +2,7 @@
 
 namespace App\StorageProviders;
 
+use App\DTOs\DynamicField;
 use App\Facades\SFTP as SFTPFacade;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
@@ -43,10 +44,40 @@ class SFTP extends AbstractStorageProvider
         ];
     }
 
-    public function connect(): bool
+    public static function editFields(): array
     {
-        $credentials = $this->storageProvider->credentials;
+        return [
+            DynamicField::make('host')
+                ->text()
+                ->label('Host'),
+            DynamicField::make('port')
+                ->text()
+                ->label('Port'),
+            DynamicField::make('path')
+                ->text()
+                ->label('Path'),
+            DynamicField::make('username')
+                ->text()
+                ->label('Username'),
+            DynamicField::make('password')
+                ->passwordWithToggle()
+                ->label('Password')
+                ->description('Leave empty to keep the current password'),
+        ];
+    }
 
+    protected function editableFields(): array
+    {
+        return ['host', 'port', 'path', 'username'];
+    }
+
+    protected function secretFields(): array
+    {
+        return ['password'];
+    }
+
+    public function connect(array $credentials): bool
+    {
         return SFTPFacade::connect(
             $credentials['host'],
             (int) $credentials['port'],

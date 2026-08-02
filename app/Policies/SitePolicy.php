@@ -8,6 +8,7 @@ use App\Models\Site;
 use App\Models\User;
 use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Laravel\Sanctum\TransientToken;
 
 class SitePolicy
 {
@@ -54,7 +55,7 @@ class SitePolicy
      */
     public function revealEnv(User $user, Site $site, Server $server): bool
     {
-        /** @var PersonalAccessToken|null $token */
+        /** @var PersonalAccessToken|TransientToken|null $token */
         $token = $user->currentAccessToken();
 
         if ($token !== null && ! $token->can('write')) {

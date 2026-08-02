@@ -21,6 +21,7 @@ class StorageProviderResource extends JsonResource
             'global' => is_null($this->project_id),
             'name' => $this->profile,
             'provider' => $this->provider,
+            'editable_data' => $this->editableDataFor($request->user()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

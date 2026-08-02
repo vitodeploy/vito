@@ -2,6 +2,7 @@
 
 namespace App\StorageProviders;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\Models\StorageProvider;
 use App\SSH\Storage\S3 as S3Storage;
@@ -26,13 +27,18 @@ class S3 extends AbstractStorageProvider
         return 's3';
     }
 
-    public function getApiUrl(): string
+    /**
+     * @param  array<string, mixed>|null  $credentials
+     */
+    public function getApiUrl(?array $credentials = null): string
     {
-        if (isset($this->storageProvider->credentials['api_url']) && $this->storageProvider->credentials['api_url']) {
-            return $this->storageProvider->credentials['api_url'];
+        $credentials ??= $this->storageProvider->credentials;
+
+        if (isset($credentials['api_url']) && $credentials['api_url']) {
+            return $credentials['api_url'];
         }
 
-        $region = $this->storageProvider->credentials['region'];
+        $region = $credentials['region'];
 
         return "https://s3.{$region}.amazonaws.com";
     }
@@ -46,18 +52,21 @@ class S3 extends AbstractStorageProvider
      * Build the configuration array for the S3 client.
      * This method can be overridden by child classes to modify the configuration.
      *
+     * @param  array<string, mixed>|null  $credentials
      * @return array<string, mixed>
      */
-    public function buildClientConfig(): array
+    public function buildClientConfig(?array $credentials = null): array
     {
+        $credentials ??= $this->storageProvider->credentials;
+
         $this->clientConfig = [
             'credentials' => [
-                'key' => $this->storageProvider->credentials['key'],
-                'secret' => $this->storageProvider->credentials['secret'],
+                'key' => $credentials['key'],
+                'secret' => $credentials['secret'],
             ],
-            'region' => $this->storageProvider->credentials['region'],
+            'region' => $credentials['region'],
             'version' => 'latest',
-            'endpoint' => $this->getApiUrl(),
+            'endpoint' => $this->getApiUrl($credentials),
         ];
 
         return $this->clientConfig;
@@ -87,10 +96,45 @@ class S3 extends AbstractStorageProvider
         ];
     }
 
-    public function connect(): bool
+    public static function editFields(): array
+    {
+        return [
+            DynamicField::make('api_url')
+                ->text()
+                ->label('API URL'),
+            DynamicField::make('key')
+                ->text()
+                ->label('Access Key'),
+            DynamicField::make('secret')
+                ->passwordWithToggle()
+                ->label('Secret Key')
+                ->description('Leave empty to keep the current secret key'),
+            DynamicField::make('region')
+                ->text()
+                ->label('Region'),
+            DynamicField::make('bucket')
+                ->text()
+                ->label('Bucket Name'),
+            DynamicField::make('path')
+                ->text()
+                ->label('Path'),
+        ];
+    }
+
+    protected function editableFields(): array
+    {
+        return ['api_url', 'key', 'region', 'bucket', 'path'];
+    }
+
+    protected function secretFields(): array
+    {
+        return ['secret'];
+    }
+
+    public function connect(array $credentials): bool
     {
         try {
-            $this->buildClientConfig();
+            $this->buildClientConfig($credentials);
             $this->getClient()->listBuckets();
 
             return true;

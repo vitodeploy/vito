@@ -4,6 +4,7 @@ namespace App\Actions\StorageProvider;
 
 use App\Models\StorageProvider;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -30,14 +31,19 @@ class CreateStorageProvider
         $storageProvider->credentials = $storageProvider->provider()->credentialData($input);
 
         try {
-            if (! $storageProvider->provider()->connect()) {
-                throw ValidationException::withMessages([
-                    'provider' => __("Couldn't connect to the provider"),
-                ]);
-            }
+            $connected = $storageProvider->provider()->connect($storageProvider->credentials);
         } catch (Throwable $e) {
+            Log::error('Failed to connect to storage provider', [
+                'provider' => $storageProvider->provider,
+                'exception' => get_class($e),
+            ]);
+
+            $connected = false;
+        }
+
+        if (! $connected) {
             throw ValidationException::withMessages([
-                'provider' => $e->getMessage(),
+                'provider' => __("Couldn't connect to the provider"),
             ]);
         }
 

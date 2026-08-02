@@ -7,8 +7,15 @@ use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
 use App\Models\User;
 use App\StorageProviders\Dropbox;
+use App\StorageProviders\FTP as FTPProvider;
 use App\StorageProviders\Local;
+use App\StorageProviders\S3;
+use App\StorageProviders\SFTP as SFTPProvider;
+use App\Support\Testing\FTPFake;
+use App\Support\Testing\SFTPFake;
+use FTP\Connection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 
@@ -17,22 +24,22 @@ uses(RefreshDatabase::class);
 test('create', function (array $input) {
     $this->actingAs($this->user);
 
-    if ($input['provider'] === App\StorageProviders\FTP::id()) {
+    if ($input['provider'] === FTPProvider::id()) {
         FTP::fake();
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::fake();
     }
 
     $this->post(route('storage-providers.store'), $input)
         ->assertSessionDoesntHaveErrors();
 
-    if ($input['provider'] === App\StorageProviders\FTP::id()) {
+    if ($input['provider'] === FTPProvider::id()) {
         FTP::assertConnected($input['host']);
     }
 
-    if ($input['provider'] === App\StorageProviders\SFTP::id()) {
+    if ($input['provider'] === SFTPProvider::id()) {
         SFTP::assertConnected($input['host']);
     }
 
@@ -187,6 +194,494 @@ test('cannot delete provider', function () {
     ]);
 });
 
+test('update keeps credentials when nothing is changed', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'original-key',
+            'secret' => 'original-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'original-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'api_url' => 'https://s3.amazonaws.com',
+        'key' => 'original-key',
+        'secret' => '',
+        'region' => 'us-east-1',
+        'bucket' => 'original-bucket',
+        'path' => '/backups',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->profile)->toBe('updated')
+        ->and($storageProvider->credentials['secret'])->toBe('original-secret')
+        ->and($storageProvider->credentials['bucket'])->toBe('original-bucket');
+});
+
+test('update changes non secret credentials and reconnects', function () {
+    $this->actingAs($this->user);
+
+    SFTP::fake();
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => SFTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'host' => '5.6.7.8',
+        'port' => 22,
+        'path' => '/home/vito',
+        'username' => 'username',
+        'password' => '',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    SFTP::assertConnected('5.6.7.8');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['host'])->toBe('5.6.7.8')
+        ->and($storageProvider->credentials['password'])->toBe('original-password');
+});
+
+test('update stores a new secret when one is provided', function () {
+    $this->actingAs($this->user);
+
+    SFTP::fake();
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => SFTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'password' => 'new-password',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['password'])->toBe('new-password')
+        ->and($storageProvider->credentials['host'])->toBe('1.2.3.4');
+});
+
+test('update rejects credentials that fail to connect', function () {
+    $this->actingAs($this->user);
+
+    SFTP::swap(new class extends SFTPFake
+    {
+        public function connect(string $host, int $port, string $username, string $password): bool
+        {
+            return false;
+        }
+    });
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => SFTPProvider::id(),
+        'profile' => 'original',
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'password' => 'bad-password',
+    ])
+        ->assertSessionHasErrors('provider');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['password'])->toBe('original-password')
+        ->and($storageProvider->profile)->toBe('original');
+});
+
+test('update rejects blanking a required credential', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'original-key',
+            'secret' => 'original-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'original-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'bucket' => '',
+    ])
+        ->assertSessionHasErrors('bucket');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['bucket'])->toBe('original-bucket');
+});
+
+test('update rejects blanking a required boolean credential', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+            'ssl' => true,
+            'passive' => true,
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'ssl' => '',
+    ])
+        ->assertSessionHasErrors('ssl');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['ssl'])->toBeTrue();
+});
+
+test('update can toggle a boolean credential off', function () {
+    $this->actingAs($this->user);
+
+    FTP::fake();
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+            'ssl' => true,
+            'passive' => true,
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'ssl' => false,
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['ssl'])->toBeFalse()
+        ->and($storageProvider->credentials['passive'])->toBeTrue();
+});
+
+test('update surfaces a connection exception as a validation error', function () {
+    $this->actingAs($this->user);
+
+    SFTP::swap(new class extends SFTPFake
+    {
+        public function connect(string $host, int $port, string $username, string $password): bool
+        {
+            throw new RuntimeException('/var/www/secret/path exploded');
+        }
+    });
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => SFTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $response = $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'password' => 'new-password',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'provider' => "Couldn't connect to the provider",
+    ]);
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['password'])->toBe('original-password');
+});
+
+test('providers list survives a provider with no registered handler', function () {
+    $this->actingAs($this->user);
+
+    StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => 'removed-plugin-provider',
+        'credentials' => ['key' => 'value'],
+    ]);
+
+    $this->get(route('storage-providers'))
+        ->assertOk();
+});
+
+test('update rejects a provider with no registered handler', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => 'removed-plugin-provider',
+        'profile' => 'original',
+        'credentials' => ['key' => 'value'],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+    ])
+        ->assertSessionHasErrors('provider');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->profile)->toBe('original');
+});
+
+test('update rejects a non boolean value for a checkbox credential', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+            'ssl' => true,
+            'passive' => true,
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'ssl' => 'false',
+    ])
+        ->assertSessionHasErrors('ssl');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['ssl'])->toBeTrue();
+});
+
+test('ftp connection is closed when the login fails', function () {
+    $closed = 0;
+
+    FTP::swap(new class($closed) extends FTPFake
+    {
+        public function __construct(private int &$closed) {}
+
+        public function login(string $username, string $password, bool|Connection $connection): bool
+        {
+            return false;
+        }
+
+        public function close(bool|Connection $connection): void
+        {
+            $this->closed++;
+        }
+    });
+
+    $provider = (new StorageProviderModel([
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'wrong-password',
+            'ssl' => false,
+            'passive' => true,
+        ],
+    ]))->provider();
+
+    expect($provider->connect([
+        'host' => '1.2.3.4',
+        'port' => 21,
+        'username' => 'username',
+        'password' => 'wrong-password',
+        'ssl' => false,
+    ]))->toBeFalse()
+        ->and($closed)->toBe(1);
+});
+
+test('update changes dropbox credentials and reconnects', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*oauth2/token' => Http::response(['access_token' => 'fresh-access', 'expires_in' => 14400]),
+        '*' => Http::response([], 200),
+    ]);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'app_key' => 'new-app-key',
+        'app_secret' => 'new-app-secret',
+        'refresh_token' => '',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['app_key'])->toBe('new-app-key')
+        ->and($storageProvider->credentials['app_secret'])->toBe('new-app-secret')
+        ->and($storageProvider->credentials['refresh_token'])->toBe('test-refresh-token');
+});
+
+test('update rejects dropbox credentials that fail to connect', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*oauth2/token' => Http::response([], 401),
+    ]);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+        'profile' => 'original',
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'app_secret' => 'bad-app-secret',
+    ])
+        ->assertSessionHasErrors('provider');
+
+    $storageProvider->refresh();
+
+    expect($storageProvider->credentials['app_secret'])->toBe('test-app-secret')
+        ->and($storageProvider->profile)->toBe('original');
+});
+
+test('dropbox editable data excludes its secrets', function () {
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $editableData = (array) $storageProvider->editableDataFor($this->user);
+
+    expect($editableData)->toBe(['app_key' => 'test-app-key']);
+});
+
+test('editing a provider forgets its cached state', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    Cache::put("dropbox_token_{$storageProvider->id}", 'stale-token', 3600);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect(Cache::has("dropbox_token_{$storageProvider->id}"))->toBeFalse();
+});
+
+test('providers list exposes editable data to the dialog', function () {
+    $this->actingAs($this->user);
+
+    StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'test-key',
+            'secret' => 'super-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'test-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $response = $this->get(route('storage-providers'))
+        ->assertOk();
+
+    $response->assertDontSee('super-secret');
+
+    $rows = $response->viewData('page')['props']['storageProviders']['data'];
+
+    $editableData = (array) $rows[0]['editable_data'];
+
+    expect($editableData['bucket'])->toBe('test-bucket')
+        ->and($editableData)->not->toHaveKey('secret');
+});
+
+test('update validates provider fields', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => SFTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        'port' => 99999,
+    ])
+        ->assertSessionHasErrors('port');
+});
+
 test('user cannot update other users storage provider', function () {
     $this->actingAs($this->user);
 
@@ -320,7 +815,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\FTP::id(),
+                'provider' => FTPProvider::id(),
                 'name' => 'ftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -333,7 +828,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\FTP::id(),
+                'provider' => FTPProvider::id(),
                 'name' => 'ftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -347,7 +842,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',
@@ -358,7 +853,7 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
         [
             [
-                'provider' => App\StorageProviders\SFTP::id(),
+                'provider' => SFTPProvider::id(),
                 'name' => 'sftp-test',
                 'host' => '1.2.3.4',
                 'port' => '22',

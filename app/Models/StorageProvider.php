@@ -53,6 +53,22 @@ class StorageProvider extends AbstractModel
         return $provider;
     }
 
+    public function hasProviderHandler(): bool
+    {
+        $providerClass = config('storage-provider.providers.'.$this->provider.'.handler');
+
+        return is_string($providerClass) && is_a($providerClass, \App\StorageProviders\StorageProvider::class, true);
+    }
+
+    public function editableDataFor(?User $user): object
+    {
+        if (! $this->hasProviderHandler() || ! $user?->can('revealCredentials', $this)) {
+            return (object) [];
+        }
+
+        return (object) $this->provider()->editableData();
+    }
+
     /**
      * @return HasMany<Backup, covariant $this>
      */

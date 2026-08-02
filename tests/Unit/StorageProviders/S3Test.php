@@ -49,7 +49,7 @@ test('s3 connect successful', function () {
         ->method('getClient')
         ->willReturn($s3ClientMock);
 
-    expect($s3->connect())->toBeTrue();
+    expect($s3->connect($storageProvider->credentials))->toBeTrue();
 });
 
 test('s3 connect failure', function () {
@@ -91,5 +91,5 @@ test('s3 connect failure', function () {
         ->method('getClient')
         ->willReturn($s3ClientMock);
 
-    expect($s3->connect())->toBeFalse();
+    expect($s3->connect($storageProvider->credentials))->toBeFalse();
 });

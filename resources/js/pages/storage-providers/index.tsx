@@ -45,7 +45,7 @@ export default function StorageProviders() {
         <VitoTable
           tableData={page.props.storageProviders}
           actions={(row: Row) => {
-            const storageProvider = asRow<StorageProvider>(row, ['id', 'name', 'global']);
+            const storageProvider = asRow<StorageProvider>(row, ['id', 'name', 'global', 'provider', 'editable_data']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

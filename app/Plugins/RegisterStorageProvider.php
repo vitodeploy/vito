@@ -3,6 +3,7 @@
 namespace App\Plugins;
 
 use App\DTOs\DynamicForm;
+use App\StorageProviders\StorageProvider;
 
 class RegisterStorageProvider
 {
@@ -54,8 +55,18 @@ class RegisterStorageProvider
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
+            'edit_form' => $this->editForm()->toArray(),
         ];
 
         config(['storage-provider.providers' => $providers]);
+    }
+
+    private function editForm(): DynamicForm
+    {
+        if (! is_a($this->handler, StorageProvider::class, true)) {
+            return DynamicForm::make([]);
+        }
+
+        return DynamicForm::make($this->handler::editFields());
     }
 }
