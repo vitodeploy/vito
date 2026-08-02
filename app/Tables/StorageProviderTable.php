@@ -32,7 +32,7 @@ class StorageProviderTable extends Table
                 ->accessor('project_id')
                 ->sortable(),
             Column::data('global', fn ($m) => $m->project_id === null),
-            Column::data('editable_data', fn ($m) => $m->provider()->editableData()),
+            Column::data('editable_data', fn ($m) => user()->can('revealCredentials', $m) ? $m->editableData() : []),
             Column::data('global_color', fn ($m) => $m->project_id === null ? 'success' : 'danger'),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             ActionsColumn::make(),

@@ -53,13 +53,6 @@ class SFTP extends AbstractStorageProvider
         return ['password'];
     }
 
-    protected function editFieldRules(): array
-    {
-        return [
-            'port' => ['integer', 'min:1', 'max:65535'],
-        ];
-    }
-
     public function connect(): bool
     {
         $credentials = $this->storageProvider->credentials;

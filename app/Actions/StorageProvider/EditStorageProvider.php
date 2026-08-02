@@ -33,7 +33,10 @@ class EditStorageProvider
 
         $storageProvider->profile = $input['name'];
         $storageProvider->project_id = isset($input['global']) && $input['global'] ? null : $storageProvider->user->currentProject?->id;
-        $storageProvider->credentials = $credentials;
+
+        if ($credentials !== $storageProvider->credentials) {
+            $storageProvider->credentials = $credentials;
+        }
 
         $storageProvider->save();
 
@@ -52,10 +55,8 @@ class EditStorageProvider
 
         try {
             $connected = $storageProvider->provider()->connect();
-        } catch (Throwable $e) {
-            throw ValidationException::withMessages([
-                'provider' => $e->getMessage(),
-            ]);
+        } catch (Throwable) {
+            $connected = false;
         } finally {
             $storageProvider->credentials = $original;
         }

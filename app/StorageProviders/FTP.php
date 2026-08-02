@@ -57,15 +57,6 @@ class FTP extends AbstractStorageProvider
         return ['password'];
     }
 
-    protected function editFieldRules(): array
-    {
-        return [
-            'port' => ['integer', 'min:1', 'max:65535'],
-            'ssl' => ['boolean'],
-            'passive' => ['boolean'],
-        ];
-    }
-
     public function mergeEditData(array $input): array
     {
         [$credentials, $needsReconnect] = parent::mergeEditData($input);

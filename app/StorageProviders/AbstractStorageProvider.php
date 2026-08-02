@@ -30,16 +30,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         return [];
     }
 
-    /**
-     * Extra validation rules merged on top of the default nullable rule.
-     *
-     * @return array<string, array<int, mixed>>
-     */
-    protected function editFieldRules(): array
-    {
-        return [];
-    }
-
     public function editableData(): array
     {
         $credentials = $this->storageProvider->credentials;
@@ -54,11 +44,20 @@ abstract class AbstractStorageProvider implements StorageProviderContract
 
     public function editValidationRules(array $input): array
     {
-        $extraRules = $this->editFieldRules();
+        $createRules = $this->validationRules();
         $rules = [];
 
-        foreach ([...$this->editableFields(), ...$this->secretFields()] as $field) {
-            $rules[$field] = array_merge(['nullable'], $extraRules[$field] ?? []);
+        foreach ($this->editableFields() as $field) {
+            $rules[$field] = ['sometimes', ...(array) ($createRules[$field] ?? 'nullable')];
+        }
+
+        foreach ($this->secretFields() as $field) {
+            $optionalRules = array_filter(
+                (array) ($createRules[$field] ?? []),
+                fn (mixed $rule): bool => $rule !== 'required',
+            );
+
+            $rules[$field] = ['nullable', ...$optionalRules];
         }
 
         return $rules;

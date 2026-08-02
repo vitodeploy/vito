@@ -23,7 +23,7 @@ properties:
   editable_data:
     type: object
     additionalProperties: true
-    description: 'Non-sensitive provider credentials that can be edited. Secrets (passwords, secret keys) are never included.'
+    description: 'Non-sensitive provider credentials that can be edited. Secrets (passwords, secret keys) are never included, and the object is empty unless the token carries the write ability.'
     example:
       api_url: ''
       key: 'AKIAIOSFODNN7EXAMPLE'

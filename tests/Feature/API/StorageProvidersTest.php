@@ -108,7 +108,7 @@ test('cannot delete provider', function () {
 });
 
 test('api editable data excludes secrets', function () {
-    Sanctum::actingAs($this->user, ['read']);
+    Sanctum::actingAs($this->user, ['read', 'write']);
 
     $storageProvider = StorageProviderModel::factory()->create([
         'user_id' => $this->user->id,
@@ -132,6 +132,50 @@ test('api editable data excludes secrets', function () {
         ->assertJsonPath('editable_data.bucket', 'test-bucket')
         ->assertJsonMissingPath('editable_data.secret')
         ->assertDontSee('super-secret');
+});
+
+test('api read only token cannot read editable data', function () {
+    Sanctum::actingAs($this->user, ['read']);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'test-key',
+            'secret' => 'super-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'test-bucket',
+            'path' => '/backups',
+        ],
+    ]);
+
+    $this->json('GET', route('api.projects.storage-providers.show', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', [])
+        ->assertDontSee('test-bucket');
+});
+
+test('api show survives a provider with no registered handler', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+        'credentials' => ['key' => 'value'],
+    ]);
+
+    $this->json('GET', route('api.projects.storage-providers.show', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', []);
 });
 
 test('api update merges credentials without exposing secrets', function () {

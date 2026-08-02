@@ -184,7 +184,7 @@ paths:
 
     put:
       summary: Update storage provider
-      description: "DEPRECATED: Use /api/storage-providers/{storageProvider} instead. This endpoint will be removed in a future version."
+      description: "DEPRECATED: Use /api/storage-providers/{storageProvider} instead. This endpoint will be removed in a future version. Provider credential fields may also be sent; omitted fields keep their current value and empty secret fields (e.g. secret, password) are ignored. Credentials are re-verified against the provider when they change."
       deprecated: true
       tags:
         - Storage Providers
