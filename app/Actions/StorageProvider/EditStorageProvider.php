@@ -48,6 +48,8 @@ class EditStorageProvider
 
         $storageProvider->save();
 
+        $provider->forgetCachedState();
+
         return $storageProvider;
     }
 

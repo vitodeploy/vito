@@ -76,6 +76,22 @@ class DNSProvider extends AbstractModel
         return $provider;
     }
 
+    public function hasProviderHandler(): bool
+    {
+        $providerClass = config('dns-provider.providers.'.$this->provider.'.handler');
+
+        return is_string($providerClass) && is_a($providerClass, \App\DNSProviders\DNSProvider::class, true);
+    }
+
+    public function editableDataFor(?User $user): object
+    {
+        if (! $this->hasProviderHandler() || ! $user?->can('revealCredentials', $this)) {
+            return (object) [];
+        }
+
+        return (object) $this->provider()->editableData();
+    }
+
     /**
      * @return BelongsTo<Project, covariant $this>
      */

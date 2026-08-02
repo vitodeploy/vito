@@ -57,7 +57,7 @@ class StorageProvider extends AbstractModel
     {
         $providerClass = config('storage-provider.providers.'.$this->provider.'.handler');
 
-        return is_string($providerClass) && class_exists($providerClass);
+        return is_string($providerClass) && is_a($providerClass, \App\StorageProviders\StorageProvider::class, true);
     }
 
     public function editableDataFor(?User $user): object

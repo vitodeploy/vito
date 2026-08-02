@@ -58,5 +58,11 @@ interface StorageProvider
      */
     public function connect(array $credentials): bool;
 
+    /**
+     * Drop any state the provider caches outside the model, so a credential
+     * change cannot be served from a stale cache.
+     */
+    public function forgetCachedState(): void;
+
     public function ssh(Server $server): Storage;
 }

@@ -92,7 +92,7 @@ class FTP extends AbstractStorageProvider
 
         $isConnected = $connection && $this->login($connection, $credentials);
 
-        if ($isConnected) {
+        if ($connection) {
             \App\Facades\FTP::close($connection);
         }
 

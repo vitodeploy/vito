@@ -52,6 +52,11 @@ class Dropbox extends AbstractStorageProvider
         );
     }
 
+    public function forgetCachedState(): void
+    {
+        $this->forgetAccessToken();
+    }
+
     public function forgetAccessToken(): void
     {
         if ($this->storageProvider->id) {

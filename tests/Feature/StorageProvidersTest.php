@@ -11,8 +11,11 @@ use App\StorageProviders\FTP as FTPProvider;
 use App\StorageProviders\Local;
 use App\StorageProviders\S3;
 use App\StorageProviders\SFTP as SFTPProvider;
+use App\Support\Testing\FTPFake;
 use App\Support\Testing\SFTPFake;
+use FTP\Connection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 
@@ -507,6 +510,64 @@ test('update rejects a non boolean value for a checkbox credential', function ()
     $storageProvider->refresh();
 
     expect($storageProvider->credentials['ssl'])->toBeTrue();
+});
+
+test('ftp connection is closed when the login fails', function () {
+    $closed = 0;
+
+    FTP::swap(new class($closed) extends FTPFake
+    {
+        public function __construct(private int &$closed) {}
+
+        public function login(string $username, string $password, bool|Connection $connection): bool
+        {
+            return false;
+        }
+
+        public function close(bool|Connection $connection): void
+        {
+            $this->closed++;
+        }
+    });
+
+    $provider = (new StorageProviderModel([
+        'provider' => FTPProvider::id(),
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 21,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'wrong-password',
+            'ssl' => false,
+            'passive' => true,
+        ],
+    ]))->provider();
+
+    expect($provider->connect([
+        'host' => '1.2.3.4',
+        'port' => 21,
+        'username' => 'username',
+        'password' => 'wrong-password',
+        'ssl' => false,
+    ]))->toBeFalse()
+        ->and($closed)->toBe(1);
+});
+
+test('editing a provider forgets its cached state', function () {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    Cache::put("dropbox_token_{$storageProvider->id}", 'stale-token', 3600);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect(Cache::has("dropbox_token_{$storageProvider->id}"))->toBeFalse();
 });
 
 test('providers list exposes editable data to the dialog', function () {

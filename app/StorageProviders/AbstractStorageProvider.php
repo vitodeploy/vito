@@ -14,6 +14,8 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         return [];
     }
 
+    public function forgetCachedState(): void {}
+
     /**
      * Credential keys that are safe to send back to the client for editing.
      *
