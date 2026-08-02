@@ -37,6 +37,13 @@ class StorageProviderServiceProvider extends ServiceProvider
                         ->label('Path'),
                 ])
             )
+            ->editForm(
+                DynamicForm::make([
+                    DynamicField::make('path')
+                        ->text()
+                        ->label('Path'),
+                ])
+            )
             ->register();
     }
 
@@ -56,6 +63,29 @@ class StorageProviderServiceProvider extends ServiceProvider
                     DynamicField::make('secret')
                         ->text()
                         ->label('Secret Key'),
+                    DynamicField::make('region')
+                        ->text()
+                        ->label('Region'),
+                    DynamicField::make('bucket')
+                        ->text()
+                        ->label('Bucket Name'),
+                    DynamicField::make('path')
+                        ->text()
+                        ->label('Path'),
+                ])
+            )
+            ->editForm(
+                DynamicForm::make([
+                    DynamicField::make('api_url')
+                        ->text()
+                        ->label('API URL'),
+                    DynamicField::make('key')
+                        ->text()
+                        ->label('Access Key'),
+                    DynamicField::make('secret')
+                        ->passwordWithToggle()
+                        ->label('Secret Key')
+                        ->description('Leave empty to keep the current secret key'),
                     DynamicField::make('region')
                         ->text()
                         ->label('Region'),
@@ -121,6 +151,32 @@ class StorageProviderServiceProvider extends ServiceProvider
                         ->default(true),
                 ])
             )
+            ->editForm(
+                DynamicForm::make([
+                    DynamicField::make('host')
+                        ->text()
+                        ->label('Host'),
+                    DynamicField::make('port')
+                        ->text()
+                        ->label('Port'),
+                    DynamicField::make('path')
+                        ->text()
+                        ->label('Path'),
+                    DynamicField::make('username')
+                        ->text()
+                        ->label('Username'),
+                    DynamicField::make('password')
+                        ->passwordWithToggle()
+                        ->label('Password')
+                        ->description('Leave empty to keep the current password'),
+                    DynamicField::make('ssl')
+                        ->checkbox()
+                        ->label('Use SSL'),
+                    DynamicField::make('passive')
+                        ->checkbox()
+                        ->label('Use Passive Mode'),
+                ])
+            )
             ->register();
     }
 
@@ -147,6 +203,26 @@ class StorageProviderServiceProvider extends ServiceProvider
                     DynamicField::make('password')
                         ->password()
                         ->label('Password'),
+                ])
+            )
+            ->editForm(
+                DynamicForm::make([
+                    DynamicField::make('host')
+                        ->text()
+                        ->label('Host'),
+                    DynamicField::make('port')
+                        ->text()
+                        ->label('Port'),
+                    DynamicField::make('path')
+                        ->text()
+                        ->label('Path'),
+                    DynamicField::make('username')
+                        ->text()
+                        ->label('Username'),
+                    DynamicField::make('password')
+                        ->passwordWithToggle()
+                        ->label('Password')
+                        ->description('Leave empty to keep the current password'),
                 ])
             )
             ->register();

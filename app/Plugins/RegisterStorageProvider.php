@@ -11,6 +11,7 @@ class RegisterStorageProvider
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
+        private ?DynamicForm $editForm = null,
     ) {}
 
     public static function make(string $name): self
@@ -46,6 +47,13 @@ class RegisterStorageProvider
         return $this;
     }
 
+    public function editForm(DynamicForm $editForm): self
+    {
+        $this->editForm = $editForm;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $providers = config('storage-provider.providers');
@@ -54,6 +62,7 @@ class RegisterStorageProvider
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
+            'edit_form' => $this->editForm ? $this->editForm->toArray() : [],
         ];
 
         config(['storage-provider.providers' => $providers]);

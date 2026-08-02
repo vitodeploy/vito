@@ -4,6 +4,7 @@ export interface StorageProvider {
   global: boolean;
   name: string;
   provider: string;
+  editable_data: Record<string, string | number | boolean>;
   created_at: string;
   updated_at: string;
 

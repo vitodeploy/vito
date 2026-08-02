@@ -26,6 +26,11 @@ class Local extends AbstractStorageProvider
         ];
     }
 
+    protected function editableFields(): array
+    {
+        return ['path'];
+    }
+
     public function connect(): bool
     {
         return true;

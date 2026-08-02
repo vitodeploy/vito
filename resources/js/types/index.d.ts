@@ -57,6 +57,7 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        edit_form?: DynamicFieldConfig[];
       };
     };
   };

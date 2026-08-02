@@ -87,6 +87,16 @@ class S3 extends AbstractStorageProvider
         ];
     }
 
+    protected function editableFields(): array
+    {
+        return ['api_url', 'key', 'region', 'bucket', 'path'];
+    }
+
+    protected function secretFields(): array
+    {
+        return ['secret'];
+    }
+
     public function connect(): bool
     {
         try {

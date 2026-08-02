@@ -222,6 +222,11 @@ paths:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
                   example: false
+              additionalProperties: true
+            example:
+              name: 'AWS S3'
+              bucket: 'my-new-bucket'
+              secret: 'your-new-secret-access-key'
       responses:
         '200':
           description: Storage provider updated successfully

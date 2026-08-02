@@ -47,6 +47,35 @@ class FTP extends AbstractStorageProvider
         ];
     }
 
+    protected function editableFields(): array
+    {
+        return ['host', 'port', 'path', 'username', 'ssl', 'passive'];
+    }
+
+    protected function secretFields(): array
+    {
+        return ['password'];
+    }
+
+    protected function editFieldRules(): array
+    {
+        return [
+            'port' => ['integer', 'min:1', 'max:65535'],
+            'ssl' => ['boolean'],
+            'passive' => ['boolean'],
+        ];
+    }
+
+    public function mergeEditData(array $input): array
+    {
+        [$credentials, $needsReconnect] = parent::mergeEditData($input);
+
+        $credentials['ssl'] = (bool) ($credentials['ssl'] ?? false);
+        $credentials['passive'] = (bool) ($credentials['passive'] ?? true);
+
+        return [$credentials, $needsReconnect];
+    }
+
     public function connect(): bool
     {
         $connection = $this->connection();
