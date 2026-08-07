@@ -177,6 +177,20 @@ test('stringify quotes a value that starts with a single quote', function () {
     expect($result)->toEqual('K="\'hello\'"');
 });
 
+test('stringify escapes carriage returns rather than writing them raw', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => "a\rb"]]);
+
+    expect($result)->toEqual('K="a\rb"');
+    expect(EnvParser::parse($result)[0]['value'])->toEqual("a\rb");
+});
+
+test('stringify does not single quote a carriage return value', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => "a\rb\"c"]]);
+
+    expect($result)->toEqual('K="a\rb\"c"');
+    expect(EnvParser::parse($result)[0]['value'])->toEqual("a\rb\"c");
+});
+
 test('stringify escapes when both quote styles are present', function () {
     $result = EnvParser::stringify([['key' => 'K', 'value' => 'it\'s "quoted"']]);
 
@@ -228,6 +242,7 @@ dataset('roundtripValueProvider', function () {
         'tab' => ["a\tb"],
         'trailing tab' => ["a\t"],
         'carriage return' => ["a\rb"],
+        'carriage return with double quote' => ["a\rb\"c"],
     ];
 });
 

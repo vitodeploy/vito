@@ -68,6 +68,7 @@ class EnvParser
             if ($wasDoubleQuoted) {
                 $value = preg_replace_callback('/\\\\(.)/s', fn (array $matches): string => match ($matches[1]) {
                     'n' => "\n",
+                    'r' => "\r",
                     '"' => '"',
                     '\\' => '\\',
                     default => $matches[0],
@@ -185,13 +186,14 @@ class EnvParser
                 && ! str_contains($value, "'")
                 && ! str_contains($value, '\\')
                 && ! str_contains($value, "\n")
+                && ! str_contains($value, "\r")
             ) {
                 $lines[] = "{$key}='{$value}'";
 
                 continue;
             }
 
-            $escapedValue = str_replace(['\\', "\n", '"'], ['\\\\', '\\n', '\\"'], $value);
+            $escapedValue = str_replace(['\\', "\n", "\r", '"'], ['\\\\', '\\n', '\\r', '\\"'], $value);
             $lines[] = "{$key}=\"{$escapedValue}\"";
         }
 
