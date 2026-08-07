@@ -116,6 +116,73 @@ test('stringify quotes values with newlines', function () {
     expect($result)->toEqual('MULTILINE="line1\nline2"');
 });
 
+test('stringify leaves a value containing double quotes unquoted when nothing forces quoting', function () {
+    $variables = [
+        ['key' => 'VITE_PAYMENT_METHODS_MOLLIE', 'value' => '["ideal","paybybank","bancontact"]'],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual('VITE_PAYMENT_METHODS_MOLLIE=["ideal","paybybank","bancontact"]');
+});
+
+/**
+ * @return array<string, array<int, string>>
+ */
+dataset('jsonArrayOnDiskProvider', function () {
+    return [
+        'bare' => ['VITE_PAYMENT_METHODS_MOLLIE=["ideal","paybybank","bancontact"]'],
+        'single quoted' => ["VITE_PAYMENT_METHODS_MOLLIE='[\"ideal\",\"paybybank\",\"bancontact\"]'"],
+        'already escaped' => ['VITE_PAYMENT_METHODS_MOLLIE="[\\"ideal\\",\\"paybybank\\",\\"bancontact\\"]"'],
+    ];
+});
+
+test('saving rewrites every on disk form of a json array value as valid json', function (string $raw) {
+    $parsed = EnvParser::parse($raw);
+
+    expect($parsed)->toHaveCount(1);
+    expect($parsed[0]['value'])->toEqual('["ideal","paybybank","bancontact"]');
+    expect(EnvParser::stringify($parsed))->toEqual('VITE_PAYMENT_METHODS_MOLLIE=["ideal","paybybank","bancontact"]');
+})->with('jsonArrayOnDiskProvider');
+
+test('stringify prefers single quotes over escaping double quotes', function () {
+    $variables = [
+        ['key' => 'K', 'value' => 'he said "hi"'],
+    ];
+    $result = EnvParser::stringify($variables);
+
+    expect($result)->toEqual('K=\'he said "hi"\'');
+});
+
+test('stringify keeps a mid string double quote unquoted', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => 'x"y']]);
+
+    expect($result)->toEqual('K=x"y');
+});
+
+test('stringify quotes values containing a hash', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => '#fff']]);
+
+    expect($result)->toEqual('K="#fff"');
+});
+
+test('stringify quotes a value that starts with a double quote', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => '"hello"']]);
+
+    expect($result)->toEqual('K=\'"hello"\'');
+});
+
+test('stringify quotes a value that starts with a single quote', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => "'hello'"]]);
+
+    expect($result)->toEqual('K="\'hello\'"');
+});
+
+test('stringify escapes when both quote styles are present', function () {
+    $result = EnvParser::stringify([['key' => 'K', 'value' => 'it\'s "quoted"']]);
+
+    expect($result)->toEqual('K="it\'s \\"quoted\\""');
+});
+
 test('stringify skips empty keys', function () {
     $variables = [
         ['key' => '', 'value' => 'empty'],
@@ -155,6 +222,12 @@ dataset('roundtripValueProvider', function () {
         'empty' => [''],
         'base64 padding' => ['base64:abc=123='],
         'backslash and quote' => ['C:\dir "x"'],
+        'json array' => ['["ideal","paybybank","bancontact"]'],
+        'leading double quote' => ['"hello"'],
+        'leading single quote' => ["'hello'"],
+        'tab' => ["a\tb"],
+        'trailing tab' => ["a\t"],
+        'carriage return' => ["a\rb"],
     ];
 });
 

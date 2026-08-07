@@ -546,7 +546,7 @@ test('update env blocks path traversal', function () {
 });
 
 test('update env file with variables', function () {
-    SSH::fake();
+    $ssh = SSH::fake();
 
     $this->actingAs($this->user);
 
@@ -558,9 +558,15 @@ test('update env file with variables', function () {
             ['key' => 'APP_ENV', 'value' => 'production'],
             ['key' => 'APP_DEBUG', 'value' => 'false'],
             ['key' => 'DB_PASSWORD', 'value' => 'secret123'],
+            ['key' => 'VITE_PAYMENT_METHODS_MOLLIE', 'value' => '["ideal","paybybank","bancontact"]'],
         ],
     ])
         ->assertSessionDoesntHaveErrors();
+
+    $this->assertStringContainsString(
+        'VITE_PAYMENT_METHODS_MOLLIE=["ideal","paybybank","bancontact"]',
+        $ssh->getUploadedContent()
+    );
 
     $this->site->refresh();
 
