@@ -22,6 +22,37 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     use HasTimezoneTimestamps;
 
     /**
+     * Whether the token is restricted to one or more projects.
+     */
+    public function isProjectScoped(): bool
+    {
+        return $this->getProjectIds() !== [];
+    }
+
+    /**
+     * Whether this token may read/use a resource in the given project.
+     *
+     * Global resources are intentionally available to every project. Once a
+     * token is project-scoped, write access to a global resource is rejected
+     * because mutating it affects projects outside the token's scope.
+     *
+     * @param  int|null  $projectId  The resource's project_id, or null for a global resource.
+     * @param  bool  $write  Whether this is a mutating operation.
+     */
+    public function allowsProject(?int $projectId, bool $write = false): bool
+    {
+        if (! $this->isProjectScoped()) {
+            return true;
+        }
+
+        if ($projectId === null) {
+            return ! $write;
+        }
+
+        return in_array($projectId, $this->getProjectIds(), true);
+    }
+
+    /**
      * Get the project IDs this token is scoped to.
      *
      * @return array<int>

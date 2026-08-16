@@ -8,6 +8,7 @@ use App\Actions\SourceControl\EditSourceControl;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;
 use App\Models\SourceControl;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -27,9 +28,17 @@ class UserSourceControlController extends Controller
     {
         $this->authorize('viewAny', SourceControl::class);
 
-        $sourceControls = user()->sourceControls()->simplePaginate(25);
+        $user = user();
+        $sourceControls = $user->sourceControls();
 
-        return SourceControlResource::collection($sourceControls);
+        if (TokenProjectScope::restricted($user)) {
+            $sourceControls->where(function ($query) use ($user): void {
+                $query->whereNull('project_id')
+                    ->orWhereIn('project_id', TokenProjectScope::allowedProjectIds($user));
+            });
+        }
+
+        return SourceControlResource::collection($sourceControls->simplePaginate(25));
     }
 
     #[Post('/', name: 'api.user.source-controls.create', middleware: 'ability:write')]
@@ -38,7 +47,11 @@ class UserSourceControlController extends Controller
         $this->authorize('create', SourceControl::class);
 
         $user = user();
-        $sourceControl = app(ConnectSourceControl::class)->connect($user, $request->all());
+        $projectId = $user->currentProject?->id;
+
+        abort_unless(TokenProjectScope::canCreate($user, $projectId, $request->boolean('global')), 403);
+
+        $sourceControl = app(ConnectSourceControl::class)->connect($user, $request->all(), $projectId);
 
         return new SourceControlResource($sourceControl);
     }

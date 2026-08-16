@@ -8,6 +8,7 @@ use App\Actions\ServerProvider\EditServerProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -28,9 +29,17 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('viewAny', ServerProvider::class);
 
-        $serverProviders = user()->serverProviders()->simplePaginate(25);
+        $user = user();
+        $serverProviders = $user->serverProviders();
 
-        return ServerProviderResource::collection($serverProviders);
+        if (TokenProjectScope::restricted($user)) {
+            $serverProviders->where(function ($query) use ($user): void {
+                $query->whereNull('project_id')
+                    ->orWhereIn('project_id', TokenProjectScope::allowedProjectIds($user));
+            });
+        }
+
+        return ServerProviderResource::collection($serverProviders->simplePaginate(25));
     }
 
     #[Post('/', name: 'api.user.server-providers.create', middleware: 'ability:write')]
@@ -39,7 +48,11 @@ class UserServerProviderController extends Controller
         $this->authorize('create', ServerProvider::class);
 
         $user = user();
-        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all());
+        $projectId = $user->currentProject?->id;
+
+        abort_unless(TokenProjectScope::canCreate($user, $projectId, $request->boolean('global')), 403);
+
+        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all(), $projectId);
 
         return new ServerProviderResource($serverProvider);
     }

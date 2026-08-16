@@ -15,15 +15,17 @@ class ConnectSourceControl
      *
      * @throws ValidationException
      */
-    public function connect(User $user, array $input): SourceControl
+    public function connect(User $user, array $input, ?int $projectId = null): SourceControl
     {
         $this->validate($input);
+
+        $projectId ??= $user->currentProject?->id;
 
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'url' => isset($input['url']) && $input['url'] ? $input['url'] : null,
-            'project_id' => isset($input['global']) && $input['global'] ? null : $user->currentProject?->id,
+            'project_id' => isset($input['global']) && $input['global'] ? null : $projectId,
             'user_id' => $user->id,
         ]);
 

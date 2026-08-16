@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\StorageProviderResource;
 use App\Models\Project;
 use App\Models\StorageProvider;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -48,7 +49,10 @@ class StorageProviderController extends Controller
         $this->authorize('create', StorageProvider::class);
 
         $user = user();
-        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all());
+
+        abort_unless(TokenProjectScope::canCreate($user, $project->id, $request->boolean('global')), 403);
+
+        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all(), $project->id);
 
         return new StorageProviderResource($storageProvider);
     }

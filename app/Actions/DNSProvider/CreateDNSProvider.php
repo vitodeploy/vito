@@ -11,9 +11,11 @@ use Illuminate\Validation\ValidationException;
 
 class CreateDNSProvider
 {
-    public function create(User $user, array $input): DNSProvider
+    public function create(User $user, array $input, ?int $projectId = null): DNSProvider
     {
         $this->validate($input);
+
+        $projectId ??= $user->currentProject?->id;
 
         $provider = self::getProvider($input['provider']);
 
@@ -30,7 +32,7 @@ class CreateDNSProvider
         $dnsProvider->name = $input['name'];
         $dnsProvider->provider = $input['provider'];
         $dnsProvider->credentials = $provider->credentialData($input);
-        $dnsProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->currentProject?->id;
+        $dnsProvider->project_id = isset($input['global']) && $input['global'] ? null : $projectId;
         $dnsProvider->connected = true;
         $dnsProvider->save();
 

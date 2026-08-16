@@ -8,6 +8,7 @@ use App\Actions\DNSProvider\EditDNSProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DNSProviderResource;
 use App\Models\DNSProvider;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -27,9 +28,17 @@ class DNSProviderController extends Controller
     {
         $this->authorize('viewAny', DNSProvider::class);
 
-        $dnsProviders = user()->dnsProviders()->simplePaginate(25);
+        $user = user();
+        $dnsProviders = $user->dnsProviders();
 
-        return DNSProviderResource::collection($dnsProviders);
+        if (TokenProjectScope::restricted($user)) {
+            $dnsProviders->where(function ($query) use ($user): void {
+                $query->whereNull('project_id')
+                    ->orWhereIn('project_id', TokenProjectScope::allowedProjectIds($user));
+            });
+        }
+
+        return DNSProviderResource::collection($dnsProviders->simplePaginate(25));
     }
 
     #[Post('/', name: 'api.dns-providers.create', middleware: 'ability:write')]
@@ -38,7 +47,11 @@ class DNSProviderController extends Controller
         $this->authorize('create', DNSProvider::class);
 
         $user = user();
-        $dnsProvider = app(CreateDNSProvider::class)->create($user, $request->all());
+        $projectId = $user->currentProject?->id;
+
+        abort_unless(TokenProjectScope::canCreate($user, $projectId, $request->boolean('global')), 403);
+
+        $dnsProvider = app(CreateDNSProvider::class)->create($user, $request->all(), $projectId);
 
         return new DNSProviderResource($dnsProvider);
     }

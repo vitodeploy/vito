@@ -21,9 +21,11 @@ class CreateServerProvider
      *
      * @throws ValidationException
      */
-    public function create(User $user, array $input): ServerProvider
+    public function create(User $user, array $input, ?int $projectId = null): ServerProvider
     {
         $this->validate($input);
+
+        $projectId ??= $user->currentProject?->id;
 
         $provider = self::getProvider($input['provider']);
 
@@ -42,7 +44,7 @@ class CreateServerProvider
         $serverProvider->profile = $input['name'];
         $serverProvider->provider = $input['provider'];
         $serverProvider->credentials = $provider->credentialData($input);
-        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->currentProject?->id;
+        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $projectId;
         $serverProvider->save();
 
         SocketEvent::dispatch(new SocketEventDTO(
