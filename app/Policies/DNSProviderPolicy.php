@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\DNSProvider;
 use App\Models\PersonalAccessToken;
 use App\Models\User;
+use App\Support\TokenProjectScope;
 use Laravel\Sanctum\TransientToken;
 
 class DNSProviderPolicy
@@ -22,7 +23,8 @@ class DNSProviderPolicy
      */
     public function view(User $user, DNSProvider $dnsProvider): bool
     {
-        return $user->id === $dnsProvider->user_id;
+        return $user->id === $dnsProvider->user_id
+            && TokenProjectScope::allows($user, $dnsProvider->project_id);
     }
 
     /**
@@ -38,7 +40,8 @@ class DNSProviderPolicy
      */
     public function update(User $user, DNSProvider $dnsProvider): bool
     {
-        return $user->id === $dnsProvider->user_id;
+        return $user->id === $dnsProvider->user_id
+            && TokenProjectScope::allows($user, $dnsProvider->project_id, write: true);
     }
 
     /**
@@ -62,6 +65,7 @@ class DNSProviderPolicy
      */
     public function delete(User $user, DNSProvider $dnsProvider): bool
     {
-        return $user->id === $dnsProvider->user_id;
+        return $user->id === $dnsProvider->user_id
+            && TokenProjectScope::allows($user, $dnsProvider->project_id, write: true);
     }
 }

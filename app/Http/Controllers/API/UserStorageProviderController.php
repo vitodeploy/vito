@@ -8,6 +8,7 @@ use App\Actions\StorageProvider\EditStorageProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StorageProviderResource;
 use App\Models\StorageProvider;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -27,9 +28,17 @@ class UserStorageProviderController extends Controller
     {
         $this->authorize('viewAny', StorageProvider::class);
 
-        $storageProviders = user()->storageProviders()->simplePaginate(25);
+        $user = user();
+        $storageProviders = $user->storageProviders();
 
-        return StorageProviderResource::collection($storageProviders);
+        if (TokenProjectScope::restricted($user)) {
+            $storageProviders->where(function ($query) use ($user): void {
+                $query->whereNull('project_id')
+                    ->orWhereIn('project_id', TokenProjectScope::allowedProjectIds($user));
+            });
+        }
+
+        return StorageProviderResource::collection($storageProviders->simplePaginate(25));
     }
 
     #[Post('/', name: 'api.user.storage-providers.create', middleware: 'ability:write')]
@@ -38,7 +47,11 @@ class UserStorageProviderController extends Controller
         $this->authorize('create', StorageProvider::class);
 
         $user = user();
-        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all());
+        $projectId = $user->currentProject?->id;
+
+        abort_unless(TokenProjectScope::canCreate($user, $projectId, $request->boolean('global')), 403);
+
+        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all(), $projectId);
 
         return new StorageProviderResource($storageProvider);
     }

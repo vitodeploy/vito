@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\ServerProvider;
 use App\Models\User;
+use App\Support\TokenProjectScope;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ServerProviderPolicy
@@ -17,7 +18,8 @@ class ServerProviderPolicy
 
     public function view(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->id === $serverProvider->user_id;
+        return $user->id === $serverProvider->user_id
+            && TokenProjectScope::allows($user, $serverProvider->project_id);
     }
 
     public function create(User $user): bool
@@ -27,11 +29,13 @@ class ServerProviderPolicy
 
     public function update(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->id === $serverProvider->user_id;
+        return $user->id === $serverProvider->user_id
+            && TokenProjectScope::allows($user, $serverProvider->project_id, write: true);
     }
 
     public function delete(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->id === $serverProvider->user_id;
+        return $user->id === $serverProvider->user_id
+            && TokenProjectScope::allows($user, $serverProvider->project_id, write: true);
     }
 }

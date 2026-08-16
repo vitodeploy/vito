@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Project;
 use App\Models\SourceControl;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -48,7 +49,11 @@ class SourceControlController extends Controller
     {
         $this->authorize('create', SourceControl::class);
 
-        $sourceControl = app(ConnectSourceControl::class)->connect(user(), $request->all());
+        $user = user();
+
+        abort_unless(TokenProjectScope::canCreate($user, $project->id, $request->boolean('global')), 403);
+
+        $sourceControl = app(ConnectSourceControl::class)->connect($user, $request->all(), $project->id);
 
         return new SourceControlResource($sourceControl);
     }

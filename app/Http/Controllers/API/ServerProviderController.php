@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
 use App\Models\ServerProvider;
+use App\Support\TokenProjectScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -49,7 +50,10 @@ class ServerProviderController extends Controller
         $this->authorize('create', ServerProvider::class);
 
         $user = user();
-        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all());
+
+        abort_unless(TokenProjectScope::canCreate($user, $project->id, $request->boolean('global')), 403);
+
+        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all(), $project->id);
 
         return new ServerProviderResource($serverProvider);
     }
