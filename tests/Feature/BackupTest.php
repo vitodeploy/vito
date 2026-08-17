@@ -21,6 +21,7 @@ use App\Models\StorageProvider;
 use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
@@ -554,6 +555,7 @@ test('cannot enable a backup being deleted', function () {
 });
 
 test('delete orphaned backup file hard deletes without dispatching job', function () {
+    DB::statement('PRAGMA defer_foreign_keys = ON');
     Bus::fake();
 
     $backup = Backup::factory()->create([
@@ -571,6 +573,29 @@ test('delete orphaned backup file hard deletes without dispatching job', functio
 
     $this->assertDatabaseMissing('backup_files', ['id' => $file->id]);
     Bus::assertNotDispatched(DeleteFileJob::class);
+});
+
+test('deleting a server row cascades to its backups and backup files', function () {
+    $server = Server::factory()->create([
+        'project_id' => $this->user->currentProject->id,
+        'user_id' => $this->user->id,
+    ]);
+    $backup = Backup::factory()->create([
+        'type' => BackupType::FILE,
+        'server_id' => $server->id,
+        'storage_id' => $this->storageProvider->id,
+        'path' => '/home/vito/y.com',
+        'status' => null,
+    ]);
+    $file = BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    DB::table('servers')->where('id', $server->id)->delete();
+
+    $this->assertDatabaseMissing('backups', ['id' => $backup->id]);
+    $this->assertDatabaseMissing('backup_files', ['id' => $file->id]);
 });
 
 test('see global backups list scoped to current project', function () {
