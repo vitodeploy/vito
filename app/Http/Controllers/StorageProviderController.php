@@ -74,7 +74,11 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        return Inertia::location($action->redirectUrl($request->all()));
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [StorageProvider::class, $projectId]);
+
+        return Inertia::location($action->redirectUrl($request->all(), $projectId));
     }
 
     #[Get('/dropbox/callback', name: 'storage-providers.dropbox.callback')]

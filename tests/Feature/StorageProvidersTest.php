@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Facades\FTP;
 use App\Facades\SFTP;
 use App\Models\Backup;
 use App\Models\Database;
+use App\Models\Project;
 use App\Models\StorageProvider as StorageProviderModel;
 use App\Models\User;
 use App\StorageProviders\Dropbox;
@@ -69,6 +71,66 @@ test('dropbox oauth redirect', function () {
     expect(session('dropbox_oauth.state'))->not->toBeEmpty();
 });
 
+test('dropbox oauth redirect resolves the target project before leaving for dropbox', function (mixed $global, bool $expectGlobal) {
+    $this->actingAs($this->user);
+
+    $this->post(route('storage-providers.dropbox.redirect'), [
+        'provider' => Dropbox::id(),
+        'name' => 'dropbox-test',
+        'app_key' => 'my-app-key',
+        'app_secret' => 'my-app-secret',
+        'global' => $global,
+    ])->assertRedirect();
+
+    expect(session('dropbox_oauth.project_id'))
+        ->toBe($expectGlobal ? null : $this->user->current_project_id);
+})->with([
+    'string false stays project scoped' => ['false', false],
+    'string off stays project scoped' => ['off', false],
+    'zero stays project scoped' => ['0', false],
+    'true goes global' => [true, true],
+    'string one goes global' => ['1', true],
+]);
+
+test('dropbox callback keeps the project chosen at redirect time', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*oauth2/token' => Http::response([
+            'access_token' => 'fresh-access',
+            'expires_in' => 14400,
+            'refresh_token' => 'the-refresh-token',
+        ]),
+        '*' => Http::response([], 200),
+    ]);
+
+    $chosenProject = $this->user->current_project_id;
+
+    /** @var Project $otherProject */
+    $otherProject = Project::factory()->create();
+    $otherProject->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::ADMIN,
+    ]);
+    $this->user->update(['current_project_id' => $otherProject->id]);
+
+    $this->withSession([
+        'dropbox_oauth' => [
+            'state' => 'state-123',
+            'name' => 'dropbox-switched',
+            'app_key' => 'my-app-key',
+            'app_secret' => 'my-app-secret',
+            'project_id' => $chosenProject,
+        ],
+    ])->get(route('storage-providers.dropbox.callback', ['code' => 'auth-code', 'state' => 'state-123']))
+        ->assertRedirect(route('storage-providers'));
+
+    $this->assertDatabaseHas('storage_providers', [
+        'profile' => 'dropbox-switched',
+        'project_id' => $chosenProject,
+    ]);
+});
+
 test('dropbox callback creates provider', function () {
     $this->actingAs($this->user);
 
@@ -87,7 +149,7 @@ test('dropbox callback creates provider', function () {
             'name' => 'dropbox-test',
             'app_key' => 'my-app-key',
             'app_secret' => 'my-app-secret',
-            'global' => false,
+            'project_id' => $this->user->current_project_id,
         ],
     ])->get(route('storage-providers.dropbox.callback', ['code' => 'auth-code', 'state' => 'state-123']));
 
@@ -98,6 +160,7 @@ test('dropbox callback creates provider', function () {
         'provider' => Dropbox::id(),
         'profile' => 'dropbox-test',
         'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
     ]);
 
     $provider = StorageProviderModel::query()->where('profile', 'dropbox-test')->firstOrFail();

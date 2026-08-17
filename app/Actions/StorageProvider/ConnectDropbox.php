@@ -22,10 +22,11 @@ class ConnectDropbox
 
     /**
      * @param  array<string, mixed>  $input
+     * @param  ?int  $projectId  The project the provider will belong to, or null for a global one.
      *
      * @throws ValidationException
      */
-    public function redirectUrl(array $input): string
+    public function redirectUrl(array $input, ?int $projectId): string
     {
         Validator::make($input, [
             'name' => ['required'],
@@ -40,7 +41,7 @@ class ConnectDropbox
             'name' => $input['name'],
             'app_key' => $input['app_key'],
             'app_secret' => $input['app_secret'],
-            'global' => isset($input['global']) && $input['global'],
+            'project_id' => $projectId,
         ]);
 
         return self::AUTHORIZE_URL.'?'.http_build_query([
@@ -85,13 +86,16 @@ class ConnectDropbox
             (string) $pending['app_secret'],
         );
 
+        /** @var ?int $projectId */
+        $projectId = $pending['project_id'] ?? null;
+
         return app(CreateStorageProvider::class)->create($user, [
             'provider' => Dropbox::id(),
             'name' => $pending['name'],
             'app_key' => $pending['app_key'],
             'app_secret' => $pending['app_secret'],
             'refresh_token' => $refreshToken,
-        ], $pending['global'] ? null : $user->currentProject?->id);
+        ], $projectId);
     }
 
     public function redirectUri(): string
