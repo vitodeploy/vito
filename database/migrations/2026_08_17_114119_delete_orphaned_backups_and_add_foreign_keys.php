@@ -14,26 +14,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::table('backups')
-            ->whereNotExists(fn (Builder $query) => $query
-                ->select(DB::raw(1))
-                ->from('servers')
-                ->whereColumn('servers.id', 'backups.server_id'))
-            ->delete();
+        DB::transaction(function (): void {
+            DB::table('backups')
+                ->whereNotExists(fn (Builder $query) => $query
+                    ->select(DB::raw(1))
+                    ->from('servers')
+                    ->whereColumn('servers.id', 'backups.server_id'))
+                ->delete();
 
-        DB::table('backup_files')
-            ->whereNotExists(fn (Builder $query) => $query
-                ->select(DB::raw(1))
-                ->from('backups')
-                ->whereColumn('backups.id', 'backup_files.backup_id'))
-            ->delete();
+            DB::table('backup_files')
+                ->whereNotExists(fn (Builder $query) => $query
+                    ->select(DB::raw(1))
+                    ->from('backups')
+                    ->whereColumn('backups.id', 'backup_files.backup_id'))
+                ->delete();
+        });
 
         Schema::table('backups', function (Blueprint $table): void {
             $table->foreign('server_id')->references('id')->on('servers')->cascadeOnDelete();
         });
 
-        // Widened before the foreign key is added: MySQL cannot MODIFY a column that is
-        // already a foreign-key child, and a 32-bit column cannot reference a bigint parent.
         Schema::table('backup_files', function (Blueprint $table): void {
             $table->unsignedBigInteger('backup_id')->change();
         });
