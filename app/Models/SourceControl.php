@@ -29,8 +29,8 @@ class SourceControl extends AbstractModel
 
     /** @use HasFactory<SourceControlFactory> */
     use HasFactory;
-    use HasProjectScopedQueries;
 
+    use HasProjectScopedQueries;
     use SoftDeletes;
 
     protected $fillable = [

@@ -10,7 +10,6 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class SourceControlPolicy
 {
     use ChecksTokenProjectScope;
-
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool

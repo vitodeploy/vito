@@ -12,7 +12,6 @@ use Laravel\Sanctum\TransientToken;
 class StorageProviderPolicy
 {
     use ChecksTokenProjectScope;
-
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool

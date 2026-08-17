@@ -20,6 +20,7 @@ class StorageProvider extends AbstractModel
 {
     /** @use HasFactory<StorageProviderFactory> */
     use HasFactory;
+
     use HasProjectScopedQueries;
 
     protected $fillable = [

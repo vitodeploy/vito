@@ -23,6 +23,7 @@ class DNSProvider extends AbstractModel
 {
     /** @use HasFactory<DNSProviderFactory> */
     use HasFactory;
+
     use HasProjectScopedQueries;
 
     protected $table = 'dns_providers';

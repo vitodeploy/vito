@@ -24,6 +24,7 @@ class ServerProvider extends AbstractModel
 {
     /** @use HasFactory<ServerProviderFactory> */
     use HasFactory;
+
     use HasProjectScopedQueries;
 
     protected $fillable = [
