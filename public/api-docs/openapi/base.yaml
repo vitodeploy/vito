@@ -3,4 +3,9 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Laravel Sanctum personal access token. Pass the opaque token in the Authorization header as `Bearer <token>`.
+      description: |
+        Laravel Sanctum personal access token. Pass the opaque token in the Authorization header as `Bearer <token>`.
+
+        A key scoped to specific projects can only reach resources in those projects. Resources that are not tied to a
+        project (marked `global`) stay readable by every key, but a project-scoped key cannot create, update or delete
+        them. Out-of-scope resources are omitted from listings and answered with `403` when addressed directly.

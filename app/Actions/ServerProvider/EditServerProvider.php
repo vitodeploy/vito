@@ -13,7 +13,7 @@ class EditServerProvider
     /**
      * @param  array<string, mixed>  $input
      */
-    public function edit(ServerProvider $serverProvider, array $input): ServerProvider
+    public function edit(ServerProvider $serverProvider, array $input, ?int $projectId): ServerProvider
     {
         Validator::make($input, [
             'name' => [
@@ -22,7 +22,7 @@ class EditServerProvider
         ])->validate();
 
         $serverProvider->profile = $input['name'];
-        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $serverProvider->user->currentProject?->id;
+        $serverProvider->project_id = $projectId;
 
         $serverProvider->save();
 

@@ -27,7 +27,7 @@ class UserSourceControlController extends Controller
     {
         $this->authorize('viewAny', SourceControl::class);
 
-        $sourceControls = user()->sourceControls()->simplePaginate(25);
+        $sourceControls = SourceControl::getByTokenProjects(user())->simplePaginate(25);
 
         return SourceControlResource::collection($sourceControls);
     }
@@ -38,7 +38,11 @@ class UserSourceControlController extends Controller
         $this->authorize('create', SourceControl::class);
 
         $user = user();
-        $sourceControl = app(ConnectSourceControl::class)->connect($user, $request->all());
+        $projectId = $request->boolean('global') ? null : $user->currentProject?->id;
+
+        $this->authorize('assignToProject', [SourceControl::class, $projectId]);
+
+        $sourceControl = app(ConnectSourceControl::class)->connect($user, $request->all(), $projectId);
 
         return new SourceControlResource($sourceControl);
     }
@@ -66,7 +70,11 @@ class UserSourceControlController extends Controller
             abort(404, 'Source control not found');
         }
 
-        $sourceControl = app(EditSourceControl::class)->edit($sourceControl, $request->all());
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [SourceControl::class, $projectId]);
+
+        $sourceControl = app(EditSourceControl::class)->edit($sourceControl, $request->all(), $projectId);
 
         return new SourceControlResource($sourceControl);
     }

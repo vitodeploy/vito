@@ -16,7 +16,7 @@ class EditStorageProvider
      *
      * @throws ValidationException
      */
-    public function edit(StorageProvider $storageProvider, array $input): StorageProvider
+    public function edit(StorageProvider $storageProvider, array $input, ?int $projectId): StorageProvider
     {
         if (! $storageProvider->hasProviderHandler()) {
             throw ValidationException::withMessages([
@@ -40,7 +40,7 @@ class EditStorageProvider
         }
 
         $storageProvider->profile = $input['name'];
-        $storageProvider->project_id = isset($input['global']) && $input['global'] ? null : $storageProvider->user->currentProject?->id;
+        $storageProvider->project_id = $projectId;
 
         if ($credentials !== $storageProvider->credentials) {
             $storageProvider->credentials = $credentials;

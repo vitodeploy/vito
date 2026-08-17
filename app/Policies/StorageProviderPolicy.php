@@ -5,11 +5,14 @@ namespace App\Policies;
 use App\Models\PersonalAccessToken;
 use App\Models\StorageProvider;
 use App\Models\User;
+use App\Traits\ChecksTokenProjectScope;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Laravel\Sanctum\TransientToken;
 
 class StorageProviderPolicy
 {
+    use ChecksTokenProjectScope;
+
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
@@ -19,7 +22,8 @@ class StorageProviderPolicy
 
     public function view(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->id === $storageProvider->user_id;
+        return $user->id === $storageProvider->user_id
+            && $user->tokenAllowsProject($storageProvider->project_id);
     }
 
     public function create(User $user): bool
@@ -29,7 +33,8 @@ class StorageProviderPolicy
 
     public function update(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->id === $storageProvider->user_id;
+        return $user->id === $storageProvider->user_id
+            && $user->tokenAllowsProject($storageProvider->project_id, write: true);
     }
 
     /**
@@ -50,6 +55,7 @@ class StorageProviderPolicy
 
     public function delete(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->id === $storageProvider->user_id;
+        return $user->id === $storageProvider->user_id
+            && $user->tokenAllowsProject($storageProvider->project_id, write: true);
     }
 }

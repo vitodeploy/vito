@@ -48,7 +48,11 @@ class SourceControlController extends Controller
     {
         $this->authorize('create', SourceControl::class);
 
-        $sourceControl = app(ConnectSourceControl::class)->connect(user(), $request->all());
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [SourceControl::class, $projectId]);
+
+        $sourceControl = app(ConnectSourceControl::class)->connect(user(), $request->all(), $projectId);
 
         return new SourceControlResource($sourceControl);
     }
@@ -76,9 +80,13 @@ class SourceControlController extends Controller
 
         $this->validateRoute($project, $sourceControl);
 
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [SourceControl::class, $projectId]);
+
         $sourceControl = $sourceControl->isGithubApp()
-            ? app(EditGithubAppSourceControl::class)->edit($sourceControl, $request->all())
-            : app(EditSourceControl::class)->edit($sourceControl, $request->all());
+            ? app(EditGithubAppSourceControl::class)->edit($sourceControl, $request->all(), $projectId)
+            : app(EditSourceControl::class)->edit($sourceControl, $request->all(), $projectId);
 
         return new SourceControlResource($sourceControl);
     }

@@ -49,4 +49,24 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
 
         return in_array($project->id, $projectIds);
     }
+
+    /**
+     * Check if the token may reach a resource that belongs to the given project.
+     * A null project id means the resource is global: every project may read it,
+     * but writing it would affect projects outside the token's scope.
+     */
+    public function allowsProjectId(?int $projectId, bool $write = false): bool
+    {
+        $projectIds = $this->getProjectIds();
+
+        if ($projectIds === []) {
+            return true;
+        }
+
+        if ($projectId === null) {
+            return ! $write;
+        }
+
+        return in_array($projectId, $projectIds, true);
+    }
 }

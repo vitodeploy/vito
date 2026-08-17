@@ -60,7 +60,11 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        app(CreateStorageProvider::class)->create(user(), $request->all());
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [StorageProvider::class, $projectId]);
+
+        app(CreateStorageProvider::class)->create(user(), $request->all(), $projectId);
 
         return back()->with('success', 'Storage provider created.');
     }
@@ -96,7 +100,11 @@ class StorageProviderController extends Controller
     {
         $this->authorize('update', $storageProvider);
 
-        app(EditStorageProvider::class)->edit($storageProvider, $request->all());
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [StorageProvider::class, $projectId]);
+
+        app(EditStorageProvider::class)->edit($storageProvider, $request->all(), $projectId);
 
         return back()->with('success', 'Storage provider updated.');
     }

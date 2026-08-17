@@ -47,8 +47,11 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        $user = user();
-        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all());
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [StorageProvider::class, $projectId]);
+
+        $storageProvider = app(CreateStorageProvider::class)->create(user(), $request->all(), $projectId);
 
         return new StorageProviderResource($storageProvider);
     }
@@ -76,7 +79,11 @@ class StorageProviderController extends Controller
 
         $this->validateRoute($project, $storageProvider);
 
-        $storageProvider = app(EditStorageProvider::class)->edit($storageProvider, $request->all());
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [StorageProvider::class, $projectId]);
+
+        $storageProvider = app(EditStorageProvider::class)->edit($storageProvider, $request->all(), $projectId);
 
         return new StorageProviderResource($storageProvider);
     }

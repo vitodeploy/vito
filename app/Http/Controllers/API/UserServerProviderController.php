@@ -28,7 +28,7 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('viewAny', ServerProvider::class);
 
-        $serverProviders = user()->serverProviders()->simplePaginate(25);
+        $serverProviders = ServerProvider::getByTokenProjects(user())->simplePaginate(25);
 
         return ServerProviderResource::collection($serverProviders);
     }
@@ -39,7 +39,11 @@ class UserServerProviderController extends Controller
         $this->authorize('create', ServerProvider::class);
 
         $user = user();
-        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all());
+        $projectId = $request->boolean('global') ? null : $user->currentProject?->id;
+
+        $this->authorize('assignToProject', [ServerProvider::class, $projectId]);
+
+        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all(), $projectId);
 
         return new ServerProviderResource($serverProvider);
     }
@@ -67,7 +71,11 @@ class UserServerProviderController extends Controller
             abort(404, 'Server provider not found');
         }
 
-        $serverProvider = app(EditServerProvider::class)->edit($serverProvider, $request->all());
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [ServerProvider::class, $projectId]);
+
+        $serverProvider = app(EditServerProvider::class)->edit($serverProvider, $request->all(), $projectId);
 
         return new ServerProviderResource($serverProvider);
     }

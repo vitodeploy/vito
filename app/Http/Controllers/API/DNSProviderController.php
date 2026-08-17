@@ -27,7 +27,7 @@ class DNSProviderController extends Controller
     {
         $this->authorize('viewAny', DNSProvider::class);
 
-        $dnsProviders = user()->dnsProviders()->simplePaginate(25);
+        $dnsProviders = DNSProvider::getByTokenProjects(user())->simplePaginate(25);
 
         return DNSProviderResource::collection($dnsProviders);
     }
@@ -38,7 +38,11 @@ class DNSProviderController extends Controller
         $this->authorize('create', DNSProvider::class);
 
         $user = user();
-        $dnsProvider = app(CreateDNSProvider::class)->create($user, $request->all());
+        $projectId = $request->boolean('global') ? null : $user->currentProject?->id;
+
+        $this->authorize('assignToProject', [DNSProvider::class, $projectId]);
+
+        $dnsProvider = app(CreateDNSProvider::class)->create($user, $request->all(), $projectId);
 
         return new DNSProviderResource($dnsProvider);
     }
@@ -56,7 +60,11 @@ class DNSProviderController extends Controller
     {
         $this->authorize('update', $dnsProvider);
 
-        app(EditDNSProvider::class)->edit($dnsProvider, $request->all());
+        $projectId = $request->boolean('global') ? null : user()->currentProject?->id;
+
+        $this->authorize('assignToProject', [DNSProvider::class, $projectId]);
+
+        app(EditDNSProvider::class)->edit($dnsProvider, $request->all(), $projectId);
 
         return new DNSProviderResource($dnsProvider);
     }

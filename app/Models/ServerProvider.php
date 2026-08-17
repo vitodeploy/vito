@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\HasProjectScopedQueries;
 use Database\Factories\ServerProviderFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +24,7 @@ class ServerProvider extends AbstractModel
 {
     /** @use HasFactory<ServerProviderFactory> */
     use HasFactory;
+    use HasProjectScopedQueries;
 
     protected $fillable = [
         'user_id',
@@ -81,21 +82,6 @@ class ServerProvider extends AbstractModel
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
-    }
-
-    /**
-     * @return Builder<ServerProvider>
-     */
-    public static function getByProjectId(int $projectId, User $user): Builder
-    {
-        /** @var Builder<ServerProvider> $query */
-        $query = static::query();
-
-        return $query
-            ->where('user_id', $user->id)
-            ->where(function (Builder $query) use ($projectId): void {
-                $query->where('project_id', $projectId)->orWhereNull('project_id');
-            });
     }
 
     /**

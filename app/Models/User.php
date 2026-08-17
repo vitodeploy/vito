@@ -161,6 +161,37 @@ class User extends Authenticatable
         return $this->HasOne(Project::class, 'id', 'current_project_id');
     }
 
+    /**
+     * Project IDs the request's API token is limited to. An empty array means
+     * the caller is not limited to any subset of projects.
+     *
+     * @return array<int>
+     */
+    public function tokenProjectIds(): array
+    {
+        return $this->currentApiToken()?->getProjectIds() ?? [];
+    }
+
+    /**
+     * Whether the request's API token may reach a resource in the given project.
+     * A null project id means the resource is global.
+     */
+    public function tokenAllowsProject(?int $projectId, bool $write = false): bool
+    {
+        return $this->currentApiToken()?->allowsProjectId($projectId, $write) ?? true;
+    }
+
+    /**
+     * The persisted API token behind the request, if the caller is using one.
+     * Session callers and transient tokens carry no project restrictions.
+     */
+    private function currentApiToken(): ?PersonalAccessToken
+    {
+        $token = $this->currentAccessToken();
+
+        return $token instanceof PersonalAccessToken && $token->exists ? $token : null;
+    }
+
     public function ensureHasDefaultProject(): Project
     {
         /** @var ?Project $project */

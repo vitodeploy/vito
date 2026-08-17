@@ -13,7 +13,7 @@ class EditDNSProvider
      *
      * @throws ValidationException
      */
-    public function edit(DNSProvider $dnsProvider, array $input): DNSProvider
+    public function edit(DNSProvider $dnsProvider, array $input, ?int $projectId): DNSProvider
     {
         $provider = $dnsProvider->provider();
 
@@ -25,7 +25,7 @@ class EditDNSProvider
         Validator::make($input, $rules)->validate();
 
         $dnsProvider->name = $input['name'];
-        $dnsProvider->project_id = isset($input['global']) && $input['global'] ? null : $dnsProvider->user->currentProject?->id;
+        $dnsProvider->project_id = $projectId;
 
         [$newCredentials, $needsReconnect] = $provider->mergeEditData($input);
 

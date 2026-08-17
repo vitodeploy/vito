@@ -48,8 +48,11 @@ class ServerProviderController extends Controller
     {
         $this->authorize('create', ServerProvider::class);
 
-        $user = user();
-        $serverProvider = app(CreateServerProvider::class)->create($user, $request->all());
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [ServerProvider::class, $projectId]);
+
+        $serverProvider = app(CreateServerProvider::class)->create(user(), $request->all(), $projectId);
 
         return new ServerProviderResource($serverProvider);
     }
@@ -77,7 +80,11 @@ class ServerProviderController extends Controller
 
         $this->validateRoute($project, $serverProvider);
 
-        $serverProvider = app(EditServerProvider::class)->edit($serverProvider, $request->all());
+        $projectId = $request->boolean('global') ? null : $project->id;
+
+        $this->authorize('assignToProject', [ServerProvider::class, $projectId]);
+
+        $serverProvider = app(EditServerProvider::class)->edit($serverProvider, $request->all(), $projectId);
 
         return new ServerProviderResource($serverProvider);
     }

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\SourceControlProviders\SourceControlProvider;
+use App\Traits\HasProjectScopedQueries;
 use Database\Factories\SourceControlFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,6 +29,7 @@ class SourceControl extends AbstractModel
 
     /** @use HasFactory<SourceControlFactory> */
     use HasFactory;
+    use HasProjectScopedQueries;
 
     use SoftDeletes;
 
@@ -118,20 +119,5 @@ class SourceControl extends AbstractModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    /**
-     * @return Builder<SourceControl>
-     */
-    public static function getByProjectId(int $projectId, User $user): Builder
-    {
-        /** @var Builder<SourceControl> $query */
-        $query = static::query();
-
-        return $query
-            ->where('user_id', $user->id)
-            ->where(function (Builder $query) use ($projectId): void {
-                $query->where('project_id', $projectId)->orWhereNull('project_id');
-            });
     }
 }

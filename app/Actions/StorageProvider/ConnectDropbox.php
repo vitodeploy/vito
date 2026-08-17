@@ -91,8 +91,7 @@ class ConnectDropbox
             'app_key' => $pending['app_key'],
             'app_secret' => $pending['app_secret'],
             'refresh_token' => $refreshToken,
-            'global' => $pending['global'],
-        ]);
+        ], $pending['global'] ? null : $user->currentProject?->id);
     }
 
     public function redirectUri(): string

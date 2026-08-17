@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\HasProjectScopedQueries;
 use Database\Factories\StorageProviderFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +20,7 @@ class StorageProvider extends AbstractModel
 {
     /** @use HasFactory<StorageProviderFactory> */
     use HasFactory;
+    use HasProjectScopedQueries;
 
     protected $fillable = [
         'user_id',
@@ -83,20 +84,5 @@ class StorageProvider extends AbstractModel
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
-    }
-
-    /**
-     * @return Builder<StorageProvider>
-     */
-    public static function getByProjectId(int $projectId, User $user): Builder
-    {
-        /** @var Builder<StorageProvider> $query */
-        $query = static::query();
-
-        return $query
-            ->where('user_id', $user->id)
-            ->where(function (Builder $query) use ($projectId): void {
-                $query->where('project_id', $projectId)->orWhereNull('project_id');
-            });
     }
 }

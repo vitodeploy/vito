@@ -17,7 +17,7 @@ class CreateStorageProvider
      *
      * @throws ValidationException
      */
-    public function create(User $user, array $input): StorageProvider
+    public function create(User $user, array $input, ?int $projectId): StorageProvider
     {
         $this->validate($input);
 
@@ -25,7 +25,7 @@ class CreateStorageProvider
             'user_id' => $user->id,
             'provider' => $input['provider'],
             'profile' => $input['name'],
-            'project_id' => isset($input['global']) && $input['global'] ? null : $user->currentProject?->id,
+            'project_id' => $projectId,
         ]);
 
         $storageProvider->credentials = $storageProvider->provider()->credentialData($input);
