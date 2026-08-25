@@ -93,6 +93,22 @@ class UpdateSourceControl
             }
         }
 
+        if ($site->ssh_key && $site->repository && ! $newSourceControl->isGithubApp()) {
+            try {
+                $keyId = $newSourceControl->provider()->deployKey(
+                    $site->getDeployKeyName(),
+                    $site->repository,
+                    $site->ssh_key,
+                );
+                $site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
+            } catch (Throwable $e) {
+                Log::warning('Failed to re-deploy SSH key after source control update', [
+                    'site_id' => $site->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $newRepoUrl = $newSourceControl->provider()->fullRepoUrl(
             $site->repository,
             $site->getSshKeyName()
