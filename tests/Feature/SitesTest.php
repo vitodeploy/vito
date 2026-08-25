@@ -55,7 +55,7 @@ test('create site', function (array $inputs) {
         'domain' => $inputs['domain'],
         'status' => SiteStatus::READY->value,
         'user' => $inputs['user'],
-        'path' => '/home/' . $inputs['user'] . '/' . $inputs['domain'],
+        'path' => '/home/'.$inputs['user'].'/'.$inputs['domain'],
     ]);
 })->with('create_data');
 
@@ -407,7 +407,7 @@ test('see sites list', function () {
         'server' => $this->server,
     ]))
         ->assertSuccessful()
-        ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/index'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/index'));
 });
 
 test('delete site', function () {
@@ -638,7 +638,7 @@ test('see logs', function () {
         'site' => $this->site,
     ]))
         ->assertSuccessful()
-        ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/logs'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/logs'));
 });
 
 test('change branch', function () {
