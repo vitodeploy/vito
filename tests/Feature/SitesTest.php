@@ -22,8 +22,7 @@ test('create site', function (array $inputs) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 201),
+        'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 
     if (isset($inputs['database']) && isset($inputs['database_user'])) {
@@ -56,7 +55,7 @@ test('create site', function (array $inputs) {
         'domain' => $inputs['domain'],
         'status' => SiteStatus::READY->value,
         'user' => $inputs['user'],
-        'path' => '/home/'.$inputs['user'].'/'.$inputs['domain'],
+        'path' => '/home/' . $inputs['user'] . '/' . $inputs['domain'],
     ]);
 })->with('create_data');
 
@@ -291,8 +290,7 @@ test('create site failed due to source control', function (int $status) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], $status),
+        'https://api.github.com/repos/*' => Http::response([], $status),
     ]);
 
     $this->actingAs($this->user);
@@ -409,7 +407,7 @@ test('see sites list', function () {
         'server' => $this->server,
     ]))
         ->assertSuccessful()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/index'));
+        ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/index'));
 });
 
 test('delete site', function () {
@@ -463,8 +461,7 @@ test('update source control', function () {
     $this->actingAs($this->user);
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 201),
+        'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 
     /** @var SourceControl $sourceControl */
@@ -492,8 +489,7 @@ test('failed to update source control', function () {
     $this->actingAs($this->user);
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 404),
+        'https://api.github.com/repos/*' => Http::response([], 404),
     ]);
 
     /** @var SourceControl $sourceControl */
@@ -509,6 +505,111 @@ test('failed to update source control', function () {
         'source_control' => $sourceControl->id,
     ])
         ->assertSessionHasErrors();
+});
+
+test('update source control deletes old deploy key', function () {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '999'];
+    $this->site->save();
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Github::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+        'https://api.github.com/repos/organization/repository/keys/999' => Http::response([], 204),
+        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 12345], 201),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [
+        'server' => $this->server->id,
+        'site' => $this->site,
+    ]), [
+        'source_control' => $newSourceControl->id,
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(function ($request) {
+        return $request->method() === 'DELETE'
+            && str_contains($request->url(), '/keys/999');
+    });
+});
+
+test('update source control registers new deploy key', function () {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '777'];
+    $this->site->save();
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Github::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+        'https://api.github.com/repos/organization/repository/keys/777' => Http::response([], 204),
+        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 54321], 201),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [
+        'server' => $this->server->id,
+        'site' => $this->site,
+    ]), [
+        'source_control' => $newSourceControl->id,
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $this->site->refresh();
+
+    expect($this->site->source_control_id)->toEqual($newSourceControl->id);
+    expect($this->site->type_data['deploy_key_id'])->toEqual('54321');
+});
+
+test('update source control succeeds even if old deploy key deletion fails', function () {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '888'];
+    $this->site->save();
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Github::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+        'https://api.github.com/repos/organization/repository/keys/888' => Http::response(['message' => 'Bad credentials'], 401),
+        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 99999], 201),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [
+        'server' => $this->server->id,
+        'site' => $this->site,
+    ]), [
+        'source_control' => $newSourceControl->id,
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $this->site->refresh();
+
+    expect($this->site->source_control_id)->toEqual($newSourceControl->id);
+    expect($this->site->type_data['deploy_key_id'])->toEqual('99999');
 });
 
 test('update v host', function () {
@@ -537,7 +638,7 @@ test('see logs', function () {
         'site' => $this->site,
     ]))
         ->assertSuccessful()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/logs'));
+        ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/logs'));
 });
 
 test('change branch', function () {
@@ -773,91 +874,103 @@ test('create site rejects directory traversal', function () {
     ]);
 });
 
-dataset('failure_create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
-    return [
-        [
+dataset(
+    'failure_create_data',
+    /** @return array<int, array{0: array<string, mixed>}> */
+    function (): array {
+        return [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'a',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'a',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'root',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'root',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'vito',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'vito',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => '123',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => '123',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'www-data',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'www-data',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'mysql',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'mysql',
+                ],
             ],
-        ],
-        [
             [
-                'type' => PHPBlank::id(),
-                'domain' => 'example.com',
-                'php_version' => '8.2',
-                'web_directory' => 'public',
-                'user' => 'ubuntu',
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'ubuntu',
+                ],
             ],
-        ],
-    ];
-});
+        ];
+    }
+);
 
-dataset('create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
-    return vitoPestSiteCreateData();
-});
+dataset(
+    'create_data',
+    /** @return array<int, array{0: array<string, mixed>}> */
+    function (): array {
+        return vitoPestSiteCreateData();
+    }
+);
 
-dataset('create_failure_data', /** @return array<int, array{0: int}> */ function (): array {
-    return [
-        [401],
-        [403],
-        [404],
-    ];
-});
+dataset(
+    'create_failure_data',
+    /** @return array<int, array{0: int}> */
+    function (): array {
+        return [
+            [401],
+            [403],
+            [404],
+        ];
+    }
+);
