@@ -1,7 +1,11 @@
 <?php
 
+use App\Actions\Site\UpdateSourceControl;
 use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
+use App\Exceptions\FailedToDeleteDeployKey;
+use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\SSHError;
 use App\Facades\SSH;
 use App\Models\Database;
 use App\Models\DatabaseUser;
@@ -12,8 +16,12 @@ use App\SiteTypes\Blank;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
 use App\SourceControlProviders\Github;
+use App\SourceControlProviders\Gitlab;
+use App\SSH\OS\Git;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -22,7 +30,8 @@ test('create site', function (array $inputs) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([], 201),
+        'https://api.github.com/repos/*' => Http::response([
+        ], 201),
     ]);
 
     if (isset($inputs['database']) && isset($inputs['database_user'])) {
@@ -290,7 +299,8 @@ test('create site failed due to source control', function (int $status) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([], $status),
+        'https://api.github.com/repos/*' => Http::response([
+        ], $status),
     ]);
 
     $this->actingAs($this->user);
@@ -461,7 +471,8 @@ test('update source control', function () {
     $this->actingAs($this->user);
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([], 201),
+        'https://api.github.com/repos/*' => Http::response([
+        ], 201),
     ]);
 
     /** @var SourceControl $sourceControl */
@@ -489,7 +500,8 @@ test('failed to update source control', function () {
     $this->actingAs($this->user);
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([], 404),
+        'https://api.github.com/repos/*' => Http::response([
+        ], 404),
     ]);
 
     /** @var SourceControl $sourceControl */
@@ -518,15 +530,33 @@ test('update source control deletes old deploy key', function () {
 
     /** @var SourceControl $newSourceControl */
     $newSourceControl = SourceControl::factory()->create([
-        'provider' => Github::id(),
+        'provider' => Gitlab::id(),
         'user_id' => $this->user->id,
     ]);
 
     Http::fake([
-        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 12345], 201),
         'https://api.github.com/repos/organization/repository/keys/999' => Http::response([], 204),
-        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 12345], 201),
     ]);
+
+    $git = Mockery::mock(Git::class);
+    $git->shouldReceive('setRemote')
+        ->once()
+        ->withArgs(function (Site $site, string $repoUrl) use ($newSourceControl): bool {
+            $this->assertDatabaseHas('sites', [
+                'id' => $site->id,
+                'source_control_id' => $newSourceControl->id,
+                'type_data->deploy_key_id' => '12345',
+            ]);
+            Http::assertNotSent(
+                fn ($request) => $request->method() === 'DELETE'
+                    && str_contains($request->url(), '/keys/999')
+            );
+
+            return str_contains($repoUrl, 'gitlab.com');
+        });
+    app()->instance(Git::class, $git);
 
     $this->patch(route('site-settings.update-source-control', [
         'server' => $this->server->id,
@@ -536,10 +566,58 @@ test('update source control deletes old deploy key', function () {
     ])
         ->assertSessionDoesntHaveErrors();
 
-    Http::assertSent(function ($request) {
-        return $request->method() === 'DELETE'
-            && str_contains($request->url(), '/keys/999');
-    });
+    $deployRequestIndex = Http::recorded()->search(
+        fn (array $recorded): bool => $recorded[0]->method() === 'POST'
+            && str_contains($recorded[0]->url(), '/deploy_keys')
+    );
+    $deleteRequestIndex = Http::recorded()->search(
+        fn (array $recorded): bool => $recorded[0]->method() === 'DELETE'
+            && str_contains($recorded[0]->url(), '/keys/999')
+    );
+
+    expect($deployRequestIndex)->not->toBeFalse();
+    expect($deleteRequestIndex)->not->toBeFalse();
+    expect($deployRequestIndex)->toBeLessThan($deleteRequestIndex);
+});
+
+test('update source control keeps old deploy key if remote update fails', function () {
+    SSH::fake();
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '999'];
+    $this->site->save();
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 12345], 201),
+        'https://api.github.com/repos/organization/repository/keys/999' => Http::response([], 204),
+    ]);
+
+    $git = Mockery::mock(Git::class);
+    $git->shouldReceive('setRemote')
+        ->once()
+        ->andThrow(new SSHError('Failed to update remote'));
+    app()->instance(Git::class, $git);
+
+    app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]);
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $newSourceControl->id,
+        'type_data->deploy_key_id' => '12345',
+    ]);
+    Http::assertNotSent(
+        fn ($request) => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/keys/999')
+    );
 });
 
 test('update source control registers new deploy key', function () {
@@ -553,14 +631,14 @@ test('update source control registers new deploy key', function () {
 
     /** @var SourceControl $newSourceControl */
     $newSourceControl = SourceControl::factory()->create([
-        'provider' => Github::id(),
+        'provider' => Gitlab::id(),
         'user_id' => $this->user->id,
     ]);
 
     Http::fake([
-        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 54321], 201),
         'https://api.github.com/repos/organization/repository/keys/777' => Http::response([], 204),
-        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 54321], 201),
     ]);
 
     $this->patch(route('site-settings.update-source-control', [
@@ -577,11 +655,144 @@ test('update source control registers new deploy key', function () {
     expect($this->site->type_data['deploy_key_id'])->toEqual('54321');
 });
 
-test('update source control succeeds even if old deploy key deletion fails', function () {
+test('update source control reuses deploy key for the same repository', function () {
     SSH::fake();
 
-    $this->actingAs($this->user);
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '777'];
+    $this->site->save();
 
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Github::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://api.github.com/repos/organization/repository' => Http::response([], 200),
+    ]);
+
+    app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]);
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $newSourceControl->id,
+        'type_data->deploy_key_id' => '777',
+    ]);
+
+    Http::assertNotSent(
+        fn ($request) => in_array($request->method(), ['POST', 'DELETE'], true)
+            && str_contains($request->url(), '/keys')
+    );
+});
+
+test('update source control rejects an empty deploy key id', function () {
+    SSH::fake();
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '777'];
+    $this->site->save();
+
+    $oldSourceControlId = $this->site->source_control_id;
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response([], 201),
+    ]);
+
+    expect(fn () => app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]))->toThrow(FailedToDeployGitKey::class);
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $oldSourceControlId,
+        'type_data->deploy_key_id' => '777',
+    ]);
+
+    Http::assertNotSent(fn ($request) => $request->method() === 'DELETE');
+});
+
+test('update source control sanitizes deploy key provider errors', function () {
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '777'];
+    $this->site->save();
+
+    $oldSourceControlId = $this->site->source_control_id;
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['token' => 'secret-token'], 422),
+    ]);
+
+    expect(fn () => app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]))->toThrow(FailedToDeployGitKey::class, 'Source control provider failed to deploy the key.');
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $oldSourceControlId,
+        'type_data->deploy_key_id' => '777',
+    ]);
+});
+
+test('update source control continues if old deploy key deletion fails', function () {
+    SSH::fake();
+    Log::spy();
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '888'];
+    $this->site->save();
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 54321], 201),
+        'https://api.github.com/repos/organization/repository/keys/888' => Http::response(['message' => 'Bad credentials'], 401),
+    ]);
+
+    app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]);
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $newSourceControl->id,
+        'type_data->deploy_key_id' => '54321',
+    ]);
+
+    Log::shouldHaveReceived('warning')->withArgs(
+        fn (string $message, array $context): bool => $message === 'Failed to remove old deploy key during source control update'
+            && $context['site_id'] === $this->site->id
+            && $context['deploy_key_id'] === '888'
+            && $context['exception'] === FailedToDeleteDeployKey::class
+    );
+});
+
+test('update source control continues if old deploy key provider is missing', function () {
+    SSH::fake();
+    Log::spy();
+
+    $this->site->source_control_id = null;
     $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
     $this->site->type_data = ['deploy_key_id' => '888'];
     $this->site->save();
@@ -594,22 +805,76 @@ test('update source control succeeds even if old deploy key deletion fails', fun
 
     Http::fake([
         'https://api.github.com/repos/organization/repository' => Http::response([], 200),
-        'https://api.github.com/repos/organization/repository/keys/888' => Http::response(['message' => 'Bad credentials'], 401),
-        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 99999], 201),
+        'https://api.github.com/repos/organization/repository/keys' => Http::response(['id' => 54321], 201),
     ]);
 
-    $this->patch(route('site-settings.update-source-control', [
-        'server' => $this->server->id,
-        'site' => $this->site,
-    ]), [
+    app(UpdateSourceControl::class)->update($this->site, [
         'source_control' => $newSourceControl->id,
-    ])
-        ->assertSessionDoesntHaveErrors();
+    ]);
 
-    $this->site->refresh();
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $newSourceControl->id,
+        'type_data->deploy_key_id' => '54321',
+    ]);
 
-    expect($this->site->source_control_id)->toEqual($newSourceControl->id);
-    expect($this->site->type_data['deploy_key_id'])->toEqual('99999');
+    Http::assertNotSent(fn ($request) => $request->method() === 'DELETE');
+
+    Log::shouldHaveReceived('warning')->withArgs(
+        fn (string $message, array $context): bool => $message === 'Skipped old deploy key removal because its source control is unavailable'
+            && $context['site_id'] === $this->site->id
+            && $context['deploy_key_id'] === '888'
+    );
+});
+
+test('update source control removes new deploy key if new id cannot be saved', function () {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2E test-key';
+    $this->site->type_data = ['deploy_key_id' => '777'];
+    $this->site->save();
+
+    $oldSourceControlId = $this->site->source_control_id;
+
+    /** @var SourceControl $newSourceControl */
+    $newSourceControl = SourceControl::factory()->create([
+        'provider' => Gitlab::id(),
+        'user_id' => $this->user->id,
+    ]);
+
+    Http::fake([
+        'https://gitlab.com/api/v4/projects/*/repository/commits' => Http::response([], 200),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys/54321' => Http::response([], 204),
+        'https://gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 54321], 201),
+    ]);
+
+    Event::listen('eloquent.saving: '.Site::class, function (Site $site): void {
+        if (($site->type_data['deploy_key_id'] ?? null) === '54321') {
+            throw new RuntimeException('Failed to save deploy key ID');
+        }
+    });
+
+    expect(fn () => app(UpdateSourceControl::class)->update($this->site, [
+        'source_control' => $newSourceControl->id,
+    ]))->toThrow(RuntimeException::class, 'Failed to save deploy key ID');
+
+    Http::assertSent(function ($request) {
+        return $request->method() === 'DELETE'
+            && str_contains($request->url(), '/deploy_keys/54321');
+    });
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $this->site->id,
+        'source_control_id' => $oldSourceControlId,
+        'type_data->deploy_key_id' => '777',
+    ]);
+
+    Http::assertNotSent(
+        fn ($request) => $request->method() === 'DELETE'
+            && str_contains($request->url(), 'api.github.com')
+    );
 });
 
 test('update v host', function () {
@@ -874,103 +1139,91 @@ test('create site rejects directory traversal', function () {
     ]);
 });
 
-dataset(
-    'failure_create_data',
-    /** @return array<int, array{0: array<string, mixed>}> */
-    function (): array {
-        return [
+dataset('failure_create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
+    return [
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'a',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'a',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'root',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'root',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'vito',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'vito',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => '123',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => '123',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'www-data',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'www-data',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'mysql',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'mysql',
             ],
+        ],
+        [
             [
-                [
-                    'type' => PHPBlank::id(),
-                    'domain' => 'example.com',
-                    'php_version' => '8.2',
-                    'web_directory' => 'public',
-                    'user' => 'ubuntu',
-                ],
+                'type' => PHPBlank::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'user' => 'ubuntu',
             ],
-        ];
-    }
-);
+        ],
+    ];
+});
 
-dataset(
-    'create_data',
-    /** @return array<int, array{0: array<string, mixed>}> */
-    function (): array {
-        return vitoPestSiteCreateData();
-    }
-);
+dataset('create_data', /** @return array<int, array{0: array<string, mixed>}> */ function (): array {
+    return vitoPestSiteCreateData();
+});
 
-dataset(
-    'create_failure_data',
-    /** @return array<int, array{0: int}> */
-    function (): array {
-        return [
-            [401],
-            [403],
-            [404],
-        ];
-    }
-);
+dataset('create_failure_data', /** @return array<int, array{0: int}> */ function (): array {
+    return [
+        [401],
+        [403],
+        [404],
+    ];
+});

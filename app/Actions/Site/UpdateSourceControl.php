@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -21,7 +22,7 @@ class UpdateSourceControl
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
-     * @throws SSHError
+     * @throws Throwable
      */
     public function update(Site $site, array $input): void
     {
@@ -61,25 +62,43 @@ class UpdateSourceControl
         $oldSourceControl = $site->sourceControl;
         $oldDeployKeyId = $site->type_data['deploy_key_id'] ?? null;
         $oldGitHook = $site->gitHook;
+        $newRepoUrl = $newSourceControl->provider()->fullRepoUrl(
+            $site->repository,
+            $site->getSshKeyName()
+        );
+        $reuseOldDeployKey = $oldDeployKeyId !== null
+            && $oldSourceControl
+            && $oldSourceControl->provider()->fullRepoUrl(
+                $site->repository,
+                $site->getSshKeyName()
+            ) === $newRepoUrl;
 
-        DB::transaction(function () use ($site, $newSourceControl, $oldDeployKeyId): void {
-            $site->source_control_id = $newSourceControl->id;
-            $site->setRelation('sourceControl', $newSourceControl);
-            if ($oldDeployKeyId) {
-                $site->jsonUpdate('type_data', 'deploy_key_id', null, save: false);
-            }
-            $site->save();
-        });
+        if ($oldDeployKeyId !== null && ! $oldSourceControl) {
+            Log::warning('Skipped old deploy key removal because its source control is unavailable', [
+                'site_id' => $site->id,
+                'deploy_key_id' => (string) $oldDeployKeyId,
+            ]);
+        }
 
-        if ($oldDeployKeyId && $oldSourceControl) {
-            try {
-                $oldSourceControl->provider()->deleteDeployKey((string) $oldDeployKeyId, $site->repository);
-            } catch (Throwable $e) {
-                Log::warning('Failed to delete old deploy key on source-control swap', [
-                    'site_id' => $site->id,
-                    'error' => $e->getMessage(),
-                ]);
+        $newDeployKeyId = $reuseOldDeployKey
+            ? (string) $oldDeployKeyId
+            : $this->registerDeployKey($site, $newSourceControl);
+
+        try {
+            DB::transaction(function () use ($site, $newSourceControl, $oldDeployKeyId, $newDeployKeyId): void {
+                $site->source_control_id = $newSourceControl->id;
+                $site->setRelation('sourceControl', $newSourceControl);
+                if ($oldDeployKeyId !== null || $newDeployKeyId !== null) {
+                    $site->jsonUpdate('type_data', 'deploy_key_id', $newDeployKeyId, save: false);
+                }
+                $site->save();
+            });
+        } catch (Throwable $e) {
+            if (! $reuseOldDeployKey) {
+                $this->removeRegisteredDeployKey($site, $newSourceControl, $newDeployKeyId);
             }
+
+            throw $e;
         }
 
         if ($oldGitHook) {
@@ -93,33 +112,76 @@ class UpdateSourceControl
             }
         }
 
-        if ($site->ssh_key && $site->repository && ! $newSourceControl->isGithubApp()) {
-            try {
-                $keyId = $newSourceControl->provider()->deployKey(
-                    $site->getDeployKeyName(),
-                    $site->repository,
-                    $site->ssh_key,
-                );
-                $site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
-            } catch (Throwable $e) {
-                Log::warning('Failed to re-deploy SSH key after source control update', [
-                    'site_id' => $site->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        $newRepoUrl = $newSourceControl->provider()->fullRepoUrl(
-            $site->repository,
-            $site->getSshKeyName()
-        );
-
+        $remoteUpdated = true;
         try {
             app(Git::class)->setRemote($site, $newRepoUrl);
         } catch (SSHError $e) {
+            $remoteUpdated = false;
             Log::warning('Failed to rewrite remote URL after source-control swap', [
                 'site_id' => $site->id,
                 'error' => $e->getMessage(),
+            ]);
+        }
+
+        if ($remoteUpdated && ! $reuseOldDeployKey && $oldDeployKeyId !== null && $oldSourceControl) {
+            $this->removeOldDeployKey($site, $oldSourceControl, (string) $oldDeployKeyId);
+        }
+    }
+
+    private function registerDeployKey(Site $site, SourceControl $sourceControl): ?string
+    {
+        if (! $site->ssh_key || ! $site->repository || $sourceControl->isGithubApp()) {
+            return null;
+        }
+
+        try {
+            $keyId = $sourceControl->provider()->deployKey(
+                $site->getDeployKeyName(),
+                $site->repository,
+                $site->ssh_key,
+            );
+        } catch (Throwable $e) {
+            Log::warning('Failed to re-deploy SSH key after source control update', [
+                'site_id' => $site->id,
+                'exception' => $e::class,
+            ]);
+
+            throw new FailedToDeployGitKey('Source control provider failed to deploy the key.');
+        }
+
+        if ($keyId === '') {
+            throw new FailedToDeployGitKey('Source control provider did not return a deploy key ID.');
+        }
+
+        return $keyId;
+    }
+
+    private function removeOldDeployKey(Site $site, SourceControl $sourceControl, string $keyId): void
+    {
+        try {
+            $sourceControl->provider()->deleteDeployKey($keyId, $site->repository);
+        } catch (Throwable $e) {
+            Log::warning('Failed to remove old deploy key during source control update', [
+                'site_id' => $site->id,
+                'deploy_key_id' => $keyId,
+                'exception' => $e::class,
+            ]);
+        }
+    }
+
+    private function removeRegisteredDeployKey(Site $site, SourceControl $sourceControl, ?string $keyId): void
+    {
+        if ($keyId === null) {
+            return;
+        }
+
+        try {
+            $sourceControl->provider()->deleteDeployKey($keyId, $site->repository);
+        } catch (Throwable $e) {
+            Log::warning('Failed to remove new deploy key after source control update failed', [
+                'site_id' => $site->id,
+                'deploy_key_id' => $keyId,
+                'exception' => $e::class,
             ]);
         }
     }
