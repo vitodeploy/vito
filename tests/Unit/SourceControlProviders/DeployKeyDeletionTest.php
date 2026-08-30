@@ -13,19 +13,7 @@ use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
-test('deploy key deletion failures bubble up', function (string $provider, array $attributes, string $endpoint) {
-    Http::fake([
-        'https://bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'test'], 200),
-        $endpoint => Http::response([], 401),
-    ]);
-
-    $sourceControl = SourceControl::factory()->create($attributes);
-    /** @var SourceControlProvider $handler */
-    $handler = new $provider($sourceControl);
-
-    expect(fn () => $handler->deleteDeployKey('123', 'organization/repository'))
-        ->toThrow(FailedToDeleteDeployKey::class);
-})->with([
+dataset('deployKeyDeletionProviders', [
     'github' => [
         Github::class,
         ['provider' => Github::id()],
@@ -58,6 +46,34 @@ test('deploy key deletion failures bubble up', function (string $provider, array
         'https://api.bitbucket.org/2.0/repositories/*/deploy-keys/123',
     ],
 ]);
+
+test('deploy key deletion failures bubble up', function (string $provider, array $attributes, string $endpoint) {
+    Http::fake([
+        'https://bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'test'], 200),
+        $endpoint => Http::response([], 401),
+    ]);
+
+    $sourceControl = SourceControl::factory()->create($attributes);
+    /** @var SourceControlProvider $handler */
+    $handler = new $provider($sourceControl);
+
+    expect(fn () => $handler->deleteDeployKey('123', 'organization/repository'))
+        ->toThrow(FailedToDeleteDeployKey::class);
+})->with('deployKeyDeletionProviders');
+
+test('deploy key deletion connection failures bubble up', function (string $provider, array $attributes, string $endpoint) {
+    Http::fake([
+        'https://bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'test'], 200),
+        $endpoint => Http::failedConnection(),
+    ]);
+
+    $sourceControl = SourceControl::factory()->create($attributes);
+    /** @var SourceControlProvider $handler */
+    $handler = new $provider($sourceControl);
+
+    expect(fn () => $handler->deleteDeployKey('123', 'organization/repository'))
+        ->toThrow(FailedToDeleteDeployKey::class);
+})->with('deployKeyDeletionProviders');
 
 test('missing deploy key is already deleted', function () {
     Http::fake([
