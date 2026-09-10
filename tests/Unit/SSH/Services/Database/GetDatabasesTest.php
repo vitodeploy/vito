@@ -75,5 +75,15 @@ dataset('data', function () {
                 (3 rows)
                 EOD
         ],
+        [
+            'clickhouse',
+            '24.8',
+            <<<'EOD'
+                database_name	charset	collation
+                system	UTF-8	utf8
+                information_schema	UTF-8	utf8
+                vito	UTF-8	utf8
+                EOD
+        ],
     ];
 });

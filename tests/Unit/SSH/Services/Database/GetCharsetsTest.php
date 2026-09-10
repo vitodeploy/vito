@@ -178,5 +178,21 @@ dataset('data', function () {
                 ],
             ],
         ],
+        [
+            'clickhouse',
+            '24.8',
+            <<<'EOD'
+                Collation	Charset	Id	Default
+                utf8	UTF-8	1	Yes
+                EOD,
+            [
+                'UTF-8' => [
+                    'default' => 'utf8',
+                    'list' => [
+                        'utf8',
+                    ],
+                ],
+            ],
+        ],
     ];
 });
