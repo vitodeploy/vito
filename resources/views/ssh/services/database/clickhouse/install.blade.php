@@ -43,8 +43,8 @@ echo "deb [signed-by=${CLICKHOUSE_KEYRING} arch=${ARCH}] https://packages.clickh
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 
-if ! sudo DEBIAN_FRONTEND=noninteractive apt-get install -y clickhouse-server={{ $version }}.* clickhouse-client={{ $version }}.* 2>/dev/null; then
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y clickhouse-server clickhouse-client
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get install -y clickhouse-server={{ $version }}.* clickhouse-client={{ $version }}.*; then
+    echo "VITO_SSH_ERROR: requested ClickHouse version {{ $version }} is unavailable" && exit 1
 fi
 
 sudo mkdir -p /etc/clickhouse-server/users.d

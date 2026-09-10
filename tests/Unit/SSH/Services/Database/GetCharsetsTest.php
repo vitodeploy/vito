@@ -183,10 +183,10 @@ dataset('data', function () {
             '24.8',
             <<<'EOD'
                 Collation	Charset	Id	Default
-                utf8	UTF-8	1	Yes
+                utf8	UTF8	1	Yes
                 EOD,
             [
-                'UTF-8' => [
+                'UTF8' => [
                     'default' => 'utf8',
                     'list' => [
                         'utf8',

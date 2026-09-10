@@ -1,1 +1,1 @@
-printf "Collation\tCharset\tId\tDefault\nutf8\tUTF-8\t1\tYes\n"
+printf "Collation\tCharset\tId\tDefault\nutf8\tUTF8\t1\tYes\n"

@@ -1,5 +1,5 @@
 @if ($newPassword)
-if ! sudo clickhouse-client -q "ALTER USER \`{{ $username }}\` IDENTIFIED WITH sha256_password BY '{{ $newPassword }}';"; then
+if ! sudo clickhouse-client -q {!! escapeshellarg("ALTER USER `" . str_replace('`', '``', $username) . "` IDENTIFIED WITH sha256_hash BY '" . hash('sha256', $newPassword) . "';") !!}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @endif

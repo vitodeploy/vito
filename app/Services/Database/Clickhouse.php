@@ -19,7 +19,7 @@ class Clickhouse extends AbstractDatabase implements HasLogs, SupportsNetworking
 
     protected array $systemUsers = ['default'];
 
-    protected string $defaultCharset = 'UTF-8';
+    protected string $defaultCharset = 'UTF8';
 
     protected int $headerLines = 1;
 

@@ -57,3 +57,8 @@ test('clickhouse is registered in service configs', function () {
         ->and($services['clickhouse']['type'])->toBe('database')
         ->and($services['clickhouse']['versions'])->toContain('24.8', '24.3', '23.8');
 });
+
+test('default charset is UTF8', function () {
+    $ref = new ReflectionProperty(Clickhouse::class, 'defaultCharset');
+    expect($ref->getValue($this->clickhouse))->toBe('UTF8');
+});
