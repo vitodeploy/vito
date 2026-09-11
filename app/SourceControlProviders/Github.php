@@ -2,6 +2,7 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -198,7 +199,7 @@ class Github extends AbstractSourceControlProvider
                 ]);
 
             if ($response->status() !== 201) {
-                throw new FailedToDeployGitKey($response->body());
+                throw new FailedToDeployGitKey('GitHub rejected the deploy key.');
             }
 
             return $response->json()['id'] ?? '';
@@ -207,10 +208,10 @@ class Github extends AbstractSourceControlProvider
             Log::error('Failed to deploy GitHub key', [
                 'repo' => $repo,
                 'title' => $title,
-                'error' => $e->getMessage(),
+                'exception' => $e::class,
             ]);
 
-            throw new FailedToDeployGitKey($e->getMessage());
+            throw new FailedToDeployGitKey('Failed to deploy GitHub key.');
         }
     }
 
@@ -219,21 +220,12 @@ class Github extends AbstractSourceControlProvider
         try {
             $response = $this->getClient()
                 ->delete(self::API_BASE_URL."/repos/$repo/keys/$keyId");
+        } catch (Throwable) {
+            throw new FailedToDeleteDeployKey('Failed to delete GitHub deploy key.');
+        }
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete GitHub deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
-            }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting GitHub deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        if (! $response->successful() && $response->status() !== 404) {
+            throw new FailedToDeleteDeployKey('Failed to delete GitHub deploy key.');
         }
     }
 

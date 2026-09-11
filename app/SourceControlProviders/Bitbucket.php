@@ -2,12 +2,12 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -163,12 +163,12 @@ class Bitbucket extends AbstractSourceControlProvider
             );
 
             if ($res->status() != 200) {
-                throw new FailedToDeployGitKey($res->json()['error']['message']);
+                throw new FailedToDeployGitKey('Bitbucket rejected the deploy key.');
             }
 
             return $res->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
+        } catch (Exception) {
+            throw new FailedToDeployGitKey('Failed to deploy Bitbucket key.');
         }
     }
 
@@ -177,21 +177,12 @@ class Bitbucket extends AbstractSourceControlProvider
         try {
             $response = Http::withHeaders($this->getAuthenticationHeaders())
                 ->delete($this->apiUrl."/repositories/$repo/deploy-keys/$keyId");
+        } catch (Throwable) {
+            throw new FailedToDeleteDeployKey('Failed to delete Bitbucket deploy key.');
+        }
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Bitbucket deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
-            }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Bitbucket deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        if (! $response->successful() && $response->status() !== 404) {
+            throw new FailedToDeleteDeployKey('Failed to delete Bitbucket deploy key.');
         }
     }
 

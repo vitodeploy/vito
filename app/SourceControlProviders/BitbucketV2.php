@@ -2,6 +2,7 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -258,14 +259,12 @@ class BitbucketV2 extends AbstractSourceControlProvider
             );
 
             if ($res->status() !== 200) {
-                $errorBody = $res->json();
-                $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $res->body();
-                throw new FailedToDeployGitKey($errorMessage);
+                throw new FailedToDeployGitKey('Bitbucket rejected the deploy key.');
             }
 
             return $res->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
+        } catch (Exception) {
+            throw new FailedToDeployGitKey('Failed to deploy Bitbucket key.');
         }
     }
 
@@ -274,21 +273,12 @@ class BitbucketV2 extends AbstractSourceControlProvider
         try {
             $response = Http::withHeaders($this->getAuthenticationHeaders())
                 ->delete($this->apiUrl."/repositories/$repo/deploy-keys/$keyId");
+        } catch (Throwable) {
+            throw new FailedToDeleteDeployKey('Failed to delete Bitbucket deploy key.');
+        }
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Bitbucket deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
-            }
-
-        } catch (Exception $e) {
-            Log::error('Error deleting Bitbucket deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        if (! $response->successful() && $response->status() !== 404) {
+            throw new FailedToDeleteDeployKey('Failed to delete Bitbucket deploy key.');
         }
     }
 
