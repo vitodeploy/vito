@@ -448,5 +448,10 @@ dataset('installData', function () {
             'database',
             '16',
         ],
+        [
+            'clickhouse',
+            'database',
+            '24.8',
+        ],
     ];
 });

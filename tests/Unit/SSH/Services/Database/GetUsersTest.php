@@ -72,5 +72,14 @@ dataset('data', function () {
                 (2 rows)
                 EOD
         ],
+        [
+            'clickhouse',
+            '24.8',
+            <<<'EOD'
+                User	Host	Privileges
+                default		mydb,testdb
+                vito		mydb,testdb
+                EOD
+        ],
     ];
 });
