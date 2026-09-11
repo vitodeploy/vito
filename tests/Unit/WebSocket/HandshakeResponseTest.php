@@ -2,14 +2,28 @@
 
 use App\WebSocket\HandshakeResponseFactory;
 use GuzzleHttp\Psr7\Request as PsrRequest;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
+
+uses(RefreshDatabase::class);
 
 test('scalar header values are accepted despite psr7 strict validation', function () {
     $response = (new HandshakeResponseFactory)->createResponse();
 
     expect($response->withHeader('Sec-WebSocket-Version', 13)->getHeaderLine('Sec-WebSocket-Version'))
         ->toBe('13');
+});
+
+/**
+ * `withAddedHeader()` needs the same treatment as `withHeader()`: Ratchet appends
+ * `Sec-WebSocket-Extensions` through it when permessage-deflate is negotiated.
+ */
+test('scalar values appended to an existing header are stringified too', function () {
+    $response = (new HandshakeResponseFactory)->createResponse()->withHeader('Sec-WebSocket-Version', 13);
+
+    expect($response->withAddedHeader('Sec-WebSocket-Version', 8)->getHeaderLine('Sec-WebSocket-Version'))
+        ->toBe('13, 8');
 });
 
 /**
