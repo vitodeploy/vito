@@ -171,14 +171,14 @@ class Server extends AbstractModel
                 $server->workers()->delete();
                 $server->daemons()->delete();
                 $server->sshKeys()->detach();
+                if ($server->deleteFromProvider) {
+                    $server->provider()->delete();
+                }
                 if (File::exists($server->sshKey()['public_key_path'])) {
                     File::delete($server->sshKey()['public_key_path']);
                 }
                 if (File::exists($server->sshKey()['private_key_path'])) {
                     File::delete($server->sshKey()['private_key_path']);
-                }
-                if ($server->deleteFromProvider) {
-                    $server->provider()->delete();
                 }
                 DB::commit();
             } catch (Throwable $e) {

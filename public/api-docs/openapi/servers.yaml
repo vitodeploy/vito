@@ -76,7 +76,7 @@ paths:
               properties:
                 provider:
                   type: string
-                  enum: ['custom', 'aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  enum: ['custom', 'aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr']
                   description: Server provider type
                   example: 'digitalocean'
                 name:

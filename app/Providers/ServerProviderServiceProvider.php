@@ -9,6 +9,7 @@ use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
+use App\ServerProviders\Lightsail;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,7 @@ class ServerProviderServiceProvider extends ServiceProvider
     {
         $this->custom();
         $this->aws();
+        $this->lightsail();
         $this->hetzner();
         $this->digitalOcean();
         $this->linode();
@@ -49,6 +51,25 @@ class ServerProviderServiceProvider extends ServiceProvider
                     DynamicField::make('secret')
                         ->text()
                         ->label('Secret'),
+                ])
+            )
+            ->defaultUser('ubuntu')
+            ->register();
+    }
+
+    private function lightsail(): void
+    {
+        RegisterServerProvider::make(Lightsail::id())
+            ->label('AWS Lightsail')
+            ->handler(Lightsail::class)
+            ->form(
+                DynamicForm::make([
+                    DynamicField::make('key')
+                        ->text()
+                        ->label('Access Key'),
+                    DynamicField::make('secret')
+                        ->password()
+                        ->label('Secret Access Key'),
                 ])
             )
             ->defaultUser('ubuntu')
