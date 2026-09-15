@@ -118,6 +118,14 @@ export interface Configs {
     installed: boolean;
   };
   tooling: ToolingDescriptor[];
+  script_event_hooks: {
+    events: Array<{
+      value: string;
+      label: string;
+      color: string;
+      variables: string[];
+    }>;
+  };
 
   [key: string]: unknown;
 }

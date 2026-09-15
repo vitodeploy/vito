@@ -4,6 +4,7 @@ namespace App\Jobs\Service;
 
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
+use App\Events\ServiceInstalledEvent;
 use App\Events\SocketEvent;
 use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
@@ -37,6 +38,7 @@ class InstallJob implements ShouldQueue
 
             $this->service->save();
             $this->broadcastServiceUpdate('service.updated');
+            ServiceInstalledEvent::dispatch($this->service);
             Log::info("Service ID {$this->service->id} installed successfully");
             $succeeded = true;
         });

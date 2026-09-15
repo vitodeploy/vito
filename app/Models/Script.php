@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
  * @property User $user
  * @property ?int $project_id
  * @property ?Project $project
+ * @property Collection<int, ScriptEventHook> $hooks
  */
 class Script extends AbstractModel
 {
@@ -92,6 +93,14 @@ class Script extends AbstractModel
     public function lastExecution(): HasOne
     {
         return $this->hasOne(ScriptExecution::class)->latest();
+    }
+
+    /**
+     * @return HasMany<ScriptEventHook, covariant $this>
+     */
+    public function hooks(): HasMany
+    {
+        return $this->hasMany(ScriptEventHook::class);
     }
 
     /**

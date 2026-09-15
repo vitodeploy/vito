@@ -2,6 +2,7 @@
 
 namespace App\Actions\Server;
 
+use App\Events\ServerDeletedEvent;
 use App\Models\Server;
 use App\ServerProviders\Custom;
 use Illuminate\Support\Facades\Validator;
@@ -23,7 +24,14 @@ class DeleteServer
             $server->deleteFromProvider = filter_var($input['delete_from_provider'], FILTER_VALIDATE_BOOLEAN);
         }
 
+        $serverId = $server->id;
+        $serverName = $server->name;
+        $serverIp = $server->ip;
+        $projectId = $server->project_id;
+
         $server->delete();
+
+        ServerDeletedEvent::dispatch($serverId, $serverName, $serverIp, $projectId);
     }
 
     /**

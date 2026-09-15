@@ -5,6 +5,7 @@ namespace App\Actions\Server;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Events\ServerInstalledEvent;
 use App\Events\SocketEvent;
 use App\Exceptions\SSHConnectionError;
 use App\Exceptions\SSHError;
@@ -62,6 +63,7 @@ class InstallServer
         ]);
         dispatch(new RefreshServerIpsJob($this->server))->onQueue('ssh');
         Notifier::send($this->server, new ServerInstallationSucceed($this->server));
+        ServerInstalledEvent::dispatch($this->server);
     }
 
     /**
