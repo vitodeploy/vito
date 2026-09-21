@@ -440,6 +440,85 @@ test('postgresql networking details', function () {
     SSH::assertNotExecutedContains('SHOW listen_addresses');
 });
 
+test('enable clickhouse networking', function () {
+    $this->actingAs($this->user);
+
+    $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('clickhouse', '24.8');
+
+    SSH::fake("Active: active\n0.0.0.0");
+
+    $this->postJson(route('services.networking.enable', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]))->assertNoContent();
+
+    $service->refresh();
+
+    expect($service->type_data['networking'])->toBeTrue();
+    expect($service->status)->toEqual(ServiceStatus::READY);
+    expect($service->secret)->toBeNull();
+
+    SSH::assertExecutedContains('sudo mkdir -p /etc/clickhouse-server/config.d');
+    SSH::assertExecutedContains('sudo cp /etc/clickhouse-server/config.d/zz-vito-networking.xml /etc/clickhouse-server/config.d/zz-vito-networking.xml.vito.bak');
+    SSH::assertExecutedContains('printf \'<clickhouse>\n    <listen_host>%s</listen_host>\n</clickhouse>\n\' \'0.0.0.0\' | sudo tee /etc/clickhouse-server/config.d/zz-vito-networking.xml > /dev/null');
+    SSH::assertExecutedContains('sudo systemctl restart clickhouse-server');
+    SSH::assertExecutedContains('timeout 10 sudo clickhouse-client -q "SELECT value FROM system.server_settings WHERE name = \'listen_host\'"');
+    SSH::assertNotExecutedContains('.vito.bak /etc/clickhouse-server/config.d/zz-vito-networking.xml');
+});
+
+test('disable clickhouse networking', function () {
+    $this->actingAs($this->user);
+
+    $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('clickhouse', '24.8');
+    $service->type_data = ['networking' => true];
+    $service->save();
+
+    SSH::fake("Active: active\n127.0.0.1");
+
+    $this->postJson(route('services.networking.disable', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]))->assertNoContent();
+
+    $service->refresh();
+
+    expect($service->type_data['networking'])->toBeFalse();
+    expect($service->status)->toEqual(ServiceStatus::READY);
+
+    SSH::assertExecutedContains('printf \'<clickhouse>\n    <listen_host>%s</listen_host>\n</clickhouse>\n\' \'127.0.0.1\' | sudo tee /etc/clickhouse-server/config.d/zz-vito-networking.xml > /dev/null');
+    SSH::assertExecutedContains('sudo systemctl restart clickhouse-server');
+    SSH::assertNotExecutedContains('0.0.0.0');
+});
+
+test('clickhouse networking details', function () {
+    $this->actingAs($this->user);
+
+    $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('clickhouse', '24.8');
+    $service->type_data = [
+        'networking' => true,
+        'networking_effective' => false,
+        'networking_checked_at' => '2026-07-26T12:00:00+00:00',
+    ];
+    $service->save();
+
+    SSH::fake();
+
+    $this->getJson(route('services.networking', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]))
+        ->assertOk()
+        ->assertJson([
+            'supported' => true,
+            'pending' => false,
+            'enabled' => true,
+            'effective' => false,
+            'checked_at' => '2026-07-26T12:00:00+00:00',
+            'port' => 9000,
+            'requires_remote_users' => false,
+        ]);
+});
+
 test('resource supports networking', function (string $name, string $version) {
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService($name, $version);
 
@@ -470,5 +549,6 @@ dataset('databases', function () {
         ['mysql', '8.4'],
         ['mariadb', '11.4'],
         ['postgresql', '16'],
+        ['clickhouse', '24.8'],
     ];
 });

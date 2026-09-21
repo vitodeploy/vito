@@ -24,7 +24,7 @@ return [
         'syslog', 'messagebus', '_apt', 'sshd', 'tcpdump', 'tss', 'landscape',
         'pollinate', 'fwupd-refresh', 'mysql', 'postgres', 'redis', 'mongodb',
         'memcached', 'rabbitmq', 'nginx', 'apache', 'caddy', 'ubuntu', 'debian',
-        'admin', 'administrator', 'vito',
+        'admin', 'administrator', 'vito', 'clickhouse',
     ],
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),

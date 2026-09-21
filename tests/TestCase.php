@@ -49,6 +49,7 @@ abstract class TestCase extends BaseTestCase
         config()->set('queue.connections.ssh.driver', 'sync');
         config()->set('queue.connections.default.driver', 'sync');
         config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'.$this->parallelToken()));
+        File::ensureDirectoryExists(storage_path('app/key-pairs-test'.$this->parallelToken()));
 
         $this->user = User::factory()->create();
         $this->user->ensureHasDefaultProject();

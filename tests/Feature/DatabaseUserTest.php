@@ -6,6 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Services\Database\Clickhouse;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -544,6 +545,28 @@ test('database users index hides host column for postgresql', function () {
     $this->actingAs($this->user);
 
     vitoPestFeatureDatabaseUserTestUsePostgresql();
+
+    $this->get(route('database-users', $this->server))
+        ->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('database-users/index')
+            ->where('databaseUsers.columns', fn ($columns) => collect($columns)->doesntContain(
+                fn ($column) => ($column['name'] ?? null) === 'host' && empty($column['hidden'])
+            ))
+        );
+});
+
+test('database users index hides host column for clickhouse', function () {
+    $this->actingAs($this->user);
+
+    $this->server->services()->where('type', Mysql::type())->delete();
+    $this->server->services()->create([
+        'type' => Clickhouse::type(),
+        'name' => Clickhouse::id(),
+        'version' => '24.8',
+        'status' => ServiceStatus::READY,
+    ]);
+    $this->server->refresh();
 
     $this->get(route('database-users', $this->server))
         ->assertSuccessful()
