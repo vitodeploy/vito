@@ -11,6 +11,7 @@ A connected provider is also used to discover the private networks your servers 
 ## Supported Providers
 
 - AWS
+- AWS Lightsail
 - Akamai (Linode)
 - Digital Ocean
 - Vultr
@@ -25,6 +26,32 @@ Here you can see the required permissions for each provider's API Keys.
 
 - AWS IAM users must have Programmatic API Access.
 - AWS IAM users need to belong to a group with the `AmazonEC2FullAccess` managed policies.
+
+### AWS Lightsail
+
+Connect **AWS Lightsail** with an IAM access key ID and secret access key. This is a separate connection from the AWS (EC2) provider.
+
+The IAM identity needs these permissions in the regions you use:
+
+- `lightsail:GetRegions`
+- `lightsail:GetBundles`
+- `lightsail:GetBlueprints`
+- `lightsail:ImportKeyPair`
+- `lightsail:CreateInstances`
+- `lightsail:GetInstance`
+- `lightsail:PutInstancePublicPorts`
+- `lightsail:DeleteInstance`
+- `lightsail:DeleteKeyPair`
+
+Allow `GetRegions` in `us-east-1` as well, because Vito uses it to verify the connection and list regions. See the [AWS Lightsail permissions reference](https://docs.aws.amazon.com/service-authorization/latest/reference/list_lightsail.html) for resource-level restrictions.
+
+When creating a server, select the connected profile, region, plan, and Ubuntu version. Vito retrieves active Linux plans with public IPv4 addresses and selects an available Ubuntu image and availability zone. If AWS no longer offers the selected Ubuntu version, creation returns an error before allocating resources.
+
+Vito creates an RSA SSH key for each instance and connects initially as `ubuntu`. The Lightsail firewall allows inbound traffic so that you can manage access through Vito's server firewall; include the firewall service when provisioning. Deleting a server with **Delete from provider** selected also removes its Lightsail instance and imported SSH key. Leaving that option off keeps both resources in AWS.
+
+The instance uses its assigned public IPv4 address. Lightsail can change this address after a stop/start; automatic static IP allocation and provider private-network discovery are not included.
+
+For the existing API, use `provider: "lightsail"` and send `key` and `secret` as top-level request fields when connecting a provider.
 
 ### Linode
 

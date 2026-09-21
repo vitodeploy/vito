@@ -50,7 +50,6 @@ paths:
               required:
                 - name
                 - provider
-                - credentials
               properties:
                 name:
                   type: string
@@ -58,14 +57,21 @@ paths:
                   example: 'DigitalOcean'
                 provider:
                   type: string
-                  enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  enum: ['aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr']
                   description: Server provider type
                   example: 'digitalocean'
-                credentials:
-                  type: object
-                  description: Provider-specific credentials
-                  example:
-                    token: 'dop_v1_xxxxxxxxxxxx'
+                token:
+                  type: string
+                  writeOnly: true
+                  description: API token (required for Hetzner, DigitalOcean, Linode, and Vultr)
+                key:
+                  type: string
+                  writeOnly: true
+                  description: Access key ID (required for AWS and AWS Lightsail)
+                secret:
+                  type: string
+                  writeOnly: true
+                  description: Secret access key (required for AWS and AWS Lightsail)
                 global:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
