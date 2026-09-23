@@ -2,6 +2,7 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -218,12 +219,12 @@ class Gitea extends AbstractSourceControlProvider
             );
 
             if ($response->status() != 201) {
-                throw new FailedToDeployGitKey($response->body());
+                throw new FailedToDeployGitKey('Gitea rejected the deploy key.');
             }
 
             return $response->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
+        } catch (Exception) {
+            throw new FailedToDeployGitKey('Failed to deploy Gitea key.');
         }
     }
 
@@ -233,21 +234,12 @@ class Gitea extends AbstractSourceControlProvider
             $response = Http::withToken($this->data()['token'])->delete(
                 $this->getApiUrl().'/repos/'.$repo.'/keys/'.$keyId
             );
+        } catch (Throwable) {
+            throw new FailedToDeleteDeployKey('Failed to delete Gitea deploy key.');
+        }
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Gitea deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
-            }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Gitea deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        if (! $response->successful() && $response->status() !== 404) {
+            throw new FailedToDeleteDeployKey('Failed to delete Gitea deploy key.');
         }
     }
 
