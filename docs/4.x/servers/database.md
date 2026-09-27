@@ -19,6 +19,10 @@ link users to databases.
 - PostgreSQL 17
 - PostgreSQL 18
 
+:::info
+MariaDB 10.11 and 11.4 are not available on Ubuntu 26.04.
+:::
+
 ## Install database service
 
 To install a database, you can select the database type and version during the server creation.

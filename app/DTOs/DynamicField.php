@@ -90,6 +90,17 @@ class DynamicField
     public function guide(array $steps): self
     {
         $this->type = 'guide';
+
+        return $this->withGuide($steps);
+    }
+
+    /**
+     * Adds a button inside the input that opens a step-by-step guide.
+     *
+     * @param  array<int, array{title: string, description?: string, code?: string}>  $steps
+     */
+    public function withGuide(array $steps): self
+    {
         $this->componentProps = ['steps' => $steps];
 
         return $this;

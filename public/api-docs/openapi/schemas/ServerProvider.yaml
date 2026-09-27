@@ -20,6 +20,15 @@ properties:
   provider:
     type: string
     example: 'digitalocean'
+  editable_data:
+    type: object
+    additionalProperties: true
+    description: 'Non-sensitive provider credentials that can be edited (currently the Proxmox template VM IDs). Secrets are never included. The object is empty unless the provider supports editing and the caller owns it and, for API tokens, the token also carries the write ability.'
+    example:
+      template_ubuntu_20: null
+      template_ubuntu_22: null
+      template_ubuntu_24: 9024
+      template_ubuntu_26: 9026
   created_at:
     type: string
     format: date-time

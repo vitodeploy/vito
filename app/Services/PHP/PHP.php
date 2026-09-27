@@ -69,6 +69,7 @@ class PHP extends AbstractService implements HasLogs
                 view('ssh.services.php.install-php', [
                     'version' => $this->service->version,
                     'user' => $server->getSshUser(),
+                    'useSury' => $this->usesSuryRepository(),
                 ]),
                 'install-php-'.$this->service->version
             );
@@ -229,5 +230,14 @@ class PHP extends AbstractService implements HasLogs
         }
 
         return $logs;
+    }
+
+    /**
+     * Ondřej's Launchpad PPA stops at Ubuntu 24.04; later releases get PHP from
+     * its successor, packages.sury.org.
+     */
+    private function usesSuryRepository(): bool
+    {
+        return version_compare($this->service->server->os->getVersion(), '26.04', '>=');
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OperatingSystem;
 use App\Enums\PHPIniType;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
@@ -29,6 +30,32 @@ test('install does not install global composer', function () {
     Event::assertDispatched('service.installed');
     SSH::assertNotExecutedContains('getcomposer.org');
 });
+
+test('install uses the php repository for the server os', function (OperatingSystem $os, string $repository, string $otherRepository) {
+    SSH::fake();
+    Event::fake();
+
+    $this->server->update(['os' => $os]);
+
+    $php = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'type' => 'php',
+        'type_data' => [
+            'extensions' => [],
+        ],
+        'name' => 'php',
+        'version' => '8.4',
+        'status' => ServiceStatus::READY,
+    ]);
+
+    $php->handler()->install();
+
+    SSH::assertExecutedContains($repository);
+    SSH::assertNotExecutedContains($otherRepository);
+})->with([
+    'ubuntu 24' => [OperatingSystem::UBUNTU24, 'ppa:ondrej/php', 'packages.sury.org'],
+    'ubuntu 26' => [OperatingSystem::UBUNTU26, 'https://packages.sury.org/php/', 'ppa:ondrej/php'],
+]);
 
 test('change default php cli', function () {
     SSH::fake();

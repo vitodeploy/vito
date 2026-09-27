@@ -12,13 +12,14 @@ use Closure;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class Proxmox extends AbstractProvider
+class Proxmox extends AbstractProvider implements HasEditableCredentials
 {
     /**
      * Memory and disk are in GiB.
@@ -108,10 +109,41 @@ class Proxmox extends AbstractProvider
         ];
 
         foreach (self::templateFields() as $field) {
-            $data[$field] = empty($input[$field]) ? null : (int) $input[$field];
+            $data[$field] = self::templateVmid($input[$field] ?? null);
         }
 
         return $data;
+    }
+
+    public function editableData(): array
+    {
+        return collect(self::templateFields())
+            ->mapWithKeys(fn (string $field): array => [$field => $this->serverProvider->credentials[$field] ?? null])
+            ->all();
+    }
+
+    public function editRules(array $input): array
+    {
+        return Arr::only($this->credentialValidationRules($input), self::templateFields());
+    }
+
+    public function editCredentials(array $input): array
+    {
+        $credentials = $this->serverProvider->credentials;
+
+        foreach (self::templateFields() as $field) {
+            if (! array_key_exists($field, $input)) {
+                continue;
+            }
+
+            $vmid = self::templateVmid($input[$field]);
+
+            if ($vmid !== ($credentials[$field] ?? null)) {
+                $credentials[$field] = $vmid;
+            }
+        }
+
+        return $credentials;
     }
 
     public function data(array $input): array
@@ -584,6 +616,11 @@ class Proxmox extends AbstractProvider
         $parts = parse_url($url);
 
         return 'https://'.($parts['host'] ?? '').(isset($parts['port']) ? ':'.$parts['port'] : '');
+    }
+
+    private static function templateVmid(mixed $value): ?int
+    {
+        return empty($value) ? null : (int) $value;
     }
 
     private function errorMessage(Response $response): string

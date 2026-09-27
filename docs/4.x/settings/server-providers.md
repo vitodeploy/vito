@@ -123,7 +123,7 @@ qm set 9000 --ide2 local-lvm:cloudinit --boot order=scsi0 --serial0 socket --vga
 qm template 9000
 ```
 
-Change `9000` to any free VM ID, `vmbr0` to the bridge your servers should use, and `local-lvm` to your storage. Every server copies the template's network device, including its VLAN tag. For another Ubuntu version, repeat the commands with a different VM ID and replace `noble` with `jammy` (22.04) or `focal` (20.04).
+Change `9000` to any free VM ID, `vmbr0` to the bridge your servers should use, and `local-lvm` to your storage. Every server copies the template's network device, including its VLAN tag. For another Ubuntu version, repeat the commands with a different VM ID and replace `noble` with `resolute` (26.04), `jammy` (22.04) or `focal` (20.04).
 
 To check a template, run `qm config 9000`. The output should include `template: 1` and a cloud-init drive such as `ide2: local-lvm:vm-9000-cloudinit,media=cdrom`.
 
@@ -146,7 +146,9 @@ Build templates from Ubuntu's **cloud images**, as above. A VM installed from an
 | **Ubuntu … Template** | The VM ID of your template for each Ubuntu version. Leave the versions you don't use empty; at least one is required. |
 | **Verify SSL certificate** | Turn this off if Proxmox still uses its default self-signed certificate. |
 
-When you connect, Vito checks that each mapped VM ID exists, is a QEMU template and has a cloud-init drive. The connection form also has a **View guide** button with the commands above, ready to copy.
+When you connect, Vito checks that each mapped VM ID exists, is a QEMU template and has a cloud-init drive. Each **Ubuntu … Template** field has a guide button with the commands for that Ubuntu version, ready to copy.
+
+To add or change templates later, choose **Edit** on the connection. When a template changes, Vito checks all the mapped templates again before saving.
 
 #### Creating servers on Proxmox
 
@@ -185,7 +187,7 @@ If your server provider is not listed here, you can use the `Custom` provider wh
 
 Your server must have the following requirements so Vito can provision it:
 
-- The server must be running a fresh installation of Ubuntu 20.04, 22.04, or 24.04 x64.
+- The server must be running a fresh installation of Ubuntu 20.04, 22.04, 24.04, or 26.04 x64.
 - The server must be accessible externally over the Internet.
 - The server must have root SSH access enabled.
 - The server requirements should meet the following criteria or more: 1 CPU Core with 1GHz, 1GB RAM, and 10GB Disk space.

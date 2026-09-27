@@ -34,6 +34,8 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
   const defaultLabel = config.name.replaceAll('_', ' ');
   const label = config?.label || defaultLabel;
   const [initialValue, setInitialValue] = useState(false);
+  const openGuide = (steps: SetupGuideStep[], description?: string) =>
+    useDialogStore.getState().openNested('setupGuide', { title: label, description, steps });
 
   if (value === undefined || value === null) {
     value = config?.default ?? '';
@@ -82,13 +84,7 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
               variant="outline"
               size="sm"
               className="shrink-0"
-              onClick={() =>
-                useDialogStore.getState().open('setupGuide', {
-                  title: label,
-                  description: config.description,
-                  steps: (config.componentProps?.steps ?? []) as SetupGuideStep[],
-                })
-              }
+              onClick={() => openGuide((config.componentProps?.steps ?? []) as SetupGuideStep[], config.description)}
             >
               View guide
             </Button>
@@ -225,20 +221,39 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
   if (config?.placeholder) {
     props.placeholder = config.placeholder;
   }
+  const guideSteps = config.componentProps?.steps as SetupGuideStep[] | undefined;
+  const input = (
+    <Input
+      type="text"
+      name={config.name}
+      id={`field-${config.name}`}
+      defaultValue={(value as string) || ''}
+      onChange={(e) => onChange(e.target.value)}
+      className={guideSteps ? 'pr-10' : undefined}
+      {...props}
+    />
+  );
 
   return (
     <FormField>
       <Label htmlFor={`field-${config.name}`} className="capitalize">
         {label}
       </Label>
-      <Input
-        type="text"
-        name={config.name}
-        id={`field-${config.name}`}
-        defaultValue={(value as string) || ''}
-        onChange={(e) => onChange(e.target.value)}
-        {...props}
-      />
+      {guideSteps ? (
+        <div className="relative">
+          {input}
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"
+            onClick={() => openGuide(guideSteps)}
+            aria-label={`${label} setup guide`}
+          >
+            <BookOpenIcon className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : (
+        input
+      )}
       {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
       <InputError message={error} />
     </FormField>

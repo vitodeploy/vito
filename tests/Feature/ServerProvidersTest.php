@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
@@ -476,6 +477,38 @@ test('linode plans grey classes unsupported by region', function () {
     expect($plans['g1-gpu-rtx6000-1']['available'])->toBeFalse();
     expect($plans['g7-premium-2']['available'])->toBeFalse();
     $this->assertStringNotContainsString('/mo', $plans['g7-premium-2']['label']);
+});
+
+test('server provider without a registered handler can still be renamed', function () {
+    $this->actingAs($this->user);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $this->patch(route('server-providers.update', $serverProvider), [
+        'name' => 'renamed',
+    ])->assertSessionDoesntHaveErrors();
+
+    expect($serverProvider->refresh()->profile)->toBe('renamed');
+});
+
+test('api show survives a server provider with no registered handler', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => 'removed-plugin-provider',
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $this->json('GET', route('api.user.server-providers.show', ['serverProvider' => $serverProvider->id]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', []);
 });
 
 dataset('data', /** @return array<int, array{0: string, 1: array<string, mixed>}> */ function (): array {

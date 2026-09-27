@@ -333,6 +333,15 @@ RegisterServiceType::make(Nginx::id())
     ->register();
 ```
 
+If some versions can't be installed on an operating system, list them with `unavailableVersions()`, keyed by the
+operating system. Vito then rejects those versions on servers running it:
+
+```php
+->unavailableVersions([
+    \App\Enums\OperatingSystem::UBUNTU26->value => ['11.4', '10.11'],
+])
+```
+
 **Service Types:**
 
 Vito already supports multiple service types, and you can create alternatives for them.
@@ -409,7 +418,12 @@ You can register your own server provider using the `boot` method in your `Plugi
 ```
 
 The handler must implement the `App\ServerProviders\ServerProvider` interface or extend the
-`App\ServerProviders\AbstractServerProvider` class.
+`App\ServerProviders\AbstractProvider` class.
+
+To let users change some credentials after connecting, register an edit form with `->editForm(DynamicForm::make([...]))`
+and implement the opt-in `App\ServerProviders\HasEditableCredentials` interface in the handler. Vito merges the changes
+into the stored credentials and calls `connect()` again before saving. Never put secrets in the edit form. To add a
+step-by-step guide button inside a field, use `->withGuide($steps)`.
 
 :::info
 You can find plenty of examples in
