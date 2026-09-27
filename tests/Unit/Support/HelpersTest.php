@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use phpseclib3\Crypt\EC\PrivateKey;
 use phpseclib3\Crypt\PublicKeyLoader;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->keyPath = sys_get_temp_dir().'/vito-test-key-'.uniqid();
@@ -29,7 +32,7 @@ it('generates a key pair the ssh helper can load', function (): void {
 it('fails loudly without leaking the key path when generation fails', function (): void {
     Log::shouldReceive('error')->once();
 
-    $path = '/this-directory-does-not-exist/key';
+    $path = sys_get_temp_dir().'/vito-missing-'.uniqid().'/key';
 
     try {
         generate_key_pair($path);
