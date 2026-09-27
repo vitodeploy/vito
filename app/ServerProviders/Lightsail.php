@@ -14,6 +14,8 @@ use SensitiveParameter;
 
 class Lightsail extends AbstractProvider
 {
+    private const MAX_PAGES = 100;
+
     public static function id(): string
     {
         return 'lightsail';
@@ -218,12 +220,25 @@ class Lightsail extends AbstractProvider
     {
         $items = [];
         $parameters = ['includeInactive' => false];
+        $page = 0;
+        $seenTokens = [];
 
         do {
+            if (++$page > self::MAX_PAGES) {
+                throw new ServerProviderError('AWS Lightsail returned too many pages for '.$operation.'.');
+            }
+
             $result = $this->request($operation, $parameters, $region);
             $items = array_merge($items, $result[$key] ?? []);
             $parameters['pageToken'] = $result['nextPageToken'] ?? null;
-        } while ($parameters['pageToken']);
+
+            if (isset($seenTokens[$parameters['pageToken']])) {
+                throw new ServerProviderError('AWS Lightsail returned an invalid page token for '.$operation.'.');
+            }
+            if ($parameters['pageToken'] !== null) {
+                $seenTokens[$parameters['pageToken']] = true;
+            }
+        } while ($parameters['pageToken'] !== null && $parameters['pageToken'] !== '');
 
         return $items;
     }

@@ -153,6 +153,45 @@ test('lightsail regions and paginated compatible plans use the selected region',
         ->and($this->lightsailProfile->provider()->plans(null))->toBe([]);
 });
 
+test('lightsail stops repeated catalog pagination tokens', function (array $tokens, bool $blueprints) {
+    if ($blueprints) {
+        $this->lightsailHandler->append(
+            new Result($this->lightsailRegions),
+            new Result(['bundles' => [$this->lightsailBundle]]),
+        );
+    }
+    foreach ($tokens as $token) {
+        $this->lightsailHandler->append(new Result(['nextPageToken' => $token]));
+    }
+
+    expect(fn () => $blueprints ? $this->server->provider()->create() : $this->lightsailProfile->provider()->plans('eu-central-1'))
+        ->toThrow(ServerProviderError::class, 'invalid page token');
+    $operations = array_column($this->lightsailCommands, 'name');
+    expect(array_count_values($operations)[$blueprints ? 'GetBlueprints' : 'GetBundles'])->toBe(count($tokens))
+        ->and($operations)->not->toContain('ImportKeyPair', 'CreateInstances');
+})->with([
+    [['next-page', 'next-page']],
+    [['page-a', 'page-b', 'page-a']],
+    [['0', '0']],
+])->with([false, true]);
+
+test('lightsail permits at most one hundred catalog pages', function (bool $hasMore) {
+    for ($page = 1; $page <= 100; $page++) {
+        $this->lightsailHandler->append(new Result([
+            'bundles' => [array_merge($this->lightsailBundle, ['bundleId' => 'plan-'.$page])],
+            'nextPageToken' => $page < 100 || $hasMore ? 'page-'.$page : null,
+        ]));
+    }
+
+    if ($hasMore) {
+        expect(fn () => $this->lightsailProfile->provider()->plans('eu-central-1'))
+            ->toThrow(ServerProviderError::class, 'too many pages');
+    } else {
+        expect($this->lightsailProfile->provider()->plans('eu-central-1'))->toHaveCount(100)->toHaveKeys(['plan-1', 'plan-100']);
+    }
+    expect($this->lightsailCommands)->toHaveCount(100);
+})->with([false, true]);
+
 test('lightsail provisions the selected ubuntu image and queues installation', function (string $os, string $version) {
     $this->actingAs($this->user);
     $this->lightsailHandler->append(
