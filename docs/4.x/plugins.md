@@ -333,6 +333,15 @@ RegisterServiceType::make(Nginx::id())
     ->register();
 ```
 
+If some versions can't be installed on an operating system, list them with `unavailableVersions()`, keyed by the
+operating system. Vito then rejects those versions on servers running it:
+
+```php
+->unavailableVersions([
+    \App\Enums\OperatingSystem::UBUNTU26->value => ['11.4', '10.11'],
+])
+```
+
 **Service Types:**
 
 Vito already supports multiple service types, and you can create alternatives for them.

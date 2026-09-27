@@ -7,6 +7,7 @@ use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
+use App\Jobs\Server\InstallJob;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
@@ -14,10 +15,15 @@ use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\ServerAutoUpdateCompleted;
 use App\ServerProviders\Custom;
+use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
+use App\ServerProviders\Linode;
+use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
@@ -61,6 +67,80 @@ test('create server', function () {
         'name' => 'ufw',
         'version' => 'latest',
         'status' => ServiceStatus::READY,
+    ]);
+
+    SSH::assertExecutedContains('gpg --batch --yes --dearmor -o /etc/apt/keyrings/mise-archive-keyring.gpg');
+});
+
+test('create ubuntu 26 server uses the provider image', function (string $provider, string $endpoint, string $field, int|string $image) {
+    $this->actingAs($this->user);
+
+    Queue::fake();
+    Http::fake([
+        'api.hetzner.cloud/v1/ssh_keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.hetzner.cloud/v1/servers' => Http::response(['server' => ['id' => 1, 'public_net' => ['ipv4' => ['ip' => '1.1.1.1']]]], 201),
+        'api.linode.com/v4/linode/instances' => Http::response(['id' => 1, 'ipv4' => ['1.1.1.1']]),
+        'api.digitalocean.com/v2/account/keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.digitalocean.com/v2/images*' => Http::response(['images' => [
+            ['id' => 24, 'name' => '24.04 (LTS) x64', 'distribution' => 'Ubuntu', 'status' => 'available', 'regions' => ['nyc1']],
+            ['id' => 26, 'name' => '26.04 (LTS) x64', 'distribution' => 'Ubuntu', 'status' => 'available', 'regions' => ['nyc1']],
+        ]]),
+        'api.digitalocean.com/v2/droplets' => Http::response(['droplet' => ['id' => 1]], 202),
+        'api.vultr.com/v2/ssh-keys' => Http::response(['ssh_key' => ['id' => 'key']], 201),
+        'api.vultr.com/v2/os*' => Http::response(['os' => [
+            ['id' => 2284, 'name' => 'Ubuntu 24.04 LTS x64', 'arch' => 'x64', 'family' => 'ubuntu'],
+            ['id' => 2760, 'name' => 'Ubuntu 26.04 LTS x64', 'arch' => 'x64', 'family' => 'ubuntu'],
+        ]]),
+        'api.vultr.com/v2/instances' => Http::response(['instance' => ['id' => 'instance']], 202),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => $provider,
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $this->post(route('servers.store'), [
+        'provider' => $provider,
+        'server_provider' => $serverProvider->id,
+        'name' => 'resolute',
+        'os' => OperatingSystem::UBUNTU26->value,
+        'region' => 'nyc1',
+        'plan' => 'small',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), $endpoint) && $request[$field] === $image);
+    Queue::assertPushed(InstallJob::class);
+})->with([
+    'hetzner' => [Hetzner::id(), '/servers', 'image', 'ubuntu-26.04'],
+    'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/ubuntu26.04'],
+    'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 26],
+    'vultr' => [Vultr::id(), '/instances', 'os_id', 2760],
+]);
+
+test('cannot create ubuntu 26 server with an unavailable service version', function () {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $this->post(route('servers.store'), [
+        'provider' => Custom::id(),
+        'name' => 'resolute',
+        'ip' => '8.8.8.8',
+        'port' => '22',
+        'os' => OperatingSystem::UBUNTU26->value,
+        'services' => [
+            [
+                'name' => 'mariadb',
+                'type' => 'database',
+                'version' => '11.4',
+            ],
+        ],
+    ])->assertSessionHasErrors(['services.0.version' => 'MariaDB 11.4 is not available on Ubuntu 26.04.']);
+
+    $this->assertDatabaseMissing('servers', [
+        'name' => 'resolute',
     ]);
 });
 

@@ -66,6 +66,7 @@ test('connect proxmox', function (string $apiUrl) {
         'verify_ssl' => false,
         'template_ubuntu_22' => null,
         'template_ubuntu_24' => 9000,
+        'template_ubuntu_26' => null,
     ]);
 
     Http::assertSent(fn (Request $request): bool => $request->hasHeader('Authorization', 'PVEAPIToken=vito@pve!vito=secret')
@@ -137,7 +138,7 @@ test('cannot connect proxmox with an invalid template mapping', function (array 
         'api_url' => 'https://pve.test:8006',
         'token_id' => 'vito@pve!vito',
         'token_secret' => 'secret',
-    ], $input))->assertSessionHasErrors(['template_ubuntu_24' => $error]);
+    ], $input))->assertSessionHasErrors([array_key_first($input) ?? last(Proxmox::templateFields()) => $error]);
 
     $this->assertDatabaseMissing('server_providers', ['profile' => 'homelab']);
 })->with([
@@ -215,6 +216,36 @@ test('create proxmox server clones the mapped template', function () {
         && $request['full'] == 1
         && $request['target'] === 'pve2');
 
+    Queue::assertPushed(InstallJob::class);
+});
+
+test('create ubuntu 26 proxmox server clones its template', function () {
+    $this->actingAs($this->user);
+
+    $this->proxmox->update([
+        'credentials' => array_merge($this->proxmox->credentials, ['template_ubuntu_26' => 9026]),
+    ]);
+
+    Queue::fake();
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+            ['vmid' => 9026, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/cluster/nextid' => Http::response(['data' => '102']),
+        '*/api2/json/nodes/pve/qemu/9026/clone' => Http::response(['data' => 'UPID:pve:0001:qmclone:9026:vito@pve!vito:']),
+    ]);
+
+    $this->post(route('servers.store'), [
+        'provider' => Proxmox::id(),
+        'server_provider' => $this->proxmox->id,
+        'name' => 'resolute',
+        'os' => OperatingSystem::UBUNTU26->value,
+        'region' => 'pve',
+        'plan' => 'medium',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/nodes/pve/qemu/9026/clone'));
     Queue::assertPushed(InstallJob::class);
 });
 

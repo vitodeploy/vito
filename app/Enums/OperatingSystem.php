@@ -10,6 +10,7 @@ enum OperatingSystem: string implements VitoEnum
     case UBUNTU20 = 'ubuntu_20';
     case UBUNTU22 = 'ubuntu_22';
     case UBUNTU24 = 'ubuntu_24';
+    case UBUNTU26 = 'ubuntu_26';
 
     public function getColor(): string
     {
@@ -28,6 +29,7 @@ enum OperatingSystem: string implements VitoEnum
             self::UBUNTU20 => '20.04',
             self::UBUNTU22 => '22.04',
             self::UBUNTU24 => '24.04',
+            self::UBUNTU26 => '26.04',
         };
     }
 }

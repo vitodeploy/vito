@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OperatingSystem;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Server;
@@ -334,6 +335,65 @@ test('install service creates installation log', function () {
     expect($service->type_data['networking_effective'] ?? null)->toBeNull('Install never observes the live bind state, so it must not claim one.');
     expect($service->type_data['networking_checked_at'] ?? null)->toBeNull();
     $this->assertArrayNotHasKey('networking', $service->type_data);
+});
+
+test('cannot install mariadb versions unavailable on ubuntu 26', function (string|float $version) {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $server = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'os' => OperatingSystem::UBUNTU26,
+    ]);
+
+    $this->post(route('services.store', [
+        'server' => $server,
+    ]), [
+        'name' => 'mariadb',
+        'version' => $version,
+    ])
+        ->assertSessionHasErrors(['version' => "MariaDB $version is not available on Ubuntu 26.04."]);
+
+    $this->assertDatabaseMissing('services', [
+        'server_id' => $server->id,
+        'name' => 'mariadb',
+    ]);
+})->with(['10.11', '11.4', 11.4]);
+
+test('install mariadb on ubuntu 26 skips the maxscale repository', function () {
+    SSH::fake('Active: active');
+
+    $this->actingAs($this->user);
+
+    $server = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'os' => OperatingSystem::UBUNTU26,
+    ]);
+
+    $keys = $server->sshKey();
+    if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
+        $server->provider()->generateKeyPair();
+    }
+
+    $this->post(route('services.store', [
+        'server' => $server,
+    ]), [
+        'name' => 'mariadb',
+        'version' => '11.8',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('services', [
+        'server_id' => $server->id,
+        'name' => 'mariadb',
+        'version' => '11.8',
+        'status' => ServiceStatus::READY,
+    ]);
+
+    SSH::assertExecutedContains('--skip-maxscale');
 });
 
 test('parse php installed version', function (string $sshOutput, string $expectedVersion) {

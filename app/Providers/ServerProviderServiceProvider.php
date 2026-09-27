@@ -155,7 +155,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                     ...array_map(
                         fn (string $os): DynamicField => DynamicField::make(Proxmox::templateField($os))
                             ->text()
-                            ->third()
+                            ->half()
                             ->label('Ubuntu '.OperatingSystem::from($os)->getVersion().' Template')
                             ->placeholder('VMID'),
                         config('core.operating_systems'),
@@ -199,7 +199,7 @@ class ServerProviderServiceProvider extends ServiceProvider
             ],
             [
                 'title' => 'Download the Ubuntu cloud image',
-                'description' => 'Use an official cloud image, not an ISO install. Replace noble with jammy for Ubuntu 22.04.',
+                'description' => 'Use an official cloud image, not an ISO install. Replace noble with resolute for Ubuntu 26.04 or jammy for Ubuntu 22.04.',
                 'code' => "cd /root\nwget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
             ],
             [

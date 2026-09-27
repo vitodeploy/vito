@@ -63,7 +63,7 @@ paths:
                   example: 'digitalocean'
                 credentials:
                   type: object
-                  description: 'Provider-specific credentials. Proxmox: `api_url` (https), `token_id` (`user@realm!name`), `token_secret`, `verify_ssl` (default true), optional `storage`, and at least one of `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24` (cloud-init template VMIDs).'
+                  description: 'Provider-specific credentials. Proxmox: `api_url` (https), `token_id` (`user@realm!name`), `token_secret`, `verify_ssl` (default true), optional `storage`, and at least one of `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24`, `template_ubuntu_26` (cloud-init template VMIDs).'
                   example:
                     token: 'dop_v1_xxxxxxxxxxxx'
                 global:

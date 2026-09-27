@@ -85,7 +85,7 @@ paths:
                   example: 'production-server'
                 os:
                   type: string
-                  enum: ['ubuntu_20', 'ubuntu_22', 'ubuntu_24']
+                  enum: ['ubuntu_20', 'ubuntu_22', 'ubuntu_24', 'ubuntu_26']
                   description: Operating system
                   example: 'ubuntu_22'
                 server_provider:
@@ -136,7 +136,7 @@ paths:
                         example: 'php'
                       version:
                         type: string
-                        description: Service version
+                        description: Service version. Some versions are not available on every operating system (MariaDB 10.11 and 11.4 on ubuntu_26).
                         example: '8.2'
                   example:
                     - type: 'php'

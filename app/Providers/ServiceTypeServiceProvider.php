@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\OperatingSystem;
 use App\Plugins\RegisterServiceType;
 use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
@@ -131,6 +132,9 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '11.8',
                 '11.4',
                 '10.11',
+            ])
+            ->unavailableVersions([
+                OperatingSystem::UBUNTU26->value => ['11.4', '10.11'],
             ])
             ->configPaths([
                 [

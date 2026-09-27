@@ -2,6 +2,7 @@
 
 namespace App\Actions\Server;
 
+use App\Enums\OperatingSystem;
 use App\Jobs\Server\InstallJob;
 use App\Models\Project;
 use App\Models\Server;
@@ -9,6 +10,7 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
+use App\ValidationRules\ServiceVersionAvailableRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Validator;
@@ -137,6 +139,7 @@ class CreateServer
             'services.*.version' => [
                 'string',
                 Rule::in(collect(config('service.services'))->pluck('versions')->flatten()->toArray()),
+                new ServiceVersionAvailableRule(is_string($input['os'] ?? null) ? OperatingSystem::tryFrom($input['os']) : null),
             ],
         ];
 
