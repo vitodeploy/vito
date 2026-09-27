@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,13 +19,26 @@ export default function SetupGuideDialog({
   steps: SetupGuideStep[];
 }) {
   const [copied, setCopied] = useState<number | null>(null);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (resetTimer.current) {
+        clearTimeout(resetTimer.current);
+      }
+    },
+    [],
+  );
 
   const copy = (index: number, code: string) => {
     navigator.clipboard
       .writeText(code)
       .then(() => {
         setCopied(index);
-        setTimeout(() => setCopied(null), 2000);
+        if (resetTimer.current) {
+          clearTimeout(resetTimer.current);
+        }
+        resetTimer.current = setTimeout(() => setCopied(null), 2000);
       })
       .catch(() => toast.error('Could not copy to clipboard'));
   };

@@ -210,7 +210,7 @@ class Proxmox extends AbstractProvider
                     'disk' => $plan['disk'],
                 ]),
                 'available' => ! isset($node['maxcpu'], $node['maxmem'])
-                    || ($plan['cores'] <= $node['maxcpu'] && $plan['memory'] * 1024 ** 3 <= $node['maxmem']),
+                    || ($plan['cores'] <= $node['maxcpu'] && $node['maxmem'] >= $plan['memory'] * 1024 ** 3),
             ])
             ->all();
     }
@@ -300,9 +300,7 @@ class Proxmox extends AbstractProvider
                 return false;
             }
 
-            $status = $this->request('GET', $this->vmPath().'/status/current');
-
-            if (($status['status'] ?? null) !== 'running') {
+            if (! $this->vmRunning()) {
                 return false;
             }
 
@@ -351,9 +349,7 @@ class Proxmox extends AbstractProvider
             throw new ServerProviderError('Proxmox VM '.$this->server->provider_data['vmid'].' was not created for this server.');
         }
 
-        $status = $this->request('GET', $this->vmPath().'/status/current');
-
-        if (($status['status'] ?? null) === 'running') {
+        if ($this->vmRunning()) {
             $this->waitForTask((string) $this->request('POST', $this->vmPath().'/status/stop'));
         }
 
@@ -369,6 +365,9 @@ class Proxmox extends AbstractProvider
     }
 
     /**
+     * Safe to repeat when an install is retried: the config and resize are idempotent
+     * and a VM that is already running is not started again.
+     *
      * @throws ServerProviderError
      * @throws ConnectionException
      */
@@ -392,9 +391,21 @@ class Proxmox extends AbstractProvider
 
         $this->request('PUT', $this->vmPath().'/config', $config);
         $this->resizeBootDisk($plan['disk']);
-        $this->waitForTask((string) $this->request('POST', $this->vmPath().'/status/start'));
+
+        if (! $this->vmRunning()) {
+            $this->waitForTask((string) $this->request('POST', $this->vmPath().'/status/start'));
+        }
 
         $this->server->jsonForget('provider_data', 'task');
+    }
+
+    /**
+     * @throws ServerProviderError
+     * @throws ConnectionException
+     */
+    private function vmRunning(): bool
+    {
+        return ($this->request('GET', $this->vmPath().'/status/current')['status'] ?? null) === 'running';
     }
 
     /**

@@ -23,10 +23,10 @@ function generate_public_key(string $privateKeyPath, string $publicKeyPath): voi
  */
 function generate_key_pair(string $path): void
 {
-    exec("ssh-keygen -t ed25519 -m PEM -N '' -f {$path}");
+    exec("ssh-keygen -t ed25519 -m PEM -N '' -f ".escapeshellarg($path));
 
     if (! file_exists($path)) {
-        exec("ssh-keygen -t ed25519 -N '' -f {$path}");
+        exec("ssh-keygen -t ed25519 -N '' -f ".escapeshellarg($path));
     }
 
     chmod($path, 0400);

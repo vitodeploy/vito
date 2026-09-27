@@ -259,6 +259,7 @@ test('proxmox configures and starts the vm once the clone finishes', function (a
             ]])
             : Http::response(['data' => null]),
         '*/api2/json/nodes/pve/qemu/101/resize' => Http::response(['data' => 'UPID:pve:0002:resize:101:vito@pve!vito:']),
+        '*/api2/json/nodes/pve/qemu/101/status/current' => Http::response(['data' => ['status' => 'stopped']]),
         '*/api2/json/nodes/pve/qemu/101/status/start' => Http::response(['data' => 'UPID:pve:0003:qmstart:101:vito@pve!vito:']),
     ]);
 
@@ -285,6 +286,29 @@ test('proxmox configures and starts the vm once the clone finishes', function (a
     'dhcp' => [[], 'ip=dhcp', true],
     'static ip' => [['static_ip' => '192.168.1.50/24', 'gateway' => '192.168.1.1'], 'ip=192.168.1.50/24,gw=192.168.1.1', false],
 ]);
+
+test('proxmox does not start the vm again when provisioning is retried', function () {
+    $this->server->update([
+        'provider_data' => array_merge($this->server->provider_data, [
+            'task' => 'UPID:pve:0001:qmclone:9000:vito@pve!vito:',
+        ]),
+    ]);
+
+    Http::fake([
+        '*/api2/json/nodes/pve/tasks/*' => Http::response(['data' => ['status' => 'stopped', 'exitstatus' => 'OK']]),
+        '*/api2/json/nodes/pve/qemu/101/config' => fn (Request $request) => $request->method() === 'GET'
+            ? Http::response(['data' => ['scsi0' => 'local-lvm:vm-101-disk-0,size=80G']])
+            : Http::response(['data' => null]),
+        '*/api2/json/nodes/pve/qemu/101/status/current' => Http::response(['data' => ['status' => 'running']]),
+        '*' => Http::response(['data' => null]),
+    ]);
+
+    expect($this->server->provider()->isRunning())->toBeFalse()
+        ->and($this->server->refresh()->provider_data)->not->toHaveKey('task');
+
+    Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/status/start')
+        || str_ends_with($request->url(), '/resize'));
+});
 
 test('proxmox fails the install when the clone task fails', function () {
     $this->server->update([
