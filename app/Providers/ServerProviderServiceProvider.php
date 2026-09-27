@@ -152,14 +152,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->password()
                         ->half()
                         ->label('API Token Secret'),
-                    ...array_map(
-                        fn (string $os): DynamicField => DynamicField::make(Proxmox::templateField($os))
-                            ->text()
-                            ->half()
-                            ->label('Ubuntu '.OperatingSystem::from($os)->getVersion().' Template')
-                            ->placeholder('VMID'),
-                        config('core.operating_systems'),
-                    ),
+                    ...$this->proxmoxTemplateFields(),
                     DynamicField::make('verify_ssl')
                         ->checkbox()
                         ->label('Verify SSL certificate')
@@ -181,9 +174,30 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->placeholder('192.168.1.1'),
                 ])
             )
+            ->editForm(DynamicForm::make($this->proxmoxTemplateFields()))
             ->defaultUser('root')
             ->provisionTimeout(600)
             ->register();
+    }
+
+    /**
+     * @return array<int, DynamicField>
+     */
+    private function proxmoxTemplateFields(): array
+    {
+        return array_map(
+            function (string $value): DynamicField {
+                $os = OperatingSystem::from($value);
+
+                return DynamicField::make(Proxmox::templateField($value))
+                    ->text()
+                    ->half()
+                    ->label('Ubuntu '.$os->getVersion().' Template')
+                    ->placeholder('VMID')
+                    ->withGuide($this->proxmoxTemplateGuide($os));
+            },
+            config('core.operating_systems'),
+        );
     }
 
     /**
@@ -198,23 +212,45 @@ class ServerProviderServiceProvider extends ServiceProvider
                 'code' => "pveum user add vito@pve\npveum acl modify / --users vito@pve --roles PVEVMAdmin,PVEDatastoreUser,PVESDNUser,PVEAuditor\npveum user token add vito@pve vito --privsep 0",
             ],
             [
-                'title' => 'Download the Ubuntu cloud image',
-                'description' => 'Use an official cloud image, not an ISO install. Replace noble with resolute for Ubuntu 26.04 or jammy for Ubuntu 22.04.',
-                'code' => "cd /root\nwget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
+                'title' => 'Build the templates',
+                'description' => 'Create a cloud-init template for each Ubuntu version you want to use. The guide button in each Ubuntu template field shows the commands for that version.',
+            ],
+            [
+                'title' => 'Connect Vito',
+                'description' => 'Use https://your-host:8006 as the API URL, turn off Verify SSL for a self-signed certificate, and enter the VM ID of each template you built. Vito must be able to reach the new servers over SSH.',
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, array{title: string, description?: string, code?: string}>
+     */
+    private function proxmoxTemplateGuide(OperatingSystem $os): array
+    {
+        $version = $os->getVersion();
+        $image = $os->getCodename().'-server-cloudimg-amd64.img';
+        $vmid = 9000 + (int) $version;
+
+        return [
+            [
+                'title' => "Download the Ubuntu {$version} cloud image",
+                'description' => 'Run these commands in the Proxmox host shell. Use an official cloud image, not an ISO install.',
+                'code' => "cd /root\nwget https://cloud-images.ubuntu.com/{$os->getCodename()}/current/{$image}",
             ],
             [
                 'title' => 'Add the QEMU guest agent',
                 'description' => 'Vito reads a DHCP-assigned IP from the guest agent. Skip this step if you always give servers a static IP.',
-                'code' => "apt install -y libguestfs-tools\nvirt-customize -a noble-server-cloudimg-amd64.img --install qemu-guest-agent",
+                'code' => "apt install -y libguestfs-tools\nvirt-customize -a {$image} --install qemu-guest-agent",
             ],
             [
                 'title' => 'Create the template',
-                'description' => 'Change vmbr0 and local-lvm if your bridge or storage is named differently. Vito grows the disk to the plan size when it creates a server.',
-                'code' => "qm create 9000 --name ubuntu-2404-cloud --memory 2048 --cores 2 --ostype l26 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci\nqm set 9000 --scsi0 local-lvm:0,import-from=/root/noble-server-cloudimg-amd64.img\nqm set 9000 --ide2 local-lvm:cloudinit --boot order=scsi0 --serial0 socket --vga serial0 --agent 1\nqm template 9000",
+                'description' => "Change vmbr0 and local-lvm if your bridge or storage is named differently, and {$vmid} if that VM ID is taken. Vito grows the disk to the plan size when it creates a server.",
+                'code' => "qm create {$vmid} --name ubuntu-".str_replace('.', '', $version)."-cloud --memory 2048 --cores 2 --ostype l26 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci\nqm set {$vmid} --scsi0 local-lvm:0,import-from=/root/{$image}\nqm set {$vmid} --ide2 local-lvm:cloudinit --boot order=scsi0 --serial0 socket --vga serial0 --agent 1\nqm template {$vmid}",
             ],
             [
-                'title' => 'Connect Vito',
-                'description' => 'Use https://your-host:8006 as the API URL, turn off Verify SSL for a self-signed certificate, and enter 9000 as the Ubuntu 24.04 template VMID. Vito must be able to reach the new servers over SSH.',
+                'title' => 'Check the template',
+                'description' => "The output should include template: 1 and a cloud-init drive. Then enter {$vmid} in this field.",
+                'code' => "qm config {$vmid}",
             ],
         ];
     }

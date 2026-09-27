@@ -19,8 +19,8 @@ App-level dialogs are **not** mounted inline next to their trigger. They live in
 **The pieces:**
 - `resources/js/components/dialogs/registry.ts` — maps a typed key to a dialog component.
 - `resources/js/hooks/use-dialog.ts` — `useDialog()` returns `dialog.<key>.open(props)` / `.close()` with full prop typing.
-- `resources/js/stores/dialog-store.ts` — Zustand store holding the single active dialog.
-- `resources/js/components/dialogs/dialog-host.tsx` — renders the active dialog once, app-wide.
+- `resources/js/stores/dialog-store.ts` — Zustand store holding the active dialog, plus an optional nested one on top of it.
+- `resources/js/components/dialogs/dialog-host.tsx` — renders the active (and nested) dialog once, app-wide.
 
 **Opening a dialog:**
 ```tsx
@@ -39,6 +39,11 @@ dialog.confirm.open({
   method: 'delete',
   url: route('firewall.destroy', { server: rule.server_id, firewallRule: rule }),
 });
+```
+
+**Opening a dialog on top of another — `openNested`:** `open()` replaces whatever dialog is showing. To open one over the current dialog without closing it (e.g. a guide from inside a form dialog, so unsaved input survives), use `dialog.<key>.openNested(props)`. The nested dialog closes itself through its own `onOpenChange` and returns to the one underneath; `dialog.<key>.close()` and closing the underlying dialog close both.
+```tsx
+dialog.setupGuide.openNested({ title: 'Ubuntu 26.04 Template', steps });
 ```
 
 **Opening from a dropdown — this is the whole point of the pattern:** use a plain `DropdownMenuItem` with the default `onSelect` so the menu closes, then open the dialog. **Never** wrap a `<Dialog>`/`<DialogTrigger>` inside a `DropdownMenuItem` with `onSelect={(e) => e.preventDefault()}` — that leaves the dropdown stuck open behind the dialog.

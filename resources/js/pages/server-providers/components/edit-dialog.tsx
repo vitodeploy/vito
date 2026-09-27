@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ServerProvider } from '@/types/server-provider';
+import DynamicField, { dynamicFieldSpan } from '@/components/ui/dynamic-field';
+import { DynamicFieldConfig, DynamicFieldValue } from '@/types/dynamic-field-config';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function ServerProviderEditDialog({
   open,
@@ -20,7 +23,11 @@ export default function ServerProviderEditDialog({
   onOpenChange: (open: boolean) => void;
   serverProvider: ServerProvider;
 }) {
-  const form = useForm({
+  const configs = useConfigs()!;
+  const editFields: DynamicFieldConfig[] = configs.server_provider.providers[serverProvider.provider]?.edit_form ?? [];
+
+  const form = useForm<{ name: string; global: boolean } & Record<string, DynamicFieldValue>>({
+    ...Object.fromEntries(editFields.map((field) => [field.name, serverProvider.editable_data?.[field.name] ?? ''])),
     name: serverProvider.name,
     global: serverProvider.global,
   });
@@ -34,19 +41,32 @@ export default function ServerProviderEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent
+        className={editFields.length > 0 ? 'max-h-screen overflow-y-auto sm:max-w-2xl' : undefined}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Edit {serverProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit server provider</DialogDescription>
         </DialogHeader>
         <Form id="edit-server-provider-form" className="p-4" onSubmit={submit}>
-          <FormFields>
-            <FormField>
+          <FormFields className="sm:grid-cols-6">
+            <FormField className="sm:col-span-6">
               <Label htmlFor="name">Name</Label>
               <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
-            <FormField>
+            {editFields.map((field) => (
+              <div key={`field-${field.name}`} className={dynamicFieldSpan(field)}>
+                <DynamicField
+                  value={form.data[field.name]}
+                  onChange={(value) => form.setData(field.name, value)}
+                  config={field}
+                  error={form.errors[field.name]}
+                />
+              </div>
+            ))}
+            <FormField className="sm:col-span-6">
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="global"
@@ -57,6 +77,9 @@ export default function ServerProviderEditDialog({
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
               <InputError message={form.errors.global} />
+            </FormField>
+            <FormField className="sm:col-span-6">
+              <InputError message={form.errors.provider} />
             </FormField>
           </FormFields>
         </Form>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\OperatingSystem;
+use App\Events\SocketEvent;
 use App\Exceptions\ServerProviderError;
 use App\Jobs\Server\InstallJob;
 use App\Models\Server;
@@ -8,8 +9,10 @@ use App\Models\ServerProvider;
 use App\ServerProviders\Proxmox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
@@ -427,4 +430,168 @@ test('delete proxmox server leaves a vm it did not create untouched', function (
     $this->server->provider()->delete();
 
     Http::assertNotSent(fn (Request $request): bool => in_array($request->method(), ['POST', 'DELETE'], true));
+});
+
+test('proxmox template fields open a setup guide for their ubuntu version', function () {
+    $fields = collect(config('server-provider.providers.proxmox.edit_form'))->keyBy('name');
+
+    expect($fields->keys()->all())->toBe(Proxmox::templateFields());
+
+    $steps = $fields['template_ubuntu_26']['componentProps']['steps'];
+
+    expect($steps[0]['code'])->toContain('https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img')
+        ->and($steps[2]['code'])->toContain('qm create 9026')
+        ->and(collect(config('server-provider.providers.proxmox.form'))->firstWhere('name', 'template_ubuntu_26')['componentProps']['steps'])->toBe($steps);
+});
+
+test('edit proxmox connection updates its templates', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+            ['vmid' => 9026, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/nodes/pve/qemu/*/config' => Http::response(['data' => [
+            'ide2' => 'local-lvm:vm-9026-cloudinit,media=cdrom',
+        ]]),
+    ]);
+
+    $this->patch(route('server-providers.update', $this->proxmox), [
+        'name' => 'homelab',
+        'template_ubuntu_24' => 9000,
+        'template_ubuntu_26' => '9026',
+    ])->assertSessionDoesntHaveErrors();
+
+    expect($this->proxmox->refresh())
+        ->profile->toBe('homelab')
+        ->credentials->toMatchArray([
+            'token_secret' => 'secret',
+            'template_ubuntu_24' => 9000,
+            'template_ubuntu_26' => 9026,
+        ]);
+});
+
+test('edit proxmox connection rejects an invalid template', function () {
+    $this->actingAs($this->user);
+
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+            ['vmid' => 9026, 'node' => 'pve', 'template' => 0, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/nodes/pve/qemu/*/config' => Http::response(['data' => [
+            'ide2' => 'local-lvm:vm-9000-cloudinit,media=cdrom',
+        ]]),
+    ]);
+
+    $this->patch(route('server-providers.update', $this->proxmox), [
+        'name' => 'renamed',
+        'template_ubuntu_26' => '9026',
+    ])->assertSessionHasErrors(['template_ubuntu_26' => 'VM 9026 is not a QEMU template.']);
+
+    expect($this->proxmox->refresh())
+        ->profile->not->toBe('renamed')
+        ->credentials->not->toHaveKey('template_ubuntu_26');
+});
+
+test('edit proxmox connection reports connection errors on the provider field', function (int $status, array $body) {
+    $this->actingAs($this->user);
+
+    Http::fake(['*/api2/json/cluster/resources*' => Http::response($body, $status)]);
+
+    $this->patch(route('server-providers.update', $this->proxmox), [
+        'name' => 'homelab',
+        'template_ubuntu_26' => '9026',
+    ])->assertSessionHasErrors('provider');
+})->with([
+    'token sees no vms' => [200, ['data' => []]],
+    'api unreachable' => [500, []],
+]);
+
+test('renaming a proxmox connection does not contact proxmox', function () {
+    $this->actingAs($this->user);
+
+    Http::fake();
+
+    $this->patch(route('server-providers.update', $this->proxmox), [
+        'name' => 'renamed',
+        'template_ubuntu_20' => '',
+        'template_ubuntu_22' => '',
+        'template_ubuntu_24' => 9000,
+        'template_ubuntu_26' => '',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertNotSent(fn (Request $request): bool => str_starts_with($request->url(), 'https://pve.test:8006'));
+
+    expect($this->proxmox->refresh())
+        ->profile->toBe('renamed')
+        ->credentials->not->toHaveKey('template_ubuntu_26');
+});
+
+test('proxmox connection shows its templates only to write tokens', function (array $abilities, array $editableData) {
+    Sanctum::actingAs($this->user, $abilities);
+
+    $this->json('GET', route('api.user.server-providers.show', ['serverProvider' => $this->proxmox->id]))
+        ->assertOk()
+        ->assertJsonPath('editable_data', $editableData);
+})->with([
+    'write token' => [['read', 'write'], ['template_ubuntu_20' => null, 'template_ubuntu_22' => null, 'template_ubuntu_24' => 9000, 'template_ubuntu_26' => null]],
+    'read-only token' => [['read'], []],
+]);
+
+test('api update changes proxmox templates', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+            ['vmid' => 9026, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/nodes/pve/qemu/*/config' => Http::response(['data' => [
+            'ide2' => 'local-lvm:vm-9026-cloudinit,media=cdrom',
+        ]]),
+    ]);
+
+    $this->json('PUT', route('api.user.server-providers.update', ['serverProvider' => $this->proxmox->id]), [
+        'name' => 'homelab',
+        'template_ubuntu_26' => 9026,
+    ])
+        ->assertOk()
+        ->assertJsonPath('editable_data.template_ubuntu_24', 9000)
+        ->assertJsonPath('editable_data.template_ubuntu_26', 9026);
+});
+
+test('api update rejects an invalid proxmox template', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/nodes/pve/qemu/*/config' => Http::response(['data' => [
+            'ide2' => 'local-lvm:vm-9000-cloudinit,media=cdrom',
+        ]]),
+    ]);
+
+    $this->json('PUT', route('api.user.server-providers.update', ['serverProvider' => $this->proxmox->id]), [
+        'name' => 'homelab',
+        'template_ubuntu_26' => 9026,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['template_ubuntu_26' => 'VM 9026 was not found or the API token cannot access it.']);
+
+    expect($this->proxmox->refresh()->credentials)->not->toHaveKey('template_ubuntu_26');
+});
+
+test('edit proxmox connection broadcasts without its templates', function () {
+    Event::fake([SocketEvent::class]);
+    $this->actingAs($this->user);
+
+    $this->patch(route('server-providers.update', $this->proxmox), [
+        'name' => 'renamed',
+    ])->assertSessionDoesntHaveErrors();
+
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.updated'
+        && (array) $event->data->data['editable_data'] === []);
 });

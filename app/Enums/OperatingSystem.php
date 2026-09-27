@@ -32,4 +32,15 @@ enum OperatingSystem: string implements VitoEnum
             self::UBUNTU26 => '26.04',
         };
     }
+
+    public function getCodename(): string
+    {
+        return match ($this) {
+            self::UBUNTU18 => 'bionic',
+            self::UBUNTU20 => 'focal',
+            self::UBUNTU22 => 'jammy',
+            self::UBUNTU24 => 'noble',
+            self::UBUNTU26 => 'resolute',
+        };
+    }
 }

@@ -178,7 +178,7 @@ paths:
 
     put:
       summary: Update server provider
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider} instead. This endpoint will be removed in a future version."
+      description: "DEPRECATED: Use /api/server-providers/{serverProvider} instead. This endpoint will be removed in a future version. Update a server provider. Proxmox connections also accept `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24` and `template_ubuntu_26` (cloud-init template VM IDs); omitted fields keep their current value, and when a template changes all mapped templates are re-verified against Proxmox before saving. Other credentials, including the API token, can't be changed."
       deprecated: true
       tags:
         - Server Providers
@@ -216,6 +216,11 @@ paths:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
                   example: false
+              additionalProperties: true
+            example:
+              name: 'Proxmox'
+              global: false
+              template_ubuntu_26: 9026
       responses:
         '200':
           description: Server provider updated successfully

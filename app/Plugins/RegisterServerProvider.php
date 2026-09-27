@@ -14,6 +14,7 @@ class RegisterServerProvider
         private string $defaultUser = '',
         private ?DynamicForm $createForm = null,
         private ?int $provisionTimeout = null,
+        private ?DynamicForm $editForm = null,
     ) {}
 
     public static function make(string $name): self
@@ -59,6 +60,17 @@ class RegisterServerProvider
         return $this;
     }
 
+    /**
+     * Credential fields users can change after connecting, rendered in the
+     * connection's edit form. Never include secrets here.
+     */
+    public function editForm(DynamicForm $editForm): self
+    {
+        $this->editForm = $editForm;
+
+        return $this;
+    }
+
     public function defaultUser(string $defaultUser): self
     {
         $this->defaultUser = $defaultUser;
@@ -87,6 +99,7 @@ class RegisterServerProvider
             'form' => $this->form ? $this->form->toArray() : [],
             'default_user' => $this->defaultUser,
             'create_form' => $this->createForm ? $this->createForm->toArray() : [],
+            'edit_form' => $this->editForm ? $this->editForm->toArray() : [],
             'provision_timeout' => $this->provisionTimeout,
         ];
 

@@ -146,7 +146,9 @@ Build templates from Ubuntu's **cloud images**, as above. A VM installed from an
 | **Ubuntu … Template** | The VM ID of your template for each Ubuntu version. Leave the versions you don't use empty; at least one is required. |
 | **Verify SSL certificate** | Turn this off if Proxmox still uses its default self-signed certificate. |
 
-When you connect, Vito checks that each mapped VM ID exists, is a QEMU template and has a cloud-init drive. The connection form also has a **View guide** button with the commands above, ready to copy.
+When you connect, Vito checks that each mapped VM ID exists, is a QEMU template and has a cloud-init drive. Each **Ubuntu … Template** field has a guide button with the commands for that Ubuntu version, ready to copy.
+
+To add or change templates later, choose **Edit** on the connection. When a template changes, Vito checks all the mapped templates again before saving.
 
 #### Creating servers on Proxmox
 
