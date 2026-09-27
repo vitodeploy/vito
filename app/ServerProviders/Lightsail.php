@@ -264,7 +264,7 @@ class Lightsail extends AbstractProvider
             ]]);
             $result = $client->execute($client->getCommand($operation, $parameters))->toArray();
         } catch (AwsException $exception) {
-            if ($exception->getAwsErrorCode() === 'NotFoundException'
+            if (in_array($exception->getAwsErrorCode(), ['NotFoundException', 'DoesNotExist'], true)
                 && in_array($operation, ['GetInstance', 'DeleteInstance', 'DeleteKeyPair'], true)) {
                 return [];
             }

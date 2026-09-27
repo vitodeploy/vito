@@ -303,6 +303,33 @@ test('lightsail cleans up its key when instance creation fails', function () {
     Queue::assertNotPushed(InstallJob::class);
 });
 
+test('lightsail reports creation failures when cleanup targets do not exist', function (string $operation, string $code) {
+    $this->lightsailHandler->append(
+        new Result($this->lightsailRegions),
+        new Result(['bundles' => [$this->lightsailBundle]]),
+        new Result(['blueprints' => [$this->lightsailBlueprint]]),
+    );
+    if ($operation === 'CreateInstances') {
+        $this->lightsailHandler->append(new Result);
+    }
+    $this->lightsailHandler->append(new AwsException('upstream secret', new Command($operation), ['code' => 'AccessDeniedException']));
+    if ($operation === 'CreateInstances') {
+        $this->lightsailHandler->append(new AwsException('not found', new Command('DeleteInstance'), ['code' => $code]));
+    }
+    $this->lightsailHandler->append(new AwsException('not found', new Command('DeleteKeyPair'), ['code' => $code]));
+
+    $this->actingAs($this->user)->postJson(route('servers.store'), [
+        'provider' => 'lightsail', 'server_provider' => $this->lightsailProfile->id,
+        'name' => 'Rejected Lightsail', 'os' => 'ubuntu_24', 'region' => 'eu-central-1', 'plan' => 'small_3_0',
+    ])->assertUnprocessable()->assertJsonValidationErrors('provider')
+        ->assertJsonPath('errors.provider.0', 'AWS Lightsail could not complete '.$operation.'. Check the provider permissions and try again.')
+        ->assertDontSee('upstream secret');
+
+    $this->assertDatabaseMissing('servers', ['name' => 'Rejected Lightsail']);
+    expect(end($this->lightsailCommands)['name'])->toBe('DeleteKeyPair');
+    Queue::assertNotPushed(InstallJob::class);
+})->with(['ImportKeyPair', 'CreateInstances'])->with(['NotFoundException', 'DoesNotExist']);
+
 test('lightsail retains cleanup targets after a lost creation response', function (string $operation, bool $cleanupFails) {
     $this->lightsailHandler->append(
         new Result($this->lightsailRegions),
@@ -416,13 +443,13 @@ test('lightsail does not mark the firewall configured when aws rejects opening i
         ->and($this->server->fresh()->provider_data['firewall_configured'] ?? false)->toBeFalse();
 });
 
-test('lightsail readiness handles resources not yet visible', function () {
+test('lightsail readiness handles resources not yet visible', function (string $code) {
     expect($this->server->provider()->isRunning())->toBeFalse();
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
-    $this->lightsailHandler->append(new AwsException('not found', new Command('GetInstance'), ['code' => 'NotFoundException']));
+    $this->lightsailHandler->append(new AwsException('not found', new Command('GetInstance'), ['code' => $code]));
 
     expect($this->server->provider()->isRunning())->toBeFalse();
-});
+})->with(['NotFoundException', 'DoesNotExist']);
 
 test('lightsail deletion respects the existing delete from provider choice', function (bool $delete) {
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
@@ -443,18 +470,18 @@ test('lightsail deletion respects the existing delete from provider choice', fun
     }
 })->with([true, false]);
 
-test('lightsail deletion tolerates resources already removed in aws', function () {
+test('lightsail deletion tolerates resources already removed in aws', function (string $code) {
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
     $this->server->jsonUpdate('provider_data', 'ssh_key_name', 'vito-key');
     $this->lightsailHandler->append(
-        new AwsException('not found', new Command('DeleteInstance'), ['code' => 'NotFoundException']),
-        new AwsException('not found', new Command('DeleteKeyPair'), ['code' => 'NotFoundException']),
+        new AwsException('not found', new Command('DeleteInstance'), ['code' => $code]),
+        new AwsException('not found', new Command('DeleteKeyPair'), ['code' => $code]),
     );
 
     $this->server->provider()->delete();
 
     expect(array_column($this->lightsailCommands, 'name'))->toBe(['DeleteInstance', 'DeleteKeyPair']);
-});
+})->with(['NotFoundException', 'DoesNotExist']);
 
 test('lightsail keeps the server and ssh keys when aws rejects deletion', function () {
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
