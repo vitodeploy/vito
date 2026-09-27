@@ -306,6 +306,9 @@ test('proxmox does not start the vm again when provisioning is retried', functio
     expect($this->server->provider()->isRunning())->toBeFalse()
         ->and($this->server->refresh()->provider_data)->not->toHaveKey('task');
 
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+        && str_ends_with($request->url(), '/qemu/101/config')
+        && $request['ipconfig0'] === 'ip=dhcp');
     Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/status/start')
         || str_ends_with($request->url(), '/resize'));
 });
