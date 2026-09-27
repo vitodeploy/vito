@@ -107,7 +107,7 @@ class Lightsail extends AbstractProvider
 
         $blueprint = collect($this->paginate('GetBlueprints', 'blueprints', $region))
             ->first(fn (array $blueprint): bool => ($blueprint['isActive'] ?? false)
-                && ($blueprint['group'] ?? '') === 'ubuntu'
+                && in_array($blueprint['group'] ?? '', ['ubuntu', $this->server->os->value], true)
                 && ($blueprint['type'] ?? '') === 'os'
                 && str_starts_with($blueprint['version'] ?? '', $this->server->os->getVersion()));
 

@@ -72,7 +72,7 @@ beforeEach(function () {
         'availabilityZones' => [['zoneName' => 'eu-central-1b']],
     ]]];
     $this->lightsailBlueprint = [
-        'blueprintId' => 'ubuntu_24_04', 'group' => 'ubuntu', 'type' => 'os',
+        'blueprintId' => 'ubuntu_24_04', 'group' => 'ubuntu_24', 'type' => 'os',
         'isActive' => true, 'version' => '24.04 LTS',
     ];
 });
@@ -192,13 +192,14 @@ test('lightsail permits at most one hundred catalog pages', function (bool $hasM
     expect($this->lightsailCommands)->toHaveCount(100);
 })->with([false, true]);
 
-test('lightsail provisions the selected ubuntu image and queues installation', function (string $os, string $version) {
+test('lightsail provisions the selected ubuntu image and queues installation', function (string $os, string $version, bool $versionedGroup) {
     $this->actingAs($this->user);
     $this->lightsailHandler->append(
         new Result($this->lightsailRegions),
         new Result(['bundles' => [$this->lightsailBundle]]),
         new Result(['blueprints' => [array_merge($this->lightsailBlueprint, ['isActive' => false])], 'nextPageToken' => 'next-images']),
         new Result(['blueprints' => [array_merge($this->lightsailBlueprint, [
+            'group' => $versionedGroup ? $os : 'ubuntu',
             'version' => $version.' LTS', 'blueprintId' => 'ubuntu_'.str_replace('.', '_', $version),
         ])]]),
         new Result,
@@ -228,6 +229,23 @@ test('lightsail provisions the selected ubuntu image and queues installation', f
     Queue::assertPushed(InstallJob::class);
 })->with([
     ['ubuntu_20', '20.04'], ['ubuntu_22', '22.04'], ['ubuntu_24', '24.04'], ['ubuntu_26', '26.04'],
+])->with([true, false]);
+
+test('lightsail rejects unsuitable blueprints before creating resources', function (array $blueprint) {
+    $this->lightsailHandler->append(
+        new Result($this->lightsailRegions),
+        new Result(['bundles' => [$this->lightsailBundle]]),
+        new Result(['blueprints' => [array_merge($this->lightsailBlueprint, $blueprint)]]),
+    );
+
+    expect(fn () => $this->server->provider()->create())->toThrow(ServerProviderError::class, 'The selected Ubuntu version is unavailable');
+    expect(array_column($this->lightsailCommands, 'name'))->not->toContain('ImportKeyPair', 'CreateInstances');
+})->with([
+    [['isActive' => false]],
+    [['group' => 'debian']],
+    [['group' => 'ubuntu_22']],
+    [['type' => 'app']],
+    [['version' => '22.04 LTS']],
 ]);
 
 test('lightsail validates server input before making requests', function () {
