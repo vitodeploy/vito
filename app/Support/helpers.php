@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ProcessUtils;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -20,13 +21,24 @@ function generate_public_key(string $privateKeyPath, string $publicKeyPath): voi
 /**
  * ssh-keygen builds linked against LibreSSL (e.g. OpenSSH 10 on macOS) cannot write
  * ed25519 keys as PEM, so fall back to the OpenSSH format, which phpseclib also reads.
+ *
+ * @throws RuntimeException
  */
 function generate_key_pair(string $path): void
 {
     exec("ssh-keygen -t ed25519 -m PEM -N '' -f ".escapeshellarg($path));
 
     if (! file_exists($path)) {
-        exec("ssh-keygen -t ed25519 -N '' -f ".escapeshellarg($path));
+        exec("ssh-keygen -t ed25519 -N '' -f ".escapeshellarg($path).' 2>&1', $output, $exitCode);
+
+        if ($exitCode !== 0 || ! file_exists($path)) {
+            Log::error('Failed to generate SSH key pair', [
+                'exit_code' => $exitCode,
+                'output' => implode("\n", $output),
+            ]);
+
+            throw new RuntimeException('Failed to generate SSH key pair.');
+        }
     }
 
     chmod($path, 0400);
