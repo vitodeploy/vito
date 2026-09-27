@@ -1,3 +1,4 @@
+set -o pipefail 2>/dev/null || true
 sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y software-properties-common curl zip unzip git gcc openssl ufw cron gnupg
 git config --global user.email "{{ $email }}"
 git config --global user.name "{{ $name }}"

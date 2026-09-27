@@ -8,6 +8,7 @@ use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
 use App\ServerProviders\HasEditableCredentials;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -72,7 +73,13 @@ class EditServerProvider
             }
 
             throw ValidationException::withMessages($errors);
-        } catch (Exception) {
+        } catch (Exception $e) {
+            Log::error('Failed to verify server provider credentials', [
+                'server_provider_id' => $serverProvider->id,
+                'provider' => $serverProvider->provider,
+                'exception' => $e::class,
+            ]);
+
             throw ValidationException::withMessages([
                 'provider' => [
                     sprintf("Couldn't connect to %s. Please check your credentials.", $serverProvider->provider),

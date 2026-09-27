@@ -1,3 +1,4 @@
+set -o pipefail 2>/dev/null || true
 if command -v mise &> /dev/null; then
     echo "Mise is already installed"
     mise --version
