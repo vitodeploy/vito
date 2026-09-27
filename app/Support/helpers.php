@@ -17,9 +17,18 @@ function generate_public_key(string $privateKeyPath, string $publicKeyPath): voi
     exec("ssh-keygen -y -f {$privateKeyPath} > {$publicKeyPath}");
 }
 
+/**
+ * ssh-keygen builds linked against LibreSSL (e.g. OpenSSH 10 on macOS) cannot write
+ * ed25519 keys as PEM, so fall back to the OpenSSH format, which phpseclib also reads.
+ */
 function generate_key_pair(string $path): void
 {
     exec("ssh-keygen -t ed25519 -m PEM -N '' -f {$path}");
+
+    if (! file_exists($path)) {
+        exec("ssh-keygen -t ed25519 -N '' -f {$path}");
+    }
+
     chmod($path, 0400);
 }
 

@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import LogViewerDialog from './log-viewer-dialog';
 import ConfirmationDialog from './confirmation-dialog';
+import SetupGuideDialog from './setup-guide-dialog';
 import StorageProviderEditDialog from '@/pages/storage-providers/components/edit-dialog';
 import PluginLogsDialog from '@/pages/plugins/components/logs-dialog';
 import WorkerLogsDialog from '@/pages/workers/components/logs-dialog';
@@ -58,6 +59,7 @@ export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) 
 export const dialogs = {
   logViewer: LogViewerDialog,
   confirm: ConfirmationDialog,
+  setupGuide: SetupGuideDialog,
   storageProviderEdit: StorageProviderEditDialog,
   pluginLogs: PluginLogsDialog,
   workerLogs: WorkerLogsDialog,

@@ -19,7 +19,7 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
-import DynamicField from '@/components/ui/dynamic-field';
+import DynamicField, { dynamicFieldSpan } from '@/components/ui/dynamic-field';
 import { useConfigs } from '@/stores/bootstrap-store';
 
 type ServerProviderForm = {
@@ -75,14 +75,14 @@ export default function ConnectServerProvider({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Connect to server provider</DialogTitle>
           <DialogDescription className="sr-only">Connect to a new server provider</DialogDescription>
         </DialogHeader>
         <Form id="create-server-provider-form" onSubmit={submit} className="p-4">
-          <FormFields>
-            <FormField>
+          <FormFields className="sm:grid-cols-6">
+            <FormField className="sm:col-span-3">
               <Label htmlFor="provider">Provider</Label>
               <Select
                 value={form.data.provider}
@@ -109,24 +109,25 @@ export default function ConnectServerProvider({
               </Select>
               <InputError message={form.errors.provider} />
             </FormField>
-            <FormField>
+            <FormField className="sm:col-span-3">
               <Label htmlFor="name">Name</Label>
               <Input type="text" name="name" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
             {configs.server_provider.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
-              <DynamicField
-                key={`field-${field.name}`}
-                /*@ts-expect-error dynamic types*/
-                value={form.data[field.name]}
-                /*@ts-expect-error dynamic types*/
-                onChange={(value) => form.setData(field.name, value)}
-                config={field}
-                /*@ts-expect-error dynamic types*/
-                error={form.errors[field.name]}
-              />
+              <div key={`field-${field.name}`} className={dynamicFieldSpan(field)}>
+                <DynamicField
+                  /*@ts-expect-error dynamic types*/
+                  value={form.data[field.name]}
+                  /*@ts-expect-error dynamic types*/
+                  onChange={(value) => form.setData(field.name, value)}
+                  config={field}
+                  /*@ts-expect-error dynamic types*/
+                  error={form.errors[field.name]}
+                />
+              </div>
             ))}
-            <FormField>
+            <FormField className="sm:col-span-6">
               <div className="flex items-center space-x-3">
                 <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
