@@ -1,0 +1,1 @@
+import{f as e,t}from"./utils-CLRpjyzU.js";import{b as n}from"./app-DTDStaJG.js";var r=e();function i({className:e=``,children:i,...a}){return(0,r.jsx)(n,{className:t(`text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500`,e),...a,children:i})}export{i as t};

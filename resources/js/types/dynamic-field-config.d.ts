@@ -1,5 +1,11 @@
 export type DynamicFieldValue = string | number | boolean | string[];
 
+export interface SetupGuideStep {
+  title: string;
+  description?: string;
+  code?: string;
+}
+
 export interface DynamicFieldConfig {
   type:
     | 'text'
@@ -10,6 +16,7 @@ export interface DynamicFieldConfig {
     | 'checkbox'
     | 'component'
     | 'alert'
+    | 'guide'
     | 'tooling'
     | 'tooling-picker'
     | 'tooling-selector';
@@ -27,4 +34,5 @@ export interface DynamicFieldConfig {
   };
   className?: string;
   componentProps?: Record<string, unknown>;
+  width?: 'half' | 'third' | null;
 }

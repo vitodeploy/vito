@@ -76,7 +76,7 @@ paths:
               properties:
                 provider:
                   type: string
-                  enum: ['custom', 'aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  enum: ['custom', 'aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr', 'proxmox']
                   description: Server provider type
                   example: 'digitalocean'
                 name:
@@ -85,7 +85,7 @@ paths:
                   example: 'production-server'
                 os:
                   type: string
-                  enum: ['ubuntu_20', 'ubuntu_22', 'ubuntu_24']
+                  enum: ['ubuntu_20', 'ubuntu_22', 'ubuntu_24', 'ubuntu_26']
                   description: Operating system
                   example: 'ubuntu_22'
                 server_provider:
@@ -97,7 +97,15 @@ paths:
                   description: Server plan (required for non-custom provider)
                 region:
                   type: string
-                  description: Server region (required for non-custom provider)
+                  description: Server region (required for non-custom provider). For Proxmox this is the node name.
+                static_ip:
+                  type: string
+                  description: Proxmox only. Static IPv4 address in CIDR notation. Leave empty to use DHCP, which needs qemu-guest-agent in the template.
+                  example: '192.168.1.50/24'
+                gateway:
+                  type: string
+                  description: Proxmox only. IPv4 gateway (required with static_ip).
+                  example: '192.168.1.1'
                 ip:
                   type: string
                   description: Server IP address (required for custom provider)
@@ -128,7 +136,7 @@ paths:
                         example: 'php'
                       version:
                         type: string
-                        description: Service version
+                        description: Service version. Some versions are not available on every operating system (MariaDB 10.11 and 11.4 on ubuntu_26).
                         example: '8.2'
                   example:
                     - type: 'php'

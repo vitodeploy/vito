@@ -1,28 +1,37 @@
 import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import { router } from '@inertiajs/react';
-import { useDialogStore } from '@/stores/dialog-store';
+import { useDialogStore, type ActiveDialog } from '@/stores/dialog-store';
 import { dialogs, type DialogControlProps } from './registry';
 
-export default function DialogHost() {
-  const active = useDialogStore((s) => s.active);
-  const instanceId = useDialogStore((s) => s.instanceId);
-
-  useEffect(() => {
-    return router.on('navigate', () => useDialogStore.getState().close());
-  }, []);
-
-  if (!active) {
+function HostedDialog({ dialog, id, onClose }: { dialog: ActiveDialog | null; id: number; onClose: () => void }) {
+  if (!dialog) {
     return null;
   }
 
-  const Component = dialogs[active.key] as ComponentType<typeof active.props & DialogControlProps> | undefined;
+  const Component = dialogs[dialog.key] as ComponentType<typeof dialog.props & DialogControlProps> | undefined;
 
   if (!Component) {
     return null;
   }
 
+  return <Component key={`${dialog.key}:${id}`} open onOpenChange={(o: boolean) => !o && onClose()} {...dialog.props} />;
+}
+
+export default function DialogHost() {
+  const active = useDialogStore((s) => s.active);
+  const instanceId = useDialogStore((s) => s.instanceId);
+  const nested = useDialogStore((s) => s.nested);
+  const nestedId = useDialogStore((s) => s.nestedId);
+
+  useEffect(() => {
+    return router.on('navigate', () => useDialogStore.getState().close());
+  }, []);
+
   return (
-    <Component key={`${active.key}:${instanceId}`} open onOpenChange={(o: boolean) => !o && useDialogStore.getState().close()} {...active.props} />
+    <>
+      <HostedDialog dialog={active} id={instanceId} onClose={() => useDialogStore.getState().close()} />
+      <HostedDialog dialog={nested} id={nestedId} onClose={() => useDialogStore.getState().closeNested()} />
+    </>
   );
 }

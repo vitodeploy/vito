@@ -5,6 +5,7 @@ use App\Actions\Server\CreateServer;
 use App\Actions\Server\DeleteServer;
 use App\Enums\OperatingSystem;
 use App\Exceptions\ServerProviderError;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Jobs\Server\InstallJob;
 use App\Models\Server;
@@ -20,6 +21,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use Psr\Http\Message\RequestInterface;
 
@@ -186,7 +188,7 @@ test('lightsail provisions the selected ubuntu image and queues installation', f
         ->and($create['ipAddressType'])->toBe('ipv4');
     Queue::assertPushed(InstallJob::class);
 })->with([
-    ['ubuntu_20', '20.04'], ['ubuntu_22', '22.04'], ['ubuntu_24', '24.04'],
+    ['ubuntu_20', '20.04'], ['ubuntu_22', '22.04'], ['ubuntu_24', '24.04'], ['ubuntu_26', '26.04'],
 ]);
 
 test('lightsail validates server input before making requests', function () {
@@ -272,7 +274,7 @@ test('lightsail retains cleanup targets after a lost creation response', functio
     expect(fn () => app(CreateServer::class)->create($this->user, $this->user->currentProject, [
         'provider' => 'lightsail', 'server_provider' => $this->lightsailProfile->id,
         'name' => 'Lost response', 'os' => 'ubuntu_24', 'region' => 'eu-central-1', 'plan' => 'small_3_0',
-    ]))->toThrow($cleanupFails ? ServerProviderError::class : Illuminate\Validation\ValidationException::class);
+    ]))->toThrow($cleanupFails ? ServerProviderError::class : ValidationException::class);
 
     $deleteOperation = $operation === 'CreateInstances' ? 'DeleteInstance' : 'DeleteKeyPair';
     expect(array_column($this->lightsailCommands, 'name'))->toContain($deleteOperation);
@@ -298,7 +300,7 @@ test('lightsail waits for a running instance with a public address', function (a
     [['state' => ['name' => 'running']]],
 ]);
 
-test('lightsail saves addresses and configures its outer firewall once', function () {
+test('lightsail saves addresses and permits only ssh before ufw installation', function () {
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
     $instance = ['state' => ['name' => 'running'], 'publicIpAddress' => '203.0.113.10', 'privateIpAddress' => '172.26.1.10'];
     $this->lightsailHandler->append(new Result(['instance' => $instance]), new Result, new Result(['instance' => $instance]));
@@ -307,8 +309,54 @@ test('lightsail saves addresses and configures its outer firewall once', functio
         ->and($this->server->fresh()->provider()->isRunning())->toBeTrue();
     $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'ip' => '203.0.113.10', 'local_ip' => '172.26.1.10']);
     expect($this->lightsailCommands[1]['parameters']['portInfos'])->toBe([[
-        'fromPort' => 0, 'toPort' => 65535, 'protocol' => 'all', 'cidrs' => ['0.0.0.0/0'],
+        'fromPort' => 22, 'toPort' => 22, 'protocol' => 'tcp', 'cidrs' => ['0.0.0.0/0'],
     ]])->and(array_column($this->lightsailCommands, 'name'))->toBe(['GetInstance', 'PutInstancePublicPorts', 'GetInstance']);
+});
+
+test('lightsail opens its perimeter only after ufw succeeds and preserves it on later readiness checks', function () {
+    $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
+    $instance = ['state' => ['name' => 'running'], 'publicIpAddress' => '203.0.113.10'];
+    $this->lightsailHandler->append(new Result(['instance' => $instance]), new Result, new Result, new Result(['instance' => $instance]));
+
+    $this->server->provider()->isRunning();
+    $this->server->firewall()->handler()->install();
+    $this->server->firewall()->handler()->install();
+
+    expect($this->server->fresh()->provider()->isRunning())->toBeTrue()
+        ->and($this->server->fresh()->provider_data['firewall_configured'])->toBeTrue()
+        ->and($this->lightsailCommands[2]['parameters']['portInfos'])->toBe([[
+            'fromPort' => 0, 'toPort' => 65535, 'protocol' => 'all', 'cidrs' => ['0.0.0.0/0'],
+        ]])
+        ->and(array_column($this->lightsailCommands, 'name'))->toBe(['GetInstance', 'PutInstancePublicPorts', 'PutInstancePublicPorts', 'GetInstance']);
+    SSH::assertExecutedContains('sudo ufw --force enable');
+});
+
+test('lightsail keeps ssh only when ufw is omitted or fails', function (bool $installFirewall) {
+    $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
+    $this->lightsailHandler->append(new Result(['instance' => [
+        'state' => ['name' => 'running'], 'publicIpAddress' => '203.0.113.10',
+    ]]), new Result);
+    $this->server->provider()->isRunning();
+
+    if ($installFirewall) {
+        SSH::fake()->execWillFail();
+        expect(fn () => $this->server->firewall()->handler()->install())->toThrow(SSHCommandError::class);
+    } else {
+        $this->server->firewall()->delete();
+        event('service.installed', $this->server->webserver());
+    }
+
+    expect($this->server->fresh()->provider_data['firewall_configured'] ?? false)->toBeFalse()
+        ->and(array_column($this->lightsailCommands, 'name'))->toBe(['GetInstance', 'PutInstancePublicPorts'])
+        ->and($this->lightsailCommands[1]['parameters']['portInfos'][0]['toPort'])->toBe(22);
+})->with([true, false]);
+
+test('lightsail does not mark the firewall configured when aws rejects opening it', function () {
+    $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
+    $this->lightsailHandler->append(new AwsException('denied', new Command('PutInstancePublicPorts'), ['code' => 'AccessDeniedException']));
+
+    expect(fn () => $this->server->firewall()->handler()->install())->toThrow(ServerProviderError::class)
+        ->and($this->server->fresh()->provider_data['firewall_configured'] ?? false)->toBeFalse();
 });
 
 test('lightsail readiness handles resources not yet visible', function () {
@@ -364,6 +412,33 @@ test('lightsail keeps the server and ssh keys when aws rejects deletion', functi
     expect(file_exists($keys['private_key_path']))->toBeTrue()
         ->and(file_exists($keys['public_key_path']))->toBeTrue();
 });
+
+test('lightsail retains local recovery data until asynchronous deletion completes', function (string $operation, string $status) {
+    $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');
+    $this->server->jsonUpdate('provider_data', 'ssh_key_name', 'vito-key');
+    $keys = $this->server->sshKey();
+    if ($operation === 'DeleteKeyPair') {
+        $this->lightsailHandler->append(new Result(['operations' => [['status' => 'Succeeded']]]));
+    }
+    $this->lightsailHandler->append(new Result(['operations' => [['status' => $status, 'isTerminal' => false]]]));
+    $input = ['name' => $this->server->name, 'delete_from_provider' => true];
+
+    expect(fn () => app(DeleteServer::class)->delete($this->server, $input))
+        ->toThrow(ServerProviderError::class, 'deletion is still in progress');
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id]);
+    expect(file_exists($keys['private_key_path']))->toBeTrue()
+        ->and(file_exists($keys['public_key_path']))->toBeTrue();
+
+    $this->lightsailHandler->append(
+        new AwsException('gone', new Command('DeleteInstance'), ['code' => 'NotFoundException']),
+        new Result(['operation' => ['status' => 'Succeeded', 'isTerminal' => true]]),
+    );
+    app(DeleteServer::class)->delete($this->server->fresh(), $input);
+
+    $this->assertDatabaseMissing('servers', ['id' => $this->server->id]);
+    expect(file_exists($keys['private_key_path']))->toBeFalse()
+        ->and(file_exists($keys['public_key_path']))->toBeFalse();
+})->with(['DeleteInstance', 'DeleteKeyPair'])->with(['NotStarted', 'Started']);
 
 test('lightsail surfaces upstream failures without retaining credential bearing exceptions', function (bool $operationFailure) {
     $this->server->jsonUpdate('provider_data', 'instance_name', 'vito-instance');

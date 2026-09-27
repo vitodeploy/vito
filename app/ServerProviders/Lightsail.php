@@ -157,17 +157,18 @@ class Lightsail extends AbstractProvider
             return false;
         }
 
-        if (! ($this->server->provider_data['firewall_configured'] ?? false)) {
+        if (! ($this->server->provider_data['ssh_access_configured'] ?? false)
+            && ! ($this->server->provider_data['firewall_configured'] ?? false)) {
             $this->request('PutInstancePublicPorts', [
                 'instanceName' => $this->server->provider_data['instance_name'],
                 'portInfos' => [[
-                    'fromPort' => 0,
-                    'toPort' => 65535,
-                    'protocol' => 'all',
+                    'fromPort' => 22,
+                    'toPort' => 22,
+                    'protocol' => 'tcp',
                     'cidrs' => ['0.0.0.0/0'],
                 ]],
             ]);
-            $this->server->jsonUpdate('provider_data', 'firewall_configured', true, false);
+            $this->server->jsonUpdate('provider_data', 'ssh_access_configured', true, false);
         }
 
         $this->server->ip = $instance['publicIpAddress'];
@@ -175,6 +176,24 @@ class Lightsail extends AbstractProvider
         $this->server->save();
 
         return true;
+    }
+
+    public function configureFirewall(): void
+    {
+        if ($this->server->provider_data['firewall_configured'] ?? false) {
+            return;
+        }
+
+        $this->request('PutInstancePublicPorts', [
+            'instanceName' => $this->server->provider_data['instance_name'],
+            'portInfos' => [[
+                'fromPort' => 0,
+                'toPort' => 65535,
+                'protocol' => 'all',
+                'cidrs' => ['0.0.0.0/0'],
+            ]],
+        ]);
+        $this->server->jsonUpdate('provider_data', 'firewall_configured', true);
     }
 
     public function delete(): void
@@ -241,6 +260,11 @@ class Lightsail extends AbstractProvider
         foreach ($result['operations'] ?? (isset($result['operation']) ? [$result['operation']] : []) as $operationResult) {
             if (($operationResult['status'] ?? '') === 'Failed') {
                 throw new ServerProviderError('AWS Lightsail could not complete '.$operation.'.');
+            }
+
+            if (in_array($operation, ['DeleteInstance', 'DeleteKeyPair'], true)
+                && ! in_array($operationResult['status'] ?? '', ['Succeeded', 'Completed'], true)) {
+                throw new ServerProviderError('AWS Lightsail deletion is still in progress. Wait for it to finish, then retry deleting the server.');
             }
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\ServerProviders\HasEditableCredentials;
 use App\Traits\HasProjectScopedQueries;
 use Database\Factories\ServerProviderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -75,6 +76,30 @@ class ServerProvider extends AbstractModel
         $provider = new $providerClass($this, new Server);
 
         return $provider;
+    }
+
+    /**
+     * The handler, if users can edit this connection's credentials. The class is
+     * checked first, so providers whose plugin is gone never build a missing handler.
+     */
+    public function editableProvider(): ?HasEditableCredentials
+    {
+        if (! is_a((string) config('server-provider.providers.'.$this->provider.'.handler'), HasEditableCredentials::class, true)) {
+            return null;
+        }
+
+        $provider = $this->provider();
+
+        return $provider instanceof HasEditableCredentials ? $provider : null;
+    }
+
+    public function editableDataFor(?User $user): object
+    {
+        if (! $user?->can('revealCredentials', $this)) {
+            return (object) [];
+        }
+
+        return (object) ($this->editableProvider()?->editableData() ?? []);
     }
 
     /**

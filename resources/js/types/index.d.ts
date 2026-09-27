@@ -48,6 +48,8 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        create_form?: DynamicFieldConfig[];
+        edit_form?: DynamicFieldConfig[];
       };
     };
   };
@@ -102,6 +104,7 @@ export interface Configs {
         handler: string;
         form?: DynamicFieldConfig[];
         versions: string[];
+        unavailable_versions: Record<string, string[]>;
         data?: {
           extensions?: string[];
         };

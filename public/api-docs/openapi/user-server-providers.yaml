@@ -50,6 +50,24 @@ paths:
               required:
                 - name
                 - provider
+              oneOf:
+                - properties:
+                    provider:
+                      enum: ['aws', 'lightsail']
+                  required: ['key', 'secret']
+                - properties:
+                    provider:
+                      enum: ['hetzner', 'digitalocean', 'linode', 'vultr']
+                  required: ['token']
+                - properties:
+                    provider:
+                      enum: ['proxmox']
+                  required: ['api_url', 'token_id', 'token_secret']
+                  anyOf:
+                    - required: ['template_ubuntu_20']
+                    - required: ['template_ubuntu_22']
+                    - required: ['template_ubuntu_24']
+                    - required: ['template_ubuntu_26']
               properties:
                 name:
                   type: string
@@ -57,7 +75,7 @@ paths:
                   example: 'DigitalOcean'
                 provider:
                   type: string
-                  enum: ['aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  enum: ['aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr', 'proxmox']
                   description: Server provider type
                   example: 'digitalocean'
                 token:
@@ -72,6 +90,39 @@ paths:
                   type: string
                   writeOnly: true
                   description: Secret access key (required for AWS and AWS Lightsail)
+                api_url:
+                  type: string
+                  format: uri
+                  description: Proxmox HTTPS API URL
+                token_id:
+                  type: string
+                  description: 'Proxmox API token ID (`user@realm!name`)'
+                token_secret:
+                  type: string
+                  writeOnly: true
+                  description: Proxmox API token secret
+                verify_ssl:
+                  type: boolean
+                  default: true
+                storage:
+                  type: string
+                  description: Optional Proxmox disk storage
+                template_ubuntu_20:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 20.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_22:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 22.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_24:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 24.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_26:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 26.04 cloud-init template VMID (at least one template is required)
                 global:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
@@ -146,7 +197,7 @@ paths:
 
     put:
       summary: Update server provider
-      description: Update a server provider
+      description: 'Update a server provider. Proxmox connections also accept `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24` and `template_ubuntu_26` (cloud-init template VM IDs); omitted fields keep their current value, and when a template changes all mapped templates are re-verified against Proxmox before saving. Other credentials, including the API token, can''t be changed.'
       tags:
         - User Server Providers
       security:
@@ -174,6 +225,11 @@ paths:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
                   example: false
+              additionalProperties: true
+            example:
+              name: 'Proxmox'
+              global: false
+              template_ubuntu_26: 9026
       responses:
         '200':
           description: Server provider updated successfully

@@ -43,7 +43,7 @@ properties:
     example: 22
   os:
     type: string
-    enum: ['ubuntu_18', 'ubuntu_20', 'ubuntu_22', 'ubuntu_24']
+    enum: ['ubuntu_18', 'ubuntu_20', 'ubuntu_22', 'ubuntu_24', 'ubuntu_26']
     example: 'ubuntu_22'
   provider:
     type: string
