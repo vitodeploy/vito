@@ -29,7 +29,8 @@ class InstallServer
     {
         $this->server = $server;
 
-        $maxWait = self::MAX_WAIT_SECONDS;
+        $timeout = (int) (config('server-provider.providers.'.$server->provider.'.provision_timeout') ?? self::MAX_WAIT_SECONDS);
+        $maxWait = $timeout;
         $connected = false;
         $lastError = null;
 
@@ -51,7 +52,7 @@ class InstallServer
 
         if (! $connected) {
             throw new SSHConnectionError(
-                'The server did not become reachable within '.self::MAX_WAIT_SECONDS.' seconds.',
+                'The server did not become reachable within '.$timeout.' seconds.',
                 previous: $lastError,
             );
         }

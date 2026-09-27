@@ -83,6 +83,41 @@ test('waiting for the provider is bounded and paced when the instance never beco
     expect($this->server->status)->toEqual(ServerStatus::INSTALLING);
 });
 
+test('a provider can extend how long the install waits for the server', function () {
+    SSH::fake();
+    config()->set('server-provider.providers.'.DigitalOcean::id().'.provision_timeout', 300);
+
+    Http::fake([
+        'api.digitalocean.com/v2/droplets/*' => Http::response([
+            'droplet' => [
+                'id' => 599103218,
+                'status' => 'new',
+                'networks' => ['v4' => []],
+            ],
+        ]),
+        '*' => Http::response([]),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => DigitalOcean::id(),
+        'credentials' => ['token' => 'secret-token'],
+    ]);
+
+    $this->server->update([
+        'provider' => DigitalOcean::id(),
+        'provider_id' => $serverProvider->id,
+        'provider_data' => ['plan' => 's-1vcpu-512mb-10gb', 'region' => 'nyc1', 'droplet_id' => 599103218],
+        'ip' => '',
+        'status' => ServerStatus::INSTALLING,
+    ]);
+
+    expect(fn () => app(InstallServer::class)->run($this->server->refresh()))
+        ->toThrow(SSHConnectionError::class, 'The server did not become reachable within 300 seconds.');
+
+    Sleep::assertSleptTimes(30);
+});
+
 test('the underlying ssh failure is preserved when the server never becomes reachable', function () {
     SSH::fake()->connectionWillFail();
 

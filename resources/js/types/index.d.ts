@@ -48,6 +48,7 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        create_form?: DynamicFieldConfig[];
       };
     };
   };

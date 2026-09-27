@@ -44,6 +44,8 @@ import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
+import DynamicField, { dynamicFieldSpan } from '@/components/ui/dynamic-field';
+import { DynamicFieldValue } from '@/types/dynamic-field-config';
 
 type PlanOption = {
   label: string;
@@ -62,6 +64,7 @@ type CreateServerForm = {
   region: string;
   plan: string;
   services: Service[];
+  [key: string]: DynamicFieldValue | Service[];
 };
 
 function AddService() {
@@ -333,6 +336,12 @@ export default function CreateServer({
     form.clearErrors();
     form.setData('region', '');
     form.setData('plan', '');
+    const staleFields = configs.server_provider.providers[form.data.provider]?.create_form ?? [];
+    form.setData((data) => {
+      const next = { ...data };
+      staleFields.forEach((field) => delete next[field.name]);
+      return next;
+    });
     setRegions({});
     setPlans({});
 
@@ -527,6 +536,21 @@ export default function CreateServer({
                   </Popover>
                   <InputError message={form.errors.plan} />
                 </FormField>
+              </div>
+            )}
+
+            {!!configs.server_provider.providers[form.data.provider]?.create_form?.length && (
+              <div className="grid items-start gap-6 sm:grid-cols-6">
+                {configs.server_provider.providers[form.data.provider].create_form!.map((field) => (
+                  <div key={`${form.data.server_provider}-${field.name}`} className={dynamicFieldSpan(field)}>
+                    <DynamicField
+                      value={form.data[field.name] as DynamicFieldValue | undefined}
+                      onChange={(value) => form.setData(field.name, value)}
+                      config={field}
+                      error={form.errors[field.name]}
+                    />
+                  </div>
+                ))}
               </div>
             )}
 

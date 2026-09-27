@@ -5,12 +5,23 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import { DynamicFieldConfig, SetupGuideStep } from '@/types/dynamic-field-config';
 import InputError from '@/components/ui/input-error';
 import { FormField } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { TriangleAlertIcon } from 'lucide-react';
+import { BookOpenIcon, TriangleAlertIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDialogStore } from '@/stores/dialog-store';
 import ServerProviderSelect from '@/pages/server-providers/components/server-provider-select';
+
+const widthSpans = { half: 'sm:col-span-3', third: 'sm:col-span-2' };
+
+/**
+ * Column span for a field inside a `sm:grid-cols-6` grid, from the backend's width hint.
+ */
+export function dynamicFieldSpan(config: DynamicFieldConfig): string {
+  return config.width ? widthSpans[config.width] : 'sm:col-span-6';
+}
 
 interface DynamicFieldProps {
   value: string | number | boolean | string[] | undefined;
@@ -53,6 +64,34 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
                 {config.link.label}
               </a>
             )}
+          </AlertDescription>
+        </Alert>
+      </FormField>
+    );
+  }
+
+  if (config?.type === 'guide') {
+    return (
+      <FormField>
+        <Alert>
+          <BookOpenIcon />
+          <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span>{config.description}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() =>
+                useDialogStore.getState().open('setupGuide', {
+                  title: label,
+                  description: config.description,
+                  steps: (config.componentProps?.steps ?? []) as SetupGuideStep[],
+                })
+              }
+            >
+              View guide
+            </Button>
           </AlertDescription>
         </Alert>
       </FormField>
