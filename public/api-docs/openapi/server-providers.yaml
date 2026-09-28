@@ -74,7 +74,24 @@ paths:
               required:
                 - name
                 - provider
-                - credentials
+              oneOf:
+                - properties:
+                    provider:
+                      enum: ['aws', 'lightsail']
+                  required: ['key', 'secret']
+                - properties:
+                    provider:
+                      enum: ['hetzner', 'digitalocean', 'linode', 'vultr']
+                  required: ['token']
+                - properties:
+                    provider:
+                      enum: ['proxmox']
+                  required: ['api_url', 'token_id', 'token_secret']
+                  anyOf:
+                    - required: ['template_ubuntu_20']
+                    - required: ['template_ubuntu_22']
+                    - required: ['template_ubuntu_24']
+                    - required: ['template_ubuntu_26']
               properties:
                 name:
                   type: string
@@ -82,14 +99,54 @@ paths:
                   example: 'DigitalOcean'
                 provider:
                   type: string
-                  enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr', 'proxmox']
+                  enum: ['aws', 'lightsail', 'hetzner', 'digitalocean', 'linode', 'vultr', 'proxmox']
                   description: Server provider type
                   example: 'digitalocean'
-                credentials:
-                  type: object
-                  description: 'Provider-specific credentials. Proxmox: `api_url` (https), `token_id` (`user@realm!name`), `token_secret`, `verify_ssl` (default true), optional `storage`, and at least one of `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24`, `template_ubuntu_26` (cloud-init template VMIDs).'
-                  example:
-                    token: 'dop_v1_xxxxxxxxxxxx'
+                token:
+                  type: string
+                  writeOnly: true
+                  description: API token (required for Hetzner, DigitalOcean, Linode, and Vultr)
+                key:
+                  type: string
+                  writeOnly: true
+                  description: Access key ID (required for AWS and AWS Lightsail)
+                secret:
+                  type: string
+                  writeOnly: true
+                  description: Secret access key (required for AWS and AWS Lightsail)
+                api_url:
+                  type: string
+                  format: uri
+                  description: Proxmox HTTPS API URL
+                token_id:
+                  type: string
+                  description: 'Proxmox API token ID (`user@realm!name`)'
+                token_secret:
+                  type: string
+                  writeOnly: true
+                  description: Proxmox API token secret
+                verify_ssl:
+                  type: boolean
+                  default: true
+                storage:
+                  type: string
+                  description: Optional Proxmox disk storage
+                template_ubuntu_20:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 20.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_22:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 22.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_24:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 24.04 cloud-init template VMID (at least one template is required)
+                template_ubuntu_26:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Ubuntu 26.04 cloud-init template VMID (at least one template is required)
                 global:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)

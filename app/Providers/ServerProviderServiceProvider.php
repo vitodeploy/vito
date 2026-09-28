@@ -5,14 +5,18 @@ namespace App\Providers;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\OperatingSystem;
+use App\Models\Service;
 use App\Plugins\RegisterServerProvider;
 use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
+use App\ServerProviders\Lightsail;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Proxmox;
 use App\ServerProviders\Vultr;
+use App\Services\Firewall\Ufw;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class ServerProviderServiceProvider extends ServiceProvider
@@ -23,6 +27,7 @@ class ServerProviderServiceProvider extends ServiceProvider
     {
         $this->custom();
         $this->aws();
+        $this->lightsail();
         $this->hetzner();
         $this->digitalOcean();
         $this->linode();
@@ -52,6 +57,34 @@ class ServerProviderServiceProvider extends ServiceProvider
                     DynamicField::make('secret')
                         ->text()
                         ->label('Secret'),
+                ])
+            )
+            ->defaultUser('ubuntu')
+            ->register();
+    }
+
+    private function lightsail(): void
+    {
+        Event::listen('service.installed', function (Service $service): void {
+            if ($service->name === Ufw::id() && $service->server->provider === Lightsail::id()) {
+                $provider = $service->server->provider();
+                if ($provider instanceof Lightsail) {
+                    $provider->configureFirewall();
+                }
+            }
+        });
+
+        RegisterServerProvider::make(Lightsail::id())
+            ->label('AWS Lightsail')
+            ->handler(Lightsail::class)
+            ->form(
+                DynamicForm::make([
+                    DynamicField::make('key')
+                        ->text()
+                        ->label('Access Key'),
+                    DynamicField::make('secret')
+                        ->password()
+                        ->label('Secret Access Key'),
                 ])
             )
             ->defaultUser('ubuntu')

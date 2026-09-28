@@ -11,6 +11,7 @@ A connected provider is also used to discover the private networks your servers 
 ## Supported Providers
 
 - AWS
+- AWS Lightsail
 - Akamai (Linode)
 - Digital Ocean
 - Vultr
@@ -38,6 +39,63 @@ Vito checks the credentials before it saves the connection, so a wrong or under-
 4. In Vito, enter the **Access Key** (the access key ID) and the **Secret**.
 
 For each server, Vito creates an SSH key pair and a security group in the region you pick.
+
+### AWS Lightsail
+
+AWS Lightsail uses a separate connection from the AWS (EC2) provider. An EC2 connection and the `AmazonEC2FullAccess` policy do not grant Lightsail access.
+
+#### 1. Create an IAM user and access key
+
+1. In the AWS console, open **IAM → Users** and create a dedicated user for Vito. It does not need AWS console access.
+2. Give the user an IAM policy allowing the Lightsail actions below, either directly or through a group. You can create one under **IAM → Policies → Create policy** by selecting the **Lightsail** service and these actions.
+3. Open the user's **Security credentials** tab and choose **Create access key**. Choose the option for an application running outside AWS.
+4. Save the **Access key ID** and **Secret access key**. AWS only shows the secret when the key is created; if you lose it, create another key.
+
+The policy must allow these actions in the regions you use:
+
+- `lightsail:GetRegions`
+- `lightsail:GetBundles`
+- `lightsail:GetBlueprints`
+- `lightsail:ImportKeyPair`
+- `lightsail:CreateInstances`
+- `lightsail:GetInstance`
+- `lightsail:PutInstancePublicPorts`
+- `lightsail:DeleteInstance`
+- `lightsail:DeleteKeyPair`
+
+Allow `GetRegions` in `us-east-1` as well, because Vito uses it to verify the connection and list regions. See the [AWS Lightsail permissions reference](https://docs.aws.amazon.com/service-authorization/latest/reference/list_lightsail.html) for resource-level restrictions.
+
+#### 2. Connect Lightsail to Vito
+
+1. In Vito, open **Settings → Server Providers → Connect**.
+2. Choose **AWS Lightsail** and give the connection a name.
+3. Enter the access key ID as **Access Key** and the secret access key as **Secret Access Key**.
+4. Choose the connection's [scope](#scope) and connect. Vito checks the credentials by listing Lightsail regions before saving the connection.
+
+For the API, use `provider: "lightsail"` and send `key` and `secret` as top-level request fields when connecting a provider.
+
+#### Creating servers on Lightsail
+
+When you [create a server](../servers/create.md) on a Lightsail connection:
+
+- **Region** is the AWS region where the instance will run. Vito selects an availability zone within it.
+- **Plan** lists active Linux plans with public IPv4 addresses in that region.
+- **Operating System** must be an Ubuntu version AWS currently offers. Vito looks up the image at creation time and returns an error before allocating resources if it is unavailable.
+- Include the **UFW** firewall service in the services to install.
+
+Vito generates and imports a separate RSA SSH key for each instance and initially connects as `ubuntu`. Your Vito installation must be able to reach the instance's public IPv4 address on SSH port `22`.
+
+:::warning
+The Lightsail firewall permits only SSH until UFW installs and applies its rules successfully. Vito then allows inbound traffic through to the server's UFW firewall, where you manage access to service ports. If UFW is omitted or fails, the Lightsail firewall remains SSH-only.
+:::
+
+The instance uses its assigned public IPv4 address. Lightsail can change this address after a stop/start; automatic static IP allocation and provider private-network discovery are not included.
+
+#### Deleting servers
+
+Choose **Delete from Vito and AWS Lightsail** to remove the Lightsail instance and its imported SSH key as well as the server in Vito. Deleting only from Vito keeps both resources in AWS.
+
+If AWS reports that deletion is still in progress, Vito keeps the server record and local keys. Wait for AWS to finish, then retry deletion; Vito tolerates resources that have already been removed.
 
 ### Akamai (Linode)
 
