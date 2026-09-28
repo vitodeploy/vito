@@ -218,10 +218,11 @@ test('lightsail provisions the selected ubuntu image and queues installation', f
         ->and($server->sshKey()['public_key'])->toStartWith('ssh-rsa ')
         ->and($this->lightsailCommands[0]['parameters']['includeAvailabilityZones'])->toBeTrue()
         ->and($this->lightsailCommands[3]['parameters']['pageToken'])->toBe('next-images')
-        ->and(base64_decode($this->lightsailCommands[4]['parameters']['publicKeyBase64']))->toBe($server->sshKey()['public_key']);
+        ->and($this->lightsailCommands[4]['parameters']['publicKeyBase64'])->toBe($server->sshKey()['public_key']);
     $create = $this->lightsailCommands[5]['parameters'];
     expect($create['instanceNames'])->toBe([$server->provider_data['instance_name']])
         ->and($create['keyPairName'])->toBe($server->provider_data['ssh_key_name'])
+        ->and($create['keyPairName'])->not->toBe($create['instanceNames'][0])
         ->and($create['availabilityZone'])->toBe('eu-central-1b')
         ->and($create['blueprintId'])->toBe('ubuntu_'.str_replace('.', '_', $version))
         ->and($create['bundleId'])->toBe('small_3_0')
@@ -322,7 +323,7 @@ test('lightsail reports creation failures when cleanup targets do not exist', fu
         'provider' => 'lightsail', 'server_provider' => $this->lightsailProfile->id,
         'name' => 'Rejected Lightsail', 'os' => 'ubuntu_24', 'region' => 'eu-central-1', 'plan' => 'small_3_0',
     ])->assertUnprocessable()->assertJsonValidationErrors('provider')
-        ->assertJsonPath('errors.provider.0', 'AWS Lightsail could not complete '.$operation.'. Check the provider permissions and try again.')
+        ->assertJsonPath('errors.provider.0', 'AWS Lightsail could not complete '.$operation.' (AccessDeniedException).')
         ->assertDontSee('upstream secret');
 
     $this->assertDatabaseMissing('servers', ['name' => 'Rejected Lightsail']);

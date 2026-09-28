@@ -116,11 +116,12 @@ class Lightsail extends AbstractProvider
         }
 
         $name = 'vito-'.$this->server->id.'-'.Str::lower(Str::random(12));
+        $keyName = $name.'-key';
         $this->generateKeyPair();
-        $this->server->jsonUpdate('provider_data', 'ssh_key_name', $name);
+        $this->server->jsonUpdate('provider_data', 'ssh_key_name', $keyName);
         $this->request('ImportKeyPair', [
-            'keyPairName' => $name,
-            'publicKeyBase64' => base64_encode($this->server->sshKey()['public_key']),
+            'keyPairName' => $keyName,
+            'publicKeyBase64' => $this->server->sshKey()['public_key'],
         ]);
 
         $this->server->jsonUpdate('provider_data', 'instance_name', $name);
@@ -129,7 +130,7 @@ class Lightsail extends AbstractProvider
             'availabilityZone' => $zone,
             'blueprintId' => $blueprint['blueprintId'],
             'bundleId' => $this->server->provider_data['plan'],
-            'keyPairName' => $name,
+            'keyPairName' => $keyName,
             'ipAddressType' => 'ipv4',
         ]);
     }
@@ -264,12 +265,14 @@ class Lightsail extends AbstractProvider
             ]]);
             $result = $client->execute($client->getCommand($operation, $parameters))->toArray();
         } catch (AwsException $exception) {
-            if (in_array($exception->getAwsErrorCode(), ['NotFoundException', 'DoesNotExist'], true)
+            $code = $exception->getAwsErrorCode();
+
+            if (in_array($code, ['NotFoundException', 'DoesNotExist'], true)
                 && in_array($operation, ['GetInstance', 'DeleteInstance', 'DeleteKeyPair'], true)) {
                 return [];
             }
 
-            throw new ServerProviderError('AWS Lightsail could not complete '.$operation.'. Check the provider permissions and try again.');
+            throw new ServerProviderError('AWS Lightsail could not complete '.$operation.($code ? ' ('.$code.')' : '').'.');
         }
 
         foreach ($result['operations'] ?? (isset($result['operation']) ? [$result['operation']] : []) as $operationResult) {
