@@ -2,6 +2,7 @@
 
 namespace App\SiteTypes;
 
+use App\Actions\Site\EnsureSiteSshKey;
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
@@ -138,25 +139,10 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $os = $this->site->server->os();
-
-        if (! $this->site->ssh_key) {
-            $keyName = $this->site->getSshKeyName();
-            $os->generateSSHKey($keyName, $this->site);
-            $publicKey = $os->readSSHKey($keyName, $this->site);
-
-            if (str_starts_with($keyName, 'iuser_') && $this->site->isolatedUser) {
-                $this->site->isolatedUser->ssh_key = $publicKey;
-                $this->site->isolatedUser->save();
-                $this->site->setRelation('isolatedUser', $this->site->isolatedUser->fresh());
-            } else {
-                $this->site->ssh_key = $publicKey;
-                $this->site->save();
-            }
-        }
+        app(EnsureSiteSshKey::class)->ensure($this->site);
 
         if (empty($this->site->type_data['deploy_key_id'])) {
-            $keyId = $this->site->sourceControl?->provider()?->deployKey(
+            $keyId = $this->site->sourceControl->provider()->deployKey(
                 $this->site->getDeployKeyName(),
                 $this->site->repository,
                 $this->site->ssh_key

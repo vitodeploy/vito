@@ -16,4 +16,6 @@ if ! git config credential.helper '!f() { test "$1" = get && printf "username=x-
 fi
 @else
 git config --unset credential.helper || true
+
+@include('ssh.git.ssh-host')
 @endif

@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Events\SiteDeletedEvent;
+use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\SSHError;
 use App\Models\Service;
 use App\Models\Site;
@@ -26,10 +27,18 @@ class DeleteSite
         $this->validate($site, $input);
 
         if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
-            $site->sourceControl->provider()->deleteDeployKey(
-                $site->type_data['deploy_key_id'],
-                $site->repository,
-            );
+            try {
+                $site->sourceControl->provider()->deleteDeployKey(
+                    $site->type_data['deploy_key_id'],
+                    $site->repository,
+                );
+            } catch (FailedToDeleteDeployKey $e) {
+                Log::warning('Failed to delete deploy key on site deletion', [
+                    'site_id' => $site->id,
+                    'deploy_key_id' => $site->type_data['deploy_key_id'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         if (! $site->isIsolated()) {

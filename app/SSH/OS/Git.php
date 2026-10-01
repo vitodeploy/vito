@@ -22,12 +22,10 @@ class Git
         $repoUrl = (string) $site->getFullRepositoryUrl();
         $ssh->exec(
             view('ssh.git.clone', [
-                'host' => $usesToken ? '' : str($repoUrl)->after('@')->before('-'),
+                ...$this->sshHost($site, $repoUrl, $usesToken),
                 'repo' => escapeshellarg($repoUrl),
                 'path' => escapeshellarg((string) ($path ?? $site->path)),
                 'branch' => escapeshellarg((string) $site->branch),
-                'key' => $site->getSshKeyName(),
-                'port' => $site->sourceControl?->provider()?->getSshPort() ?? 22,
                 'usesToken' => $usesToken,
             ]),
             'clone-repository',
@@ -84,6 +82,7 @@ class Git
 
         $ssh->exec(
             view('ssh.git.set-remote', [
+                ...$this->sshHost($site, $newRepoUrl, $usesToken),
                 'path' => escapeshellarg((string) $site->path),
                 'newRepoUrl' => escapeshellarg($newRepoUrl),
                 'usesToken' => $usesToken,
@@ -91,5 +90,17 @@ class Git
             'set-remote',
             $site->id
         );
+    }
+
+    /**
+     * @return array{host: string, key: string, port: int}
+     */
+    private function sshHost(Site $site, string $repoUrl, bool $usesToken): array
+    {
+        return [
+            'host' => $usesToken ? '' : (string) str($repoUrl)->after('@')->before('-'),
+            'key' => $site->getSshKeyName(),
+            'port' => $site->sourceControl?->provider()?->getSshPort() ?? 22,
+        ];
     }
 }

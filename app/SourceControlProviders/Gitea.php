@@ -219,12 +219,12 @@ class Gitea extends AbstractSourceControlProvider
             );
 
             if ($response->status() != 201) {
-                throw new FailedToDeployGitKey('Gitea rejected the deploy key.');
+                throw new FailedToDeployGitKey($response->body());
             }
 
             return $response->json()['id'] ?? '';
-        } catch (Exception) {
-            throw new FailedToDeployGitKey('Failed to deploy Gitea key.');
+        } catch (Exception $e) {
+            throw new FailedToDeployGitKey($e->getMessage());
         }
     }
 

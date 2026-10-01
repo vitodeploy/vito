@@ -22,6 +22,7 @@ class UpdateSourceControl
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
+     * @throws SSHError
      * @throws Throwable
      */
     public function update(Site $site, array $input): void
@@ -94,8 +95,8 @@ class UpdateSourceControl
                 $site->save();
             });
         } catch (Throwable $e) {
-            if (! $reuseOldDeployKey) {
-                $this->removeRegisteredDeployKey($site, $newSourceControl, $newDeployKeyId);
+            if (! $reuseOldDeployKey && $newDeployKeyId !== null) {
+                $this->deleteDeployKey($site, $newSourceControl, $newDeployKeyId, 'Failed to remove new deploy key after source control update failed');
             }
 
             throw $e;
@@ -124,64 +125,50 @@ class UpdateSourceControl
         }
 
         if ($remoteUpdated && ! $reuseOldDeployKey && $oldDeployKeyId !== null && $oldSourceControl) {
-            $this->removeOldDeployKey($site, $oldSourceControl, (string) $oldDeployKeyId);
+            $this->deleteDeployKey($site, $oldSourceControl, (string) $oldDeployKeyId, 'Failed to remove old deploy key during source control update');
         }
     }
 
+    /**
+     * @throws ValidationException
+     * @throws SSHError
+     */
     private function registerDeployKey(Site $site, SourceControl $sourceControl): ?string
     {
-        if (! $site->ssh_key || ! $site->repository || $sourceControl->isGithubApp()) {
+        if (! $site->repository || $sourceControl->isGithubApp()) {
             return null;
         }
 
-        try {
-            $keyId = $sourceControl->provider()->deployKey(
-                $site->getDeployKeyName(),
-                $site->repository,
-                $site->ssh_key,
-            );
-        } catch (Throwable $e) {
-            Log::warning('Failed to re-deploy SSH key after source control update', [
-                'site_id' => $site->id,
-                'exception' => $e::class,
-            ]);
+        $publicKey = app(EnsureSiteSshKey::class)->ensure($site);
 
-            throw new FailedToDeployGitKey('Source control provider failed to deploy the key.');
+        try {
+            $keyId = $sourceControl->provider()->deployKey($site->getDeployKeyName(), $site->repository, $publicKey);
+        } catch (FailedToDeployGitKey $e) {
+            Log::warning('Failed to deploy SSH key after source control update', [
+                'site_id' => $site->id,
+                'error' => $e->getMessage(),
+            ]);
+            $keyId = '';
         }
 
         if ($keyId === '') {
-            throw new FailedToDeployGitKey('Source control provider did not return a deploy key ID.');
+            throw ValidationException::withMessages([
+                'source_control' => 'Failed to add the deploy key to the new source control',
+            ]);
         }
 
         return $keyId;
     }
 
-    private function removeOldDeployKey(Site $site, SourceControl $sourceControl, string $keyId): void
+    private function deleteDeployKey(Site $site, SourceControl $sourceControl, string $keyId, string $failureMessage): void
     {
         try {
             $sourceControl->provider()->deleteDeployKey($keyId, $site->repository);
         } catch (Throwable $e) {
-            Log::warning('Failed to remove old deploy key during source control update', [
+            Log::warning($failureMessage, [
                 'site_id' => $site->id,
                 'deploy_key_id' => $keyId,
-                'exception' => $e::class,
-            ]);
-        }
-    }
-
-    private function removeRegisteredDeployKey(Site $site, SourceControl $sourceControl, ?string $keyId): void
-    {
-        if ($keyId === null) {
-            return;
-        }
-
-        try {
-            $sourceControl->provider()->deleteDeployKey($keyId, $site->repository);
-        } catch (Throwable $e) {
-            Log::warning('Failed to remove new deploy key after source control update failed', [
-                'site_id' => $site->id,
-                'deploy_key_id' => $keyId,
-                'exception' => $e::class,
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -199,7 +199,7 @@ class Github extends AbstractSourceControlProvider
                 ]);
 
             if ($response->status() !== 201) {
-                throw new FailedToDeployGitKey('GitHub rejected the deploy key.');
+                throw new FailedToDeployGitKey($response->body());
             }
 
             return $response->json()['id'] ?? '';
@@ -208,10 +208,10 @@ class Github extends AbstractSourceControlProvider
             Log::error('Failed to deploy GitHub key', [
                 'repo' => $repo,
                 'title' => $title,
-                'exception' => $e::class,
+                'error' => $e->getMessage(),
             ]);
 
-            throw new FailedToDeployGitKey('Failed to deploy GitHub key.');
+            throw new FailedToDeployGitKey($e->getMessage());
         }
     }
 

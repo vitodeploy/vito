@@ -163,12 +163,12 @@ class Bitbucket extends AbstractSourceControlProvider
             );
 
             if ($res->status() != 200) {
-                throw new FailedToDeployGitKey('Bitbucket rejected the deploy key.');
+                throw new FailedToDeployGitKey($res->json()['error']['message']);
             }
 
             return $res->json()['id'] ?? '';
-        } catch (Exception) {
-            throw new FailedToDeployGitKey('Failed to deploy Bitbucket key.');
+        } catch (Exception $e) {
+            throw new FailedToDeployGitKey($e->getMessage());
         }
     }
 

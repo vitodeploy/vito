@@ -75,15 +75,17 @@ test('deploy key deletion connection failures bubble up', function (string $prov
         ->toThrow(FailedToDeleteDeployKey::class);
 })->with('deployKeyDeletionProviders');
 
-test('missing deploy key is already deleted', function () {
+test('missing deploy key is already deleted', function (string $provider, array $attributes, string $endpoint) {
     Http::fake([
-        'https://api.github.com/repos/*/keys/123' => Http::response([], 404),
+        'https://bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'test'], 200),
+        $endpoint => Http::response([], 404),
     ]);
 
-    $sourceControl = SourceControl::factory()->github()->create();
-    $provider = new Github($sourceControl);
+    $sourceControl = SourceControl::factory()->create($attributes);
+    /** @var SourceControlProvider $handler */
+    $handler = new $provider($sourceControl);
 
-    $provider->deleteDeployKey('123', 'organization/repository');
+    $handler->deleteDeployKey('123', 'organization/repository');
 
-    Http::assertSentCount(1);
-});
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE');
+})->with('deployKeyDeletionProviders');

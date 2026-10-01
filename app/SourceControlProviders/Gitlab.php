@@ -227,12 +227,12 @@ class Gitlab extends AbstractSourceControlProvider
             );
 
             if ($response->status() != 201) {
-                throw new FailedToDeployGitKey('GitLab rejected the deploy key.');
+                throw new FailedToDeployGitKey($response->body());
             }
 
             return $response->json()['id'] ?? '';
-        } catch (Exception) {
-            throw new FailedToDeployGitKey('Failed to deploy GitLab key.');
+        } catch (Exception $e) {
+            throw new FailedToDeployGitKey($e->getMessage());
         }
     }
 
