@@ -62,7 +62,7 @@ class BackupController extends Controller
     {
         $this->authorize('create', [Backup::class, $server]);
 
-        app(ManageBackup::class)->create($server, $request->all());
+        app(ManageBackup::class)->create($server, $request->all(), $request->user());
 
         return back()
             ->with('info', 'Backup is being created...');

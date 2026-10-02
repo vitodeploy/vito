@@ -13,11 +13,14 @@ use App\Models\IsolatedUser;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
+use App\Models\User;
 use App\Services\Webserver\Webserver;
 use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -32,7 +35,7 @@ class CreateSite
      *
      * @throws Throwable
      */
-    public function create(Server $server, array $input): Site
+    public function create(Server $server, array $input, User $actor): Site
     {
         $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
 
@@ -78,6 +81,8 @@ class CreateSite
             // check has access to repository
             try {
                 if ($site->sourceControl) {
+                    Gate::forUser($actor)->authorize('view', $site->sourceControl);
+
                     $site->sourceControl->getRepo($site->repository);
                 }
             } catch (SourceControlIsNotConnected) {
@@ -128,6 +133,10 @@ class CreateSite
             return $site;
         } catch (Exception $e) {
             DB::rollBack();
+            if ($e instanceof AuthorizationException) {
+                throw $e;
+            }
+
             throw ValidationException::withMessages([
                 'type' => $e->getMessage(),
             ]);

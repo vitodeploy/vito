@@ -9,6 +9,8 @@ use App\Jobs\Workflow\RunJob;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class RunWorkflow
@@ -44,11 +46,13 @@ class RunWorkflow
         return $run;
     }
 
-    public function executeAction(WorkflowRun $run, User $user, Workflow $workflow, ?WorkflowActionDTO $workflowActionDto, ?array $input): void
+    public function executeAction(WorkflowRun $run, User $user, Workflow $workflow, ?WorkflowActionDTO $workflowActionDto, ?array $input, ?int $accessTokenId = null): void
     {
         if (! $workflowActionDto) {
             return;
         }
+
+        $this->authorizeExecution($user, $workflow, $accessTokenId);
 
         // Merge input with $workflowActionDto->inputs and resolve placeholders
         $resolvedInput = $this->resolveInputs($input ?? [], $workflowActionDto->inputs ?? []);
@@ -61,11 +65,33 @@ class RunWorkflow
 
         try {
             $output = $workflowActionDto->handler($user, $workflow)->run($resolvedInput);
-            $this->executeAction($run, $user, $workflow, $workflowActionDto->success, $output);
         } catch (\Throwable $e) {
             $run->log('Workflow action failed: '.$e->getMessage());
-            $this->executeAction($run, $user, $workflow, $workflowActionDto->failure, $input);
+            $this->executeAction($run, $user, $workflow, $workflowActionDto->failure, $input, $accessTokenId);
+
+            return;
         }
+
+        $this->executeAction($run, $user, $workflow, $workflowActionDto->success, $output, $accessTokenId);
+    }
+
+    private function authorizeExecution(User $user, Workflow $workflow, ?int $accessTokenId): void
+    {
+        if ($accessTokenId !== null) {
+            $token = $user->tokens()->find($accessTokenId);
+            $expiration = config('sanctum.expiration');
+
+            if (! $token ||
+                ($token->expires_at && $token->expires_at->isPast()) ||
+                ($expiration && $token->created_at->lte(now()->subMinutes($expiration))) ||
+                ! $token->can('write')) {
+                throw new AuthorizationException('The workflow API token is no longer valid.');
+            }
+
+            $user->withAccessToken($token);
+        }
+
+        Gate::forUser($user)->authorize('update', $workflow);
     }
 
     /**

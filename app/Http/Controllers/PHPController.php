@@ -47,7 +47,7 @@ class PHPController extends Controller
     #[Get('/{service}/ini', name: 'php.ini')]
     public function ini(Request $request, Server $server, Service $service): JsonResponse
     {
-        $this->authorize('view', $service);
+        $this->authorize('view', [$service, $server]);
 
         $ini = app(GetPHPIni::class)->getIni($server, $request->input());
 
@@ -59,7 +59,7 @@ class PHPController extends Controller
     #[Patch('/{service}/ini', name: 'php.ini.update')]
     public function updateIni(Request $request, Server $server, Service $service): RedirectResponse
     {
-        $this->authorize('update', $service);
+        $this->authorize('update', [$service, $server]);
 
         app(UpdatePHPIni::class)->update($server, $request->input());
 
@@ -69,7 +69,7 @@ class PHPController extends Controller
     #[Post('/{service}/install-extension', name: 'php.install-extension')]
     public function installExtension(Request $request, Server $server, Service $service): RedirectResponse
     {
-        $this->authorize('update', $service);
+        $this->authorize('update', [$service, $server]);
 
         app(InstallPHPExtension::class)->install($server, $request->input());
 
@@ -82,7 +82,7 @@ class PHPController extends Controller
     #[Post('/{service}/default-cli', name: 'php.default-cli')]
     public function defaultCli(Request $request, Server $server, Service $service): RedirectResponse
     {
-        $this->authorize('update', $service);
+        $this->authorize('update', [$service, $server]);
 
         app(ChangeDefaultCli::class)->change($server, $request->input());
 

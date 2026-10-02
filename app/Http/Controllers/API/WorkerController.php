@@ -34,9 +34,9 @@ class WorkerController extends Controller
     #[Get('/workers', name: 'api.projects.servers.workers', middleware: 'ability:read')]
     public function serverIndex(Project $project, Server $server): ResourceCollection
     {
-        $this->authorize('view', [$project, $server]);
-
         $this->validateRoute($project, $server);
+
+        $this->authorize('viewAny', [Worker::class, $server]);
 
         $workers = $server->workers()
             ->latest()
@@ -48,9 +48,9 @@ class WorkerController extends Controller
     #[Get('/sites/{site}/workers', name: 'api.projects.servers.sites.workers', middleware: 'ability:read')]
     public function siteIndex(Project $project, Server $server, Site $site): ResourceCollection
     {
-        $this->authorize('view', [$project, $server, $site]);
-
         $this->validateRoute($project, $server, $site);
+
+        $this->authorize('viewAny', [Worker::class, $server, $site]);
 
         $workers = $site->workers()
             ->latest()
@@ -62,9 +62,9 @@ class WorkerController extends Controller
     #[Get('/workers/{worker}', name: 'api.projects.servers.workers.show', middleware: 'ability:read')]
     public function serverShow(Project $project, Server $server, Worker $worker): WorkerResource
     {
-        $this->authorize('view', [$project, $server, $worker]);
-
         $this->validateRoute($project, $server, worker: $worker);
+
+        $this->authorize('view', [$worker, $server]);
 
         return new WorkerResource($worker);
     }
@@ -72,9 +72,9 @@ class WorkerController extends Controller
     #[Get('/sites/{site}/workers/{worker}', name: 'api.projects.servers.sites.workers.show', middleware: 'ability:read')]
     public function siteShow(Project $project, Server $server, Site $site, Worker $worker): WorkerResource
     {
-        $this->authorize('view', [$project, $server, $site, $worker]);
-
         $this->validateRoute($project, $server, $site, $worker);
+
+        $this->authorize('view', [$worker, $server, $site]);
 
         return new WorkerResource($worker);
     }
@@ -83,9 +83,9 @@ class WorkerController extends Controller
     #[WhereNumber('site')]
     public function resync(Project $project, Server $server, ?Site $site = null): JsonResponse
     {
-        $this->authorize('update', [$project, $server]);
-
         $this->validateRoute($project, $server, $site);
+
+        $this->authorize('manage', [Worker::class, $server, $site]);
 
         $count = app(SyncWorkerStatuses::class)->sync($server, $site);
 
@@ -98,9 +98,9 @@ class WorkerController extends Controller
     #[WhereNumber('site')]
     public function restartAll(Project $project, Server $server, ?Site $site = null): JsonResponse
     {
-        $this->authorize('update', [$project, $server]);
-
         $this->validateRoute($project, $server, $site);
+
+        $this->authorize('manage', [Worker::class, $server, $site]);
 
         app(RestartAllWorkers::class)->restart($server, $site);
 
@@ -113,9 +113,9 @@ class WorkerController extends Controller
     #[WhereNumber('site')]
     public function create(Request $request, Project $project, Server $server, ?Site $site = null): WorkerResource
     {
-        $this->authorize('create', [$project, $server, $site]);
-
         $this->validateRoute($project, $server, $site);
+
+        $this->authorize('create', [Worker::class, $server, $site]);
 
         $worker = app(CreateWorker::class)->create($server, $request->all(), $site);
 
@@ -125,9 +125,9 @@ class WorkerController extends Controller
     #[Put('/workers/{worker}/{site?}', name: 'api.projects.servers.workers.update', middleware: 'ability:write')]
     public function update(Request $request, Project $project, Server $server, Worker $worker, ?Site $site = null): WorkerResource
     {
-        $this->authorize('update', [$project, $server, $site]);
-
         $this->validateRoute($project, $server, $site, $worker);
+
+        $this->authorize('update', [$worker, $server, $site]);
 
         $worker = app(EditWorker::class)->edit($worker, $request->all());
 
@@ -137,9 +137,9 @@ class WorkerController extends Controller
     #[Post('/workers/{worker}/start', name: 'api.projects.servers.workers.start', middleware: 'ability:write')]
     public function start(Request $request, Project $project, Server $server, Worker $worker): WorkerResource
     {
-        $this->authorize('update', [$project, $server]);
-
         $this->validateRoute($project, $server, worker: $worker);
+
+        $this->authorize('update', [$worker, $server]);
 
         app(ManageWorker::class)->start($worker);
 
@@ -149,9 +149,9 @@ class WorkerController extends Controller
     #[Post('/workers/{worker}/restart', name: 'api.projects.servers.workers.restart', middleware: 'ability:write')]
     public function restart(Request $request, Project $project, Server $server, Worker $worker): WorkerResource
     {
-        $this->authorize('update', [$project, $server]);
-
         $this->validateRoute($project, $server, worker: $worker);
+
+        $this->authorize('update', [$worker, $server]);
 
         app(ManageWorker::class)->restart($worker);
 
@@ -161,9 +161,9 @@ class WorkerController extends Controller
     #[Get('/workers/{worker}/logs', name: 'api.projects.servers.workers.logs', middleware: 'ability:read')]
     public function logs(Project $project, Server $server, Worker $worker): JsonResponse
     {
-        $this->authorize('view', [$project, $server, $worker]);
-
         $this->validateRoute($project, $server, worker: $worker);
+
+        $this->authorize('view', [$worker, $server]);
 
         $logs = app(GetWorkerLogs::class)->getLogs($worker);
 
@@ -175,9 +175,9 @@ class WorkerController extends Controller
     #[Delete('/workers/{worker}/{site?}', name: 'api.projects.servers.workers.delete', middleware: 'ability:write')]
     public function delete(Request $request, Project $project, Server $server, Worker $worker, ?Site $site = null): Response
     {
-        $this->authorize('delete', [$project, $server, $site, $worker]);
-
         $this->validateRoute($project, $server, $site, $worker);
+
+        $this->authorize('delete', [$worker, $server, $site]);
 
         app(DeleteWorker::class)->delete($worker);
 

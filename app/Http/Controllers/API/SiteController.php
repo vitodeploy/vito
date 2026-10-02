@@ -53,7 +53,7 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $site = app(CreateSite::class)->create($server, $request->all());
+        $site = app(CreateSite::class)->create($server, $request->all(), $request->user());
 
         return new SiteResource($site);
     }

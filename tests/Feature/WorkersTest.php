@@ -985,3 +985,90 @@ test('worker resource marks site bootstrap', function () {
     expect($bootstrap->isSiteBootstrap())->toBeTrue();
     expect($other->isSiteBootstrap())->toBeFalse();
 });
+
+test('worker routes reject a site from another server', function (string $method, string $route) {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $service = $this->server->webserver()->replicate();
+    $service->server_id = $otherServer->id;
+    $service->save();
+    $site = Site::factory()->create(['server_id' => $otherServer->id]);
+
+    $this->actingAs($this->user)->json($method, route($route, [
+        'server' => $this->server,
+        'site' => $site,
+    ]), [
+        'name' => 'Forbidden worker',
+        'command' => 'php artisan queue:work',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 1,
+    ])->assertForbidden();
+
+    $this->assertDatabaseCount('workers', 0);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([
+    ['GET', 'workers.site'],
+    ['POST', 'workers.store'],
+    ['POST', 'workers.resync'],
+    ['POST', 'workers.restart-all'],
+]);
+
+test('worker routes reject a worker from another site', function (string $method, string $route) {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $site = Site::factory()->create(['server_id' => $this->server->id]);
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+    ]);
+    $attributes = $worker->refresh()->getAttributes();
+
+    $this->actingAs($this->user)->json($method, route($route, [
+        'server' => $this->server,
+        'site' => $site,
+        'worker' => $worker,
+    ]), [
+        'name' => 'Changed worker',
+        'command' => 'pwd',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 1,
+    ])->assertForbidden();
+
+    $this->assertDatabaseHas('workers', ['id' => $worker->id]);
+    expect($worker->refresh()->getAttributes())->toBe($attributes);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([
+    ['PUT', 'workers.update'],
+    ['DELETE', 'workers.destroy'],
+]);
+
+test('worker policies validate site ownership while preserving server contexts', function (string $ability) {
+    $resource = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+    ]);
+    $subject = in_array($ability, ['viewAny', 'create', 'manage']) ? Worker::class : $resource;
+
+    expect($this->user->can($ability, [$subject, $this->server]))->toBeTrue();
+    expect($this->user->can($ability, [$subject, $this->server, $this->site]))->toBeTrue();
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $this->site->update(['server_id' => $otherServer->id]);
+
+    expect($this->user->can($ability, [$subject, $this->server, $this->site]))->toBeFalse();
+})->with(['viewAny', 'create', 'manage', 'view', 'update', 'delete']);

@@ -2,21 +2,144 @@
 
 use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
+use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\Project;
+use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\SiteTypes\Blank;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+test('site settings rejects outsiders and mismatched servers', function (bool $outsider) {
+    if ($outsider) {
+        $this->server->project->users()->where('user_id', $this->user->id)->delete();
+    }
+
+    $this->actingAs($this->user)->get(route('site-settings', [
+        'server' => $outsider ? $this->server : Server::factory()->create(),
+        'site' => $this->site,
+    ]))->assertForbidden();
+})->with([true, false]);
+
+test('blank sites discard disabled source control input', function (?bool $enabled) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $sourceControl = SourceControl::factory()->create(['user_id' => User::factory()->create()->id]);
+    $input = [
+        'type' => Blank::id(),
+        'domain' => 'blank-disabled.example.com',
+        'port' => 3000,
+        'user' => 'blankdisabled',
+        'source_control' => $sourceControl->id,
+        'repository' => 'private/repository',
+        'branch' => 'private',
+    ];
+    if ($enabled !== null) {
+        $input['use_source_control'] = $enabled;
+    }
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), $input)
+        ->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', [
+        'domain' => $input['domain'],
+        'source_control_id' => null,
+        'repository' => '',
+        'branch' => '',
+    ]);
+    Queue::assertPushed(CreateJob::class, 1);
+    Http::assertNothingSent();
+})->with([false, null]);
+
+test('site source selection uses the actor rather than the server creator', function (string $operation, string $scope) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $creator = User::factory()->create();
+    $this->server->update(['user_id' => $creator->id]);
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::ADMIN]);
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $scope === 'creator' ? $creator->id : $this->user->id,
+        'project_id' => match ($scope) {
+            'project' => $this->server->project_id,
+            'foreign-project' => Project::factory()->create()->id,
+            default => null,
+        },
+    ]);
+    $originalSource = $this->site->source_control_id;
+    $this->actingAs($this->user);
+
+    $response = $operation === 'create'
+        ? $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => Blank::id(),
+            'domain' => 'actor-source.example.com',
+            'port' => 3000,
+            'user' => 'actorsource',
+            'use_source_control' => true,
+            'source_control' => $sourceControl->id,
+            'repository' => 'private/repository',
+            'branch' => 'main',
+        ])
+        : $this->patch(route('site-settings.update-source-control', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), ['source_control' => $sourceControl->id]);
+
+    if (in_array($scope, ['creator', 'foreign-project'])) {
+        if ($scope === 'creator') {
+            $response->assertForbidden();
+        } else {
+            $response->assertSessionHasErrors('source_control');
+        }
+        $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
+        $this->assertDatabaseMissing('sites', ['domain' => 'actor-source.example.com']);
+        Http::assertNothingSent();
+        Queue::assertNothingPushed();
+    } else {
+        $response->assertRedirect()->assertSessionDoesntHaveErrors();
+        $this->assertDatabaseHas('sites', ['source_control_id' => $sourceControl->id]);
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer '.$sourceControl->access_token));
+    }
+})->with(['create', 'update'])->with(['creator', 'global', 'project', 'foreign-project']);
+
+test('web site resources hide installation passwords from read-only users', function () {
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    $typeData = [
+        'title' => 'Private WordPress',
+        'password' => 'wordpress-install-secret',
+        'database_password' => 'database-install-secret',
+    ];
+    $this->site->update(['type' => Wordpress::id(), 'type_data' => $typeData]);
+
+    $this->actingAs($this->user)->get(route('site-settings', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('site.type_data.title', $typeData['title'])
+        ->missing('site.type_data.password')
+        ->missing('site.type_data.database_password')
+    );
+
+    expect($this->site->fresh()->type_data)->toBe($typeData);
+});
 
 test('create site', function (array $inputs) {
     SSH::fake();

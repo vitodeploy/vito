@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Server\Update;
+use App\Enums\NetworkServerStatus;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
@@ -8,6 +9,8 @@ use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Server\InstallJob;
+use App\Models\Network;
+use App\Models\NetworkServer;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
@@ -623,7 +626,7 @@ test('only owner can transfer server', function () {
         ->assertForbidden();
 });
 
-test('transfer server', function () {
+test('transfer server', function (UserRole $role): void {
     $this->actingAs($this->user);
 
     $oldProject = $this->server->project;
@@ -637,12 +640,13 @@ test('transfer server', function () {
     ]);
     $newProject->users()->create([
         'user_id' => $this->user->id,
-        'role' => UserRole::OWNER,
+        'role' => $role,
     ]);
 
     $this->post(route('servers.transfer', $this->server), [
         'project_id' => $newProject->id,
     ])
+        ->assertRedirect(route('server-settings', $this->server))
         ->assertSessionDoesntHaveErrors();
 
     $this->assertDatabaseHas('servers', [
@@ -651,7 +655,63 @@ test('transfer server', function () {
     ]);
 
     expect($this->user->refresh()->current_project_id)->toEqual($newProject->id);
+})->with([UserRole::OWNER, UserRole::ADMIN]);
+
+test('cannot transfer a server to a read-only project', function (): void {
+    $project = Project::factory()->create();
+    $project->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::USER,
+    ]);
+
+    $this->actingAs($this->user)
+        ->post(route('servers.transfer', $this->server), [
+            'project_id' => $project->id,
+        ])
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('servers', [
+        'id' => $this->server->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    expect($this->user->refresh()->current_project_id)->toBe($this->server->project_id);
 });
+
+test('cannot transfer a server while network memberships remain', function (NetworkServerStatus $status): void {
+    SSH::fake();
+    Queue::fake();
+
+    $network = Network::factory()->create(['project_id' => $this->server->project_id]);
+    $member = NetworkServer::factory()->create([
+        'network_id' => $network->id,
+        'server_id' => $this->server->id,
+        'status' => $status,
+    ]);
+    $project = Project::factory()->create();
+    $project->users()->create([
+        'user_id' => $this->user->id,
+        'role' => UserRole::OWNER,
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson(route('servers.transfer', $this->server), [
+            'project_id' => $project->id,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('project_id');
+
+    $this->assertDatabaseHas('servers', [
+        'id' => $this->server->id,
+        'project_id' => $network->project_id,
+    ]);
+    $this->assertDatabaseHas('network_servers', [
+        'id' => $member->id,
+        'network_id' => $network->id,
+        'server_id' => $this->server->id,
+        'status' => $status->value,
+    ]);
+    Queue::assertNothingPushed();
+})->with(NetworkServerStatus::cases());
 
 test('user role can view server', function () {
     $this->server->project->users()->where('user_id', $this->user->id)->update([

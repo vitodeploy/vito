@@ -1,8 +1,11 @@
 <?php
 
+use App\Enums\ServerStatus;
+use App\Enums\UserRole;
 use App\Enums\WorkerStatus;
 use App\Facades\SSH;
 use App\Jobs\Worker\RestartAllJob;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
@@ -377,8 +380,7 @@ test('cannot delete site bootstrap worker', function () {
         'site' => $site,
         'worker' => $worker,
     ]))
-        ->assertStatus(422)
-        ->assertJsonValidationErrors(['name']);
+        ->assertForbidden();
 
     $this->assertDatabaseHas('workers', ['id' => $worker->id]);
 });
@@ -460,3 +462,137 @@ test('cannot resync workers for site on another server', function () {
     ]))
         ->assertNotFound();
 });
+
+test('user role with a write bearer token cannot create workers', function (bool $siteWorker) {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $this->server->project->users()->where('user_id', $this->user->id)->update([
+        'role' => UserRole::USER,
+    ]);
+    $token = $this->user->createToken('worker-token', ['read', 'write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.workers.create', [
+        'project' => $this->server->project,
+        'server' => $this->server,
+        'site' => $siteWorker ? $this->site : null,
+    ]), [
+        'name' => 'Forbidden worker',
+        'command' => 'php artisan queue:work',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 1,
+    ])->assertForbidden();
+
+    $this->assertDatabaseCount('workers', 0);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([false, true]);
+
+test('admin with a write bearer token can create and delete workers', function (bool $siteWorker) {
+    SSH::fake();
+
+    $this->server->project->users()->where('user_id', $this->user->id)->update([
+        'role' => UserRole::ADMIN,
+    ]);
+    $token = $this->user->createToken('worker-token', ['read', 'write', 'project:'.$this->server->project_id]);
+    $parameters = [
+        'project' => $this->server->project,
+        'server' => $this->server,
+        'site' => $siteWorker ? $this->site : null,
+    ];
+
+    $response = $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.workers.create', $parameters), [
+        'name' => 'Admin worker',
+        'command' => 'php artisan queue:work',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 1,
+    ])->assertSuccessful();
+
+    $workerId = $response->json('id');
+    $this->assertDatabaseHas('workers', ['id' => $workerId, 'status' => WorkerStatus::RUNNING]);
+
+    $this->deleteJson(route('api.projects.servers.workers.delete', $parameters + ['worker' => $workerId]))
+        ->assertNoContent();
+
+    $this->assertDatabaseMissing('workers', ['id' => $workerId]);
+})->with([false, true]);
+
+test('worker api routes enforce worker server readiness', function (string $method, string $route) {
+    $ssh = SSH::fake();
+    Queue::fake();
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+    ]);
+    $attributes = $worker->refresh()->getAttributes();
+    $this->server->update(['status' => ServerStatus::INSTALLING]);
+
+    $this->json($method, route($route, [
+        'project' => $this->server->project,
+        'server' => $this->server,
+        'site' => $this->site,
+        'worker' => $worker,
+    ]), [
+        'name' => 'Changed worker',
+        'command' => 'pwd',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 1,
+    ])->assertForbidden();
+
+    $this->assertDatabaseCount('workers', 1);
+    $this->assertDatabaseHas('workers', ['id' => $worker->id]);
+    expect($worker->refresh()->getAttributes())->toBe($attributes);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([
+    ['GET', 'api.projects.servers.workers'],
+    ['GET', 'api.projects.servers.sites.workers'],
+    ['GET', 'api.projects.servers.workers.show'],
+    ['GET', 'api.projects.servers.sites.workers.show'],
+    ['POST', 'api.projects.servers.workers.resync'],
+    ['POST', 'api.projects.servers.workers.restart-all'],
+    ['POST', 'api.projects.servers.workers.create'],
+    ['PUT', 'api.projects.servers.workers.update'],
+    ['POST', 'api.projects.servers.workers.start'],
+    ['POST', 'api.projects.servers.workers.restart'],
+    ['GET', 'api.projects.servers.workers.logs'],
+    ['DELETE', 'api.projects.servers.workers.delete'],
+]);
+
+test('worker api routes keep mismatched resource responses not found', function (string $mismatch) {
+    $ssh = SSH::fake();
+    Queue::fake();
+    Sanctum::actingAs($this->user, ['read', 'write']);
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $site = Site::factory()->create(['server_id' => $this->server->id]);
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $site->id,
+    ]);
+
+    if ($mismatch === 'project') {
+        $otherServer->update(['project_id' => Project::factory()->create()->id]);
+    }
+
+    $this->getJson(route('api.projects.servers.sites.workers.show', [
+        'project' => $this->server->project,
+        'server' => in_array($mismatch, ['project', 'server']) ? $otherServer : $this->server,
+        'site' => $mismatch === 'site' ? $this->site : $site,
+        'worker' => $worker,
+    ]))->assertNotFound();
+
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with(['project', 'server', 'site']);

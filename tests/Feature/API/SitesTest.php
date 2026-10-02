@@ -2,15 +2,22 @@
 
 use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
+use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
+use App\SiteTypes\Blank;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Tests\Traits\PrepareLoadBalancer;
 
@@ -21,6 +28,118 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->prepare();
 });
+
+test('api blank sites discard disabled source control input', function (?bool $enabled) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $sourceControl = SourceControl::factory()->create(['user_id' => User::factory()->create()->id]);
+    $token = $this->user->createToken('site-create', ['write', 'project:'.$this->server->project_id]);
+    $input = [
+        'type' => Blank::id(),
+        'domain' => 'blank-disabled.example.com',
+        'port' => 3000,
+        'user' => 'blankdisabled',
+        'source_control' => $sourceControl->id,
+        'repository' => 'private/repository',
+        'branch' => 'private',
+    ];
+    if ($enabled !== null) {
+        $input['use_source_control'] = $enabled;
+    }
+
+    $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.sites.create', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+    ]), $input)->assertSuccessful()->assertJsonPath('source_control_id', null);
+
+    $this->assertDatabaseHas('sites', [
+        'domain' => $input['domain'],
+        'source_control_id' => null,
+        'repository' => '',
+        'branch' => '',
+    ]);
+    Queue::assertPushed(CreateJob::class, 1);
+    Http::assertNothingSent();
+})->with([false, null]);
+
+test('api site source selection uses the token actor rather than the server creator', function (string $scope) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $creator = User::factory()->create();
+    $this->server->update(['user_id' => $creator->id]);
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::ADMIN]);
+    $sourceControl = SourceControl::factory()->create([
+        'user_id' => $scope === 'creator' ? $creator->id : $this->user->id,
+        'project_id' => match ($scope) {
+            'project' => $this->server->project_id,
+            'foreign-project' => Project::factory()->create()->id,
+            default => null,
+        },
+    ]);
+    $token = $this->user->createToken('site-create', ['write', 'project:'.$this->server->project_id]);
+
+    $response = $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.sites.create', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+    ]), [
+        'type' => Blank::id(),
+        'domain' => 'actor-source.example.com',
+        'port' => 3000,
+        'user' => 'actorsource',
+        'use_source_control' => true,
+        'source_control' => $sourceControl->id,
+        'repository' => 'private/repository',
+        'branch' => 'main',
+    ]);
+
+    if (in_array($scope, ['creator', 'foreign-project'])) {
+        if ($scope === 'creator') {
+            $response->assertForbidden();
+        } else {
+            $response->assertUnprocessable()->assertJsonValidationErrors('source_control');
+        }
+        $this->assertDatabaseMissing('sites', ['domain' => 'actor-source.example.com']);
+        Http::assertNothingSent();
+        Queue::assertNothingPushed();
+    } else {
+        $response->assertSuccessful()->assertJsonPath('source_control_id', $sourceControl->id);
+        $this->assertDatabaseHas('sites', ['source_control_id' => $sourceControl->id]);
+        Http::assertSentCount(1);
+    }
+})->with(['creator', 'global', 'project', 'foreign-project']);
+
+test('api site resources hide installation passwords with persisted read tokens', function (UserRole $role) {
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => $role]);
+    $typeData = [
+        'title' => 'Private WordPress',
+        'password' => 'wordpress-install-secret',
+        'database_password' => 'database-install-secret',
+    ];
+    $this->site->update(['type' => Wordpress::id(), 'type_data' => $typeData]);
+    $token = $this->user->createToken('read-sites', ['read', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->getJson(route('api.projects.servers.sites.show', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertSuccessful()
+        ->assertJsonPath('type_data.title', $typeData['title'])
+        ->assertJsonMissingPath('type_data.password')
+        ->assertJsonMissingPath('type_data.database_password');
+
+    $this->getJson(route('api.projects.servers.sites', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+    ]))->assertSuccessful()
+        ->assertJsonMissingPath('data.0.type_data.password')
+        ->assertJsonMissingPath('data.0.type_data.database_password');
+
+    expect($this->site->fresh()->type_data)->toBe($typeData);
+})->with([UserRole::OWNER, UserRole::USER]);
 
 test('create site', function (array $inputs) {
     SSH::fake();

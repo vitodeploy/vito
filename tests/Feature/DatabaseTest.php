@@ -6,9 +6,11 @@ use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\Server;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -266,3 +268,30 @@ function vitoPestFeatureDatabaseTestUsePostgresql(): void
     ]);
     test()->server->refresh();
 }
+
+test('database deletion rejects a database from another server', function () {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $service = $this->server->database()->replicate();
+    $service->server_id = $otherServer->id;
+    $service->save();
+    $database = Database::factory()->create(['server_id' => $this->server->id]);
+
+    $this->actingAs($this->user)->delete(route('databases.destroy', [
+        'server' => $otherServer,
+        'database' => $database,
+    ]))->assertForbidden();
+
+    $this->assertDatabaseHas('databases', [
+        'id' => $database->id,
+        'server_id' => $this->server->id,
+        'deleted_at' => null,
+    ]);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+});

@@ -2,8 +2,11 @@
 
 namespace App\Actions\Server;
 
+use App\Models\NetworkServer;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +22,17 @@ class TransferServer
     {
         $this->validate($user, $input);
 
-        $server->project_id = $input['project_id'];
+        $project = Project::query()->findOrFail($input['project_id']);
+        Gate::forUser($user)->authorize('create', [Server::class, $project]);
+
+        if ($server->project_id !== $project->id
+            && NetworkServer::query()->where('server_id', $server->id)->exists()) {
+            throw ValidationException::withMessages([
+                'project_id' => 'Remove the server from its networks and wait for removal to complete before transferring it.',
+            ]);
+        }
+
+        $server->project_id = $project->id;
         $server->save();
 
         return $server;

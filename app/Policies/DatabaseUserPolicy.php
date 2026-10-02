@@ -36,20 +36,22 @@ class DatabaseUserPolicy
             && $server->database();
     }
 
-    public function update(User $user, DatabaseUser $databaseUser): bool
+    public function update(User $user, DatabaseUser $databaseUser, ?Server $server = null): bool
     {
-        $server = $databaseUser->server;
+        $server ??= $databaseUser->server;
 
-        return $this->hasWriteAccess($user, $server->project) &&
+        return $databaseUser->server_id === $server->id &&
+            $this->hasWriteAccess($user, $server->project) &&
             $server->isReady()
             && $server->database();
     }
 
-    public function delete(User $user, DatabaseUser $databaseUser): bool
+    public function delete(User $user, DatabaseUser $databaseUser, ?Server $server = null): bool
     {
-        $server = $databaseUser->server;
+        $server ??= $databaseUser->server;
 
-        return $this->hasWriteAccess($user, $server->project) &&
+        return $databaseUser->server_id === $server->id &&
+            $this->hasWriteAccess($user, $server->project) &&
             $server->isReady()
             && $server->database();
     }
