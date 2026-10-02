@@ -7,22 +7,22 @@ import VitoIcon from '@/icons/vito';
 const sidebarNavItems: NavItem[] = [
   {
     title: 'Users',
-    href: route('users'),
+    href: '/admin/users',
     icon: UsersIcon,
   },
   {
     title: 'Plugins',
-    href: route('plugins'),
+    href: '/admin/plugins',
     icon: PlugIcon,
   },
   {
     title: 'GitHub App',
-    href: route('github-app'),
+    href: '/admin/github-app',
     icon: GithubIcon,
   },
   {
     title: 'Vito Settings',
-    href: route('vito-settings'),
+    href: '/admin/vito',
     icon: VitoIcon,
   },
 ];

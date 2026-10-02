@@ -15,17 +15,7 @@ function Action({ type, cronJob, site }: { type: 'enable' | 'disable'; cronJob: 
   const form = useForm();
 
   const submit = () => {
-    const routeName = site
-      ? type === 'enable'
-        ? 'cronjobs.site.enable'
-        : 'cronjobs.site.disable'
-      : type === 'enable'
-        ? 'cronjobs.enable'
-        : 'cronjobs.disable';
-
-    const routeParams = site ? { server: cronJob.server_id, site: site.id, cronJob: cronJob.id } : { server: cronJob.server_id, cronJob: cronJob.id };
-
-    form.post(route(routeName, routeParams));
+    form.post(`/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}/cronjobs/${cronJob.id}/${type}`);
   };
 
   return (
@@ -50,10 +40,7 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route(
-            site ? 'cronjobs.site.destroy' : 'cronjobs.destroy',
-            site ? { server: cronJob.server_id, site: site.id, cronJob: cronJob } : { server: cronJob.server_id, cronJob: cronJob },
-          ),
+          url: `/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}/cronjobs/${cronJob.id}`,
         })
       }
     >

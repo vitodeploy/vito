@@ -26,7 +26,7 @@ export default function DeleteSite({ site, children }: { site: Site; children: R
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.delete(route('site-settings.destroy', { server: site.server_id, site: site.id }), {
+    form.delete(`/servers/${site.server_id}/sites/${site.id}/settings`, {
       onSuccess: () => {
         siteHelper.storeSite();
       },

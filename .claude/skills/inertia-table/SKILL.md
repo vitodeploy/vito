@@ -99,7 +99,7 @@ export default function Index({ servers }: { servers: InertiaTableData }) {
             tableData={servers}
             actions={(row) => (
                 <>
-                    <Link href={route('servers.show', row.id as number)}><Pencil className="size-4" /></Link>
+                    <Link href={`/servers/${row.id}`}><Pencil className="size-4" /></Link>
                     <button onClick={() => destroy(row.id)}><Trash2 className="size-4" /></button>
                 </>
             )}
@@ -213,7 +213,7 @@ Global hooks (`Table::globalBeforeQuery`, `Table::globalAfterData`) already exis
 
 **Settings → frontend hooks:** `->withSettings(['polling' => 5])` ships arbitrary data; on the React side register a hook with `registerTableHook('polling', ({ value, refresh }) => { const id = setInterval(refresh, value*1000); return () => clearInterval(id); })`.
 
-**Row click to detail page:** `<InertiaTable onRowClick={(row) => router.visit(route('servers.show', row.id as number))} />`. The component already skips clicks on `a, button, input, select, textarea, [role="button"]`.
+**Row click to detail page:** ``<InertiaTable onRowClick={(row) => router.visit(`/servers/${row.id}`)} />``. The component already skips clicks on `a, button, input, select, textarea, [role="button"]`.
 
 **External search input** (e.g. in a page header instead of the toolbar): pass `searchRef={inputRef}` — the built-in search bar hides and the table watches that input.
 
@@ -222,7 +222,7 @@ Global hooks (`Table::globalBeforeQuery`, `Table::globalAfterData`) already exis
 1. **Every row needs an `id`.** Add `Column::data('id')` if `id` isn't otherwise included.
 2. **Dot-notation columns get a `_`-prefixed name** in the row payload (e.g. `provider.name` → row key `_provider_name`). Use the column's display value; don't reach into the row by the dotted path from the frontend.
 3. **Sort key vs display name:** for computed columns, set `->accessor('real_db_column')` or sort will target the wrong field.
-4. **Ziggy** is a peer dep — Vito4 uses it, so leave `use_ziggy => true`. If you ever turn it off, link columns send pre-resolved URLs.
+4. **Link URLs** are resolved server-side. Keep `use_ziggy => false` in `config/inertia-table.php`; frontend link cells read the pre-resolved URL from `href_key`.
 5. **TypeScript prop type** for an Inertia page is `InertiaTableData`, not the row type. Cast `row.id` (it's `string | number`).
 6. **`ActionsColumn`** does nothing on its own — you must pass `actions={(row) => ...}` to `<InertiaTable />`.
 7. **`registerCellComponent` / `registerIcon` must run before render.** Put them in `app.tsx` (or a module imported there), not inside the page component.

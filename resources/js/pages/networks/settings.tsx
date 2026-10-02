@@ -40,7 +40,7 @@ export default function NetworkSettings() {
   }, [network.name, isDirty, setDefaults, setData]);
 
   const submit = () => {
-    form.put(route('networks.update', { network: network.id }), {
+    form.put(`/networks/${network.id}`, {
       preserveScroll: true,
       onSuccess: () => {
         setEditMode(undefined);
@@ -228,7 +228,7 @@ export default function NetworkSettings() {
                       variant: 'destructive',
                       confirmLabel: 'Delete',
                       method: 'delete',
-                      url: route('networks.destroy', { network: network.id }),
+                      url: `/networks/${network.id}`,
                     })
                   }
                 >

@@ -36,15 +36,15 @@ export default function Show() {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Workflows',
-      href: route('workflows'),
+      href: '/workflows',
     },
     {
       title: `History of ${page.props.workflow.name}`,
-      href: route('workflow-runs', { workflow: page.props.workflow.id }),
+      href: `/workflows/${page.props.workflow.id}/runs`,
     },
     {
       title: 'Logs',
-      href: route('workflow-runs', { workflow: page.props.workflow.id }),
+      href: `/workflows/${page.props.workflow.id}/runs`,
     },
   ];
 

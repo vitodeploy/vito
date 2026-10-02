@@ -32,7 +32,7 @@ export default function MetricsCards({ server, filter, metric }: { server: Serve
               dataKey="load"
               color="var(--color-chart-1)"
               chartData={history}
-              link={route('monitoring.show', { server: server.id, metric: 'load' })}
+              link={`/servers/${server.id}/monitoring/${encodeURIComponent('load')}`}
               single={metric !== undefined}
             />
           )}
@@ -43,7 +43,7 @@ export default function MetricsCards({ server, filter, metric }: { server: Serve
               dataKey="memory_used_percent"
               color="var(--color-chart-2)"
               chartData={history}
-              link={route('monitoring.show', { server: server.id, metric: 'memory' })}
+              link={`/servers/${server.id}/monitoring/${encodeURIComponent('memory')}`}
               formatter={(value) => `${Number(value).toFixed(2)}%`}
               valueFormatter={(value) => `${Number(value).toFixed(2)}%`}
               single={metric !== undefined}
@@ -56,7 +56,7 @@ export default function MetricsCards({ server, filter, metric }: { server: Serve
               dataKey="disk_used_percent"
               color="var(--color-chart-3)"
               chartData={history}
-              link={route('monitoring.show', { server: server.id, metric: 'disk' })}
+              link={`/servers/${server.id}/monitoring/${encodeURIComponent('disk')}`}
               formatter={(value) => `${Number(value).toFixed(2)}%`}
               valueFormatter={(value) => `${Number(value).toFixed(2)}%`}
               single={metric !== undefined}

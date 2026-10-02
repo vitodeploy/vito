@@ -24,7 +24,7 @@ function Delete({ ssl }: { ssl: SSL }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('server-ssls.destroy', { server: ssl.server_id, ssl: ssl.id }),
+          url: `/servers/${ssl.server_id}/ssl/${ssl.id}`,
         })
       }
     >
@@ -148,7 +148,7 @@ export const columns: ColumnDef<SSL>[] = [
               {row.original.has_csr && row.original.status === 'created' && (
                 <>
                   <DropdownMenuItem
-                    onSelect={() => window.open(route('server-ssls.download', { server: row.original.server_id, ssl: row.original.id }), '_blank')}
+                    onSelect={() => window.open(`/servers/${row.original.server_id}/ssl/${row.original.id}/download`, '_blank')}
                   >
                     Download CSR
                   </DropdownMenuItem>

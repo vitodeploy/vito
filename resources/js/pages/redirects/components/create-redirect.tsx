@@ -28,7 +28,7 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('redirects.store', { server: site.server_id, site: site.id }), {
+    form.post(`/servers/${site.server_id}/sites/${site.id}/redirects`, {
       onSuccess: () => {
         form.reset();
         setOpen(false);

@@ -65,11 +65,11 @@ export default function RecordForm({ open, onOpenChange, domain, record }: Recor
     e.preventDefault();
 
     if (record) {
-      form.patch(route('dns-records.update', [record.domain_id, record.id]), {
+      form.patch(`/domains/${record.domain_id}/records/${record.id}`, {
         onSuccess: () => onOpenChange(false),
       });
     } else {
-      form.post(route('dns-records.store', domain.id), {
+      form.post(`/domains/${domain.id}/records`, {
         onSuccess: () => onOpenChange(false),
       });
     }

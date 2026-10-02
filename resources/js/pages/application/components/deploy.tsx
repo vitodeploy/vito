@@ -29,7 +29,7 @@ export default function Deploy({ site, children }: { site: Site; children: React
   const reverseProxyMisconfigured = site.is_proxied_site_type && (!site.port || !site.start_command);
 
   const submit = () => {
-    form.post(route('application.deploy', { server: site.server_id, site: site.id }), {
+    form.post(`/servers/${site.server_id}/sites/${site.id}/deploy`, {
       onSuccess: () => {
         setOpen(false);
       },

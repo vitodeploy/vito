@@ -19,7 +19,7 @@ export default function ServerProviderSelect({
   const query = useQuery<ServerProvider[]>({
     queryKey: ['serverProvider'],
     queryFn: async () => {
-      return (await axios.get(route('server-providers.json'))).data;
+      return (await axios.get('/settings/server-providers/json')).data;
     },
   });
 

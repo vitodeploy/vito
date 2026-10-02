@@ -15,7 +15,7 @@ export default function WorkerLogsDialog({ open, onOpenChange, serverId, workerI
   const query = useQuery({
     queryKey: ['workerLog', workerId],
     queryFn: async () => {
-      const response = await axios.get(route('workers.logs', { server: serverId, worker: workerId }));
+      const response = await axios.get(`/servers/${serverId}/workers/${workerId}/logs`);
       return response.data.logs;
     },
     refetchInterval: 2500,

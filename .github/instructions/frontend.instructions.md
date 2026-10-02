@@ -7,6 +7,7 @@ description: "React, Inertia, Tailwind v4, and TypeScript frontend standards"
 
 ## Inertia & React
 
+- Use root-relative URL paths (`/settings/profile`, `/servers/${server.id}`) for frontend navigation and requests. Encode string path segments and pass query parameters via Axios `params` or `URLSearchParams`.
 - Inertia pages live in `resources/js/pages/`. Use `Inertia::render()` from Laravel controllers.
 - React components in `resources/js/components/`. Use functional components and hooks.
 - Use the `useForm` helper for forms — follow existing patterns in the codebase.
@@ -37,7 +38,7 @@ dialog.confirm.open({
   variant: 'destructive',
   confirmLabel: 'Delete',
   method: 'delete',
-  url: route('firewall.destroy', { server: rule.server_id, firewallRule: rule }),
+  url: `/servers/${rule.server_id}/firewall/${rule.id}`,
 });
 ```
 
@@ -67,7 +68,7 @@ export default function FirewallRuleForm({
   const form = useForm({ /* seed from props */ });
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('firewall.store', { server: serverId }), { onSuccess: () => onOpenChange(false) });
+    form.post(`/servers/${serverId}/firewall`, { onSuccess: () => onOpenChange(false) });
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

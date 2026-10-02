@@ -17,10 +17,7 @@ export default function VHostPreview({ site, children }: { site: Site; children:
     queryKey: ['site-settings.vhost', site.server_id, site.id],
     queryFn: async () => {
       const response = await axios.get(
-        route('site-settings.vhost', {
-          server: site.server_id,
-          site: site.id,
-        }),
+        `/servers/${site.server_id}/sites/${site.id}/settings/vhost`,
       );
       return response.data;
     },

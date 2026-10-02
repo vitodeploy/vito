@@ -49,7 +49,7 @@ export default function ConnectSourceControl({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('source-controls.store'), {
+    form.post('/settings/source-controls', {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {

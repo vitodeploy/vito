@@ -55,20 +55,15 @@ export default function CronJobForm({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    const url = `/servers/${serverId}${site ? `/sites/${site.id}` : ''}/cronjobs`;
     if (cronJob) {
-      const routeName = site ? 'cronjobs.site.update' : 'cronjobs.update';
-      const routeParams = site ? { server: serverId, site: site.id, cronJob: cronJob.id } : { server: serverId, cronJob: cronJob.id };
-
-      form.put(route(routeName, routeParams), {
+      form.put(`${url}/${cronJob.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
-    const routeName = site ? 'cronjobs.site.store' : 'cronjobs.store';
-    const routeParams = site ? { server: serverId, site: site.id } : { server: serverId };
-
-    form.post(route(routeName, routeParams), {
+    form.post(url, {
       onSuccess: () => onOpenChange(false),
     });
   };

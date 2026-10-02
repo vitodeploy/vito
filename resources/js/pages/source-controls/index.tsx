@@ -34,7 +34,7 @@ export default function SourceControls() {
               </Button>
             </a>
             {githubAppInstalled && (
-              <a href={route('github-app.install')} title="Install GitHub App on an organization">
+              <a href="/admin/github-app/install" title="Install GitHub App on an organization">
                 <Button variant="outline" size="icon">
                   <GithubIcon />
                   <span className="sr-only">Install GitHub App on an organization</span>

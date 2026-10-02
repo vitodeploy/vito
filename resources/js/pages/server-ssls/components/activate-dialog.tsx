@@ -23,7 +23,7 @@ export default function ActivateServerSslDialog({ open, onOpenChange, serverId, 
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('server-ssls.activate', { server: serverId, ssl: sslId }), {
+    form.post(`/servers/${serverId}/ssl/${sslId}/activate`, {
       onSuccess: () => onOpenChange(false),
     });
   };

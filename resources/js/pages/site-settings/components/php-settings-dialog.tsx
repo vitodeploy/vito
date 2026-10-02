@@ -62,7 +62,7 @@ export default function PhpSettingsDialog({ open, onOpenChange, site }: { open: 
       memory_limit: data.memory_limit === '' ? null : Number(data.memory_limit),
       max_input_vars: data.max_input_vars === '' ? null : Number(data.max_input_vars),
     }));
-    form.patch(route('site-settings.update-php-settings', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/php-settings`, {
       onSuccess: () => onOpenChange(false),
     });
   };

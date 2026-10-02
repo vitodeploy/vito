@@ -21,7 +21,7 @@ export default function EditCommand({ open, onOpenChange, command }: { open: boo
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('commands.update', { server: command.server_id, site: command.site_id, command: command.id }), {
+    form.put(`/servers/${command.server_id}/sites/${command.site_id}/commands/${command.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

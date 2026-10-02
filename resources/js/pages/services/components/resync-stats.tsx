@@ -22,7 +22,7 @@ export function ResyncStats({ service }: { service: Service }) {
   const form = useForm();
 
   const submit = () => {
-    form.post(route('log-analysis.resync', { server: service.server_id }), {
+    form.post(`/servers/${service.server_id}/log-analysis/resync`, {
       onSuccess: () => setOpen(false),
     });
   };

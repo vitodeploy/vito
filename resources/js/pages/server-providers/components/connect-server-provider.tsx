@@ -49,7 +49,7 @@ export default function ConnectServerProvider({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('server-providers.store'), {
+    form.post('/settings/server-providers', {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {

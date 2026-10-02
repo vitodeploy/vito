@@ -29,10 +29,8 @@ export default function SelectRepo({ sourceControlId, value, onValueChange, plac
 
     setGettingRepos(true);
 
-    const routeName: string = useCache ? 'source-controls.repos' : 'source-controls.repos.nocache';
-
     try {
-      const response = await fetch(route(routeName, { source_control: sourceControlId }));
+      const response = await fetch(`/settings/source-controls/${encodeURIComponent(sourceControlId)}/repos${useCache ? '' : '/nocache'}`);
       const data = await response.json();
       setRepos(data);
 

@@ -36,7 +36,7 @@ export default function Databases() {
   });
 
   const submit = () => {
-    form.patch(route('server-settings.update', { server: page.props.server.id }), {
+    form.patch(`/servers/${page.props.server.id}/settings/update`, {
       onSuccess: () => {
         setEditMode(undefined);
       },

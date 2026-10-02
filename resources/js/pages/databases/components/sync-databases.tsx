@@ -10,7 +10,7 @@ export default function SyncDatabases({ server }: { server: Server }) {
   const form = useForm();
 
   const submit = () => {
-    form.patch(route('databases.sync', server.id), {
+    form.patch(`/servers/${server.id}/database/sync`, {
       onSuccess: () => {
         setOpen(false);
       },

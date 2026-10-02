@@ -27,7 +27,7 @@ export default function TransferServer({ server, children }: { server: Server; c
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('servers.transfer', { server: server.id }), {
+    form.post(`/servers/${server.id}/transfer`, {
       preserveScroll: true,
       onSuccess: () => {
         setOpen(false);

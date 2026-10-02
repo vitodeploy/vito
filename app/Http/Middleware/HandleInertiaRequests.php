@@ -15,7 +15,6 @@ use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -48,8 +47,6 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
-        $ssrEnabled = (bool) config('inertia.ssr.enabled');
 
         /** @var ?User $user */
         $user = $request->user();
@@ -111,12 +108,6 @@ class HandleInertiaRequests extends Middleware
             ] : null,
             'csrf_token' => csrf_token(),
             'bootstrap_version' => app(GetBootstrap::class)->version(),
-            ...($ssrEnabled ? [
-                'ziggy' => fn (): array => [
-                    ...(new Ziggy)->toArray(),
-                    'location' => $request->url(),
-                ],
-            ] : []),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

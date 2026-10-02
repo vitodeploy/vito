@@ -26,7 +26,7 @@ export function ProjectSwitch() {
   const handleProjectChange = (value: string, project: Project) => {
     setSelected(value);
     setOpen(false);
-    form.patch(route('projects.switch', { project: project.id, currentPath: window.location.pathname }));
+    form.patch(`/settings/projects/switch/${project.id}?${new URLSearchParams({ currentPath: window.location.pathname })}`);
   };
 
   const footer = (

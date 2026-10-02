@@ -49,7 +49,7 @@ export default function CreateApiKey({ children, projects }: { children: ReactNo
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('api-keys.store'), {
+    form.post('/settings/api-keys', {
       onSuccess: (page) => {
         const flash = page.props.flash as { data?: { token?: string } };
         setToken(flash.data?.token);

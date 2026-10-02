@@ -34,12 +34,12 @@ export default function NetworkFirewallRuleForm({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (rule) {
-      form.put(route('networks.firewall.update', { network: networkId, networkFirewallRule: rule.id }), {
+      form.put(`/networks/${networkId}/firewall/${rule.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
-    form.post(route('networks.firewall.store', { network: networkId }), {
+    form.post(`/networks/${networkId}/firewall`, {
       onSuccess: () => onOpenChange(false),
     });
   };

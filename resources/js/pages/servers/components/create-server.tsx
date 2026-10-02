@@ -294,7 +294,7 @@ export default function CreateServer({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('servers'));
+    form.post('/servers');
   };
 
   const [copySuccess, setCopySuccess] = useState(false);
@@ -314,7 +314,7 @@ export default function CreateServer({
 
   const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);
   const fetchServerProviders = async () => {
-    const serverProviders = await axios.get(route('server-providers.json'));
+    const serverProviders = await axios.get('/settings/server-providers/json');
     setServerProviders(serverProviders.data);
   };
 
@@ -366,7 +366,7 @@ export default function CreateServer({
 
   const [regions, setRegions] = useState<{ [key: string]: string }>({});
   const fetchRegions = async (serverProvider: number) => {
-    const regions = await axios.get(route('server-providers.regions', { serverProvider: serverProvider }));
+    const regions = await axios.get(`/settings/server-providers/${serverProvider}/regions`);
     setRegions(regions.data);
   };
   const selectRegion = async (region: string) => {
@@ -378,7 +378,7 @@ export default function CreateServer({
 
   const [plans, setPlans] = useState<{ [key: string]: string | PlanOption }>({});
   const fetchPlans = async (serverProvider: number, region: string) => {
-    const plans = await axios.get(route('server-providers.plans', { serverProvider: serverProvider, region: region }));
+    const plans = await axios.get(`/settings/server-providers/${serverProvider}/regions/${encodeURIComponent(region)}/plans`);
     setPlans(plans.data);
   };
   const selectPlan = (plan: string) => {

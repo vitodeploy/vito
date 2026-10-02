@@ -30,7 +30,7 @@ export default function CreateWorkflow({ children }: { children: ReactNode }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('workflows.store'), {
+    form.post('/workflows', {
       onSuccess: () => {
         form.reset();
         setOpen(false);

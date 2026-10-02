@@ -6,7 +6,7 @@ export default function CheckForUpdates() {
   const form = useForm();
 
   const submit = () => {
-    form.get(route('plugins.updates'));
+    form.get('/admin/plugins/updates');
   };
 
   return (

@@ -36,7 +36,7 @@ export default function LinkDatabaseUserDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('database-users.link', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
+    form.put(`/servers/${databaseUser.server_id}/database/users/link/${databaseUser.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

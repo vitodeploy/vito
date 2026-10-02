@@ -48,7 +48,7 @@ export function SiteSwitch() {
     setSelected(value);
     setOpen(false);
     siteHelper.storeSite(site);
-    form.post(route('sites.switch', { server: site.server_id, site: site.id }));
+    form.post(`/servers/${site.server_id}/sites/${site.id}/switch`);
   };
 
   const footer = (

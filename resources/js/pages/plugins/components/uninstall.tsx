@@ -16,7 +16,7 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
           variant: 'destructive',
           confirmLabel: label,
           method: 'delete',
-          url: route('plugins.uninstall'),
+          url: '/admin/plugins/uninstall',
           data: { id: plugin.id },
         })
       }

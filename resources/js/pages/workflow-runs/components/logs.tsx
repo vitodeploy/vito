@@ -18,7 +18,7 @@ export default function Logs({ workflowRun }: { workflowRun: WorkflowRun }) {
     setContent('');
 
     axios
-      .get(route('workflow-runs.log', { workflow: workflowRun.workflow_id, workflowRun: workflowRun.id }))
+      .get(`/workflows/${workflowRun.workflow_id}/runs/${workflowRun.id}/log`)
       .then((response) => {
         const data = typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
         setContent(data);

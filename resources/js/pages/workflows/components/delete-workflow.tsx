@@ -20,7 +20,7 @@ export default function DeleteWorkflow({ workflow, children }: { workflow: Workf
   const form = useForm();
 
   const submit = () => {
-    form.delete(route('workflows.destroy', { workflow: workflow.id }), {
+    form.delete(`/workflows/${workflow.id}`, {
       onSuccess: () => {
         setOpen(false);
       },

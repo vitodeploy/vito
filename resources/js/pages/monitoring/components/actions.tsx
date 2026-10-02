@@ -31,7 +31,7 @@ export default function Actions({ server }: { server: Server }) {
               variant: 'destructive',
               confirmLabel: 'Reset',
               method: 'delete',
-              url: route('monitoring.destroy', { server: server.id }),
+              url: `/servers/${server.id}/monitoring/reset`,
             })
           }
         >

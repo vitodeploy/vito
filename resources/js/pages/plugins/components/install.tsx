@@ -13,7 +13,7 @@ export default function InstallPlugin({ plugin }: { plugin: Plugin }) {
           description: `Are you sure you want to install the plugin located at ${plugin.folder}?`,
           confirmLabel: 'Install',
           method: 'patch',
-          url: route('plugins.install'),
+          url: '/admin/plugins/install',
           data: { id: plugin.id },
         })
       }

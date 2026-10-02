@@ -15,7 +15,7 @@ export default function Delete({ serverProvider }: { serverProvider: ServerProvi
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('server-providers.destroy', serverProvider.id),
+          url: `/settings/server-providers/${serverProvider.id}`,
         })
       }
     >
