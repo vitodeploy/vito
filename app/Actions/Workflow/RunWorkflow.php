@@ -65,11 +65,14 @@ class RunWorkflow
 
         try {
             $output = $workflowActionDto->handler($user, $workflow)->run($resolvedInput);
-            $this->executeAction($run, $user, $workflow, $workflowActionDto->success, $output, $accessTokenId);
         } catch (\Throwable $e) {
             $run->log('Workflow action failed: '.$e->getMessage());
             $this->executeAction($run, $user, $workflow, $workflowActionDto->failure, $input, $accessTokenId);
+
+            return;
         }
+
+        $this->executeAction($run, $user, $workflow, $workflowActionDto->success, $output, $accessTokenId);
     }
 
     private function authorizeExecution(User $user, Workflow $workflow, ?int $accessTokenId): void

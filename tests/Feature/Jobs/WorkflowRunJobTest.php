@@ -198,7 +198,7 @@ test('workflow workers preserve session project access and restore execution con
     'legacy job without authentication context' => [true, true],
 ]);
 
-test('workflow jobs recheck current token scope between actions and failure branches', function (string $change) {
+test('workflow jobs recheck current token scope between actions and failure branches', function (string $change, bool $hasFailureBranch) {
     SSH::fake();
     Storage::fake('server-logs');
     Queue::fake();
@@ -225,7 +225,7 @@ test('workflow jobs recheck current token scope between actions and failure bran
     $tree = new WorkflowActionDTO('HTTP request', HttpCall::class, [], [
         'url' => 'https://example.com/workflow',
         'method' => 'GET',
-    ], 'http', success: $command, failure: $failure);
+    ], 'http', success: $command, failure: $hasFailureBranch ? $failure : null);
     Http::fake(function () use ($token, $project, $change) {
         match ($change) {
             'narrowed' => $token->accessToken->forceFill(['abilities' => ['write', 'project:'.$project->id]])->save(),
@@ -248,9 +248,11 @@ test('workflow jobs recheck current token scope between actions and failure bran
     SSH::assertNotExecutedContains('echo failure-workflow');
     if ($change === 'revoked') {
         $job->assertFailedWith(AuthorizationException::class);
+    } else {
+        $job->assertNotFailed();
     }
     expect((new ReflectionProperty($job, 'user'))->getValue($job)->currentAccessToken())->toBeNull();
-})->with(['unchanged', 'narrowed', 'revoked']);
+})->with(['unchanged', 'narrowed', 'revoked'])->with([false, true]);
 
 test('nested workflows inherit token scope without changing the outer execution context', function (bool $revoked) {
     SSH::fake();

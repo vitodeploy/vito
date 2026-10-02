@@ -4,6 +4,7 @@ use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Project;
@@ -63,7 +64,7 @@ test('blank sites discard disabled source control input', function (?bool $enabl
         'repository' => '',
         'branch' => '',
     ]);
-    Queue::assertPushed(\App\Jobs\Site\CreateJob::class, 1);
+    Queue::assertPushed(CreateJob::class, 1);
     Http::assertNothingSent();
 })->with([false, null]);
 

@@ -13,7 +13,6 @@ class Notify extends AbstractWorkflowAction
     {
         return [
             'notification_channel_id' => 'The ID of the notification channel to send the notification to',
-            'email' => 'The email address of the user on Vito',
             'message' => 'The message to send',
         ];
     }
@@ -28,7 +27,6 @@ class Notify extends AbstractWorkflowAction
         Validator::make($input, [
             'notification_channel_id' => ['required', 'integer', 'exists:notification_channels,id'],
             'message' => ['required', 'string'],
-            'email' => ['required', 'email', 'exists:users,email'],
         ])->validate();
 
         $notificationChannel = NotificationChannel::query()->findOrFail($input['notification_channel_id']);

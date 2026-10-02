@@ -131,7 +131,7 @@ test('workflow run routes allow runs belonging to the authorized workflow', func
         ->assertSee('Authorized workflow output');
 });
 
-test('workflow notification sends only through the selected authorized channel', function (string $scope) {
+test('workflow notification sends only through the selected authorized channel', function (string $scope, bool $legacyEmail) {
     Mail::fake();
     Http::fake();
     $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
@@ -151,16 +151,20 @@ test('workflow notification sends only through the selected authorized channel',
         $this->user->withAccessToken($this->user->createToken('workflow', $abilities)->accessToken);
     }
 
-    (new Notify($this->user, $workflow))->run([
+    $input = [
         'notification_channel_id' => $channel->id,
-        'email' => $this->user->email,
         'message' => 'Private workflow notification',
-    ]);
+    ];
+    if ($legacyEmail) {
+        $input['email'] = 'deleted-user@example.com';
+    }
+
+    (new Notify($this->user, $workflow))->run($input);
 
     Mail::assertSent(NotificationMail::class, fn (NotificationMail $mail) => $mail->hasTo('selected@example.com'));
     Mail::assertSentCount(1);
     Http::assertNothingSent();
-})->with(['session', 'scoped', 'unrestricted']);
+})->with(['session', 'scoped', 'unrestricted'])->with([false, true]);
 
 test('workflow notification rejects foreign and token excluded channels', function (string $scope) {
     Mail::fake();

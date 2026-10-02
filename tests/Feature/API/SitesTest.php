@@ -4,6 +4,7 @@ use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\UserRole;
 use App\Facades\SSH;
+use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Project;
@@ -59,7 +60,7 @@ test('api blank sites discard disabled source control input', function (?bool $e
         'repository' => '',
         'branch' => '',
     ]);
-    Queue::assertPushed(\App\Jobs\Site\CreateJob::class, 1);
+    Queue::assertPushed(CreateJob::class, 1);
     Http::assertNothingSent();
 })->with([false, null]);
 
