@@ -101,6 +101,26 @@ test('update deployment script', function () {
     expect($deploymentScript->shouldRestartWorkers())->toBeTrue();
 });
 
+test('cannot update a deployment script belonging to another site', function () {
+    $foreignSite = Site::factory()->create(['server_id' => $this->server->id]);
+    $script = $foreignSite->deploymentScript;
+    $originalContent = $script->content;
+
+    $this->actingAs($this->user)
+        ->put(route('application.update-deployment-script', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'deploymentScript' => $script,
+        ]), ['script' => 'unauthorized replacement'])
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('deployment_scripts', [
+        'id' => $script->id,
+        'site_id' => $foreignSite->id,
+        'content' => $originalContent,
+    ]);
+});
+
 test('deploy classic', function () {
     SSH::fake('fake output');
     Http::fake([

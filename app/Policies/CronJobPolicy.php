@@ -16,7 +16,8 @@ class CronJobPolicy
 
     public function viewAny(User $user, Server $server, ?Site $site = null): bool
     {
-        return $this->hasReadAccess($user, $server->project) && $server->isReady();
+        return $this->hasReadAccess($user, $server->project) && $server->isReady() &&
+            (! $site || $site->server_id === $server->id);
     }
 
     public function view(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
@@ -25,12 +26,14 @@ class CronJobPolicy
 
         return $this->hasReadAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
-            $cronjob->server_id === $server->id;
+            $cronjob->server_id === $server->id &&
+            (! $site || ($site->server_id === $server->id && $cronjob->site_id === $site->id));
     }
 
     public function create(User $user, Server $server, ?Site $site = null): bool
     {
-        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
+        return $this->hasWriteAccess($user, $server->project) && $server->isReady() &&
+            (! $site || $site->server_id === $server->id);
     }
 
     public function update(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
@@ -39,7 +42,8 @@ class CronJobPolicy
 
         return $this->hasWriteAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
-            $cronjob->server_id === $server->id;
+            $cronjob->server_id === $server->id &&
+            (! $site || ($site->server_id === $server->id && $cronjob->site_id === $site->id));
     }
 
     public function delete(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
@@ -48,6 +52,7 @@ class CronJobPolicy
 
         return $this->hasWriteAccess($user, $cronJobServer->project) &&
             $cronJobServer->isReady() &&
-            $cronjob->server_id === $server->id;
+            $cronjob->server_id === $server->id &&
+            (! $site || ($site->server_id === $server->id && $cronjob->site_id === $site->id));
     }
 }

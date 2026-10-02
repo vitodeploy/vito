@@ -70,6 +70,10 @@ class ApplicationController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
+        if ($deploymentScript->site_id !== $site->id) {
+            abort(404);
+        }
+
         app(UpdateDeploymentScript::class)->update($deploymentScript, $request->input());
 
         return back()->with('success', 'Deployment script updated successfully.');

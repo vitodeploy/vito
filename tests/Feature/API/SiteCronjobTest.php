@@ -207,7 +207,7 @@ test('cannot access cronjob from different site', function () {
         'site' => $site2,
         'cronJob' => $cronjob,
     ]))
-        ->assertStatus(404);
+        ->assertForbidden();
 });
 
 test('cannot access cronjob from different server', function () {

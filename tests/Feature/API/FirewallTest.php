@@ -1,9 +1,13 @@
 <?php
 
 use App\Enums\FirewallRuleStatus;
+use App\Enums\UserRole;
 use App\Facades\SSH;
 use App\Models\FirewallRule;
+use App\Models\Project;
+use App\Models\Server;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
@@ -103,6 +107,52 @@ test('edit firewall rule', function () {
             'status' => FirewallRuleStatus::UPDATING,
         ]);
 });
+
+test('cannot edit a firewall rule through another server', function (bool $differentProject): void {
+    SSH::fake();
+    Queue::fake();
+
+    $project = $differentProject ? Project::factory()->create() : $this->server->project;
+    if ($differentProject) {
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
+    }
+
+    $server = Server::factory()->create(['project_id' => $project->id]);
+    $rule = FirewallRule::factory()->create([
+        'server_id' => $server->id,
+        'name' => 'Original rule',
+        'port' => '1234',
+    ]);
+    $token = $this->user->createToken('scoped', [
+        'read', 'write', 'project:'.$this->server->project_id,
+    ]);
+
+    $this->withToken($token->plainTextToken)
+        ->putJson(route('api.projects.servers.firewall-rules.edit', [
+            'project' => $this->server->project_id,
+            'server' => $this->server,
+            'firewallRule' => $rule,
+        ]), [
+            'name' => 'Unauthorized',
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => '55',
+        ])
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('firewall_rules', [
+        'id' => $rule->id,
+        'name' => 'Original rule',
+        'port' => '1234',
+    ]);
+    Queue::assertNothingPushed();
+})->with([
+    'same project' => false,
+    'outside token scope' => true,
+]);
 
 test('see firewall rules', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);

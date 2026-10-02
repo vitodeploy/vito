@@ -8,8 +8,11 @@ use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\SSH\OS\Git;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -20,10 +23,11 @@ class UpdateSourceControl
     /**
      * @param  array<string, mixed>  $input
      *
+     * @throws AuthorizationException
      * @throws ValidationException
      * @throws SSHError
      */
-    public function update(Site $site, array $input): void
+    public function update(Site $site, array $input, User $actor): void
     {
         Validator::make($input, [
             'source_control' => SourceControl::siteValidationRules($site->server),
@@ -31,15 +35,17 @@ class UpdateSourceControl
 
         $newSourceControlId = (int) $input['source_control'];
 
-        if ($site->source_control_id === $newSourceControlId) {
-            return;
-        }
-
         $newSourceControl = SourceControl::find($newSourceControlId);
         if (! $newSourceControl instanceof SourceControl) {
             throw ValidationException::withMessages([
                 'source_control' => 'Source control not found',
             ]);
+        }
+
+        Gate::forUser($actor)->authorize('view', $newSourceControl);
+
+        if ($site->source_control_id === $newSourceControlId) {
+            return;
         }
 
         try {

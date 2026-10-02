@@ -18,11 +18,13 @@ class ServicePolicy
         return $this->hasReadAccess($user, $server->project) && $server->isReady();
     }
 
-    public function view(User $user, Service $service): bool
+    public function view(User $user, Service $service, ?Server $server = null): bool
     {
-        $server = $service->server;
+        $server ??= $service->server;
 
-        return $this->hasReadAccess($user, $server->project) && $server->isReady();
+        return $service->server_id === $server->id &&
+            $this->hasReadAccess($user, $server->project) &&
+            $server->isReady();
     }
 
     public function create(User $user, Server $server): bool
@@ -30,11 +32,13 @@ class ServicePolicy
         return $this->hasWriteAccess($user, $server->project) && $server->isReady();
     }
 
-    public function update(User $user, Service $service): bool
+    public function update(User $user, Service $service, ?Server $server = null): bool
     {
-        $server = $service->server;
+        $server ??= $service->server;
 
-        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
+        return $service->server_id === $server->id &&
+            $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady();
     }
 
     public function delete(User $user, Service $service): bool
