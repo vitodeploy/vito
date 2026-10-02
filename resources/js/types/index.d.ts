@@ -120,6 +120,10 @@ export interface Configs {
     installed: boolean;
   };
   tooling: ToolingDescriptor[];
+  dashboard_urls: {
+    horizon: string;
+    logs: string;
+  };
 
   [key: string]: unknown;
 }

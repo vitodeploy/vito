@@ -35,9 +35,11 @@ import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
   const page = usePage<SharedData>();
+  const dashboardUrls = useConfigs()?.dashboard_urls;
 
   const mainNavItems: NavItem[] = [
     {
@@ -91,15 +93,15 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
   const footerNavItems: NavItem[] = [
     {
       title: 'Horizon Dashboard',
-      href: '/horizon',
+      href: dashboardUrls?.horizon ?? '#',
       icon: ListEndIcon,
-      hidden: !page.props.auth.user?.is_admin,
+      hidden: !page.props.auth.user?.is_admin || !dashboardUrls,
     },
     {
       title: 'Vito Logs',
-      href: '/logs',
+      href: dashboardUrls?.logs ?? '#',
       icon: LogsIcon,
-      hidden: !page.props.auth.user?.is_admin,
+      hidden: !page.props.auth.user?.is_admin || !dashboardUrls,
     },
     {
       title: 'Repository',
