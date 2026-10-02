@@ -9,7 +9,7 @@ function CheckForUpdates({ server }: { server: Server }) {
   const form = useForm();
 
   const submit = () => {
-    form.post(route('servers.check-for-updates', server.id));
+    form.post(`/servers/${server.id}/check-for-updates`);
   };
 
   return (
@@ -30,7 +30,7 @@ function CheckConnection({ server }: { server: Server }) {
   const form = useForm();
 
   const submit = () => {
-    form.patch(route('servers.status', server.id));
+    form.patch(`/servers/${server.id}/status`);
   };
 
   return (
@@ -69,7 +69,7 @@ export default function ServerActions({ server }: { server: Server }) {
               variant: 'destructive',
               confirmLabel: 'Restart',
               method: 'post',
-              url: route('servers.reboot', server.id),
+              url: `/servers/${server.id}/reboot`,
             })
           }
         >
@@ -85,7 +85,7 @@ export default function ServerActions({ server }: { server: Server }) {
               variant: 'destructive',
               confirmLabel: 'Update',
               method: 'post',
-              url: route('servers.update', server.id),
+              url: `/servers/${server.id}/update`,
             })
           }
         >
@@ -100,7 +100,7 @@ export default function ServerActions({ server }: { server: Server }) {
               variant: 'destructive',
               confirmLabel: 'Update & restart',
               method: 'post',
-              url: route('servers.update-kernel', server.id),
+              url: `/servers/${server.id}/update-kernel`,
             })
           }
         >

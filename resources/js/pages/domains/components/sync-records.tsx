@@ -10,7 +10,7 @@ export default function SyncRecords({ domain }: { domain: Domain }) {
   const form = useForm();
 
   const submit = () => {
-    form.post(route('dns-records.sync', domain.id), {
+    form.post(`/domains/${domain.id}/records/sync`, {
       onSuccess: () => {
         setOpen(false);
       },

@@ -17,34 +17,34 @@ export default function NetworkLayout({ children }: { children: ReactNode }) {
   const sidebarNavItems: NavItem[] = [
     {
       title: 'Overview',
-      href: route('networks.show', { network: network.id }),
-      onlyActivePath: route('networks.show', { network: network.id }),
+      href: `/networks/${network.id}`,
+      onlyActivePath: `/networks/${network.id}`,
       icon: HomeIcon,
     },
     {
       title: 'Servers',
-      href: route('networks.servers', { network: network.id }),
+      href: `/networks/${network.id}/servers`,
       icon: ServerIcon,
     },
     {
       title: 'Peers',
-      href: route('networks.peers', { network: network.id }),
+      href: `/networks/${network.id}/peers`,
       icon: LaptopIcon,
       isDisabled: network.type_value !== 'wireguard',
     },
     {
       title: 'Firewall',
-      href: route('networks.firewall', { network: network.id }),
+      href: `/networks/${network.id}/firewall`,
       icon: FlameIcon,
     },
     {
       title: 'Logs',
-      href: route('networks.logs', { network: network.id }),
+      href: `/networks/${network.id}/logs`,
       icon: LogsIcon,
     },
     {
       title: 'Settings',
-      href: route('networks.settings', { network: network.id }),
+      href: `/networks/${network.id}/settings`,
       icon: Settings2Icon,
     },
   ];

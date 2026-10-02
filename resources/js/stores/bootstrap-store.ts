@@ -76,7 +76,7 @@ export const useBootstrapStore = create<BootstrapState>((set, get) => {
       set({ status: get().status === 'ready' ? 'ready' : 'loading' });
       inflight = (async () => {
         try {
-          const response = await fetch(route('bootstrap.show'), {
+          const response = await fetch('/bootstrap', {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
           });

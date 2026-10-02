@@ -15,7 +15,7 @@ export function WorkerAction({ type, worker }: { type: 'start' | 'stop' | 'resta
           variant: type === 'stop' ? 'destructive' : 'default',
           confirmLabel: type,
           method: 'post',
-          url: route(`workers.${type}`, { server: worker.server_id, worker: worker }),
+          url: `/servers/${worker.server_id}/workers/${worker.id}/${type}`,
         })
       }
     >

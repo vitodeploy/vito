@@ -10,7 +10,7 @@ export default function SyncCronJobs({ server }: { server: Server }) {
   const form = useForm();
 
   const submit = () => {
-    form.post(route('cronjobs.sync', server.id), {
+    form.post(`/servers/${server.id}/cronjobs/sync`, {
       onSuccess: () => {
         setOpen(false);
       },

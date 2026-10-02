@@ -39,10 +39,10 @@ export default function Fail2banForm({
     e.preventDefault();
     const onSuccess = () => onOpenChange(false);
     if (isInstalled) {
-      form.patch(route('security.fail2ban.update', { server: serverId }), { preserveScroll: true, onSuccess });
+      form.patch(`/servers/${serverId}/security/fail2ban`, { preserveScroll: true, onSuccess });
       return;
     }
-    form.post(route('security.fail2ban.install', { server: serverId }), { preserveScroll: true, onSuccess });
+    form.post(`/servers/${serverId}/security/fail2ban`, { preserveScroll: true, onSuccess });
   };
 
   return (

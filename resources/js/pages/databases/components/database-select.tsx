@@ -26,7 +26,7 @@ export default function DatabaseSelect({
   const query = useQuery<Database[]>({
     queryKey: ['databases', serverId],
     queryFn: async () => {
-      return (await axios.get(route('databases.json', { server: serverId }))).data;
+      return (await axios.get(`/servers/${serverId}/database/json`)).data;
     },
   });
 

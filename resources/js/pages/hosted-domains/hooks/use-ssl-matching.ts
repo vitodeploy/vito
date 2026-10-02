@@ -38,7 +38,7 @@ export function useSslMatching({ serverId, siteId, domain, sslId, applySslSettin
     const timeoutId = setTimeout(() => {
       setLoadingSsls(true);
       axios
-        .get(route('hosted-domains.matching-ssls', { server: serverId, site: siteId, domain }), { signal: controller.signal })
+        .get(`/servers/${serverId}/sites/${siteId}/domains/matching-ssls`, { params: { domain }, signal: controller.signal })
         .then((response) => {
           const { certificates, best_match_id } = response.data;
           setMatchingSsls(certificates);

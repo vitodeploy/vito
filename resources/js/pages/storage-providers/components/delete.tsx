@@ -15,7 +15,7 @@ export default function Delete({ storageProvider }: { storageProvider: StoragePr
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('storage-providers.destroy', storageProvider.id),
+          url: `/settings/storage-providers/${storageProvider.id}`,
         })
       }
     >

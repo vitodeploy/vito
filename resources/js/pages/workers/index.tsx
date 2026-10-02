@@ -31,7 +31,6 @@ export default function WorkerIndex() {
     page.props.site ? { site_id: page.props.site.id } : { server_id: page.props.server.id },
   );
 
-  const scope = page.props.site ? { server: page.props.server.id, site: page.props.site.id } : { server: page.props.server.id };
   const scopeLabel = page.props.site ? `${page.props.site.domain}'s workers` : "this server's workers";
 
   return (
@@ -65,7 +64,7 @@ export default function WorkerIndex() {
                       description: `Fetch the live status of ${scopeLabel} from the process manager and update Vito. Continue?`,
                       confirmLabel: 'Resync',
                       method: 'post',
-                      url: route('workers.resync', scope),
+                      url: `/servers/${page.props.server.id}/workers/resync${page.props.site ? `/${page.props.site.id}` : ''}`,
                     })
                   }
                 >
@@ -79,7 +78,7 @@ export default function WorkerIndex() {
                       description: `Are you sure you want to restart ${scopeLabel}?`,
                       confirmLabel: 'Restart All',
                       method: 'post',
-                      url: route('workers.restart-all', scope),
+                      url: `/servers/${page.props.server.id}/workers/restart-all${page.props.site ? `/${page.props.site.id}` : ''}`,
                     })
                   }
                 >

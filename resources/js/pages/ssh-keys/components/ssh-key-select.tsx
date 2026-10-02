@@ -19,7 +19,7 @@ export default function SshKeySelect({
   const query = useQuery<SshKey[]>({
     queryKey: ['sshKey'],
     queryFn: async () => {
-      return (await axios.get(route('ssh-keys.json'))).data;
+      return (await axios.get('/settings/ssh-keys/json')).data;
     },
   });
 

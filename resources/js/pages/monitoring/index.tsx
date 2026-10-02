@@ -48,7 +48,7 @@ export default function Monitoring() {
             <AlertDescription>
               <p>
                 To monitor your server, you need to first install a{' '}
-                <Link href={route('services', { server: page.props.server })} className="font-bold underline">
+                <Link href={`/servers/${page.props.server.id}/services`} className="font-bold underline">
                   monitoring service
                 </Link>
                 .

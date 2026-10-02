@@ -49,7 +49,7 @@ export default function PrivateIpSelect({
     }
     setRefreshing(true);
     router.post(
-      route('servers.network.refresh', { server: serverId }),
+      `/servers/${serverId}/network/refresh`,
       {},
       {
         preserveScroll: true,

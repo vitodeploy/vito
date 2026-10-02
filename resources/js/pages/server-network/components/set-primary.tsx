@@ -13,7 +13,7 @@ export default function SetPrimary({ ipAddress }: { ipAddress: ServerIpAddress }
           description: `Make ${ipAddress.ip} the primary address for this server. Vito uses the primary public IP to connect to the server, so only change this if the address is reachable.`,
           confirmLabel: 'Set as primary',
           method: 'post',
-          url: route('servers.network.ips.primary', { server: ipAddress.server_id, serverIpAddress: ipAddress.id }),
+          url: `/servers/${ipAddress.server_id}/network/ips/${ipAddress.id}/primary`,
         })
       }
     >

@@ -30,12 +30,7 @@ export default function FeatureAction({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.post(
-      route('site-features.action', {
-        server: site.server_id,
-        site: site.id,
-        feature: featureId,
-        action: actionId,
-      }),
+      `/servers/${site.server_id}/sites/${site.id}/features/${encodeURIComponent(featureId)}/${encodeURIComponent(actionId)}`,
       {
         onSuccess: () => onOpenChange(false),
       },

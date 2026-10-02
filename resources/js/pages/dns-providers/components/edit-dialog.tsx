@@ -33,7 +33,7 @@ export default function DnsProviderEditDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('dns-providers.update', dnsProvider.id), {
+    form.patch(`/settings/dns-providers/${dnsProvider.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

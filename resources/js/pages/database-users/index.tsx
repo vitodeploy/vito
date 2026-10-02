@@ -76,7 +76,7 @@ export default function DatabaseUsers() {
                           variant: 'destructive',
                           confirmLabel: 'Delete',
                           method: 'delete',
-                          url: route('database-users.destroy', { server: databaseUser.server_id, databaseUser: databaseUser.id }),
+                          url: `/servers/${databaseUser.server_id}/database/users/${databaseUser.id}`,
                         })
                       }
                     >

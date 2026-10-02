@@ -67,7 +67,7 @@ function InstallationFailedBanner({ site }: { site: Site }) {
                   setSubmitError(null);
                   setOpen(false);
                   router.post(
-                    route('sites.retry', { server: site.server_id, site: site.id }),
+                    `/servers/${site.server_id}/sites/${site.id}/retry`,
                     {},
                     {
                       preserveScroll: true,
@@ -124,7 +124,7 @@ export default function SiteBanners({ site }: { site: Site }) {
           variant="outline"
           size="sm"
           onClick={() => {
-            router.post(route('sites.enable-ssl', { server: site.server_id, site: site.id }), {}, { preserveScroll: true });
+            router.post(`/servers/${site.server_id}/sites/${site.id}/enable-ssl`, {}, { preserveScroll: true });
           }}
         >
           Enable SSL
@@ -144,7 +144,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         </>
       ),
       action: (
-        <Link href={route('hosted-domains', { server: site.server_id, site: site.id })}>
+        <Link href={`/servers/${site.server_id}/sites/${site.id}/domains`}>
           <Button variant="outline" size="sm">
             Manage Domains
           </Button>
@@ -165,7 +165,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         </>
       ),
       action: (
-        <Link href={route('hosted-domains', { server: site.server_id, site: site.id })}>
+        <Link href={`/servers/${site.server_id}/sites/${site.id}/domains`}>
           <Button variant="outline" size="sm">
             Manage Domains
           </Button>
@@ -182,7 +182,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         <>
           Automatic VHost generation has been disabled. Changes to SSL, domains, or redirects will not update the VHost config. Review your template
           on the{' '}
-          <Link href={route('site-settings', { server: site.server_id, site: site.id })} className="underline">
+          <Link href={`/servers/${site.server_id}/sites/${site.id}/settings`} className="underline">
             Settings page
           </Link>{' '}
           before re-enabling.
@@ -194,7 +194,7 @@ export default function SiteBanners({ site }: { site: Site }) {
           size="sm"
           onClick={() => {
             router.patch(
-              route('site-settings.update-vhost-generation', { server: site.server_id, site: site.id }),
+              `/servers/${site.server_id}/sites/${site.id}/settings/vhost-generation`,
               { vhost_generation_enabled: true },
               { preserveScroll: true },
             );
@@ -217,7 +217,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         </>
       ),
       action: (
-        <Link href={route('site-settings', { server: site.server_id, site: site.id })}>
+        <Link href={`/servers/${site.server_id}/sites/${site.id}/settings`}>
           <Button variant="outline" size="sm">
             Go to Settings
           </Button>
@@ -237,7 +237,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         </>
       ),
       action: (
-        <Link href={route('application', { server: site.server_id, site: site.id })}>
+        <Link href={`/servers/${site.server_id}/sites/${site.id}`}>
           <Button variant="outline" size="sm">
             Go to Application
           </Button>
@@ -267,7 +267,7 @@ export default function SiteBanners({ site }: { site: Site }) {
         </>
       ),
       action: (
-        <Link href={route('workers.site', { server: site.server_id, site: site.id })}>
+        <Link href={`/servers/${site.server_id}/sites/${site.id}/workers`}>
           <Button variant="outline" size="sm">
             Manage Workers
           </Button>

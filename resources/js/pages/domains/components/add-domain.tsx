@@ -39,7 +39,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
 
   const connectedProviders = dnsProviders.filter((provider) => provider.connected);
 
-  const fetchDomains = async (providerId: string, routeName: string = 'domains.available') => {
+  const fetchDomains = async (providerId: string, refresh: boolean = false) => {
     if (!providerId) {
       setAvailableDomains([]);
       return;
@@ -47,7 +47,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
 
     setLoadingDomains(true);
     try {
-      const response = await axios.get(route(routeName, providerId));
+      const response = await axios.get(`/domains/${encodeURIComponent(providerId)}/${refresh ? 'refresh' : 'available'}`);
       setAvailableDomains(response.data || []);
     } catch (error) {
       console.error('Failed to fetch domains:', error);
@@ -66,17 +66,17 @@ export default function AddDomain({ children }: { children: ReactNode }) {
 
   const refreshDomains = () => {
     form.setData('provider_domain_id', '');
-    fetchDomains(form.data.dns_provider_id, 'domains.refresh');
+    fetchDomains(form.data.dns_provider_id, true);
   };
 
   const fetchProviders = async () => {
-    const response = await axios.get(route('dns-providers.json'));
+    const response = await axios.get('/settings/dns-providers/json');
     setDNSProviders(response.data as DNSProvider[]);
   };
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('domains.store'), {
+    form.post('/domains', {
       onSuccess: () => {
         setOpen(false);
         setAvailableDomains([]);

@@ -31,7 +31,7 @@ export default function PhpExtensionsDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('php.install-extension', { server: service.server_id, service: service.id }), {
+    form.post(`/servers/${service.server_id}/php/${service.id}/install-extension`, {
       onSuccess: () => onOpenChange(false),
     });
   };

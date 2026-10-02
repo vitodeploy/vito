@@ -36,7 +36,6 @@ abstract class ArchTestCase extends BaseTestCase
             'reason' => 'Hashes for cache keys and content fingerprints only — never for authentication, signing or password storage.',
             'entries' => [
                 'App\Actions\Bootstrap\GetBootstrap',
-                'App\Actions\Ziggy\GetZiggyRoutes',
                 'App\Helpers\Apr1Hasher',
                 'App\SourceControlProviders',
             ],
@@ -203,7 +202,6 @@ abstract class ArchTestCase extends BaseTestCase
                 'api/github-hooks',
                 'api/servers/{server}/agent',
                 'api/webhooks',
-                'ziggy',
                 'login',
                 'logout',
                 'register',

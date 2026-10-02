@@ -46,7 +46,7 @@ export default function AppCommand() {
   const query = useQuery<SearchResult[]>({
     queryKey: ['search'],
     queryFn: async () => {
-      const response = await axios.get(route('search', { query: queryText }));
+      const response = await axios.get('/search', { params: { query: queryText } });
       return response.data.data;
     },
     retry: false,
@@ -100,16 +100,13 @@ export default function AppCommand() {
                   value={`result-${index}`}
                   onSelect={() => {
                     if (result.type === 'server') {
-                      router.post(route('servers.switch', { server: result.id }));
+                      router.post(`/servers/${result.id}/switch`);
                     } else if (result.type === 'project') {
                       router.patch(
-                        route('projects.switch', {
-                          project: result.id,
-                          currentPath: window.location.pathname,
-                        }),
+                        `/settings/projects/switch/${result.id}?${new URLSearchParams({ currentPath: window.location.pathname })}`,
                       );
                     } else if (result.type === 'site') {
-                      router.post(route('sites.switch', { server: result.parent_id, site: result.id }));
+                      router.post(`/servers/${result.parent_id}/sites/${result.id}/switch`);
                     }
                     setOpen(false);
                   }}

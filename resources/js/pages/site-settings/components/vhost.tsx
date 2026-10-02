@@ -38,7 +38,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('site-settings.update-vhost-template', { server: site.server_id, site: site.id }), {
+    form.put(`/servers/${site.server_id}/sites/${site.id}/settings/vhost-template`, {
       onSuccess: () => {
         handleOpenChange(false);
       },
@@ -48,7 +48,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const resetTemplate = () => {
     setResetting(true);
     router.post(
-      route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }),
+      `/servers/${site.server_id}/sites/${site.id}/settings/vhost-template/reset`,
       {},
       {
         preserveScroll: true,
@@ -66,7 +66,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const previewTemplate = () => {
     setPreviewing(true);
     axios
-      .post(route('site-settings.vhost-preview', { server: site.server_id, site: site.id }), {
+      .post(`/servers/${site.server_id}/sites/${site.id}/settings/vhost-preview`, {
         template: form.data.template,
       })
       .then((response) => {
@@ -83,10 +83,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
     queryKey: ['site-settings.vhost-template', site.server_id, site.id],
     queryFn: async () => {
       const response = await axios.get(
-        route('site-settings.vhost-template', {
-          server: site.server_id,
-          site: site.id,
-        }),
+        `/servers/${site.server_id}/sites/${site.id}/settings/vhost-template`,
       );
       if (typeof response.data?.template === 'string') {
         form.setData('template', response.data.template);

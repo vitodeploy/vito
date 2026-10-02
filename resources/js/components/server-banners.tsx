@@ -28,7 +28,7 @@ export default function ServerBanners({ server }: { server: Server }) {
                 'Are you sure you want to restart this server? Sites and services hosted on this server will be unavailable while it restarts. Connections in flight will be dropped.',
               confirmLabel: 'Restart',
               method: 'post',
-              url: route('servers.reboot', server.id),
+              url: `/servers/${server.id}/reboot`,
             })
           }
         >
@@ -54,7 +54,7 @@ export default function ServerBanners({ server }: { server: Server }) {
               description: `Apply ${updatesCount} pending OS package ${updatesCount === 1 ? 'update' : 'updates'} to this server? The upgrade can take several minutes and may briefly restart affected services. A server restart may be required afterwards.`,
               confirmLabel: 'Update',
               method: 'post',
-              url: route('servers.update', server.id),
+              url: `/servers/${server.id}/update`,
             })
           }
         >
@@ -81,7 +81,7 @@ export default function ServerBanners({ server }: { server: Server }) {
               variant: 'destructive',
               confirmLabel: 'Update & restart',
               method: 'post',
-              url: route('servers.update-kernel', server.id),
+              url: `/servers/${server.id}/update-kernel`,
             })
           }
         >

@@ -19,7 +19,11 @@ export function useMetrics(server: Server, filter?: MetricsFilter) {
   return useQuery<MetricsResponse>({
     queryKey: ['metrics', server.id, resolved.period, resolved.from, resolved.to],
     queryFn: async () => {
-      const response = await fetch(route('monitoring.json', { server: server.id, ...resolved }));
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(resolved)) {
+        if (value != null) params.set(key, String(value));
+      }
+      const response = await fetch(`/servers/${server.id}/monitoring/json?${params}`);
       if (!response.ok) {
         throw new Error('Failed to fetch metrics');
       }

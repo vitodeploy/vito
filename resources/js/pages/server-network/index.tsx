@@ -30,7 +30,7 @@ export default function ServerNetwork() {
 
   const refresh = useCallback(() => {
     router.post(
-      route('servers.network.refresh', { server: serverId }),
+      `/servers/${serverId}/network/refresh`,
       {},
       {
         preserveScroll: true,

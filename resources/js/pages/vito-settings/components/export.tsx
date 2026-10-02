@@ -3,7 +3,7 @@ import { DownloadIcon } from 'lucide-react';
 
 export default function ExportVito() {
   const submit = () => {
-    window.open(route('vito-settings.export'), '_blank');
+    window.open('/admin/vito/export', '_blank');
   };
 
   return (

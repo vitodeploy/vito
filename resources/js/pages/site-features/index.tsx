@@ -39,7 +39,7 @@ export default function SiteFeatures() {
           <TriangleAlertIcon className="text-warning!" />
           <AlertDescription className="flex gap-1">
             Vito now uses the new plugins system. If the feature you're looking for is not here, check the
-            <Link className="text-primary" href={route('plugins')}>
+            <Link className="text-primary" href="/admin/plugins">
               plugins
             </Link>
             and install the required one.
@@ -88,7 +88,7 @@ export default function SiteFeatures() {
             ) : (
               <CardRow className="flex-col items-center justify-center space-y-2">
                 <span className="text-muted-foreground">No available features</span>
-                <Link href={route('plugins')} prefetch>
+                <Link href="/admin/plugins" prefetch>
                   <Button variant="outline">Explore Plugins</Button>
                 </Link>
               </CardRow>

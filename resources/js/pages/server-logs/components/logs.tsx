@@ -14,7 +14,7 @@ export default function Logs({ server, site }: { server: Server; site?: Site }) 
     queryKey: ['serverLogs', server.id, site?.id, currentPage],
     queryFn: async () => {
       return (
-        await axios.get(route('logs.json', { server: server.id, site: site?.id }), {
+        await axios.get(`/servers/${server.id}/logs/json${site ? `/${site.id}` : ''}`, {
           params: { page: currentPage },
         })
       ).data;

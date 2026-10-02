@@ -43,7 +43,7 @@ function Delete({ record }: { record: DNSRecord }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('dns-records.destroy', [record.domain_id, record.id]),
+          url: `/domains/${record.domain_id}/records/${record.id}`,
         })
       }
     >

@@ -72,7 +72,7 @@ export default function CreateDatabase({
   const fetchCollations = async (charset: string, current: string): Promise<void> => {
     const requestId = ++latestCollationRequest.current;
     try {
-      const response = await axios.get(route('databases.collations', { server: server, charset }));
+      const response = await axios.get(`/servers/${server}/database/collations/${encodeURIComponent(charset)}`);
       if (requestId !== latestCollationRequest.current) {
         return;
       }
@@ -89,7 +89,7 @@ export default function CreateDatabase({
 
   const fetchCharsets = async () => {
     setCollations([]);
-    const response = await axios.get(route('databases.charsets', server));
+    const response = await axios.get(`/servers/${server}/database/charsets`);
     fetchedServer.current = server;
     setCharsets(response.data);
 
@@ -100,7 +100,7 @@ export default function CreateDatabase({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('databases.store', server), {
+    form.post(`/servers/${server}/database`, {
       onSuccess: () => {
         form.reset();
         setOpen(false);

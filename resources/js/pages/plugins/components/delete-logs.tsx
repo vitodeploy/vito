@@ -14,7 +14,7 @@ export default function DeleteLogs({ plugin }: { plugin: Plugin }) {
           variant: 'destructive',
           confirmLabel: 'Delete Logs',
           method: 'delete',
-          url: route('plugins.logs'),
+          url: '/admin/plugins/logs',
           data: { id: plugin.id },
         })
       }

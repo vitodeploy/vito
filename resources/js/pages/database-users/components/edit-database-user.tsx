@@ -37,7 +37,7 @@ export default function EditDatabaseUser({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('database-users.update', { server: databaseUser.server_id, databaseUser: databaseUser.id }), {
+    form.put(`/servers/${databaseUser.server_id}/database/users/${databaseUser.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

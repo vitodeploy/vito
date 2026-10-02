@@ -33,13 +33,13 @@ export default function ScriptForm({ open, onOpenChange, script }: { open: boole
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (script) {
-      form.put(route('scripts.update', { script: script.id }), {
+      form.put(`/scripts/${script.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
-    form.post(route('scripts'), {
+    form.post('/scripts', {
       onSuccess: () => onOpenChange(false),
     });
   };

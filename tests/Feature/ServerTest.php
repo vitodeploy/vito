@@ -25,9 +25,28 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+test('server table links are resolved without a client route catalogue', function () {
+    $this->actingAs($this->user)
+        ->get('/servers')
+        ->assertSuccessful()
+        ->assertDontSee('/ziggy/', false)
+        ->assertInertia(function (AssertableInertia $page): void {
+            $page->component('servers/index')->missing('ziggy');
+
+            $table = $page->toArray()['props']['servers'];
+            $column = collect($table['columns'])->firstWhere('name', 'name');
+            $display = $column['displays'][0];
+            $row = collect($table['data'])->firstWhere('id', $this->server->id);
+
+            expect($display)->toHaveKey('href_key')->not->toHaveKeys(['route', 'params']);
+            expect($row[$display['href_key']])->toBe(url('/servers/'.$this->server->id));
+        });
+});
 
 test('create server', function () {
     $this->actingAs($this->user);

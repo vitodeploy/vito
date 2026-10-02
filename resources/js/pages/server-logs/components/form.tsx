@@ -31,7 +31,7 @@ export default function LogForm({ serverLog, children }: { serverLog?: ServerLog
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (serverLog) {
-      form.put(route('logs.update', { server: page.props.server.id, serverLog: serverLog.id }), {
+      form.put(`/servers/${page.props.server.id}/logs/${serverLog.id}`, {
         onSuccess: () => {
           setOpen(false);
           form.reset();
@@ -40,7 +40,7 @@ export default function LogForm({ serverLog, children }: { serverLog?: ServerLog
       return;
     }
 
-    form.post(route('logs.store', { server: page.props.server.id }), {
+    form.post(`/servers/${page.props.server.id}/logs`, {
       onSuccess: () => {
         setOpen(false);
         form.reset();

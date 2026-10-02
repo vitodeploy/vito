@@ -108,7 +108,7 @@ export default function CreateSite({
   const serverId = form.data.server ? parseInt(form.data.server, 10) : 0;
   const isolatedUsersQuery = useQuery<IsolatedUserOption[]>({
     queryKey: ['isolated-users', serverId],
-    queryFn: async () => (await axios.get(route('sites.isolated-users', { server: serverId }))).data,
+    queryFn: async () => (await axios.get(`/servers/${serverId}/isolated-users`)).data,
     enabled: !!serverId,
   });
 
@@ -137,7 +137,7 @@ export default function CreateSite({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('sites.store', { server: form.data.server }), {
+    form.post(`/servers/${encodeURIComponent(form.data.server)}/sites`, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['isolated-users', parseInt(form.data.server, 10)] });
       },

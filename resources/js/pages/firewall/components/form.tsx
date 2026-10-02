@@ -54,13 +54,13 @@ export default function RuleForm({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (firewallRule) {
-      form.put(route('firewall.update', { server: serverId, firewallRule: firewallRule.id }), {
+      form.put(`/servers/${serverId}/firewall/${firewallRule.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
-    form.post(route('firewall.store', { server: serverId }), {
+    form.post(`/servers/${serverId}/firewall`, {
       onSuccess: () => onOpenChange(false),
     });
   };

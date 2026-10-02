@@ -27,7 +27,7 @@ function Delete({ command }: { command: Command }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('commands.destroy', { server: command.server_id, site: command.site_id, command: command.id }),
+          url: `/servers/${command.server_id}/sites/${command.site_id}/commands/${command.id}`,
         })
       }
     >
@@ -74,11 +74,7 @@ export const columns: ColumnDef<Command>[] = [
             <DropdownMenuContent align="end">
               <Edit command={row.original} />
               <Link
-                href={route('commands.show', {
-                  server: row.original.server_id,
-                  site: row.original.site_id,
-                  command: row.original.id,
-                })}
+                href={`/servers/${row.original.server_id}/sites/${row.original.site_id}/commands/${row.original.id}`}
               >
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Executions</DropdownMenuItem>
               </Link>

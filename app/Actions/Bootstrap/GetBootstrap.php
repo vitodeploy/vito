@@ -95,7 +95,16 @@ final class GetBootstrap
                 'installed' => GithubApp::query()->exists(),
             ],
             'tooling' => $this->tooling(),
+            'dashboard_urls' => [
+                'horizon' => $this->dashboardUrl(config('horizon.domain'), config('horizon.path')),
+                'logs' => $this->dashboardUrl(config('log-viewer.route_domain'), config('log-viewer.route_path')),
+            ],
         ];
+    }
+
+    private function dashboardUrl(?string $domain, string $path): string
+    {
+        return ($domain ? '//'.$domain : '').'/'.trim($path, '/');
     }
 
     /**

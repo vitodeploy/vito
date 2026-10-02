@@ -15,7 +15,7 @@ export default function Uninstall({ service }: { service: Service }) {
           variant: 'destructive',
           confirmLabel: 'Uninstall',
           method: 'delete',
-          url: route('services.destroy', { server: service.server_id, service: service }),
+          url: `/servers/${service.server_id}/services/${service.id}`,
         })
       }
     >

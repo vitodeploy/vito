@@ -47,7 +47,7 @@ export default function PeerConfigDialog({
       setError('');
 
       return axios
-        .get(route('networks.peers.config', { network: networkId, networkPeer: peerId }), { signal })
+        .get(`/networks/${networkId}/peers/${peerId}/config`, { signal })
         .then((response) => {
           setConfig(response.data.config);
           setPrivateKey(response.data.private_key ?? null);
@@ -96,7 +96,7 @@ export default function PeerConfigDialog({
   const conceal = () => {
     setConcealing(true);
     router.post(
-      route('networks.peers.conceal', { network: networkId, networkPeer: peerId }),
+      `/networks/${networkId}/peers/${peerId}/conceal`,
       {},
       {
         preserveScroll: true,

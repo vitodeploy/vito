@@ -49,13 +49,13 @@ export default function WorkerForm({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (worker) {
-      form.put(route('workers.update', { server: serverId, worker: worker.id }), {
+      form.put(`/servers/${serverId}/workers/${worker.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
-    form.post(route('workers.store', { server: serverId, site: site?.id }), {
+    form.post(`/servers/${serverId}/workers${site ? `/${site.id}` : ''}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

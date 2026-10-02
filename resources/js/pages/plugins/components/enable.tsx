@@ -13,7 +13,7 @@ export default function EnablePlugin({ plugin }: { plugin: Plugin }) {
           description: `Are you sure you want to enable the plugin ${plugin.name ?? plugin.folder}?`,
           confirmLabel: 'Enable',
           method: 'patch',
-          url: route('plugins.enable'),
+          url: '/admin/plugins/enable',
           data: { id: plugin.id },
         })
       }

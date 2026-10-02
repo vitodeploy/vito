@@ -34,7 +34,7 @@ export default function StorageProviderEditDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('storage-providers.update', storageProvider.id), {
+    form.patch(`/settings/storage-providers/${storageProvider.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

@@ -64,11 +64,7 @@ export default function EditHostedDomain({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.put(
-      route('hosted-domains.update', {
-        server: hostedDomain.server_id,
-        site: hostedDomain.site_id,
-        hostedDomain: hostedDomain.id,
-      }),
+      `/servers/${hostedDomain.server_id}/sites/${hostedDomain.site_id}/domains/${hostedDomain.id}`,
       {
         onSuccess: () => onOpenChange(false),
       },

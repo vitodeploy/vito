@@ -30,14 +30,7 @@ function getRealtimePrefix(tableData: InertiaTableData): string | undefined {
 
 function resolveHref(display: CellRenderProps['displays'][number], row: CellRenderProps['row']): string | null {
   if (display.type !== 'link') return null;
-  if (display.href_key) return row[display.href_key] as string;
-  if (!display.route || !display.params) return null;
-
-  const params: Record<string, string | number> = {};
-  for (const [key, val] of Object.entries(display.params)) {
-    params[key] = val.startsWith(':') ? (row[val.slice(1)] as string | number) : val;
-  }
-  return route(display.route, params);
+  return display.href_key ? (row[display.href_key] as string) : null;
 }
 
 function vitoCellRenderer({ row, value, displays, defaultRender }: CellRenderProps & { defaultRender: () => ReactNode }): ReactNode {

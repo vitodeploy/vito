@@ -50,7 +50,7 @@ export default function CreateDatabaseUser({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('database-users.store', server), {
+    form.post(`/servers/${server}/database/users`, {
       onSuccess: () => {
         form.reset();
         setOpen(false);
