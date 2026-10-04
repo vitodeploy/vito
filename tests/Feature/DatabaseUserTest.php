@@ -740,6 +740,28 @@ test('mysql link does not run privilege reconcile', function () {
     SSH::assertNotExecutedContains('ALTER DEFAULT PRIVILEGES');
 });
 
+test('mysql link quotes a database name with a hyphen', function () {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    Database::factory()->create(['server_id' => $this->server, 'name' => 'my-database']);
+
+    $databaseUser = DatabaseUser::factory()->create([
+        'server_id' => $this->server,
+        'username' => 'app',
+        'host' => 'localhost',
+    ]);
+
+    $this->put(route('database-users.link', [
+        'server' => $this->server,
+        'databaseUser' => $databaseUser,
+    ]), ['databases' => ['my-database']])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('REVOKE ALL PRIVILEGES ON \`my-database\`.*');
+    SSH::assertExecutedContains('GRANT ALL PRIVILEGES ON \`my-database\`.*');
+});
+
 function vitoPestFeatureDatabaseUserTestUsePostgresql(): void
 {
     test()->server->services()->where('type', Mysql::type())->delete();

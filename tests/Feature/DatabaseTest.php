@@ -32,6 +32,25 @@ test('create database', function () {
     ]);
 });
 
+test('create database with a hyphen in the name', function () {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $this->post(route('databases.store', $this->server), [
+        'name' => 'my-database',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('databases', [
+        'name' => 'my-database',
+        'status' => DatabaseStatus::READY,
+    ]);
+
+    SSH::assertExecutedContains('CREATE DATABASE IF NOT EXISTS \`my-database\`');
+});
+
 test('create database with user', function () {
     $this->actingAs($this->user);
 
@@ -127,6 +146,29 @@ test('delete database', function () {
     $this->assertSoftDeleted('databases', [
         'id' => $database->id,
     ]);
+});
+
+test('delete database with a hyphen in the name', function () {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    /** @var Database $database */
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => 'my-database',
+    ]);
+
+    $this->delete(route('databases.destroy', [
+        'server' => $this->server,
+        'database' => $database,
+    ]))->assertSessionDoesntHaveErrors();
+
+    $this->assertSoftDeleted('databases', [
+        'id' => $database->id,
+    ]);
+
+    SSH::assertExecutedContains('DROP DATABASE IF EXISTS \`my-database\`');
 });
 
 test('delete database keeps linked user databases a list', function () {
