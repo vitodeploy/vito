@@ -32,10 +32,10 @@ Please do not refactor any existing code without discussing it with the maintain
 
 ## Which Branch?
 
-All bug fixes should be sent to the latest version that supports bug fixes (currently `3.x`).
+All bug fixes should be sent to the latest version that supports bug fixes (currently `4.x`).
 
 Minor features that are fully backward compatible with the current release may be sent to the latest stable branch (
-currently `3.x`).
+currently `4.x`).
 
 Major new features or features with breaking changes should always be sent to the `main` branch, which contains the
 upcoming major release.
