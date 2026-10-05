@@ -682,6 +682,35 @@ test('change branch', function () {
     SSH::assertExecutedContains("git checkout -f 'master'");
 });
 
+test('change branch with modern deployment checks out the source, not the live release', function () {
+    SSH::fake();
+
+    $this->site->update([
+        'path' => '/home/vito/vito.test/current',
+        'type_data' => [
+            'modern_deployment' => true,
+            'modern_deployment_history' => 10,
+            'modern_deployment_shared_resources' => ['.env', 'storage'],
+        ],
+    ]);
+
+    $this->actingAs($this->user);
+
+    $this->patch(route('site-settings.update-branch', [
+        'server' => $this->server->id,
+        'site' => $this->site,
+    ]), [
+        'branch' => 'develop',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($this->site->refresh()->branch)->toEqual('develop');
+
+    SSH::assertExecutedContains("cd '/home/vito/vito.test/source'");
+    SSH::assertExecutedContains("git checkout -f 'develop'");
+    SSH::assertNotExecutedContains("cd '/home/vito/vito.test/current'");
+});
+
 test('update web directory', function () {
     SSH::fake();
 
