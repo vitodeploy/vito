@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\RuntimePresets\AbstractRuntimePreset;
 use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 /**
  * @property int $project_id
@@ -35,6 +37,17 @@ class Application extends AbstractModel
         'project_id' => 'integer',
         'source_control_id' => 'integer',
     ];
+
+    public function preset(): AbstractRuntimePreset
+    {
+        $handler = config('component.runtimes', [])[$this->runtime]['handler'] ?? null;
+
+        if (! is_string($handler) || ! is_subclass_of($handler, AbstractRuntimePreset::class)) {
+            throw new InvalidArgumentException("Runtime preset for {$this->runtime} is not defined.");
+        }
+
+        return new $handler;
+    }
 
     /**
      * @return BelongsTo<Project, covariant $this>

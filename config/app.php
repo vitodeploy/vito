@@ -1,6 +1,7 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use App\Providers\ComponentServiceProvider;
 use App\Providers\DemoServiceProvider;
 use App\Providers\DNSProviderServiceProvider;
 use App\Providers\HorizonServiceProvider;
@@ -239,6 +240,7 @@ return [
         DNSProviderServiceProvider::class,
         NotificationChannelServiceProvider::class,
         ServiceTypeServiceProvider::class,
+        ComponentServiceProvider::class,
         HorizonServiceProvider::class,
         WorkflowServiceProvider::class,
     ],

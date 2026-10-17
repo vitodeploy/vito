@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\ComponentCapabilities\AbstractComponentCapability;
 use App\Enums\ComponentStatus;
 use Database\Factories\ComponentCapabilityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use InvalidArgumentException;
 
 /**
  * @property int $component_id
@@ -30,6 +32,17 @@ class ComponentCapability extends AbstractModel
         'config' => 'json',
         'status' => ComponentStatus::class,
     ];
+
+    public function handler(): AbstractComponentCapability
+    {
+        $handler = config('component.capabilities', [])[$this->capability]['handler'] ?? null;
+
+        if (! is_string($handler) || ! is_subclass_of($handler, AbstractComponentCapability::class)) {
+            throw new InvalidArgumentException("Component capability for {$this->capability} is not defined.");
+        }
+
+        return new $handler($this);
+    }
 
     /**
      * @return BelongsTo<Component, covariant $this>

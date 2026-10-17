@@ -116,6 +116,21 @@ export interface Configs {
     };
     reserved_user_names: string[];
   };
+  application: {
+    runtimes: {
+      id: string;
+      label: string;
+      versions: string[];
+      web_mode: 'fpm' | 'proxy' | 'static';
+      form: DynamicFieldConfig[];
+    }[];
+    capabilities: {
+      id: string;
+      label: string;
+      description: string;
+      surfaces: string[];
+    }[];
+  };
   github_app: {
     installed: boolean;
   };

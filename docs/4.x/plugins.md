@@ -197,6 +197,121 @@ can be shared across sibling sites. See the
 these.
 :::
 
+### Application runtime presets (Beta)
+
+Applications use runtime presets independently of Site types. Presets only suggest editable defaults;
+core deployment and component code must not branch on framework names. Extend
+`App\RuntimePresets\AbstractRuntimePreset`, implement static `id()` / `label()` and explicitly choose a
+`WebMode`: `FPM` for PHP-FPM, `PROXY` for a managed application process, or `STATIC` for files only.
+There is no default mode.
+
+For example, a Python preset can reuse the existing Mise tooling provider:
+
+```php
+use App\Enums\WebMode;
+use App\RuntimePresets\AbstractRuntimePreset;
+use App\Tooling\PythonTooling;
+
+class PythonPreset extends AbstractRuntimePreset
+{
+    public static function id(): string
+    {
+        return 'python';
+    }
+
+    public static function label(): string
+    {
+        return 'Python';
+    }
+
+    public function versions(): array
+    {
+        return PythonTooling::supportedVersions();
+    }
+
+    public function tooling(): ?string
+    {
+        return PythonTooling::id();
+    }
+
+    public function webMode(): WebMode
+    {
+        return WebMode::PROXY;
+    }
+
+    public function startCommand(): ?string
+    {
+        return 'python -m uvicorn main:app --host 127.0.0.1 --port "$PORT"';
+    }
+}
+```
+
+Register it in your plugin's `boot()`:
+
+```php
+\App\Plugins\RegisterRuntimePreset::make(PythonPreset::id())
+    ->handler(PythonPreset::class)
+    ->register();
+```
+
+The builder takes optional `label()` and `form(DynamicForm)` overrides; otherwise it uses the preset's
+label and form. The registry is `component.runtimes`. `Application::preset()` resolves a stateless
+handler. PHP and Laravel declare `requiredServices($version)` as `['php' => $version]`; Mise runtimes
+return their `ToolingRegistry` tool id from `tooling()` rather than requiring a server-wide Node service.
+Other optional suggestions are `webRoot()`, `startCommand()`, `schedulerCommand()`, `sharedPaths()` and
+`form()`. Defaults are empty/null.
+
+`defaultScripts()` returns `build`, `pre-release`, and `post-release` strings, read from
+`resources/deployment-scripts/presets/{id}/{stage}.sh` (missing files yield empty strings). Plugins can
+override this method to load their own files. These are suggested script contents, not executed during
+registration. Existing Site deployment scripts are unchanged.
+
+### Component capabilities (Beta)
+
+Extend `App\ComponentCapabilities\AbstractComponentCapability` and register with:
+
+```php
+\App\Plugins\RegisterComponentCapability::make(YourCapability::id())
+    ->handler(YourCapability::class)
+    ->register();
+```
+
+The handler receives its `App\Models\ComponentCapability` as the protected `$capability` property.
+Implement static `id()` / `label()` and override these hooks as needed:
+
+- `description(): string` and `surfaces(): array` describe the capability and its UI tabs.
+- `requiredServices(AbstractRuntimePreset $preset): array` lists server service types.
+- `form(AbstractRuntimePreset $preset): DynamicForm` describes fields stored in the model's `config`.
+  The registration builder also accepts a static `form(DynamicForm)` override in
+  `component.capabilities.{id}.form`; null means use the runtime-aware handler form.
+- `validate(Component $component, Server $server): void` delegates validation to an Action. Call
+  `parent::validate()` to check ownership (including the server's project), null/array configuration,
+  and required installed services (`ready`, `stopped`, or `disabled`). Invalid input throws
+  `ValidationException` (422). Validation may normalize the model's **in-memory** config, but does not
+  save it, run SSH, or dispatch jobs.
+
+`ComponentCapability::handler()` resolves the handler. Built-ins are `web`, `worker`, and `scheduler`:
+
+- Web needs a webserver. FPM additionally needs the environment's exact PHP version installed; proxy
+  mode needs a process manager and a non-empty start command. `web_directory` is release-relative,
+  cannot contain `..`, and defaults to the preset's web root. Empty means the release root.
+- Proxy `port` is an editable non-privileged port (1024–65535). Empty values select the first available
+  port in `component.port_range` (10000–19999 by default), excluding ports held by components and Sites
+  on that server. The managed process will receive this value as `PORT`.
+- Worker needs a process manager and unlocks `workers` for arbitrary background commands.
+- Scheduler unlocks `cron_jobs`, permits only one scheduler per environment, and requires `command`
+  unless the preset supplies a suggestion. Explicitly empty commands are rejected.
+
+Callers that create/update capabilities must serialize validation and persistence per server for ports
+and per environment for schedulers; validation alone does not reserve either. Installation, release
+hooks, and other remote operations are not part of this pure framework phase.
+
+Both registration builders require instantiable handler classes. Registry IDs are literal map keys,
+so dotted plugin IDs are supported; access the registry map rather than building dot-separated config paths.
+
+Public descriptors appear in bootstrap under `application.runtimes` and `application.capabilities`.
+Plugin lifecycle Actions already invalidate the bootstrap version when plugins are changed.
+
 ### Register site features and actions
 
 Every site can have multiple features and every feature can have multiple actions.
