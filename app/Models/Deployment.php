@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use App\Enums\DeploymentStatus;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\DeploymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int $site_id
- * @property int $deployment_script_id
+ * @property ?int $site_id
+ * @property ?int $component_id
+ * @property ?int $deployment_script_id
  * @property int $log_id
  * @property string $commit_id
  * @property string $commit_id_short
@@ -17,17 +19,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property DeploymentStatus $status
  * @property ?string $release
  * @property bool $active
- * @property Site $site
- * @property DeploymentScript $deploymentScript
+ * @property ?Component $component
+ * @property ?Site $site
+ * @property ?DeploymentScript $deploymentScript
  * @property ?ServerLog $log
  */
 class Deployment extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<DeploymentFactory> */
     use HasFactory;
 
     protected $fillable = [
         'site_id',
+        'component_id',
         'deployment_script_id',
         'log_id',
         'commit_id',
@@ -39,6 +45,7 @@ class Deployment extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'component_id' => 'integer',
         'deployment_script_id' => 'integer',
         'log_id' => 'integer',
         'commit_data' => 'json',
@@ -46,10 +53,27 @@ class Deployment extends AbstractModel
         'status' => DeploymentStatus::class,
     ];
 
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return true;
+    }
+
     protected static function booted(): void
     {
         static::created(function (Deployment $deployment): void {
             $site = $deployment->site;
+            if (! $site) {
+                return;
+            }
+
             $keep = $site->type_data['modern_deployment_history'] ?? 10;
             if ($site->deployments()->whereNotNull('release')->count() > $keep) {
                 /** @var ?Deployment $lastDeploymentToKeep */
@@ -65,6 +89,14 @@ class Deployment extends AbstractModel
                 }
             }
         });
+    }
+
+    /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
     }
 
     /**

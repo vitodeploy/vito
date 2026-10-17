@@ -19,6 +19,7 @@ use Throwable;
  * @property ?array<string, array{version?: string, status?: ?string}> $installed_tooling
  * @property Server $server
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Component> $components
  */
 class IsolatedUser extends AbstractModel
 {
@@ -44,6 +45,14 @@ class IsolatedUser extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return HasMany<Component, covariant $this>
+     */
+    public function components(): HasMany
+    {
+        return $this->hasMany(Component::class);
     }
 
     /**

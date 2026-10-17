@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CronjobStatus;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\CronJobFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $server_id
  * @property ?int $site_id
+ * @property ?int $component_id
  * @property string $command
  * @property string $user
  * @property string $frequency
@@ -18,16 +20,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CronjobStatus $status
  * @property string $crontab
  * @property Server $server
+ * @property ?Component $component
  * @property ?Site $site
  */
 class CronJob extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<CronJobFactory> */
     use HasFactory;
 
     protected $fillable = [
         'server_id',
         'site_id',
+        'component_id',
         'command',
         'user',
         'frequency',
@@ -38,9 +44,23 @@ class CronJob extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'component_id' => 'integer',
         'hidden' => 'boolean',
         'status' => CronjobStatus::class,
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>
@@ -48,6 +68,14 @@ class CronJob extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
     }
 
     /**

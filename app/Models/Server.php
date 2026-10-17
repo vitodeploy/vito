@@ -59,6 +59,7 @@ use Throwable;
  * @property ServerProvider $serverProvider
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Component> $components
  * @property Collection<int, Service> $services
  * @property Collection<int, Database> $databases
  * @property Collection<int, DatabaseUser> $databaseUsers
@@ -225,6 +226,14 @@ class Server extends AbstractModel
     public function serverProvider(): BelongsTo
     {
         return $this->belongsTo(ServerProvider::class, 'provider_id');
+    }
+
+    /**
+     * @return HasMany<Component, covariant $this>
+     */
+    public function components(): HasMany
+    {
+        return $this->hasMany(Component::class);
     }
 
     /**

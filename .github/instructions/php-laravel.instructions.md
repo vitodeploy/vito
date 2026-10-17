@@ -20,6 +20,7 @@ description: "PHP and Laravel coding standards, Actions pattern, Eloquent conven
 - Cast enum properties to their enum class (e.g., `'status' => ServerStatus::class`).
 - Use `'encrypted:json'` cast for sensitive data like credentials.
 - Use PHPDoc `@property` annotations for relationship collections.
+- Shared owner models (`Deployment`, `DeploymentScript`, `Worker`, `CronJob`, `GitHook`, `Ssl`) must use `HasExclusiveOwner`. Declare `ownerColumns(): list<string>` and `requiresOwner(): bool`: saving rejects multiple non-null owners, and missing owners when required. Deployments, scripts and hooks require one; workers, cron jobs and SSLs may be unowned. Extend the owner list when adding a new owner column; never bypass this guard with bulk owner updates or quiet saves.
 
 ## Eloquent & Database
 

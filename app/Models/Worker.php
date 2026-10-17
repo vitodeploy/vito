@@ -6,6 +6,7 @@ use App\DTOs\ToolingTargetDTO;
 use App\Enums\WorkerStatus;
 use App\Helpers\SiteShellEnvironment;
 use App\Services\ProcessManager\ProcessManager;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\WorkerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,8 @@ use Throwable;
 
 /**
  * @property int $server_id
- * @property int $site_id
+ * @property ?int $site_id
+ * @property ?int $component_id
  * @property string $command
  * @property string $user
  * @property bool $auto_start
@@ -27,16 +29,20 @@ use Throwable;
  * @property ?string $error
  * @property string $name
  * @property Server $server
+ * @property ?Component $component
  * @property ?Site $site
  */
 class Worker extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<WorkerFactory> */
     use HasFactory;
 
     protected $fillable = [
         'server_id',
         'site_id',
+        'component_id',
         'command',
         'user',
         'auto_start',
@@ -52,6 +58,7 @@ class Worker extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'component_id' => 'integer',
         'auto_start' => 'boolean',
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
@@ -59,6 +66,19 @@ class Worker extends AbstractModel
         'redirect_stderr' => 'boolean',
         'status' => WorkerStatus::class,
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
 
     public static function boot(): void
     {
@@ -95,6 +115,14 @@ class Worker extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
     }
 
     /**

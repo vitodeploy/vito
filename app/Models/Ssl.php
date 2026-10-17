@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\SslStatus;
 use App\Enums\SslType;
+use App\Traits\HasExclusiveOwner;
 use Carbon\Carbon;
 use Database\Factories\SslFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,6 +41,8 @@ use Illuminate\Support\Str;
  */
 class Ssl extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<SslFactory> */
     use HasFactory;
 
@@ -82,6 +85,19 @@ class Ssl extends AbstractModel
         'has_csr' => 'boolean',
         'status' => SslStatus::class,
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
 
     /**
      * @return BelongsTo<Site, covariant $this>

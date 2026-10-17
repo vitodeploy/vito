@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\FailedToDestroyGitHook;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\GitHookFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Log;
  */
 class GitHook extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<GitHookFactory> */
     use HasFactory;
 
@@ -41,6 +44,19 @@ class GitHook extends AbstractModel
         'actions' => 'array',
         'hook_response' => 'json',
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return true;
+    }
 
     /**
      * @return BelongsTo<Site, covariant $this>
