@@ -29,6 +29,11 @@ class Gitlab extends AbstractSourceControlProvider
         return 'gitlab';
     }
 
+    public function repositoryRules(): array
+    {
+        return ['regex:~\A(?:[1-9][0-9]*|[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)+)\z~'];
+    }
+
     public function createRules(array $input): array
     {
         return [

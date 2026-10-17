@@ -41,6 +41,9 @@ import EditNetworkServer from '@/pages/networks/components/edit-network-server';
 import NetworkFirewallRuleForm from '@/pages/networks/components/firewall-rule-form';
 import AddNetworkPeer from '@/pages/networks/components/add-peer';
 import PeerConfigDialog from '@/pages/networks/components/peer-config';
+import CreateApplication from '@/pages/applications/components/create-application';
+import EnvironmentForm from '@/pages/applications/components/environment-form';
+import DeleteApplicationResource from '@/pages/applications/components/delete-dialog';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -99,6 +102,10 @@ export const dialogs = {
   networkFirewallForm: NetworkFirewallRuleForm,
   networkAddPeer: AddNetworkPeer,
   networkPeerConfig: PeerConfigDialog,
+  createApplication: CreateApplication,
+  createEnvironment: EnvironmentForm,
+  editEnvironment: EnvironmentForm,
+  deleteApplicationResource: DeleteApplicationResource,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

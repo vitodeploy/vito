@@ -20,6 +20,7 @@ use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -134,7 +135,7 @@ class CreateSite
             return $site;
         } catch (Exception $e) {
             DB::rollBack();
-            if ($e instanceof AuthorizationException) {
+            if ($e instanceof AuthorizationException || $e instanceof RequestException) {
                 throw $e;
             }
 

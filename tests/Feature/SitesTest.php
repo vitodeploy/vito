@@ -21,6 +21,7 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
@@ -168,6 +169,30 @@ test('site source selection uses the actor rather than the server creator', func
         Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer '.$sourceControl->access_token));
     }
 })->with(['create', 'update'])->with(['creator', 'global', 'project', 'foreign-project']);
+
+test('site repository http failures bubble up without mutations or provider details in form errors', function (int $status, bool $update) {
+    SSH::fake();
+    Queue::fake();
+    Http::preventStrayRequests();
+    Http::fake(['api.github.com/repos/*' => Http::response(['message' => 'provider response details'], $status)]);
+    $this->withoutExceptionHandling()->actingAs($this->user);
+    $sourceControl = SourceControl::factory()->github()->create(['user_id' => $this->user->id]);
+    $originalSource = $this->site->source_control_id;
+
+    expect(fn () => $update
+        ? $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), ['source_control' => $sourceControl->id])
+        : $this->post(route('sites.store', $this->server), [
+            'type' => Blank::id(), 'domain' => 'provider-failure.example.com', 'port' => 3000,
+            'user' => 'providerfailure', 'use_source_control' => true, 'source_control' => $sourceControl->id,
+            'repository' => 'organization/repository', 'branch' => 'main',
+        ]))->toThrow(RequestException::class);
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'provider-failure.example.com']);
+    $this->assertDatabaseMissing('isolated_users', ['server_id' => $this->server->id, 'username' => 'providerfailure']);
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
+    Queue::assertNothingPushed();
+    SSH::assertNotExecutedContains('');
+})->with([429, 500])->with([false, true]);
 
 test('web site resources hide installation passwords from read-only users', function () {
     $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);

@@ -3,11 +3,15 @@
 namespace App\Http\Middleware;
 
 use App\Actions\Bootstrap\GetBootstrap;
+use App\Http\Resources\ApplicationResource;
+use App\Http\Resources\EnvironmentResource;
 use App\Http\Resources\NetworkResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
 use App\Http\Resources\UserResource;
+use App\Models\Application;
+use App\Models\Environment;
 use App\Models\Network;
 use App\Models\Server;
 use App\Models\Site;
@@ -91,6 +95,29 @@ class HandleInertiaRequests extends Middleware
                 $data['network'] = fn () => NetworkResource::make(
                     $network->load('serverProvider')->loadCount('servers')
                 );
+            }
+        }
+
+        if ($request->route('application')) {
+            /** @var Application $application */
+            $application = $request->route('application');
+            if ($user && $user->can('view', $application)) {
+                if ($user->current_project_id !== $application->project_id) {
+                    $user->current_project_id = $application->project_id;
+                    $user->save();
+                    $user->unsetRelation('currentProject');
+                    $currentProject = $user->currentProject;
+                }
+
+                $data['application'] = fn () => ApplicationResource::make($application);
+
+                if ($request->route('environment')) {
+                    /** @var Environment $environment */
+                    $environment = $request->route('environment');
+                    if ($user->can('view', [$environment, $application])) {
+                        $data['environment'] = fn () => EnvironmentResource::make($environment);
+                    }
+                }
             }
         }
 

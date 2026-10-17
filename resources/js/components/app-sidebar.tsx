@@ -36,6 +36,8 @@ import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useConfigs } from '@/stores/bootstrap-store';
+import { Badge } from '@/components/ui/badge';
+import { BoxesIcon } from 'lucide-react';
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
   const page = usePage<SharedData>();
@@ -56,6 +58,12 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Sites',
       href: '/sites',
       icon: MousePointerClickIcon,
+    },
+    {
+      title: 'Applications',
+      href: '/applications',
+      icon: BoxesIcon,
+      badge: 'Beta',
     },
     {
       title: 'Backups',
@@ -146,7 +154,10 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                     <SidebarMenuButton
                       asChild
                       isActive={item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href)}
-                      tooltip={{ children: item.title, hidden: false }}
+                      tooltip={{
+                        children: <span className="flex items-center gap-2">{item.title}{item.badge && <Badge variant="warning">{item.badge}</Badge>}</span>,
+                        hidden: false,
+                      }}
                       hidden={item.hidden}
                     >
                       {item.external ? (
@@ -157,7 +168,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       ) : (
                         <Link href={item.href}>
                           {item.icon && <item.icon />}
-                          <span>{item.title}</span>
+                          <span className="flex items-center gap-2">{item.title}{item.badge && <Badge variant="warning">{item.badge}</Badge>}</span>
                         </Link>
                       )}
                     </SidebarMenuButton>

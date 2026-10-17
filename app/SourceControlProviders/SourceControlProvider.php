@@ -31,6 +31,11 @@ interface SourceControlProvider
 
     public function getRepo(string $repo): mixed;
 
+    /**
+     * @return array<int, mixed>
+     */
+    public function repositoryRules(): array;
+
     public function fullRepoUrl(string $repo, string $key): string;
 
     public function getSshPort(): int;

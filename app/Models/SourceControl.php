@@ -77,6 +77,14 @@ class SourceControl extends AbstractModel
      */
     public static function siteValidationRules(Server $server): array
     {
+        return self::repositoryValidationRules($server->project_id);
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public static function repositoryValidationRules(int $projectId): array
+    {
         /** @var array<string, array<string, mixed>> $providers */
         $providers = config('source-control.providers', []);
 
@@ -90,8 +98,8 @@ class SourceControl extends AbstractModel
             Rule::exists('source_controls', 'id')
                 ->whereIn('provider', $usableProviders)
                 ->withoutTrashed()
-                ->where(function ($query) use ($server): void {
-                    $query->where('project_id', $server->project_id)->orWhereNull('project_id');
+                ->where(function ($query) use ($projectId): void {
+                    $query->where('project_id', $projectId)->orWhereNull('project_id');
                 }),
         ];
     }

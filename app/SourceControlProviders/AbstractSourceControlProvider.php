@@ -6,6 +6,7 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\SourceControl;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 
 abstract class AbstractSourceControlProvider implements SourceControlProvider
@@ -17,6 +18,11 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         return [
             'token' => 'required',
         ];
+    }
+
+    public function repositoryRules(): array
+    {
+        return ['regex:~\A[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+\z~'];
     }
 
     public function createData(array $input): array
@@ -40,6 +46,7 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
      * @throws SourceControlIsNotConnected
      * @throws RepositoryNotFound
      * @throws RepositoryPermissionDenied
+     * @throws RequestException
      */
     protected function handleResponseErrors(Response $res, string $repo): void
     {
@@ -54,6 +61,8 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         if ($res->status() == 403) {
             throw new RepositoryPermissionDenied($repo);
         }
+
+        $res->throw();
     }
 
     public function getWebhookBranch(array $payload): string

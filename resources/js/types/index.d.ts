@@ -4,6 +4,7 @@ import { Project } from '@/types/project';
 import { User } from '@/types/user';
 import { Site, SiteType } from '@/types/site';
 import { DynamicFieldConfig } from './dynamic-field-config';
+import { Application, Environment } from '@/types/application';
 
 export interface Auth {
   user: User;
@@ -30,6 +31,7 @@ export interface NavItem {
   children?: NavItem[];
   hidden?: boolean;
   external?: boolean;
+  badge?: string;
 }
 
 export interface Configs {
@@ -160,6 +162,8 @@ export interface SharedData {
   auth: Auth;
   server?: Server;
   site?: Site;
+  application?: Application;
+  environment?: Environment;
   csrf_token: string;
   bootstrap_version: string;
   flash?: {
