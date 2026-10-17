@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Actions\Component\PurgeServerComponents;
 use App\Actions\Network\ResyncNetworkSiblings;
 use App\Actions\Server\CheckConnection;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Enums\WebMode;
 use App\Exceptions\SSHError;
 use App\Facades\SSH;
 use App\ServerFeatures\ActionInterface;
@@ -133,6 +135,9 @@ class Server extends AbstractModel
      */
     protected array $networkDeparture = ['members' => [], 'networks' => []];
 
+    /** @var array<int, int> */
+    protected array $componentDeparture = [];
+
     public static function boot(): void
     {
         parent::boot();
@@ -143,50 +148,63 @@ class Server extends AbstractModel
 
         static::deleted(function (Server $server): void {
             app(ResyncNetworkSiblings::class)->handle($server->networkDeparture);
+            app(PurgeServerComponents::class)->handle($server->componentDeparture);
         });
 
         static::deleting(function (Server $server): void {
-            DB::beginTransaction();
-            try {
-                $server->sites()->each(function ($site): void {
-                    /** @var Site $site */
-                    $site->workers()->delete();
-                    $site->ssls()->delete();
-                    $site->deployments()->delete();
-                    $site->deploymentScript()->delete();
-                });
-                $server->sites()->delete();
-                $server->logs()->each(function ($log): void {
-                    /** @var ServerLog $log */
-                    $log->delete();
-                });
-                $server->backups()->each(function ($backup): void {
-                    /** @var Backup $backup */
-                    $backup->delete();
-                });
-                $server->services()->delete();
-                $server->databases()->delete();
-                $server->databaseUsers()->delete();
-                $server->firewallRules()->delete();
-                $server->cronJobs()->delete();
-                $server->workers()->delete();
-                $server->daemons()->delete();
-                $server->sshKeys()->detach();
-                if ($server->deleteFromProvider) {
-                    $server->provider()->delete();
-                }
-                if (File::exists($server->sshKey()['public_key_path'])) {
-                    File::delete($server->sshKey()['public_key_path']);
-                }
-                if (File::exists($server->sshKey()['private_key_path'])) {
-                    File::delete($server->sshKey()['private_key_path']);
-                }
-                DB::commit();
-            } catch (Throwable $e) {
-                DB::rollBack();
-                throw $e;
+            $server->componentDeparture = app(PurgeServerComponents::class)->purge($server);
+            $server->sites()->each(function ($site): void {
+                /** @var Site $site */
+                $site->workers()->delete();
+                $site->ssls()->delete();
+                $site->deployments()->delete();
+                $site->deploymentScript()->delete();
+            });
+            $server->sites()->delete();
+            $server->logs()->each(function ($log): void {
+                /** @var ServerLog $log */
+                $log->delete();
+            });
+            $server->backups()->each(function ($backup): void {
+                /** @var Backup $backup */
+                $backup->delete();
+            });
+            $server->services()->delete();
+            $server->databases()->delete();
+            $server->databaseUsers()->delete();
+            $server->firewallRules()->delete();
+            $server->cronJobs()->delete();
+            $server->workers()->delete();
+            $server->daemons()->delete();
+            $server->sshKeys()->detach();
+            if ($server->deleteFromProvider) {
+                $server->provider()->delete();
+            }
+            if (File::exists($server->sshKey()['public_key_path'])) {
+                File::delete($server->sshKey()['public_key_path']);
+            }
+            if (File::exists($server->sshKey()['private_key_path'])) {
+                File::delete($server->sshKey()['private_key_path']);
             }
         });
+    }
+
+    public function delete(): ?bool
+    {
+        DB::beginTransaction();
+        try {
+            $deleted = parent::delete();
+            if ($deleted) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return $deleted;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     public function isReady(): bool
@@ -234,6 +252,36 @@ class Server extends AbstractModel
     public function components(): HasMany
     {
         return $this->hasMany(Component::class);
+    }
+
+    /**
+     * @return Collection<int, Component>
+     */
+    public function componentsUsing(Service $service): Collection
+    {
+        return $this->components()->with(['environment.application', 'capabilities'])->get()
+            ->filter(function (Component $component) use ($service): bool {
+                $preset = $component->environment->application->preset();
+                $version = $component->environment->runtime_version;
+                $services = $preset->requiredServices($version ?? '');
+
+                if (array_key_exists($service->type, $services)
+                    && ($services[$service->type] === null || $services[$service->type] === $service->version)) {
+                    return true;
+                }
+
+                return $component->capabilities->contains(function (ComponentCapability $capability) use ($service, $preset, $version): bool {
+                    if (! in_array($service->type, $capability->handler()->requiredServices($preset), true)) {
+                        return false;
+                    }
+
+                    if ($capability->capability === 'web' && $service->type === 'php' && $preset->webMode() === WebMode::FPM) {
+                        return $version === $service->version;
+                    }
+
+                    return true;
+                });
+            });
     }
 
     /**

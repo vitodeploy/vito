@@ -52,6 +52,9 @@ class PHP extends AbstractService implements HasLogs
                     if ($hasSite) {
                         $fail('Some sites are using this PHP version.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Some components are using this PHP version.');
+                    }
                 },
             ],
         ];

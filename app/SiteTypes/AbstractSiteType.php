@@ -185,7 +185,7 @@ abstract class AbstractSiteType implements SiteType
 
         app(EnsureIsolatedUser::class)->ensure($this->site->server, $this->site->user, $this->site->id);
 
-        if ($this->site->php_version && ! $this->site->fpmPoolSharedWithSiblings()) {
+        if ($this->site->php_version) {
             app(EnsureFpmPool::class)->ensure($this->site->server, $this->site->user, $this->site->php_version);
         }
     }

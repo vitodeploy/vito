@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Application;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
@@ -108,6 +109,24 @@ test('cannot delete provider', function (string $provider, ?string $url, array $
         'id' => $sourceControl->id,
     ]);
 })->with('data');
+
+test('cannot delete source control used only by an application', function (bool $global) {
+    $sourceControl = SourceControl::factory()->github()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $global ? null : $this->server->project_id,
+    ]);
+    $application = Application::factory()->create([
+        'project_id' => $this->server->project_id,
+        'source_control_id' => $sourceControl->id,
+    ]);
+
+    $this->actingAs($this->user)->deleteJson(route('source-controls.destroy', $sourceControl))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['source_control' => 'This source control is being used by an application.']);
+
+    $this->assertNotSoftDeleted('source_controls', ['id' => $sourceControl->id]);
+    $this->assertDatabaseHas('applications', ['id' => $application->id, 'source_control_id' => $sourceControl->id]);
+})->with([true, false]);
 
 test('edit source control', function (string $provider, ?string $url, array $input) {
     Http::fake();

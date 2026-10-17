@@ -9,6 +9,9 @@ use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Server\InstallJob;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\Environment;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Project;
@@ -675,6 +678,26 @@ test('cannot transfer a server to a read-only project', function (): void {
         'project_id' => $this->server->project_id,
     ]);
     expect($this->user->refresh()->current_project_id)->toBe($this->server->project_id);
+});
+
+test('cannot transfer a server hosting components and names their environments', function (): void {
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'name' => 'Store']);
+    $environment = Environment::factory()->for($application)->create(['name' => 'Production']);
+    $otherEnvironment = Environment::factory()->for($application)->create(['name' => 'Staging']);
+    Component::factory()->for($environment)->for($this->server)->create();
+    Component::factory()->for($environment)->for($this->server)->create(['user' => 'other']);
+    Component::factory()->for($otherEnvironment, 'environment')->for($this->server)->create();
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+
+    $this->actingAs($this->user)->postJson(route('servers.transfer', $this->server), ['project_id' => $project->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'project_id' => 'This server hosts components in the following environments: Store / Production, Store / Staging. Remove them before transferring it.',
+        ]);
+
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $application->project_id]);
+    expect($this->user->refresh()->current_project_id)->toBe($application->project_id);
 });
 
 test('cannot transfer a server while network memberships remain', function (NetworkServerStatus $status): void {

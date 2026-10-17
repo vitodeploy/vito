@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WebMode;
 use Database\Factories\IsolatedUserFactory;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -61,6 +62,34 @@ class IsolatedUser extends AbstractModel
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
+    }
+
+    public function isUsedByOthers(Site|Component $except): bool
+    {
+        return $this->sites()
+            ->when($except instanceof Site, fn ($query) => $query->whereKeyNot($except->id))
+            ->exists()
+            || $this->components()
+                ->when($except instanceof Component, fn ($query) => $query->whereKeyNot($except->id))
+                ->exists();
+    }
+
+    public function fpmPoolUsedByOthers(string $phpVersion, Site|Component $except): bool
+    {
+        if ($this->sites()
+            ->where('php_version', $phpVersion)
+            ->when($except instanceof Site, fn ($query) => $query->whereKeyNot($except->id))
+            ->exists()) {
+            return true;
+        }
+
+        return $this->components()
+            ->when($except instanceof Component, fn ($query) => $query->whereKeyNot($except->id))
+            ->with(['environment.application', 'capabilities'])
+            ->get()
+            ->contains(fn (Component $component): bool => $component->environment->runtime_version === $phpVersion
+                && $component->hasCapability('web')
+                && $component->environment->application->preset()->webMode() === WebMode::FPM);
     }
 
     public function lock(): Lock

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Server;
 
+use App\Models\Component;
 use App\Models\NetworkServer;
 use App\Models\Project;
 use App\Models\Server;
@@ -29,6 +30,18 @@ class TransferServer
             && NetworkServer::query()->where('server_id', $server->id)->exists()) {
             throw ValidationException::withMessages([
                 'project_id' => 'Remove the server from its networks and wait for removal to complete before transferring it.',
+            ]);
+        }
+
+        $environments = $server->components()->with('environment.application')->get()
+            ->map(fn (Component $component): string => $component->environment->application->name.' / '.$component->environment->name)
+            ->unique();
+
+        if ($environments->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'project_id' => __('This server hosts components in the following environments: :environments. Remove them before transferring it.', [
+                    'environments' => $environments->implode(', '),
+                ]),
             ]);
         }
 

@@ -112,6 +112,14 @@ class SourceControl extends AbstractModel
     }
 
     /**
+     * @return HasMany<Application, covariant $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    /**
      * @return HasMany<Site, covariant $this>
      */
     public function sites(): HasMany
