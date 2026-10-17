@@ -64,6 +64,34 @@ test('api blank sites discard disabled source control input', function (?bool $e
     Http::assertNothingSent();
 })->with([false, null]);
 
+test('api site creation rejects malformed alias input before checking hosts', function (mixed $aliases, string $field) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $token = $this->user->createToken('site-create', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.sites.create', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+    ]), [
+        'type' => Blank::id(),
+        'domain' => 'invalid-alias.example.com',
+        'aliases' => $aliases,
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertUnprocessable()->assertJsonValidationErrors($field);
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'invalid-alias.example.com']);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBe([]);
+})->with([
+    'null entry' => [[null], 'aliases.0'],
+    'empty entry' => [[''], 'aliases.0'],
+    'non-string entry' => [[123], 'aliases.0'],
+    'nested entry' => [[['alias.example.com']], 'aliases.0'],
+    'scalar list' => ['alias.example.com', 'aliases'],
+]);
+
 test('api site source selection uses the token actor rather than the server creator', function (string $scope) {
     SSH::fake();
     Http::fake();
@@ -239,6 +267,42 @@ test('delete site', function () {
         ->assertSuccessful()
         ->assertNoContent();
 });
+
+test('api site deletion tears down only unshared isolated resources', function (bool $shared) {
+    SSH::fake();
+    Http::fake();
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'cleanupuser',
+        'php_version' => '8.2',
+        'source_control_id' => null,
+    ]);
+    if ($shared) {
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'cleanupuser',
+            'php_version' => '8.2',
+        ]);
+    }
+    $token = $this->user->createToken('delete-site', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $site,
+    ]))->assertNoContent();
+
+    $this->assertDatabaseMissing('sites', ['id' => $site->id]);
+    if ($shared) {
+        $this->assertDatabaseHas('isolated_users', ['id' => $site->isolated_user_id]);
+        SSH::assertNotExecutedContains('rm -f /etc/php/8.2/fpm/pool.d/cleanupuser.conf');
+        SSH::assertNotExecutedContains('userdel');
+    } else {
+        $this->assertDatabaseMissing('isolated_users', ['id' => $site->isolated_user_id]);
+        SSH::assertExecutedContains('rm -f /etc/php/8.2/fpm/pool.d/cleanupuser.conf');
+        SSH::assertExecutedContains('userdel');
+    }
+})->with([false, true]);
 
 test('update web directory', function () {
     SSH::fake();

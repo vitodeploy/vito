@@ -68,7 +68,7 @@ class DeployJob implements ShouldQueue
         if ($this->isModern && $current) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
-                    'site' => $site,
+                    'basePath' => $site->basePath(),
                     'releasePath' => $current->path(),
                 ]),
                 'release',
@@ -153,7 +153,7 @@ class DeployJob implements ShouldQueue
         // release
         $site->server->ssh($site->user)->exec(
             view('ssh.modern-deployment.release', [
-                'site' => $site,
+                'basePath' => $site->basePath(),
                 'releasePath' => $this->deployment->path(),
             ]),
             'release',

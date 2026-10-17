@@ -35,7 +35,7 @@ class RollbackJob implements ShouldQueue
         $this->run("site-{$site->id}", function () use ($site) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
-                    'site' => $site,
+                    'basePath' => $site->basePath(),
                     'releasePath' => $this->deployment->path(),
                 ]),
                 'release',
@@ -61,7 +61,7 @@ class RollbackJob implements ShouldQueue
         if ($this->current) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
-                    'site' => $site,
+                    'basePath' => $site->basePath(),
                     'releasePath' => $this->current->path(),
                 ]),
                 'release',

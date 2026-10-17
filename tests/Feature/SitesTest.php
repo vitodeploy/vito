@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\HostedDomainStatus;
+use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Enums\UserRole;
@@ -24,6 +26,53 @@ use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+test('site creation rejects domains and aliases already served on the server', function (string $field, bool $hostedAlias) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $host = $this->site->domain;
+    if ($hostedAlias) {
+        $host = $this->site->hostedDomains()->create([
+            'domain' => 'occupied.example.com',
+            'type' => HostedDomainType::ALIAS,
+            'status' => HostedDomainStatus::ACTIVE,
+        ])->domain;
+    }
+    $input = [
+        'type' => Blank::id(),
+        'domain' => $field === 'domain' ? $host : 'new.example.com',
+        'aliases' => $field === 'domain' ? [] : [$host],
+        'user' => 'newruntime',
+        'port' => 3000,
+    ];
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), $input)
+        ->assertRedirect()->assertSessionHasErrors($field);
+
+    $this->assertDatabaseMissing('sites', ['user' => 'newruntime']);
+    Queue::assertNothingPushed();
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBe([]);
+})->with(['domain', 'aliases.0'])->with([false, true]);
+
+test('site creation rejects null aliases before checking hosts', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), [
+        'type' => Blank::id(),
+        'domain' => 'invalid-alias.example.com',
+        'aliases' => [null],
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertRedirect()->assertSessionHasErrors('aliases.0');
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'invalid-alias.example.com']);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBe([]);
+});
 
 test('site settings rejects outsiders and mismatched servers', function (bool $outsider) {
     if ($outsider) {

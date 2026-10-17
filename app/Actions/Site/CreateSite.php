@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Actions\HostedDomain\AssertHostAvailable;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SiteStatus;
@@ -153,9 +154,15 @@ class CreateSite
             'domain' => [
                 'required',
                 new DomainRule,
-                Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $server->id)),
+            ],
+            'aliases' => [
+                'nullable',
+                'array',
             ],
             'aliases.*' => [
+                'bail',
+                'required',
+                'string',
                 new DomainRule,
             ],
             'user' => [
@@ -171,6 +178,11 @@ class CreateSite
         ];
 
         Validator::make($input, array_merge($rules, $this->typeRules($server, $input)))->validate();
+
+        app(AssertHostAvailable::class)->assert($server, $input['domain'], 'domain');
+        foreach ($input['aliases'] ?? [] as $index => $alias) {
+            app(AssertHostAvailable::class)->assert($server, $alias, 'aliases.'.$index);
+        }
     }
 
     /**

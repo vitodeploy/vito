@@ -2,6 +2,7 @@
 
 namespace App\SSH\OS;
 
+use App\DTOs\GitCloneDTO;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 
@@ -13,26 +14,50 @@ class Git
     public function clone(Site $site, ?string $path = null): void
     {
         $usesToken = $site->sourceControl?->isGithubApp() ?? false;
-        $ssh = $site->server->ssh($site->user);
 
-        if ($usesToken) {
-            $ssh = $ssh->variables($site->environmentVariables());
-        }
+        $this->cloneRepository(new GitCloneDTO(
+            server: $site->server,
+            user: $site->user ?? $site->server->getSshUser(),
+            repoUrl: (string) $site->getFullRepositoryUrl(),
+            branch: (string) $site->branch,
+            path: $path ?? $site->path,
+            keyName: $site->getSshKeyName(),
+            port: $site->sourceControl?->provider()->getSshPort() ?? 22,
+            usesToken: $usesToken,
+            variables: $usesToken ? $site->environmentVariables() : [],
+            siteId: $site->id,
+        ));
+    }
 
-        $repoUrl = (string) $site->getFullRepositoryUrl();
-        $ssh->exec(
+    /**
+     * @throws SSHError
+     */
+    public function cloneRepository(GitCloneDTO $target): void
+    {
+        $target->server->ssh($target->user)->variables($target->variables)->exec(
             view('ssh.git.clone', [
-                'host' => $usesToken ? '' : str($repoUrl)->after('@')->before('-'),
-                'repo' => escapeshellarg($repoUrl),
-                'path' => escapeshellarg((string) ($path ?? $site->path)),
-                'branch' => escapeshellarg((string) $site->branch),
-                'key' => $site->getSshKeyName(),
-                'port' => $site->sourceControl?->provider()?->getSshPort() ?? 22,
-                'usesToken' => $usesToken,
+                'host' => $target->usesToken ? '' : str($target->repoUrl)->after('@')->before('-'),
+                'repo' => escapeshellarg($target->repoUrl),
+                'path' => escapeshellarg($target->path),
+                'branch' => escapeshellarg($target->branch),
+                'key' => $target->keyName,
+                'port' => $target->port,
+                'usesToken' => $target->usesToken,
             ]),
             'clone-repository',
-            $site->id
+            $target->siteId
         );
+
+        if ($target->commit !== null) {
+            $target->server->ssh($target->user)->exec(
+                view('ssh.git.checkout', [
+                    'path' => escapeshellarg($target->path),
+                    'branch' => escapeshellarg($target->commit),
+                ]),
+                'checkout-commit',
+                $target->siteId
+            );
+        }
     }
 
     /**

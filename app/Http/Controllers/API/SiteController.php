@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\DeleteSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
@@ -75,7 +76,7 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
-        $site->delete();
+        app(DeleteSite::class)->delete($site, ['domain' => $site->domain]);
 
         return response()->noContent();
     }

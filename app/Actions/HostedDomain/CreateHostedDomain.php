@@ -20,6 +20,7 @@ class CreateHostedDomain
     public function create(Site $site, array $input): HostedDomain
     {
         $validated = $this->validate($site, $input);
+        app(AssertHostAvailable::class)->assert($site->server, $validated['domain'], 'domain');
 
         $hostedDomain = new HostedDomain;
         $hostedDomain->site_id = $site->id;
@@ -48,16 +49,6 @@ class CreateHostedDomain
                 'string',
                 'max:255',
                 'regex:/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/',
-                function (string $attribute, mixed $value, \Closure $fail) use ($site): void {
-                    $exists = HostedDomain::query()
-                        ->where('domain', $value)
-                        ->whereHas('site', fn ($q) => $q->where('server_id', $site->server_id))
-                        ->exists();
-
-                    if ($exists) {
-                        $fail('This domain is already in use on this server.');
-                    }
-                },
             ],
             'type' => [
                 'required',

@@ -2,8 +2,8 @@
 
 namespace App\Tooling;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
-use App\Models\Site;
 
 class ComposerTooling extends AbstractTooling
 {
@@ -37,35 +37,35 @@ class ComposerTooling extends AbstractTooling
     /**
      * @throws SSHError
      */
-    public function install(Site $site, string $version): void
+    public function install(ToolingTargetDTO $target, string $version): void
     {
-        $site->server->ssh($site->user)->exec(
+        $target->server->ssh($target->user)->exec(
             view('ssh.composer.install', [
-                'phpVersion' => $site->php_version,
+                'phpVersion' => $target->phpVersion,
                 'majorVersion' => $version,
                 'installDir' => self::INSTALL_DIR,
             ]),
             'install-composer',
-            $site->id
+            $target->siteId
         );
     }
 
     /**
      * @throws SSHError
      */
-    public function uninstall(Site $site): void
+    public function uninstall(ToolingTargetDTO $target): void
     {
-        $site->server->ssh($site->user)->exec(
+        $target->server->ssh($target->user)->exec(
             view('ssh.composer.uninstall', [
                 'installDir' => self::INSTALL_DIR,
             ]),
             'uninstall-composer',
-            $site->id
+            $target->siteId
         );
     }
 
-    public function pathContributions(Site $site): array
+    public function pathContributions(ToolingTargetDTO $target): array
     {
-        return ['/home/'.$site->user.'/'.self::INSTALL_DIR];
+        return ['/home/'.$target->user.'/'.self::INSTALL_DIR];
     }
 }

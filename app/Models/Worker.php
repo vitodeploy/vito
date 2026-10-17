@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Enums\WorkerStatus;
 use App\Helpers\SiteShellEnvironment;
 use App\Services\ProcessManager\ProcessManager;
@@ -140,7 +141,7 @@ class Worker extends AbstractModel
         $base = $this->environmentMap();
 
         if ($this->site_id && $this->site) {
-            return array_merge($base, SiteShellEnvironment::collect($this->site));
+            return array_merge($base, SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this->site)));
         }
 
         return $base;

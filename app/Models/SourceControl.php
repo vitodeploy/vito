@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\SourceControlProviders\GithubApp;
 use App\SourceControlProviders\SourceControlProvider;
 use App\Traits\HasProjectScopedQueries;
 use Database\Factories\SourceControlFactory;
@@ -54,6 +55,21 @@ class SourceControl extends AbstractModel
     public function isGithubApp(): bool
     {
         return $this->provider === self::PROVIDER_GITHUB_APP;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function cloneVariables(): array
+    {
+        if (! $this->isGithubApp()) {
+            return [];
+        }
+
+        /** @var GithubApp $provider */
+        $provider = $this->provider();
+
+        return ['GIT_HTTP_TOKEN' => $provider->installationAccessToken()];
     }
 
     /**

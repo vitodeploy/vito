@@ -1,3 +1,3 @@
-ln -sfn {{ $releasePath }} {{ $site->basePath() }}/current
+ln -sfn {{ $releasePath }} {{ $basePath }}/current
 
 echo "Version {{ basename($releasePath) }} activated! 🎉"
