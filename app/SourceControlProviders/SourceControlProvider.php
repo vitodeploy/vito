@@ -78,7 +78,9 @@ interface SourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): string;
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string;
+
+    public function findDeployKey(string $repo, string $key): ?string;
 
     public function deleteDeployKey(string $keyId, string $repo): void;
 

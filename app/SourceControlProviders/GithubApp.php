@@ -127,9 +127,14 @@ class GithubApp extends AbstractSourceControlProvider
         return null;
     }
 
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
         return '';
+    }
+
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return null;
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void {}

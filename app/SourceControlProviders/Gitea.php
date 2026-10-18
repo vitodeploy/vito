@@ -205,26 +205,18 @@ class Gitea extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
-        try {
-            $response = Http::withToken($this->data()['token'])->post(
-                $this->getApiUrl().'/repos/'.$repo.'/keys',
-                [
-                    'title' => $title,
-                    'key' => $key,
-                    'read_only' => true,
-                ]
-            );
+        return $this->registerDeployKey(
+            fn () => Http::withToken($this->data()['token']),
+            $this->getApiUrl().'/repos/'.$repo.'/keys',
+            ['title' => $title, 'key' => $key, 'read_only' => true], pageSizeParameter: 'limit',
+        );
+    }
 
-            if ($response->status() != 201) {
-                throw new FailedToDeployGitKey($response->body());
-            }
-
-            return $response->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => Http::withToken($this->data()['token']), $this->getApiUrl().'/repos/'.$repo.'/keys', $key, pageSizeParameter: 'limit');
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -234,20 +226,11 @@ class Gitea extends AbstractSourceControlProvider
                 $this->getApiUrl().'/repos/'.$repo.'/keys/'.$keyId
             );
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Gitea deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Gitea deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (\Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 

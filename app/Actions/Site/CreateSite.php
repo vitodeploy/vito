@@ -20,6 +20,7 @@ use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -43,8 +44,16 @@ class CreateSite
 
         $this->validate($server, $input);
 
-        DB::beginTransaction();
+        $lock = $server->isolatedUserLock($input['user']);
         try {
+            $lock->block(30);
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages(['user' => 'Another operation on this Linux user is in progress. Please retry.']);
+        }
+
+        try {
+            DB::beginTransaction();
+            $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
             $user = $input['user'];
 
             $isolatedUser = $user !== $server->getSshUser()
@@ -129,10 +138,6 @@ class CreateSite
             $site->commands()->createMany($site->type()->baseCommands());
 
             DB::commit();
-
-            dispatch(new CreateJob($site));
-
-            return $site;
         } catch (Exception $e) {
             DB::rollBack();
             if ($e instanceof AuthorizationException || $e instanceof RequestException) {
@@ -142,7 +147,13 @@ class CreateSite
             throw ValidationException::withMessages([
                 'type' => $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
+
+        dispatch(new CreateJob($site));
+
+        return $site;
     }
 
     private function validate(Server $server, array $input): void

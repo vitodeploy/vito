@@ -27,7 +27,7 @@ export default function DeleteDialog({ open, onOpenChange, application, environm
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Delete {target.name}</DialogTitle>
-          <DialogDescription>This permanently deletes the {environment ? 'environment' : 'application and its environments'}. This cannot be undone.</DialogDescription>
+          <DialogDescription>This tears down all components before permanently deleting the {environment ? 'environment' : 'application and its environments'}. Failed cleanup can be retried. This cannot be undone.</DialogDescription>
         </DialogHeader>
         <Form id="delete-application-resource-form" className="p-4" onSubmit={submit}>
           <FormField>

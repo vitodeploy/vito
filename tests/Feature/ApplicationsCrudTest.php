@@ -276,7 +276,7 @@ test('application pages share whitelisted resources and only authorized source c
         ->where('application.source_control_id', null)->missing('application.sourceControl')
         ->has('environments', 1)->where('environments.0.id', $environment->id)
         ->where('environments.0.status', 'ready')->where('environments.0.status_color', 'success')
-        ->missing('environments.0.primary_component_id')->has('sourceControls', 1)
+        ->where('environments.0.primary_component_id', null)->where('environments.0.components_count', 0)->has('sourceControls', 1)
         ->where('sourceControls.0.id', $this->sourceControl->id)->missing('sourceControls.0.provider_data')
         ->missing('sourceControls.0.access_token')->where('can.update', true));
 });

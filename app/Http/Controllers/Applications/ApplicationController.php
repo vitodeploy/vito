@@ -57,7 +57,7 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         return Inertia::render('applications/show', [
-            'environments' => EnvironmentResource::collection($application->environments()->orderBy('name')->get()),
+            'environments' => EnvironmentResource::collection($application->environments()->withCount('components')->orderBy('name')->get()),
             'sourceControls' => SourceControlResource::collection(SourceControl::getByProjectId($application->project_id, user())->get()),
             'can' => [
                 'update' => user()->can('update', $application),
@@ -74,7 +74,7 @@ class ApplicationController extends Controller
 
         app(UpdateApplication::class)->update($application, $request->all(), user());
 
-        return back()->with('success', 'Application updated. Changes apply on the next deploy.');
+        return back()->with('success', 'Application updated. Repository changes sync component deploy keys now and apply to the running release on the next deploy.');
     }
 
     #[Delete('/{application}', name: 'applications.destroy')]
@@ -84,6 +84,6 @@ class ApplicationController extends Controller
 
         app(DeleteApplication::class)->delete($application, $request->all());
 
-        return to_route('applications')->with('success', 'Application deleted.');
+        return to_route('applications')->with('success', 'Application deletion requested. Components are cleaned up before the application is removed.');
     }
 }

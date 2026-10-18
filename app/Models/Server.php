@@ -135,8 +135,8 @@ class Server extends AbstractModel
      */
     protected array $networkDeparture = ['members' => [], 'networks' => []];
 
-    /** @var array<int, int> */
-    protected array $componentDeparture = [];
+    /** @var array{environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>} */
+    protected array $componentDeparture = ['environments' => [], 'keys' => []];
 
     public static function boot(): void
     {

@@ -80,7 +80,8 @@ test('deploy key setup skips github app authentication', function () {
 
 test('site deploy key retries preserve generated keys and skip completed registration', function (bool $isolated) {
     SSH::fake('ssh-rsa retry-public-key');
-    Http::fake(['api.github.com/repos/*/keys' => Http::sequence()->push([], 403)->push(['id' => 123], 201)]);
+    $responses = Http::sequence()->push([], 403)->push(['id' => 123], 201);
+    Http::fake(fn ($request) => $request->method() === 'POST' ? $responses($request) : Http::response([]));
     $site = $isolated ? Site::factory()->create([
         'server_id' => $this->server->id,
         'source_control_id' => $this->site->source_control_id,
@@ -103,7 +104,7 @@ test('site deploy key retries preserve generated keys and skip completed registr
     $method->invoke($type);
 
     expect(SSH::getExecutedCommands())->toBe([]);
-    Http::assertSentCount(2);
+    Http::assertSentCount(3);
     $this->assertDatabaseHas('sites', ['id' => $site->id, 'type_data->deploy_key_id' => '123']);
 })->with([false, true]);
 
@@ -162,12 +163,14 @@ test('fpm pool setup does not treat connection failures as missing pools', funct
     expect($this->server->isolatedUserLock('runtime')->get(fn () => true))->toBeTrue();
 });
 
-test('fpm pool setup requires the requested php service', function () {
+test('fpm pool setup requires an exact php service without changing the default', function (string $version) {
     SSH::fake();
+    $this->server->services()->update(['is_default' => false]);
 
-    expect(fn () => app(EnsureFpmPool::class)->ensure($this->server, 'runtime', '0.0'))->toThrow(RuntimeException::class, 'PHP service not found');
+    expect(fn () => app(EnsureFpmPool::class)->ensure($this->server, 'runtime', $version))->toThrow(RuntimeException::class, 'PHP service not found');
     expect(SSH::getExecutedCommands())->toBe([]);
-});
+    expect($this->server->services()->where('is_default', true)->exists())->toBeFalse();
+})->with(['0.0', '', '0']);
 
 test('repository clone supports token and ssh authentication with optional commit pinning', function (bool $usesToken, ?string $commit) {
     SSH::fake();

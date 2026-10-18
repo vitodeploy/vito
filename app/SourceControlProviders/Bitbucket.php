@@ -151,25 +151,18 @@ class Bitbucket extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
-        try {
-            $res = Http::withHeaders($this->getAuthenticationHeaders())->post(
-                $this->apiUrl."/repositories/$repo/deploy-keys",
-                [
-                    'label' => $title,
-                    'key' => $key,
-                ]
-            );
+        return $this->registerDeployKey(
+            fn () => Http::withHeaders($this->getAuthenticationHeaders()),
+            $this->apiUrl."/repositories/$repo/deploy-keys",
+            ['label' => $title, 'key' => $key], pageSizeParameter: 'pagelen', collectionKey: 'values',
+        );
+    }
 
-            if ($res->status() != 200) {
-                throw new FailedToDeployGitKey($res->json()['error']['message']);
-            }
-
-            return $res->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => Http::withHeaders($this->getAuthenticationHeaders()), $this->apiUrl."/repositories/$repo/deploy-keys", $key, pageSizeParameter: 'pagelen', collectionKey: 'values');
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -178,20 +171,11 @@ class Bitbucket extends AbstractSourceControlProvider
             $response = Http::withHeaders($this->getAuthenticationHeaders())
                 ->delete($this->apiUrl."/repositories/$repo/deploy-keys/$keyId");
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Bitbucket deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Bitbucket deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (\Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 

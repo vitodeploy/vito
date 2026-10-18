@@ -1,5 +1,5 @@
 import { Configs } from '@/types';
-import { DynamicFieldValue } from '@/types/dynamic-field-config';
+import { DynamicFieldConfig, DynamicFieldValue } from '@/types/dynamic-field-config';
 
 export interface Application {
   id: number;
@@ -8,6 +8,8 @@ export interface Application {
   name: string;
   repository: string;
   runtime: string;
+  status: string;
+  status_color: 'success' | 'danger';
   created_at: string;
   updated_at: string;
 }
@@ -19,12 +21,43 @@ export interface Environment {
   slug: string;
   branch: string;
   runtime_version: string | null;
+  primary_component_id: number | null;
+  components_count?: number;
+  last_error: string | null;
   status: string;
   status_color: 'success' | 'danger';
   created_at: string;
   updated_at: string;
 }
 
+export interface Component {
+  id: number;
+  environment_id: number;
+  environment_status?: string;
+  application_status?: string;
+  server_id: number;
+  server_name: string;
+  name: string;
+  type: string;
+  type_color: 'info' | 'warning';
+  user: string;
+  path: string;
+  status: string;
+  status_color: 'success' | 'danger' | 'warning' | 'gray';
+  last_error: string | null;
+  needs_redeploy: boolean;
+  ssh_key: string | null;
+  capabilities: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComponentOptions {
+  servers: { id: number; name: string; ssh_user: string }[];
+  capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
+}
+
+export type PrimaryCandidate = { id: number; name: string };
 export type RuntimePreset = Configs['application']['runtimes'][number];
 
 export type EnvironmentFormData = {

@@ -4,7 +4,6 @@ namespace App\Actions\Site\Tooling;
 
 use App\DTOs\ToolingTargetDTO;
 use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
-use App\Models\Component;
 use App\Models\IsolatedUser;
 use App\Models\Site;
 use App\Tooling\SiteToolingState;
@@ -42,12 +41,7 @@ class UninstallSiteTooling
             ]);
         }
 
-        if ($iuser->components()->with('environment.application')->get()
-            ->contains(fn (Component $component): bool => $component->environment->application->preset()->tooling() === $toolId)) {
-            throw ValidationException::withMessages([
-                'tool' => "{$tool::label()} is required by a component sharing this isolated user and cannot be uninstalled.",
-            ]);
-        }
+        app(AssertToolingNotUsedByComponents::class)->assert($site, $toolId);
 
         $current = $iuser->toolingStatus($toolId);
         if ($current === SiteToolingState::STATUS_INSTALLING || $current === SiteToolingState::STATUS_UNINSTALLING) {

@@ -187,31 +187,18 @@ class Github extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
-        try {
-            $response = $this->getClient()
-                ->post(self::API_BASE_URL.'/repos/'.$repo.'/keys', [
-                    'title' => $title,
-                    'key' => $key,
-                    'read_only' => false,
-                ]);
+        return $this->registerDeployKey(
+            fn () => $this->getClient(),
+            self::API_BASE_URL.'/repos/'.$repo.'/keys',
+            ['title' => $title, 'key' => $key, 'read_only' => $readOnly],
+        );
+    }
 
-            if ($response->status() !== 201) {
-                throw new FailedToDeployGitKey($response->body());
-            }
-
-            return $response->json()['id'] ?? '';
-
-        } catch (Throwable $e) {
-            Log::error('Failed to deploy GitHub key', [
-                'repo' => $repo,
-                'title' => $title,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => $this->getClient(), self::API_BASE_URL.'/repos/'.$repo.'/keys', $key);
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -220,20 +207,11 @@ class Github extends AbstractSourceControlProvider
             $response = $this->getClient()
                 ->delete(self::API_BASE_URL."/repos/$repo/keys/$keyId");
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete GitHub deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting GitHub deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (\Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 

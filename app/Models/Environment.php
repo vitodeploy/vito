@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
  * @property string $branch
  * @property ?string $runtime_version
  * @property ?int $primary_component_id
+ * @property bool $primary_component_initialized
+ * @property ?string $last_error
  * @property EnvironmentStatus $status
  * @property Application $application
  * @property ?Component $primaryComponent
@@ -30,15 +32,14 @@ class Environment extends AbstractModel
     protected $fillable = [
         'application_id',
         'name',
-        'slug',
         'branch',
         'runtime_version',
-        'primary_component_id',
     ];
 
     protected $casts = [
         'application_id' => 'integer',
         'primary_component_id' => 'integer',
+        'primary_component_initialized' => 'boolean',
         'status' => EnvironmentStatus::class,
     ];
 

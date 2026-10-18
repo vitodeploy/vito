@@ -24,6 +24,7 @@ class SetupDeployKey
         string $title,
         ?string $publicKey = null,
         ?int $siteId = null,
+        bool $readOnly = false,
     ): array {
         if ($sourceControl->isGithubApp()) {
             return ['public_key' => null, 'deploy_key_id' => null];
@@ -33,7 +34,7 @@ class SetupDeployKey
 
         return [
             'public_key' => $publicKey,
-            'deploy_key_id' => $sourceControl->provider()->deployKey($title, $repository, $publicKey),
+            'deploy_key_id' => $sourceControl->provider()->deployKey($title, $repository, $publicKey, $readOnly),
         ];
     }
 

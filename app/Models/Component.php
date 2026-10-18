@@ -21,6 +21,10 @@ use Illuminate\Support\Collection;
  * @property ComponentStatus $status
  * @property ?string $last_error
  * @property bool $needs_redeploy
+ * @property ?string $deploy_key_id
+ * @property ?string $ssh_key
+ * @property ?int $deploy_key_source_control_id
+ * @property ?string $deploy_key_repository
  * @property Environment $environment
  * @property Server $server
  * @property ?IsolatedUser $isolatedUser
@@ -38,7 +42,6 @@ class Component extends AbstractModel
     protected $fillable = [
         'environment_id',
         'server_id',
-        'isolated_user_id',
         'user',
         'name',
         'type',
@@ -48,6 +51,7 @@ class Component extends AbstractModel
         'environment_id' => 'integer',
         'server_id' => 'integer',
         'isolated_user_id' => 'integer',
+        'deploy_key_source_control_id' => 'integer',
         'type' => ComponentType::class,
         'status' => ComponentStatus::class,
         'needs_redeploy' => 'boolean',

@@ -37,7 +37,7 @@ test('application models expose their relationships and typed state', function (
     $capability = ComponentCapability::factory()->for($component)->create([
         'config' => ['port' => 3000, 'enabled' => true],
     ]);
-    $environment->update(['primary_component_id' => $component->id]);
+    $environment->forceFill(['primary_component_id' => $component->id])->save();
     $environmentScript = DeploymentScript::factory()->create(['site_id' => null, 'environment_id' => $environment->id]);
     $componentScript = DeploymentScript::factory()->create(['site_id' => null, 'component_id' => $component->id]);
     $worker = Worker::factory()->create(['server_id' => $this->server->id, 'component_id' => $component->id]);
@@ -152,7 +152,7 @@ test('application nullable foreign keys clear when their targets are deleted', f
         'server_id' => $this->server->id,
         'isolated_user_id' => $isolatedUser->id,
     ]);
-    $environment->update(['primary_component_id' => $component->id]);
+    $environment->forceFill(['primary_component_id' => $component->id])->save();
 
     $application->sourceControl->forceDelete();
     $isolatedUser->delete();
@@ -176,7 +176,7 @@ test('application ownership cascades without invoking remote model events', func
     SSH::fake();
     $component = Component::factory()->create();
     $environment = $component->environment;
-    $environment->update(['primary_component_id' => $component->id]);
+    $environment->forceFill(['primary_component_id' => $component->id])->save();
     $capability = ComponentCapability::factory()->for($component)->create();
     $worker = Worker::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     $cron = CronJob::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
@@ -209,7 +209,7 @@ test('application migration round trips while preserving site data', function ()
     $siteWorker = Worker::factory()->create(['server_id' => $this->server->id, 'site_id' => $this->site->id]);
     $siteCron = CronJob::factory()->create(['server_id' => $this->server->id, 'site_id' => $this->site->id]);
     $component = Component::factory()->create();
-    $component->environment->update(['primary_component_id' => $component->id]);
+    $component->environment->forceFill(['primary_component_id' => $component->id])->save();
     ComponentCapability::factory()->for($component)->create();
     Deployment::factory()->create(['site_id' => null, 'component_id' => $component->id, 'deployment_script_id' => null]);
     DeploymentScript::factory()->create(['site_id' => null, 'environment_id' => $component->environment_id]);

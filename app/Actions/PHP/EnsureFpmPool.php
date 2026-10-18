@@ -16,7 +16,7 @@ class EnsureFpmPool
      */
     public function ensure(Server $server, string $user, string $phpVersion): void
     {
-        $service = $server->php($phpVersion);
+        $service = $server->services()->where('type', 'php')->where('version', $phpVersion)->first();
         if (! $service instanceof Service) {
             throw new RuntimeException('PHP service not found');
         }

@@ -1,4 +1,8 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { useRef } from 'react';
+import { Head, Link, router, usePage, usePoll } from '@inertiajs/react';
+import { ReloadOptions } from '@inertiajs/core';
+import { toast } from 'sonner';
+import { useSocketListener } from '@/hooks/use-socket-events';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
@@ -22,6 +26,38 @@ export default function ShowApplication() {
   }>().props;
   const dialog = useDialog();
   const runtime = useConfigs()?.application.runtimes.find((preset) => preset.id === application.runtime);
+  const leaving = useRef(false);
+  const leave = () => {
+    if (leaving.current) return;
+    leaving.current = true;
+    router.visit('/applications', {
+      onFinish: () => { leaving.current = false; },
+      onNetworkError: () => {
+        toast.error('Unable to open Applications. Check your connection and try again.');
+        return false;
+      },
+    });
+  };
+  const reloadOptions: ReloadOptions = {
+    only: ['application', 'environments'],
+    onBefore: () => !leaving.current,
+    onHttpException: (response) => {
+      if (response.status === 404) {
+        leave();
+        return false;
+      }
+    },
+  };
+  usePoll(10000, reloadOptions);
+  useSocketListener((event) => {
+    if (leaving.current) return;
+    if (event.type === 'application.deleted' && event.data?.id === application.id) {
+      leave();
+    } else if ((event.type === 'application.updated' && event.data?.id === application.id)
+      || (event.type?.startsWith('environment.') && event.data?.application_id === application.id)) {
+      router.reload(reloadOptions);
+    }
+  });
 
   return (
     <Layout>
@@ -33,13 +69,14 @@ export default function ShowApplication() {
             <Heading title={application.name} description={application.repository} />
             <Badge variant="warning">Beta</Badge>
             <Badge variant="outline">{runtime?.label ?? application.runtime}</Badge>
+            <Badge variant={application.status_color}>{application.status}</Badge>
           </div>
-          {can.delete && <Button variant="destructive" onClick={() => dialog.deleteApplicationResource.open({ application })}><Trash2Icon />Delete</Button>}
+          {can.delete && application.status !== 'deleting' && <Button variant="destructive" onClick={() => dialog.deleteApplicationResource.open({ application })}><Trash2Icon />{application.status === 'deletion_failed' ? 'Retry deletion' : 'Delete'}</Button>}
         </HeaderContainer>
         <section className="flex flex-col gap-4" aria-label="Environments">
           <HeaderContainer>
             <Heading title="Environments" />
-            {can.createEnvironment && <Button onClick={() => dialog.createEnvironment.open({ application })}><PlusIcon />Create environment</Button>}
+            {can.createEnvironment && application.status === 'ready' && <Button onClick={() => dialog.createEnvironment.open({ application })}><PlusIcon />Create environment</Button>}
           </HeaderContainer>
           {environments.length === 0 && <p className="text-muted-foreground text-sm">No environments yet. Create one to get started.</p>}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -47,7 +84,9 @@ export default function ShowApplication() {
               <Card key={environment.id}>
                 <CardContent className="flex flex-col gap-3 p-4">
                   <div className="flex items-center justify-between gap-2">
-                    <Link className="font-medium hover:underline" href={`/applications/${application.id}/environments/${environment.id}`} prefetch>{environment.name}</Link>
+                    {application.status === 'deleting' || environment.status === 'deleting'
+                      ? <span className="font-medium">{environment.name}</span>
+                      : <Link className="font-medium hover:underline" href={`/applications/${application.id}/environments/${environment.id}`}>{environment.name}</Link>}
                     <Badge variant={environment.status_color}>{environment.status}</Badge>
                   </div>
                   <p className="text-muted-foreground text-sm">Branch: {environment.branch}</p>
@@ -57,7 +96,7 @@ export default function ShowApplication() {
             ))}
           </div>
         </section>
-        {can.update && <Settings key={application.id} application={application} sourceControls={sourceControls} />}
+        {can.update && application.status === 'ready' && <Settings key={application.id} application={application} sourceControls={sourceControls} />}
       </Container>
     </Layout>
   );

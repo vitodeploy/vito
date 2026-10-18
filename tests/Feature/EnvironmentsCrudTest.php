@@ -47,7 +47,7 @@ test('create environment derives its slug and ignores lifecycle and parent input
 test('update environment preserves slug and internal fields', function () {
     $input = array_replace($this->environmentInput, [
         'slug' => 'changed', 'application_id' => Application::factory()->create()->id,
-        'status' => 'deleting', 'primary_component_id' => 999,
+        'status' => 'deleting', 'primary_component_initialized' => true,
     ]);
 
     $this->put(route('environments.update', [$this->application, $this->environment]), $input)->assertSessionDoesntHaveErrors();

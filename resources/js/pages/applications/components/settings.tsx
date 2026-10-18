@@ -24,7 +24,7 @@ export default function Settings({ application, sourceControls }: { application:
     <Card>
       <CardHeader>
         <CardTitle>Application settings</CardTitle>
-        <CardDescription>Repository changes apply on the next deploy. The runtime preset cannot be changed.</CardDescription>
+        <CardDescription>Repository changes immediately re-register component deploy keys. The running release changes on the next deploy. The runtime preset cannot be changed.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form id="application-settings-form" onSubmit={submit}>

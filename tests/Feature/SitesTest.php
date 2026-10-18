@@ -28,6 +28,23 @@ use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
+test('site attachment shares the isolated user teardown lock and releases it before dispatch', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    \Illuminate\Support\Facades\Event::listen('eloquent.creating: '.Site::class, function (): void {
+        expect($this->server->isolatedUserLock('sharedruntime')->get())->toBeFalse();
+    });
+
+    $this->actingAs($this->user)->post(route('sites.store', $this->server), [
+        'type' => Blank::id(), 'domain' => 'shared-runtime.example.com', 'port' => 3000, 'user' => 'sharedruntime',
+    ])->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['domain' => 'shared-runtime.example.com', 'user' => 'sharedruntime']);
+    expect($this->server->isolatedUserLock('sharedruntime')->get(fn () => true))->toBeTrue();
+    Queue::assertPushed(CreateJob::class);
+});
+
 test('site creation rejects domains and aliases already served on the server', function (string $field, bool $hostedAlias) {
     SSH::fake();
     Http::fake();
@@ -219,8 +236,8 @@ test('create site', function (array $inputs) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 201),
+        'https://api.github.com/repos/*/keys' => Http::response(['id' => 123], 201),
+        'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 
     if (isset($inputs['database']) && isset($inputs['database_user'])) {
@@ -555,6 +572,7 @@ test('create blank site with source control requires repository', function () {
 test('create laravel site dispatches ensure env script', function () {
     SSH::fake();
     Http::fake([
+        'https://api.github.com/repos/*/keys' => Http::response(['id' => 123], 201),
         'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 

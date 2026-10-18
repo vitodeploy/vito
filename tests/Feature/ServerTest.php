@@ -660,6 +660,26 @@ test('transfer server', function (UserRole $role): void {
     expect($this->user->refresh()->current_project_id)->toEqual($newProject->id);
 })->with([UserRole::OWNER, UserRole::ADMIN]);
 
+test('server transfer refreshes placement under a transaction before saving', function () {
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    Server::query()->whereKey($this->server->id)->update(['name' => 'Fresh server']);
+    $depth = \Illuminate\Support\Facades\DB::transactionLevel();
+    $retrieved = false;
+    \Illuminate\Support\Facades\Event::listen('eloquent.retrieved: '.Server::class, function () use ($depth, &$retrieved): void {
+        $retrieved = true;
+        expect(\Illuminate\Support\Facades\DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+    \Illuminate\Support\Facades\Event::listen('eloquent.updating: '.Server::class, function () use ($depth): void {
+        expect(\Illuminate\Support\Facades\DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+
+    $server = app(\App\Actions\Server\TransferServer::class)->transfer($this->user, $this->server, ['project_id' => $project->id]);
+
+    expect($retrieved)->toBeTrue()->and($server->name)->toBe('Fresh server');
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $project->id]);
+});
+
 test('cannot transfer a server to a read-only project', function (): void {
     $project = Project::factory()->create();
     $project->users()->create([

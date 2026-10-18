@@ -115,7 +115,7 @@ class HandleInertiaRequests extends Middleware
                     /** @var Environment $environment */
                     $environment = $request->route('environment');
                     if ($user->can('view', [$environment, $application])) {
-                        $data['environment'] = fn () => EnvironmentResource::make($environment);
+                        $data['environment'] = fn () => EnvironmentResource::make($environment->loadCount('components'));
                     }
                 }
             }

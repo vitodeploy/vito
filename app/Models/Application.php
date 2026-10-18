@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationStatus;
 use App\RuntimePresets\AbstractRuntimePreset;
 use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ use InvalidArgumentException;
  * @property string $name
  * @property string $repository
  * @property string $runtime
+ * @property ApplicationStatus $status
  * @property Project $project
  * @property ?SourceControl $sourceControl
  * @property Collection<int, Environment> $environments
@@ -36,6 +38,7 @@ class Application extends AbstractModel
     protected $casts = [
         'project_id' => 'integer',
         'source_control_id' => 'integer',
+        'status' => ApplicationStatus::class,
     ];
 
     public function preset(): AbstractRuntimePreset

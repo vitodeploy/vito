@@ -21,6 +21,8 @@ class ApplicationResource extends JsonResource
             'name' => $this->name,
             'repository' => $this->repository,
             'runtime' => $this->runtime,
+            'status' => $this->status->getText(),
+            'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

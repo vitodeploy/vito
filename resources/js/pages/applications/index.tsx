@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, usePoll } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
@@ -18,6 +18,7 @@ export default function Applications() {
     canCreate: boolean;
   }>().props;
   const dialog = useDialog();
+  usePoll(10000, { only: ['applications'] });
 
   return (
     <Layout>

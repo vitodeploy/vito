@@ -6,12 +6,14 @@ import { Form, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useConfigs } from '@/stores/bootstrap-store';
-import { Application, Environment, EnvironmentFormData } from '@/types/application';
+import { Application, Environment, EnvironmentFormData, PrimaryCandidate } from '@/types/application';
 import EnvironmentFields, { environmentDefaults } from './environment-fields';
+import PrimaryComponentPicker from './primary-component-picker';
 
-export default function EnvironmentForm({ open, onOpenChange, application, environment }: DialogControlProps & {
+export default function EnvironmentForm({ open, onOpenChange, application, environment, primaryCandidates = [] }: DialogControlProps & {
   application: Application;
   environment?: Environment;
+  primaryCandidates?: PrimaryCandidate[];
 }) {
   const preset = useConfigs()!.application.runtimes.find((runtime) => runtime.id === application.runtime);
   const form = useForm<EnvironmentFormData>({
@@ -19,6 +21,7 @@ export default function EnvironmentForm({ open, onOpenChange, application, envir
     name: environment?.name ?? '',
     branch: environment?.branch ?? 'main',
     runtime_version: environment?.runtime_version ?? environmentDefaults(preset).runtime_version,
+    primary_component_id: environment?.primary_component_id ? String(environment.primary_component_id) : '',
   });
 
   const submit = (e: FormEvent) => {
@@ -43,7 +46,8 @@ export default function EnvironmentForm({ open, onOpenChange, application, envir
         <Form id="environment-form" className="p-4" onSubmit={submit}>
           <FormFields>
             {!preset && <p className="text-destructive text-sm">This runtime preset is unavailable. Restore its plugin before editing environments.</p>}
-            <EnvironmentFields preset={preset} data={form.data} errors={form.errors} onChange={(name, value) => form.setData(name, value)} />
+            <EnvironmentFields preset={preset} data={form.data} errors={form.errors} runtimeLocked={(environment?.components_count ?? 0) > 0} onChange={(name, value) => form.setData(name, value)} />
+            {environment && <PrimaryComponentPicker value={String(form.data.primary_component_id)} onChange={(value) => form.setData('primary_component_id', value)} candidates={primaryCandidates} error={form.errors.primary_component_id} />}
           </FormFields>
         </Form>
         <DialogFooter>

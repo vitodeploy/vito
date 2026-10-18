@@ -14,6 +14,7 @@ final readonly class ToolingTargetDTO
         public ?IsolatedUser $isolatedUser = null,
         public ?string $phpVersion = null,
         public ?int $siteId = null,
+        public ?string $configDir = null,
     ) {}
 
     public static function forSite(Site $site): self

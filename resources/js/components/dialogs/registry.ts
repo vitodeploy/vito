@@ -44,6 +44,8 @@ import PeerConfigDialog from '@/pages/networks/components/peer-config';
 import CreateApplication from '@/pages/applications/components/create-application';
 import EnvironmentForm from '@/pages/applications/components/environment-form';
 import DeleteApplicationResource from '@/pages/applications/components/delete-dialog';
+import AddComponent from '@/pages/applications/components/add-component';
+import DeleteComponent from '@/pages/applications/components/delete-component';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -106,6 +108,8 @@ export const dialogs = {
   createEnvironment: EnvironmentForm,
   editEnvironment: EnvironmentForm,
   deleteApplicationResource: DeleteApplicationResource,
+  addComponent: AddComponent,
+  deleteComponent: DeleteComponent,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

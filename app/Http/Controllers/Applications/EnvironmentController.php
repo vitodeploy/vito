@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Applications;
 
+use App\Actions\Component\GetComponentOptions;
 use App\Actions\Environment\CreateEnvironment;
 use App\Actions\Environment\DeleteEnvironment;
 use App\Actions\Environment\UpdateEnvironment;
@@ -41,6 +42,7 @@ class EnvironmentController extends Controller
         $this->authorize('view', [$environment, $application]);
 
         return Inertia::render('applications/environments/show', [
+            'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
             'can' => [
                 'update' => user()->can('update', [$environment, $application]),
                 'delete' => user()->can('delete', [$environment, $application]),
@@ -65,6 +67,6 @@ class EnvironmentController extends Controller
 
         app(DeleteEnvironment::class)->delete($environment, $request->all());
 
-        return to_route('applications.show', $application)->with('success', 'Environment deleted.');
+        return to_route('applications.show', $application)->with('success', 'Environment deletion requested. Components are cleaned up before the environment is removed.');
     }
 }

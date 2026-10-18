@@ -51,7 +51,7 @@ test('deleting a site preserves its component sibling user and only keeps a need
         'server_id' => $this->server->id, 'type' => PHPBlank::id(), 'user' => 'shared',
         'domain' => 'shared.test', 'path' => '/home/shared/shared.test', 'php_version' => '8.2',
     ]);
-    $this->component->update(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user]);
+    $this->component->forceFill(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user])->save();
     $this->component->environment->update(['runtime_version' => $version]);
     $this->component->environment->application->update(['runtime' => $runtime]);
     if ($web) {
@@ -89,7 +89,7 @@ test('changing site php version preserves the old pool used by a component', fun
         'server_id' => $this->server->id, 'type' => PHPBlank::id(), 'user' => 'shared',
         'domain' => 'shared.test', 'path' => '/home/shared/shared.test', 'php_version' => '8.2',
     ]);
-    $this->component->update(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user]);
+    $this->component->forceFill(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user])->save();
     $this->component->environment->update(['runtime_version' => '8.2']);
     $this->component->environment->application->update(['runtime' => 'php']);
     ComponentCapability::factory()->for($this->component)->create(['capability' => 'web']);
@@ -108,7 +108,7 @@ test('changing site php version preserves the old pool used by a component', fun
 
 test('isolated user sibling checks exclude only the supplied owner and use fresh relationships', function () {
     $iuser = IsolatedUser::factory()->create(['server_id' => $this->server->id]);
-    $this->component->update(['isolated_user_id' => $iuser->id, 'user' => $iuser->username]);
+    $this->component->forceFill(['isolated_user_id' => $iuser->id, 'user' => $iuser->username])->save();
     $this->component->environment->update(['runtime_version' => '8.2']);
     $this->component->environment->application->update(['runtime' => 'php']);
     ComponentCapability::factory()->for($this->component)->create();
@@ -137,7 +137,7 @@ test('isolated user sibling checks exclude only the supplied owner and use fresh
 test('unrelated isolated users and servers do not preserve a site user or pool', function () {
     $site = Site::factory()->create(['server_id' => $this->server->id, 'user' => 'alone']);
     $otherUser = IsolatedUser::factory()->create(['server_id' => $this->server->id]);
-    $this->component->update(['isolated_user_id' => $otherUser->id, 'user' => $otherUser->username]);
+    $this->component->forceFill(['isolated_user_id' => $otherUser->id, 'user' => $otherUser->username])->save();
     $this->component->environment->update(['runtime_version' => '8.2']);
     $this->component->environment->application->update(['runtime' => 'php']);
     ComponentCapability::factory()->for($this->component)->create();
@@ -298,7 +298,7 @@ test('component workers already protect their process manager from uninstall', f
 
 test('server deletion purges only its components and their owned rows without remote teardown', function () {
     $environment = $this->component->environment;
-    $environment->update(['primary_component_id' => $this->component->id]);
+    $environment->forceFill(['primary_component_id' => $this->component->id])->save();
     $otherServer = Server::factory()->create(['project_id' => $this->server->project_id]);
     $survivor = Component::factory()->for($environment)->for($otherServer, 'server')->create();
     $capability = ComponentCapability::factory()->for($this->component)->create();
@@ -313,7 +313,7 @@ test('server deletion purges only its components and their owned rows without re
     Component::factory()->for($environment)->for($this->server)->create(['user' => 'other']);
 
     $this->partialMock(PurgeServerComponents::class)->shouldReceive('handle')->once()
-        ->with([$environment->id, $otherEnvironment->id])
+        ->with(['environments' => [$environment->id, $otherEnvironment->id], 'keys' => []])
         ->andReturnUsing(function () use ($environment): void {
             $this->assertDatabaseMissing('servers', ['id' => $this->server->id]);
             $this->assertDatabaseHas('environments', ['id' => $environment->id, 'primary_component_id' => null]);
@@ -334,7 +334,7 @@ test('server deletion purges only its components and their owned rows without re
 
 test('component purges roll back with a failed server cleanup', function () {
     $environment = $this->component->environment;
-    $environment->update(['primary_component_id' => $this->component->id]);
+    $environment->forceFill(['primary_component_id' => $this->component->id])->save();
     $capability = ComponentCapability::factory()->for($this->component)->create();
     ServerLog::factory()->create(['server_id' => $this->server->id]);
     Event::listen('eloquent.deleting: '.ServerLog::class, function (): void {
@@ -353,7 +353,7 @@ test('component purges roll back with a failed server cleanup', function () {
 
 test('failed server deletion after cleanup restores components and primary references', function (bool $throughProject) {
     $environment = $this->component->environment;
-    $environment->update(['primary_component_id' => $this->component->id]);
+    $environment->forceFill(['primary_component_id' => $this->component->id])->save();
     $capability = ComponentCapability::factory()->for($this->component)->create();
     $worker = Worker::factory()->create(['server_id' => $this->server->id, 'component_id' => $this->component->id]);
     Event::listen('eloquent.deleting: '.Server::class, function (): void {
@@ -369,6 +369,26 @@ test('failed server deletion after cleanup restores components and primary refer
     }
     $this->assertDatabaseHas('environments', ['id' => $environment->id, 'primary_component_id' => $this->component->id]);
 })->with([false, true]);
+
+test('server purge locks placement before capturing components in the deletion transaction', function () {
+    $locked = false;
+    $depth = DB::transactionLevel();
+    Server::addGlobalScope('verify-purge-lock', function (\Illuminate\Database\Eloquent\Builder $query) use (&$locked, $depth): void {
+        if ($query->getQuery()->lock === true) {
+            expect(DB::transactionLevel())->toBeGreaterThan($depth);
+            $locked = true;
+        }
+    });
+    Event::listen('eloquent.retrieved: '.Component::class, function () use (&$locked): void {
+        expect($locked)->toBeTrue();
+    });
+
+    $this->server->delete();
+
+    expect($locked)->toBeTrue();
+    $this->assertDatabaseMissing('servers', ['id' => $this->server->id]);
+    $this->assertDatabaseMissing('components', ['id' => $this->component->id]);
+});
 
 test('server cleanup deadlocks preserve the failure and reset transaction depth', function () {
     $pdo = Mockery::mock(PDO::class);
@@ -397,7 +417,7 @@ test('server cleanup deadlocks preserve the failure and reset transaction depth'
 
 test('cancelled server deletion restores components and primary references', function () {
     $environment = $this->component->environment;
-    $environment->update(['primary_component_id' => $this->component->id]);
+    $environment->forceFill(['primary_component_id' => $this->component->id])->save();
     Event::listen('eloquent.deleting: '.Server::class, fn (): bool => false);
 
     expect($this->server->delete())->toBeFalse();
@@ -462,7 +482,7 @@ test('site provisioning ensures its pool even when an uninstalled component shar
         'server_id' => $this->server->id, 'type' => PHPBlank::id(), 'user' => 'shared',
         'domain' => 'shared.test', 'path' => '/home/shared/shared.test', 'php_version' => '8.2',
     ]);
-    $this->component->update(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user]);
+    $this->component->forceFill(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user])->save();
     $this->component->status = \App\Enums\ComponentStatus::from($status);
     $this->component->save();
     $this->component->environment->application->update(['runtime' => 'php']);
@@ -491,7 +511,7 @@ test('project deletion purges components across its servers without touching ano
         $server = Server::factory()->for($project)->create(['user_id' => $this->user->id]);
         $components->push(Component::factory()->for($environment)->for($server)->create());
     }
-    $environment->update(['primary_component_id' => $components->first()->id]);
+    $environment->forceFill(['primary_component_id' => $components->first()->id])->save();
 
     $this->actingAs($this->user)->delete(route('projects.destroy', $project), ['name' => $project->name])
         ->assertSessionDoesntHaveErrors();
