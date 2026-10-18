@@ -4,6 +4,7 @@ namespace App\RuntimePresets;
 
 use App\DTOs\DynamicForm;
 use App\Enums\WebMode;
+use App\Models\Environment;
 use Illuminate\Support\Facades\File;
 
 abstract class AbstractRuntimePreset
@@ -71,6 +72,14 @@ abstract class AbstractRuntimePreset
         }
 
         return $scripts;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function warnings(Environment $environment): array
+    {
+        return [];
     }
 
     public function form(): DynamicForm

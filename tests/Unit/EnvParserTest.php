@@ -2,6 +2,36 @@
 
 use App\Helpers\EnvParser;
 
+test('literal application env format has stable quoting and round trips through phpdotenv', function () {
+    $values = [
+        'PLAIN' => 'value', 'EMPTY' => '', 'APOSTROPHE' => "it's literal", 'JSON' => '{"ok":true}',
+        'EQUAL_QUOTE' => 'a="b', 'DOLLAR' => '$VAR ${VAR} $(id)', 'BACKTICK' => '`id`',
+        'BACKSLASH' => 'C:\\tmp\\new', 'SYMBOLS' => ' = # ', 'QUOTED' => "it's \"quoted\" \\ and \$VAR",
+        'PEM' => "-----BEGIN KEY-----\nline two\n-----END KEY-----\n",
+    ];
+    $golden = <<<'ENV'
+PLAIN='value'
+EMPTY=''
+APOSTROPHE="it's literal"
+JSON='{"ok":true}'
+EQUAL_QUOTE="a=\"b"
+DOLLAR='$VAR ${VAR} $(id)'
+BACKTICK='`id`'
+BACKSLASH='C:\tmp\new'
+SYMBOLS=' = # '
+QUOTED="it's \"quoted\" \\ and \$VAR"
+PEM="-----BEGIN KEY-----\nline two\n-----END KEY-----\n"
+ENV;
+    $variables = [];
+    foreach ($values as $key => $value) {
+        $variables[] = compact('key', 'value');
+    }
+
+    expect(EnvParser::stringifyLiteral($variables))->toBe($golden)
+        ->and(\Dotenv\Dotenv::parse($golden))->toBe($values)
+        ->and(EnvParser::stringifyLiteral([]))->toBe('');
+});
+
 test('parse simple env', function () {
     $raw = "APP_NAME=Laravel\nAPP_ENV=production";
     $result = EnvParser::parse($raw);

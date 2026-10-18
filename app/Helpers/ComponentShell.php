@@ -24,7 +24,7 @@ final class ComponentShell
             $script .= '[ -d '.escapeshellarg($component->currentPath()).' ] || exit 0; ';
         }
         $script .= 'cd -- '.escapeshellarg($cwd ?? $component->currentPath()).' || exit 1; ';
-        $script .= 'exec bash -c '.escapeshellarg($command);
+        $script .= 'exec '.escapeshellarg($component->basePath().'/vito-env-exec').' '.escapeshellarg($envFile ?? $component->envPath()).' /bin/bash -p -c '.escapeshellarg($command);
 
         return 'bash -c '.escapeshellarg('exec bash -c "$(echo '.base64_encode($script).' | base64 -d)"');
     }

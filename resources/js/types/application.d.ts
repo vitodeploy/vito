@@ -23,12 +23,25 @@ export interface Environment {
   runtime_version: string | null;
   primary_component_id: number | null;
   components_count?: number;
+  needs_redeploy: boolean;
   last_error: string | null;
   status: string;
   status_color: 'success' | 'danger';
   created_at: string;
   updated_at: string;
 }
+
+export interface EnvironmentVariable {
+  id: number | null;
+  key: string;
+  value: string | null;
+  is_secret: boolean;
+  has_value: boolean;
+  source: string;
+  component_name: string | null;
+}
+
+export type EnvironmentVariablePreview = Pick<EnvironmentVariable, 'key' | 'is_secret'>;
 
 export interface Component {
   id: number;

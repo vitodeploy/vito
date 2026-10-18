@@ -23,6 +23,7 @@ class EnvironmentResource extends JsonResource
             'runtime_version' => $this->runtime_version,
             'primary_component_id' => $this->primary_component_id,
             'components_count' => $this->whenCounted('components'),
+            'needs_redeploy' => (bool) $this->needs_redeploy,
             'last_error' => $this->last_error,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),

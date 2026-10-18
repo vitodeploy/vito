@@ -60,10 +60,10 @@ test('component shell quotes commands and paths without interpolating variables 
     $wrapped = ComponentShell::wrap($this->component, $command);
     $script = componentProcessScript($wrapped);
     expect($wrapped)->not->toContain("\n", '%', ';')
-        ->and($script)->toContain('/home/'.$this->component->user.'/.local/share/mise/shims', '[ -d '.escapeshellarg($this->component->currentPath()).' ] || exit 0;', 'cd -- '.escapeshellarg($this->component->currentPath()).' || exit 1;', 'exec bash -c '.escapeshellarg($command))
+        ->and($script)->toContain('/home/'.$this->component->user.'/.local/share/mise/shims', '[ -d '.escapeshellarg($this->component->currentPath()).' ] || exit 0;', 'cd -- '.escapeshellarg($this->component->currentPath()).' || exit 1;', 'exec '.escapeshellarg($this->component->basePath().'/vito-env-exec').' '.escapeshellarg($this->component->envPath()).' /bin/bash -p -c '.escapeshellarg($command))
         ->not->toContain('source ', 'set -a');
     $explicit = componentProcessScript(ComponentShell::wrap($this->component, $command, '/tmp/env', '/tmp/staged release'));
-    expect($explicit)->toContain("cd -- '/tmp/staged release' || exit 1;")->not->toContain('exit 0', '/tmp/env');
+    expect($explicit)->toContain("cd -- '/tmp/staged release' || exit 1;", "'/tmp/env' /bin/bash -p -c ")->not->toContain('exit 0');
 });
 
 test('component workers are installed stopped with a wrapped command and no per-worker environment', function () {

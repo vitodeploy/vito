@@ -3,7 +3,9 @@ import { router, usePage, usePoll } from '@inertiajs/react';
 import { ReloadOptions } from '@inertiajs/core';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
-import { ArrowLeftIcon, BoxesIcon, HomeIcon } from 'lucide-react';
+import { ArrowLeftIcon, BoxesIcon, HomeIcon, KeyRoundIcon, RefreshCwIcon } from 'lucide-react';
+import Container from '@/components/container';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { NavItem } from '@/types';
 import { Application, Component, Environment } from '@/types/application';
 import Layout from '@/layouts/app/layout';
@@ -34,7 +36,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs', 'variables', 'warnings', 'canUpdate'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -85,7 +87,19 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     { title: application.name, href: `/applications/${application.id}`, onlyActivePath: `/applications/${application.id}`, icon: ArrowLeftIcon },
     { title: 'Overview', href: baseUrl, onlyActivePath: baseUrl, icon: HomeIcon },
     { title: 'Components', href: `${baseUrl}/components`, icon: BoxesIcon },
+    { title: 'Variables', href: `${baseUrl}/variables`, icon: KeyRoundIcon },
   ];
 
-  return <Layout secondNavItems={sidebarNavItems} secondNavTitle={environment.name}>{children}</Layout>;
+  return (
+    <Layout secondNavItems={sidebarNavItems} secondNavTitle={environment.name}>
+      {environment.needs_redeploy && <Container className="max-w-5xl pb-0">
+        <Alert>
+          <RefreshCwIcon />
+          <AlertTitle>Redeploy to apply</AlertTitle>
+          <AlertDescription>This environment has changes that will take effect on the next deploy.</AlertDescription>
+        </Alert>
+      </Container>}
+      {children}
+    </Layout>
+  );
 }

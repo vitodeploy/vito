@@ -47,6 +47,8 @@ import DeleteApplicationResource from '@/pages/applications/components/delete-di
 import AddComponent from '@/pages/applications/components/add-component';
 import DeleteComponent from '@/pages/applications/components/delete-component';
 import CapabilitiesDialog from '@/pages/applications/components/capabilities-dialog';
+import VariableForm from '@/pages/applications/components/variable-form';
+import ImportEnv from '@/pages/applications/components/import-env';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -112,6 +114,8 @@ export const dialogs = {
   addComponent: AddComponent,
   deleteComponent: DeleteComponent,
   componentCapabilities: CapabilitiesDialog,
+  variableForm: VariableForm,
+  importEnv: ImportEnv,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

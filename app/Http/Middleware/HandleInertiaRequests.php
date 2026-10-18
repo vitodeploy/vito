@@ -115,7 +115,7 @@ class HandleInertiaRequests extends Middleware
                     /** @var Environment $environment */
                     $environment = $request->route('environment');
                     if ($user->can('view', [$environment, $application])) {
-                        $data['environment'] = fn () => EnvironmentResource::make($environment->loadCount('components'));
+                        $data['environment'] = fn () => EnvironmentResource::make($environment->loadCount('components')->loadExists(['components as needs_redeploy' => fn ($query) => $query->where('needs_redeploy', true)]));
                     }
                 }
             }

@@ -23,6 +23,8 @@ use Illuminate\Support\Collection;
  * @property ?Component $primaryComponent
  * @property Collection<int, Component> $components
  * @property Collection<int, DeploymentScript> $deploymentScripts
+ * @property Collection<int, EnvironmentVariable> $variables
+ * @property bool $needs_redeploy
  */
 class Environment extends AbstractModel
 {
@@ -65,6 +67,14 @@ class Environment extends AbstractModel
     public function primaryComponent(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'primary_component_id');
+    }
+
+    /**
+     * @return HasMany<EnvironmentVariable, covariant $this>
+     */
+    public function variables(): HasMany
+    {
+        return $this->hasMany(EnvironmentVariable::class);
     }
 
     /**

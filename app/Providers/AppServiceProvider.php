@@ -13,6 +13,8 @@ use App\Listeners\HandleSiteCreatedStats;
 use App\Listeners\HandleSiteDeletedStats;
 use App\Listeners\SocketEventListener;
 use App\Models\PersonalAccessToken;
+use App\Http\Middleware\TrimStrings;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -29,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ResourceCollection::withoutWrapping();
+
+        TrimStrings::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
+        ConvertEmptyStringsToNull::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
 
         // facades
         $this->app->bind('ssh', fn (): SSH => new SSH);

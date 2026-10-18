@@ -57,7 +57,7 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         return Inertia::render('applications/show', [
-            'environments' => EnvironmentResource::collection($application->environments()->withCount('components')->orderBy('name')->get()),
+            'environments' => EnvironmentResource::collection($application->environments()->withCount('components')->withExists(['components as needs_redeploy' => fn ($query) => $query->where('needs_redeploy', true)])->orderBy('name')->get()),
             'sourceControls' => SourceControlResource::collection(SourceControl::getByProjectId($application->project_id, user())->get()),
             'can' => [
                 'update' => user()->can('update', $application),
