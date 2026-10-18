@@ -39,6 +39,10 @@ abstract class AbstractComponentCapability
         app(ValidateCapabilityServices::class)->validate($this->capability, $component, $server);
     }
 
+    public function install(Component $component): void {}
+
+    public function uninstall(Component $component): void {}
+
     /**
      * @return list<string>
      */

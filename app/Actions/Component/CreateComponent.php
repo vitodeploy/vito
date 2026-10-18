@@ -136,9 +136,5 @@ class CreateComponent
             }
         }
 
-        if (in_array('web', array_column($input['capabilities'] ?? [], 'capability'), true)
-            && $environment->components()->where('server_id', $server->id)->whereHas('capabilities', fn ($query) => $query->where('capability', 'web'))->exists()) {
-            throw ValidationException::withMessages(['capabilities' => 'Only one web component per environment is allowed on each server.']);
-        }
     }
 }

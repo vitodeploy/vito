@@ -17,6 +17,7 @@ use Throwable;
  * @property int $server_id
  * @property ?int $site_id
  * @property ?int $component_id
+ * @property ?int $component_capability_id
  * @property string $command
  * @property string $user
  * @property bool $auto_start
@@ -42,7 +43,6 @@ class Worker extends AbstractModel
     protected $fillable = [
         'server_id',
         'site_id',
-        'component_id',
         'command',
         'user',
         'auto_start',
@@ -59,6 +59,7 @@ class Worker extends AbstractModel
         'server_id' => 'integer',
         'site_id' => 'integer',
         'component_id' => 'integer',
+        'component_capability_id' => 'integer',
         'auto_start' => 'boolean',
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
@@ -85,6 +86,9 @@ class Worker extends AbstractModel
         parent::boot();
 
         static::deleting(function (Worker $worker): void {
+            if ($worker->component_id !== null) {
+                return;
+            }
             try {
                 /** @var Service $service */
                 $service = $worker->server->processManager();

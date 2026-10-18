@@ -48,6 +48,8 @@ export interface Component {
   needs_redeploy: boolean;
   ssh_key: string | null;
   capabilities: string[];
+  capability_configs: (CapabilityConfiguration & { status: string; status_color: Component['status_color'] })[];
+  surfaces: string[];
   created_at: string;
   updated_at: string;
 }
@@ -57,6 +59,8 @@ export interface ComponentOptions {
   capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
 }
 
+export type CapabilityConfiguration = { capability: string; config: Record<string, DynamicFieldValue> };
+export type ComponentProcessOwner = { user: string; url: string };
 export type PrimaryCandidate = { id: number; name: string };
 export type RuntimePreset = Configs['application']['runtimes'][number];
 

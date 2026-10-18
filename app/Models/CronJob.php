@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CronjobStatus;
+use App\Helpers\ComponentShell;
 use App\Traits\HasExclusiveOwner;
 use Database\Factories\CronJobFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $server_id
  * @property ?int $site_id
  * @property ?int $component_id
+ * @property ?int $component_capability_id
  * @property string $command
  * @property string $user
  * @property string $frequency
@@ -33,7 +35,6 @@ class CronJob extends AbstractModel
     protected $fillable = [
         'server_id',
         'site_id',
-        'component_id',
         'command',
         'user',
         'frequency',
@@ -45,6 +46,7 @@ class CronJob extends AbstractModel
         'server_id' => 'integer',
         'site_id' => 'integer',
         'component_id' => 'integer',
+        'component_capability_id' => 'integer',
         'hidden' => 'boolean',
         'status' => CronjobStatus::class,
     ];
@@ -100,7 +102,7 @@ class CronJob extends AbstractModel
     public static function crontab(Server $server, string $user): string
     {
         $data = '';
-        $cronJobs = $server->cronJobs()
+        $cronJobs = $server->cronJobs()->with('component.environment.application', 'component.server', 'component.isolatedUser')
             ->where('user', $user)
             ->whereIn('status', [
                 CronjobStatus::READY,
@@ -111,7 +113,7 @@ class CronJob extends AbstractModel
             ->get();
         /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
-            $command = $user === 'root' ? $cronJob->command : self::wrapCommand($cronJob->command);
+            $command = $cronJob->component ? $cronJob->wrappedCommand() : ($user === 'root' ? $cronJob->command : self::wrapCommand($cronJob->command));
             $data .= $cronJob->frequency.' '.$command;
             if ($key != count($cronJobs) - 1) {
                 $data .= "\n";
@@ -119,6 +121,13 @@ class CronJob extends AbstractModel
         }
 
         return $data;
+    }
+
+    public function wrappedCommand(): string
+    {
+        return $this->component
+            ? ComponentShell::wrap($this->component, $this->command).' # vito-component-cron:'.$this->id
+            : self::wrapCommand($this->command);
     }
 
     public static function wrapCommand(string $command): string

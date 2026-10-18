@@ -17,6 +17,11 @@ class ValidateWebCapability
      */
     public function validate(ComponentCapability $capability, Component $component, Server $server): void
     {
+        if ($component->environment->components()->where('server_id', $server->id)->whereKeyNot($component->id)
+            ->whereHas('capabilities', fn ($query) => $query->where('capability', 'web'))->exists()) {
+            throw ValidationException::withMessages(['capabilities' => 'Only one web component per environment is allowed on each server.']);
+        }
+
         $preset = $component->environment->application->preset();
         $proxy = $preset->webMode() === WebMode::PROXY;
         $config = array_replace(['web_directory' => $preset->webRoot()], $capability->config ?? []);
@@ -44,6 +49,9 @@ class ValidateWebCapability
         }
 
         if ($proxy) {
+            if ($component->workers()->where('name', 'app')->whereNull('component_capability_id')->exists()) {
+                throw ValidationException::withMessages(['capabilities' => 'Rename the worker named "app" before adding the web capability.']);
+            }
             $config['port'] = $this->port($capability, $server, $config['port'] === null ? null : (int) $config['port']);
         }
 

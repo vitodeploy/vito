@@ -43,9 +43,19 @@ class Web extends AbstractComponentCapability
         app(ValidateWebCapability::class)->validate($this->capability, $component, $server);
     }
 
+    public function install(Component $component): void
+    {
+        app(\App\Actions\ComponentCapability\InstallWebCapability::class)->install($this->capability, $component);
+    }
+
+    public function uninstall(Component $component): void
+    {
+        app(\App\Actions\ComponentCapability\InstallWebCapability::class)->uninstall($this->capability, $component);
+    }
+
     public function surfaces(): array
     {
-        return ['domains'];
+        return isset($this->capability->config['start_command']) ? ['domains', 'workers'] : ['domains'];
     }
 
     public function form(AbstractRuntimePreset $preset): DynamicForm

@@ -42,7 +42,7 @@ class WorkerController extends Controller
         return Inertia::render('workers/index', [
             'workers' => WorkerResource::collection(
                 $server->workers()
-                    ->with('site:id,server_id,type_data')
+                    ->with('site:id,server_id,type_data', 'component.environment')
                     ->latest()
                     ->simplePaginate(config('web.pagination_size'))
             ),
@@ -58,7 +58,7 @@ class WorkerController extends Controller
         return Inertia::render('workers/index', [
             'workers' => WorkerResource::collection(
                 $site->workers()
-                    ->with('site:id,server_id,type_data')
+                    ->with('site:id,server_id,type_data', 'component.environment')
                     ->latest()
                     ->simplePaginate(config('web.pagination_size'))
             ),

@@ -2,6 +2,8 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\CronJob\DeleteCronJob;
+use App\Actions\Worker\DeleteWorker;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Jobs\Component\DeleteComponentJob;
@@ -54,6 +56,13 @@ class DeleteComponent
         }
 
         app(BroadcastComponentUpdate::class)->broadcast($component);
+        foreach ($component->capabilities()->get() as $capability) {
+            $capability->handler()->uninstall($component);
+        }
+        app(DeleteWorker::class)->deleteForComponent($component);
+        foreach ($component->cronJobs()->get() as $cronJob) {
+            app(DeleteCronJob::class)->remove($component->server, $cronJob);
+        }
         $keys = app(SyncComponentDeployKeys::class);
         $keys->remove($component);
         $keys->removeLocal($component);

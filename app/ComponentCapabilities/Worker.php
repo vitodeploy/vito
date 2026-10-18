@@ -26,6 +26,11 @@ class Worker extends AbstractComponentCapability
         return ['process_manager'];
     }
 
+    public function uninstall(\App\Models\Component $component): void
+    {
+        app(\App\Actions\Worker\DeleteWorker::class)->deleteForComponent($component);
+    }
+
     public function surfaces(): array
     {
         return ['workers'];

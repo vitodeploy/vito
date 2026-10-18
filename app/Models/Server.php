@@ -262,21 +262,25 @@ class Server extends AbstractModel
         return $this->components()->with(['environment.application', 'capabilities'])->get()
             ->filter(function (Component $component) use ($service): bool {
                 $preset = $component->environment->application->preset();
-                $version = $component->environment->runtime_version;
-                $services = $preset->requiredServices($version ?? '');
-
-                if (array_key_exists($service->type, $services)
-                    && ($services[$service->type] === null || $services[$service->type] === $service->version)) {
-                    return true;
+                $versions = array_unique([
+                    $component->environment->runtime_version ?? '',
+                    $component->installed_runtime_version ?? $component->environment->runtime_version ?? '',
+                ]);
+                foreach ($versions as $version) {
+                    $services = $preset->requiredServices($version);
+                    if (array_key_exists($service->type, $services)
+                        && ($services[$service->type] === null || $services[$service->type] === $service->version)) {
+                        return true;
+                    }
                 }
 
-                return $component->capabilities->contains(function (ComponentCapability $capability) use ($service, $preset, $version): bool {
+                return $component->capabilities->contains(function (ComponentCapability $capability) use ($service, $preset, $versions): bool {
                     if (! in_array($service->type, $capability->handler()->requiredServices($preset), true)) {
                         return false;
                     }
 
                     if ($capability->capability === 'web' && $service->type === 'php' && $preset->webMode() === WebMode::FPM) {
-                        return $version === $service->version;
+                        return in_array($service->version, $versions, true);
                     }
 
                     return true;

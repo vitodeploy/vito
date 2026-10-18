@@ -46,6 +46,7 @@ import EnvironmentForm from '@/pages/applications/components/environment-form';
 import DeleteApplicationResource from '@/pages/applications/components/delete-dialog';
 import AddComponent from '@/pages/applications/components/add-component';
 import DeleteComponent from '@/pages/applications/components/delete-component';
+import CapabilitiesDialog from '@/pages/applications/components/capabilities-dialog';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -110,6 +111,7 @@ export const dialogs = {
   deleteApplicationResource: DeleteApplicationResource,
   addComponent: AddComponent,
   deleteComponent: DeleteComponent,
+  componentCapabilities: CapabilitiesDialog,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

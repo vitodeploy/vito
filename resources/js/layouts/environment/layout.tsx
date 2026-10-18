@@ -34,7 +34,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -67,6 +67,8 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
       } else {
         router.reload(reloadOptions);
       }
+    } else if (event.type?.startsWith('worker.') && component && event.data?.component_id === component.id) {
+      router.reload(reloadOptions);
     } else if (event.type?.startsWith('component.') && event.data?.environment_id === environment.id) {
       if (event.data.application_status === 'deleting') {
         leave('/applications');

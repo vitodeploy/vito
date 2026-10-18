@@ -87,7 +87,7 @@ class IsolatedUser extends AbstractModel
             ->when($except instanceof Component, fn ($query) => $query->whereKeyNot($except->id))
             ->with(['environment.application', 'capabilities'])
             ->get()
-            ->contains(fn (Component $component): bool => $component->environment->runtime_version === $phpVersion
+            ->contains(fn (Component $component): bool => ($component->environment->runtime_version === $phpVersion || $component->installed_runtime_version === $phpVersion)
                 && $component->hasCapability('web')
                 && $component->environment->application->preset()->webMode() === WebMode::FPM);
     }

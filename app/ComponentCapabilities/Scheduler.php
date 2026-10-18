@@ -33,6 +33,16 @@ class Scheduler extends AbstractComponentCapability
         app(ValidateSchedulerCapability::class)->validate($this->capability, $component);
     }
 
+    public function install(Component $component): void
+    {
+        app(\App\Actions\ComponentCapability\InstallSchedulerCapability::class)->install($this->capability, $component);
+    }
+
+    public function uninstall(Component $component): void
+    {
+        app(\App\Actions\ComponentCapability\InstallSchedulerCapability::class)->uninstall($this->capability, $component);
+    }
+
     public function surfaces(): array
     {
         return ['cron_jobs'];

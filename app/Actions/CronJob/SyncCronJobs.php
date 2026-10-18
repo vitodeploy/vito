@@ -6,14 +6,41 @@ use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
 use App\Models\CronJob;
 use App\Models\Server;
+use Closure;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SyncCronJobs
 {
     /**
+     * @template T
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function run(Server $server, Closure $callback, bool $background = false): mixed
+    {
+        try {
+            return Cache::lock('cron-jobs:server-'.$server->id, 600)->block(0, fn () => DB::transaction($callback));
+        } catch (LockTimeoutException $e) {
+            if ($background) {
+                throw $e;
+            }
+            throw ValidationException::withMessages(['name' => 'Another cron job operation is in progress. Please retry.']);
+        }
+    }
+
+    /**
      * @throws SSHError
      */
-    public function sync(Server $server): void
+    public function sync(Server $server, bool $locked = false): void
     {
+        if (! $locked) {
+            $this->run($server, fn () => $this->sync($server, locked: true));
+
+            return;
+        }
         $users = $server->getSshUsers();
 
         foreach ($users as $user) {
@@ -30,11 +57,11 @@ class SyncCronJobs
         $crontabOutput = $this->getUserCrontab($server, $user);
 
         // Get all Vito-managed cronjobs for this user (including both server-level and site-level)
-        $vitoCronJobs = $server->cronJobs()
+        $vitoCronJobs = $server->cronJobs()->whereNull('component_id')
             ->where('user', $user)
             ->get();
 
-        $serverLevelCronJobs = $vitoCronJobs->where('site_id', null);
+        $serverLevelCronJobs = $vitoCronJobs->where('site_id', null)->where('component_id', null);
 
         if (empty($crontabOutput)) {
             // If crontab is empty, mark all server-level Vito cronjobs as disabled
@@ -90,6 +117,10 @@ class SyncCronJobs
             $frequency = $this->normalizeFrequency(implode(' ', array_slice($parts, 0, 5)));
             $command = $this->normalizeCommand($parts[5]);
 
+            if (preg_match('/ # vito-component-cron:\d+$/', $command)) {
+                continue;
+            }
+
             $serverCronJobs[] = [
                 'frequency' => $frequency,
                 'command' => $command,
@@ -105,7 +136,7 @@ class SyncCronJobs
                 $foundCronJobs[] = $matchingCronJob->id;
 
                 // Update status based on comment state (only for server-level cronjobs)
-                if ($matchingCronJob->site_id === null) {
+                if ($matchingCronJob->site_id === null && $matchingCronJob->component_id === null) {
                     if ($isCommented && $matchingCronJob->status === CronjobStatus::READY) {
                         $matchingCronJob->update(['status' => CronjobStatus::DISABLED]);
                     } elseif (! $isCommented && $matchingCronJob->status === CronjobStatus::DISABLED) {

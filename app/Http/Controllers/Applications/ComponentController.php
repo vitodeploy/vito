@@ -6,6 +6,10 @@ use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\GetComponentOptions;
 use App\Actions\Component\RetryComponentInstall;
+use App\Actions\Component\UpdateComponentCapabilities;
+use App\Tables\Applications\ComponentWorkerTable;
+use App\Tables\Applications\ComponentCronJobTable;
+use Spatie\RouteAttributes\Attributes\Put;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ComponentResource;
 use App\Models\Application;
@@ -57,12 +61,25 @@ class ComponentController extends Controller
 
         return Inertia::render('applications/environments/component', [
             'component' => new ComponentResource($component->load('server', 'capabilities')),
+            'options' => app(GetComponentOptions::class)->get($environment),
+            'workers' => ComponentWorkerTable::make($component->workers())->identifier('workers')->simplePaginate(),
+            'cronjobs' => ComponentCronJobTable::make($component->cronJobs())->identifier('cronjobs')->simplePaginate(),
             'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
             'can' => [
                 'update' => user()->can('update', [$component, $environment, $application]),
                 'delete' => user()->can('delete', [$component, $environment, $application]),
             ],
         ]);
+    }
+
+    #[Put('/{component}/capabilities', name: 'components.capabilities.update')]
+    public function capabilities(Request $request, Application $application, Environment $environment, Component $component): RedirectResponse
+    {
+        $this->authorize('update', [$component, $environment, $application]);
+
+        app(UpdateComponentCapabilities::class)->update($component, $request->all());
+
+        return back()->with('success', 'Capability changes queued.');
     }
 
     #[Post('/{component}/retry', name: 'components.retry')]

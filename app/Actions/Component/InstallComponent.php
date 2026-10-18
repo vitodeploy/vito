@@ -3,13 +3,11 @@
 namespace App\Actions\Component;
 
 use App\Actions\IsolatedUser\EnsureIsolatedUser;
-use App\DTOs\ToolingTargetDTO;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Models\Application;
 use App\Models\Component;
-use App\Tooling\ToolingRegistry;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -48,19 +46,25 @@ class InstallComponent
 
         $component->server->ssh($component->user)->exec(view('ssh.components.create-directories', ['component' => $component]), 'component-directories');
 
-        $toolId = $component->environment->application->preset()->tooling();
-        if ($toolId !== null) {
-            $tool = ToolingRegistry::find($toolId) ?? throw new RuntimeException('The runtime tooling is unavailable.');
-            $tool->install(new ToolingTargetDTO(
-                server: $component->server,
-                user: $component->user,
-                isolatedUser: $component->isolatedUser,
-                phpVersion: $component->environment->runtime_version,
-                configDir: $component->path,
-            ), $component->environment->runtime_version ?? '');
-        }
+        app(SyncComponentRuntime::class)->sync($component);
+        $application = $component->environment->application;
+        app(SyncComponentDeployKeys::class)->sync($component);
+        app(SyncComponentCapabilities::class)->sync($component);
 
-        app(SyncComponentDeployKeys::class)->handle($componentId, ComponentStatus::INSTALLING);
+        DB::transaction(function () use ($component, $application): void {
+            $current = Application::query()->lockForUpdate()->findOrFail($application->id);
+            $component->refresh();
+            if ($component->status !== ComponentStatus::INSTALLING) {
+                return;
+            }
+            if ($current->source_control_id !== $application->source_control_id || $current->repository !== $application->repository) {
+                throw new RuntimeException('The application repository changed during installation. Retry installation.');
+            }
+            $component->status = ComponentStatus::READY;
+            $component->last_error = null;
+            $component->save();
+        });
+        app(BroadcastComponentUpdate::class)->broadcast($component);
     }
 
     public function failed(int $componentId): void

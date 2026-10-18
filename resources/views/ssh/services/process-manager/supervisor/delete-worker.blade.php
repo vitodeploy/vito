@@ -1,6 +1,8 @@
+@if (! ($component ?? false))
 if ! sudo supervisorctl stop {{ $id }}:*; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
+@endif
 
 if ! sudo rm -rf ~/.logs/workers/{{ $id }}.log; then
     echo 'VITO_SSH_ERROR' && exit 1

@@ -5,8 +5,10 @@ namespace App\Services\ProcessManager;
 use App\DTOs\ServiceLog;
 use App\Enums\WorkerStatus;
 use App\Exceptions\SSHError;
+use App\Helpers\ComponentShell;
 use App\Models\Worker;
 use App\Services\HasLogs;
+use Illuminate\Support\HtmlString;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager implements HasLogs
@@ -78,14 +80,14 @@ class Supervisor extends AbstractProcessManager implements HasLogs
             "/etc/supervisor/conf.d/{$worker->id}.conf",
             view('ssh.services.process-manager.supervisor.worker', [
                 'name' => (string) $worker->id,
-                'directory' => $worker->site?->path,
-                'command' => $worker->command,
+                'directory' => $worker->component_id === null ? $worker->site?->path : null,
+                'command' => $worker->component ? new HtmlString(ComponentShell::wrap($worker->component, $worker->command)) : $worker->command,
                 'user' => $worker->user,
                 'autoStart' => var_export($worker->auto_start, true),
                 'autoRestart' => var_export($worker->auto_restart, true),
                 'numprocs' => (string) $worker->numprocs,
                 'logFile' => $worker->getLogFile(),
-                'environment' => self::formatEnvironment($worker->effectiveEnvironment()),
+                'environment' => $worker->component_id === null ? self::formatEnvironment($worker->effectiveEnvironment()) : '',
             ]),
             'root'
         );
@@ -101,6 +103,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.create-worker', [
                 'id' => $worker->id,
+                'start' => $worker->component_id === null || $worker->auto_start,
                 'logFile' => $worker->getLogFile(),
                 'user' => $worker->user,
             ]),
@@ -117,6 +120,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.delete-worker', [
                 'id' => $id,
+                'component' => $this->service->server->workers()->whereKey($id)->whereNotNull('component_id')->exists(),
             ]),
             'delete-worker',
             $siteId
@@ -191,9 +195,10 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function restartAll(?int $siteId = null): void
     {
-        if ($siteId !== null) {
+        if ($siteId !== null || $this->service->server->components()->exists()) {
             $ids = $this->service->server->workers()
-                ->where('site_id', $siteId)
+                ->whereNull('component_id')
+                ->when($siteId !== null, fn ($query) => $query->where('site_id', $siteId))
                 ->whereNotIn('status', [WorkerStatus::CREATING, WorkerStatus::DELETING])
                 ->pluck('id')
                 ->all();

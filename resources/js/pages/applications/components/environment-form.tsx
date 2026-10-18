@@ -46,7 +46,7 @@ export default function EnvironmentForm({ open, onOpenChange, application, envir
         <Form id="environment-form" className="p-4" onSubmit={submit}>
           <FormFields>
             {!preset && <p className="text-destructive text-sm">This runtime preset is unavailable. Restore its plugin before editing environments.</p>}
-            <EnvironmentFields preset={preset} data={form.data} errors={form.errors} runtimeLocked={(environment?.components_count ?? 0) > 0} onChange={(name, value) => form.setData(name, value)} />
+            <EnvironmentFields preset={preset} data={form.data} errors={form.errors} onChange={(name, value) => form.setData(name, value)} />
             {environment && <PrimaryComponentPicker value={String(form.data.primary_component_id)} onChange={(value) => form.setData('primary_component_id', value)} candidates={primaryCandidates} error={form.errors.primary_component_id} />}
           </FormFields>
         </Form>

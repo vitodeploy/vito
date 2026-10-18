@@ -52,3 +52,15 @@ test('non transient error fails the job', function () {
 
     $job->execute();
 });
+
+test('nested cache lock contention releases the job and its outer lock', function () {
+    $job = vitoPestFeatureUniqueQueueTestMakeJob(fn () => throw new \Illuminate\Contracts\Cache\LockTimeoutException);
+    $queueJob = Mockery::mock(JobContract::class);
+    $queueJob->shouldReceive('release')->once()->with(30);
+    $queueJob->shouldNotReceive('fail');
+    $job->setJob($queueJob);
+
+    $job->execute();
+
+    expect(\Illuminate\Support\Facades\Cache::lock('unique-queue:unique-queue-test', 60)->get(fn () => true))->toBeTrue();
+});

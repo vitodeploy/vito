@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
  * @property string $path
  * @property ComponentStatus $status
  * @property ?string $last_error
+ * @property ?string $installed_runtime_version
  * @property bool $needs_redeploy
  * @property ?string $deploy_key_id
  * @property ?string $ssh_key

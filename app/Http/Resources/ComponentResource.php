@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Component;
+use App\Models\ComponentCapability;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,6 +33,15 @@ class ComponentResource extends JsonResource
             'needs_redeploy' => $this->needs_redeploy,
             'ssh_key' => $this->ssh_key,
             'capabilities' => $this->whenLoaded('capabilities', fn (): array => $this->capabilities->pluck('capability')->all()),
+            'capability_configs' => $this->whenLoaded('capabilities', fn (): array => $this->capabilities->map(fn (ComponentCapability $capability): array => [
+                'capability' => $capability->capability,
+                'config' => $capability->config ?? [],
+                'status' => $capability->status->getText(),
+                'status_color' => $capability->status->getColor(),
+            ])->all()),
+            'surfaces' => $this->whenLoaded('capabilities', fn (): array => $this->capabilities
+                ->filter(fn (ComponentCapability $capability): bool => isset(config('component.capabilities', [])[$capability->capability]))
+                ->flatMap(fn (ComponentCapability $capability): array => $capability->handler()->surfaces())->unique()->values()->all()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

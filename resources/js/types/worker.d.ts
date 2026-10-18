@@ -2,6 +2,9 @@ export interface Worker {
   id: number;
   server_id: number;
   site_id: number | null;
+  component_id: number | null;
+  component_url?: string | null;
+  managed: boolean;
   name: string;
   command: string;
   user: string;

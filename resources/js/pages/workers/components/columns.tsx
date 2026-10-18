@@ -24,7 +24,7 @@ function Delete({ worker }: { worker: Worker }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: `/servers/${worker.server_id}/${worker.id}`,
+          url: worker.component_url ? `${worker.component_url}/workers/${worker.id}` : `/servers/${worker.server_id}/${worker.id}`,
         })
       }
     >
@@ -43,14 +43,14 @@ function BootstrapLockedItem({ label, destructive }: { label: string; destructiv
           </DropdownMenuItem>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="left">Site managed application worker</TooltipContent>
+      <TooltipContent side="left">Managed application process — edit its capability or site instead</TooltipContent>
     </Tooltip>
   );
 }
 
-function Actions({ worker }: { worker: Worker }) {
+export function Actions({ worker, canManage = true }: { worker: Worker; canManage?: boolean }) {
   const dialog = useDialog();
-  const locked = worker.is_site_bootstrap;
+  const locked = worker.is_site_bootstrap || worker.managed;
 
   return (
     <div className="flex items-center justify-end">
@@ -62,18 +62,18 @@ function Actions({ worker }: { worker: Worker }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {locked ? (
+          {canManage && (locked ? (
             <BootstrapLockedItem label="Edit" />
           ) : (
             <DropdownMenuItem onSelect={() => dialog.workerForm.open({ serverId: worker.server_id, worker })}>Edit</DropdownMenuItem>
-          )}
-          <WorkerAction type="start" worker={worker} />
+          ))}
+          {canManage && !worker.managed && <><WorkerAction type="start" worker={worker} />
           <WorkerAction type="stop" worker={worker} />
-          <WorkerAction type="restart" worker={worker} />
+          <WorkerAction type="restart" worker={worker} /></>}
           <WorkerLogs worker={worker} />
-          <WorkerEnvironment worker={worker} />
+          {canManage && !worker.component_id && <WorkerEnvironment worker={worker} />}
           <DropdownMenuSeparator />
-          {locked ? <BootstrapLockedItem label="Delete" destructive /> : <Delete worker={worker} />}
+          {canManage && (locked ? <BootstrapLockedItem label="Delete" destructive /> : <Delete worker={worker} />)}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

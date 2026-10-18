@@ -20,10 +20,8 @@ export default function EnvironmentFields({
   data,
   errors,
   onChange,
-  runtimeLocked = false,
 }: {
   preset?: RuntimePreset;
-  runtimeLocked?: boolean;
   data: EnvironmentFormData;
   errors: Record<string, string | undefined>;
   onChange: (name: string, value: DynamicFieldValue) => void;
@@ -45,14 +43,7 @@ export default function EnvironmentFields({
         <Input id="environment-branch" value={data.branch} onChange={(e) => onChange('branch', e.target.value)} />
         <InputError message={errors.branch} />
       </FormField>
-      {fields.map((field) => runtimeLocked && field.name === 'runtime_version' ? (
-        <FormField key={field.name}>
-          <Label htmlFor="environment-runtime">Runtime version</Label>
-          <Input id="environment-runtime" value={data.runtime_version} disabled />
-          <p className="text-muted-foreground text-sm">Remove all components before changing the runtime version.</p>
-          <InputError message={errors.runtime_version} />
-        </FormField>
-      ) : (
+      {fields.map((field) => (
         <DynamicField
           key={`${preset?.id}-${field.name}`}
           config={field}
