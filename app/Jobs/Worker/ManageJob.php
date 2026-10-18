@@ -27,7 +27,7 @@ class ManageJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->worker->server_id}", function () {
+        $this->run("server-{$this->worker->server_id}", fn () => app(\App\Actions\Component\ValidateComponentProcess::class)->runQueued($this->worker->component, function () {
             $this->worker->refresh();
             app(\App\Actions\Worker\ManageWorker::class)->validate($this->worker, $this->action !== 'stop');
             /** @var Service $service */
@@ -43,7 +43,7 @@ class ManageJob implements ShouldQueue
             if ($this->worker->site) {
                 app(BroadcastSiteUpdate::class)->broadcast($this->worker->site);
             }
-        });
+        }));
     }
 
     public function failed(Throwable $e): void

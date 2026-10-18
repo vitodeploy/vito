@@ -153,7 +153,7 @@ test('deploy classic', function () {
         'status' => DeploymentStatus::FINISHED,
     ]);
 
-    SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
+    SSH::assertExecutedContains('cd -- '.escapeshellarg('/home/vito/'.$this->site->domain));
     SSH::assertExecutedContains('git pull');
 
     Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
@@ -424,7 +424,7 @@ test('delete release', function () {
         'id' => $oldRelease->id,
     ]);
 
-    SSH::assertExecutedContains('rm -rf '.$this->site->basePath().'/releases/20240901000000');
+    SSH::assertExecutedContains('rm -rf -- '.escapeshellarg($this->site->basePath().'/releases/20240901000000'));
 });
 
 test('disable auto deployment', function () {

@@ -208,12 +208,9 @@ class SSH
             }
             $command = $envPrefix.'set -e; '.$command;
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
-                $command = <<<BASH
-                sudo -u {$this->asUser} bash <<'EOF'
-                cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }
-                {$command}
-                EOF
-                BASH;
+                $command = 'sudo -u '.escapeshellarg($this->asUser).' bash -c '.escapeshellarg(
+                    "cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }\n".$command
+                );
             }
 
             $this->connection->setTimeout($timeout);

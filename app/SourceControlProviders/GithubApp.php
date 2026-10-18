@@ -106,7 +106,7 @@ class GithubApp extends AbstractSourceControlProvider
      */
     public function getLastCommit(string $repo, string $branch): ?array
     {
-        $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.$branch;
+        $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.rawurlencode($branch);
         $res = $this->getClient()->get($url);
         $this->handleResponseErrors($res, $repo);
 

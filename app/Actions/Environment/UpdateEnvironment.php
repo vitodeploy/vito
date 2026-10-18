@@ -34,6 +34,9 @@ class UpdateEnvironment
             }
 
             $runtimeChanged = ($input['runtime_version'] ?? null) !== $environment->runtime_version;
+            if ($runtimeChanged || $input['branch'] !== $environment->branch || (array_key_exists('primary_component_id', $input) && $input['primary_component_id'] !== $environment->primary_component_id)) {
+                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, $runtimeChanged ? 'runtime_version' : 'branch');
+            }
             if ($runtimeChanged && $environment->components()->where('status', '!=', ComponentStatus::READY)->exists()) {
                 throw ValidationException::withMessages(['runtime_version' => 'All components must be ready before changing the runtime version.']);
             }

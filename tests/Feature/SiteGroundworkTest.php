@@ -276,5 +276,5 @@ test('release template accepts paths without a site', function () {
         'releasePath' => '/home/runtime/app/releases/123',
     ])->render();
 
-    expect($script)->toContain('ln -sfn /home/runtime/app/releases/123 /home/runtime/app/current', 'Version 123 activated!');
+    expect($script)->toContain("ln -sfn -- '/home/runtime/app/releases/123' '/home/runtime/app/current'", 'Version 123 activated!');
 });

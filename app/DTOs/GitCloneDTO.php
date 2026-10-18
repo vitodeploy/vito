@@ -3,6 +3,7 @@
 namespace App\DTOs;
 
 use App\Models\Server;
+use App\Models\ServerLog;
 
 final readonly class GitCloneDTO
 {
@@ -21,5 +22,6 @@ final readonly class GitCloneDTO
         public array $variables = [],
         public ?string $commit = null,
         public ?int $siteId = null,
+        public ?ServerLog $log = null,
     ) {}
 }

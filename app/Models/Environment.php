@@ -24,6 +24,12 @@ use Illuminate\Support\Collection;
  * @property Collection<int, Component> $components
  * @property Collection<int, DeploymentScript> $deploymentScripts
  * @property Collection<int, EnvironmentVariable> $variables
+ * @property ?int $live_run_id
+ * @property ?EnvironmentDeployment $liveRun
+ * @property Collection<int, EnvironmentDeployment> $deployments
+ * @property ?list<string> $shared_paths
+ * @property int $keep_releases
+ * @property int $variables_version
  * @property bool $needs_redeploy
  */
 class Environment extends AbstractModel
@@ -43,6 +49,10 @@ class Environment extends AbstractModel
         'primary_component_id' => 'integer',
         'primary_component_initialized' => 'boolean',
         'status' => EnvironmentStatus::class,
+        'live_run_id' => 'integer',
+        'shared_paths' => 'array',
+        'keep_releases' => 'integer',
+        'variables_version' => 'integer',
     ];
 
     /**
@@ -75,6 +85,18 @@ class Environment extends AbstractModel
     public function variables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
+    }
+
+    /** @return HasMany<EnvironmentDeployment, covariant $this> */
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(EnvironmentDeployment::class);
+    }
+
+    /** @return BelongsTo<EnvironmentDeployment, covariant $this> */
+    public function liveRun(): BelongsTo
+    {
+        return $this->belongsTo(EnvironmentDeployment::class, 'live_run_id');
     }
 
     /**

@@ -211,7 +211,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $res = Http::withHeaders($this->getAuthenticationHeaders())
-            ->get($this->apiUrl."/repositories/$repo/commits?include=".$branch);
+            ->get($this->apiUrl."/repositories/$repo/commits", ['include' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 

@@ -11,6 +11,7 @@ class MarkEnvironmentForRedeploy
 {
     public function mark(Environment $environment): void
     {
+        $environment->increment('variables_version');
         $environment->components()->update(['needs_redeploy' => true]);
         $event = new SocketEventDTO(
             projectId: $environment->application->project_id,

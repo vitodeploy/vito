@@ -32,7 +32,11 @@ class CreateEnvironment
             ]);
             $environment->slug = Str::slug($input['name']);
             $environment->status = EnvironmentStatus::READY;
+            $environment->shared_paths = $application->preset()->sharedPaths();
             $environment->save();
+            foreach ($application->preset()->defaultScripts() as $stage => $content) {
+                $environment->deploymentScripts()->create(['name' => $stage, 'content' => $content]);
+            }
 
             return $environment;
         });

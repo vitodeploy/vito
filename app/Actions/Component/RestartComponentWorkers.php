@@ -14,5 +14,8 @@ class RestartComponentWorkers
         }
 
         app(RestartWorkers::class)->restart($component->server, $component->workers()->with('component.environment.application', 'component.isolatedUser')->get());
+        if ($component->workers()->where('status', '!=', \App\Enums\WorkerStatus::RUNNING)->exists()) {
+            throw new \RuntimeException('Component processes failed to restart.');
+        }
     }
 }

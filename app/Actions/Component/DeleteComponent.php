@@ -25,6 +25,7 @@ class DeleteComponent
         DB::transaction(function () use ($component, $input): void {
             Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($component->environment_id);
+            app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'component');
             $component->refresh();
             Validator::make($input, [
                 'primary_component_id' => ['nullable', 'integer', Rule::exists('components', 'id')

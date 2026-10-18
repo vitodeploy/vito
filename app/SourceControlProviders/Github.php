@@ -142,14 +142,8 @@ class Github extends AbstractSourceControlProvider
      */
     public function getLastCommit(string $repo, string $branch): ?array
     {
-        $cacheKey = 'github_commit_'.md5($repo.$branch.$this->data()['token']);
-
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
         try {
-            $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.$branch;
+            $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.rawurlencode($branch);
             $res = $this->getClient()->get($url);
             $this->handleResponseErrors($res, $repo);
 
@@ -165,8 +159,6 @@ class Github extends AbstractSourceControlProvider
                         'url' => $commit['html_url'] ?? null,
                     ],
                 ];
-
-                Cache::put($cacheKey, $result, 60); // Cache for 1 minute
 
                 return $result;
             }

@@ -21,6 +21,10 @@ class InstallComponentJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->serverId}", fn () => app(InstallComponent::class)->install($this->componentId));
+        $component = \App\Models\Component::query()->find($this->componentId);
+        if ($component?->status === \App\Enums\ComponentStatus::READY && $component->type === \App\Enums\ComponentType::APP) {
+            app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->join($component->environment);
+        }
     }
 
     public function failed(Exception $e): void

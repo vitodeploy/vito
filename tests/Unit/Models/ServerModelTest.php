@@ -43,7 +43,7 @@ test('connection failed', function () {
     ]);
 });
 
-test('exec wraps command when using custom user', function () {
+test('exec keeps multiline commands inside the target user shell', function (string $command) {
     $ssh = (new SSHHelper)->init($this->server, 'deploy');
 
     $connection = $this->getMockBuilder(SSH2::class)
@@ -79,22 +79,13 @@ test('exec wraps command when using custom user', function () {
     $reflection = new ReflectionProperty(SSHHelper::class, 'connection');
     $reflection->setValue($ssh, $connection);
 
-    $command = <<<'BASH'
-pwd
-ls -la
-BASH;
-
     $output = $ssh->exec($command);
     $ssh->disconnect();
 
-    $expected = <<<'BASH'
-sudo -u deploy bash <<'EOF'
-cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }
-set -e; pwd
-ls -la
-EOF
-BASH;
+    $expected = "sudo -u 'deploy' bash -c ".escapeshellarg(
+        "cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }\nset -e; ".$command
+    );
 
     expect($output)->toBe('');
-    expect($executedCommand)->toBe($expected);
-});
+    expect($executedCommand)->toBe($expected)->not->toContain("bash <<'EOF'");
+})->with(["pwd\nls -la", "printf '%s' 'main#\nEOF\ntouch /tmp/ssh-escape\n#'"]);

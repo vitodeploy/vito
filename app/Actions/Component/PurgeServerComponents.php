@@ -15,16 +15,27 @@ class PurgeServerComponents
      */
     public function purge(Server $server): array
     {
-        $server = Server::query()->lockForUpdate()->findOrFail($server->id);
-        $components = $server->components()->lockForUpdate()
-            ->get(['id', 'server_id', 'environment_id', 'deploy_key_source_control_id', 'deploy_key_repository', 'deploy_key_id', 'ssh_key']);
-        $departure = [
-            'environments' => $components->pluck('environment_id')->unique()->values()->all(),
-            'keys' => $components->filter(fn ($component) => $component->deploy_key_id !== null || $component->deploy_key_source_control_id !== null)->values()->toArray(),
-        ];
-        $server->components()->delete();
+        return DB::transaction(function () use ($server): array {
+            $environmentIds = $server->components()->toBase()->pluck('environment_id')->unique();
+            \App\Models\Application::query()->whereHas('environments', fn ($query) => $query->whereKey($environmentIds))->orderBy('id')->lockForUpdate()->get();
+            $environments = Environment::query()->whereKey($environmentIds)->orderBy('id')->lockForUpdate()->get();
+            $server = Server::query()->lockForUpdate()->findOrFail($server->id);
+            $components = $server->components()->lockForUpdate()
+                ->get(['id', 'server_id', 'environment_id', 'deploy_key_source_control_id', 'deploy_key_repository', 'deploy_key_id', 'ssh_key']);
+            if ($components->pluck('environment_id')->diff($environments->modelKeys())->isNotEmpty()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['server' => 'Server components changed during deletion. Please retry.']);
+            }
+            foreach ($environments as $environment) {
+                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'server');
+            }
+            $departure = [
+                'environments' => $components->pluck('environment_id')->unique()->values()->all(),
+                'keys' => $components->filter(fn ($component) => $component->deploy_key_id !== null || $component->deploy_key_source_control_id !== null)->values()->toArray(),
+            ];
+            $server->components()->delete();
 
-        return $departure;
+            return $departure;
+        });
     }
 
     /**

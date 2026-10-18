@@ -182,7 +182,7 @@ class Gitea extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/repos/'.$repo.'/commits?sha='.$branch);
+            ->get($this->getApiUrl().'/repos/'.$repo.'/commits', ['sha' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 

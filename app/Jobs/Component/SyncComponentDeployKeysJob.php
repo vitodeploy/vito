@@ -21,7 +21,7 @@ class SyncComponentDeployKeysJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->serverId}", fn () => app(SyncComponentDeployKeys::class)->handle($this->componentId));
+        $this->run("server-{$this->serverId}", fn () => $this->run("component-{$this->componentId}", fn () => app(SyncComponentDeployKeys::class)->handle($this->componentId, \App\Enums\ComponentStatus::PENDING)));
     }
 
     public function failed(Exception $e): void

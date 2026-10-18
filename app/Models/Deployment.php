@@ -3,12 +3,19 @@
 namespace App\Models;
 
 use App\Enums\DeploymentStatus;
+use App\Enums\DeploymentStage;
 use App\Traits\HasExclusiveOwner;
 use Database\Factories\DeploymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property ?int $environment_deployment_id
+ * @property ?EnvironmentDeployment $environmentDeployment
+ * @property ?DeploymentStage $current_stage
+ * @property ?int $previous_deployment_id
+ * @property ?Deployment $previousDeployment
+ * @property bool $release_started
  * @property ?int $site_id
  * @property ?int $component_id
  * @property ?int $deployment_script_id
@@ -51,6 +58,10 @@ class Deployment extends AbstractModel
         'commit_data' => 'json',
         'active' => 'boolean',
         'status' => DeploymentStatus::class,
+        'environment_deployment_id' => 'integer',
+        'current_stage' => DeploymentStage::class,
+        'previous_deployment_id' => 'integer',
+        'release_started' => 'boolean',
     ];
 
     /**
@@ -123,16 +134,35 @@ class Deployment extends AbstractModel
         return $this->belongsTo(ServerLog::class, 'log_id');
     }
 
+    /** @return BelongsTo<EnvironmentDeployment, covariant $this> */
+    public function environmentDeployment(): BelongsTo
+    {
+        return $this->belongsTo(EnvironmentDeployment::class);
+    }
+
+    /** @return BelongsTo<Deployment, covariant $this> */
+    public function previousDeployment(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'previous_deployment_id');
+    }
+
     public function path(): string
     {
-        return $this->site->basePath().($this->release ? '/releases/'.$this->release : '');
+        return ($this->component ?? $this->site)->basePath().($this->release ? '/releases/'.$this->release : '');
     }
 
     public function remove(bool $onlyRelease = false): void
     {
+        if ($this->component && ($this->active || ! $this->environmentDeployment?->status->isTerminal())) {
+            return;
+        }
         if ($this->release) {
-            $site = $this->site;
-            $site->server->ssh($site->user)->exec('rm -rf '.$this->path());
+            $owner = $this->component ?? $this->site;
+            $command = 'rm -rf -- '.escapeshellarg($this->path());
+            if ($this->component) {
+                $command .= ' && rm -f -- '.escapeshellarg($this->component->sharedPath().'/.env-'.$this->id.'.prepared');
+            }
+            $owner->server->ssh($owner->user)->exec($command);
             $this->release = null;
         }
 
@@ -145,9 +175,23 @@ class Deployment extends AbstractModel
         $this->delete();
     }
 
+    public function pruneOldReleases(): void
+    {
+        if (! $this->component || ! $this->environmentDeployment?->status->isTerminal()) {
+            return;
+        }
+        $releases = $this->component->deployments()->with('environmentDeployment')->whereNotNull('release')->orderByDesc('id')->get();
+        $protected = $releases->filter(fn (Deployment $deployment): bool => ! $deployment->environmentDeployment?->status->isTerminal())->pluck('previous_deployment_id');
+        foreach ($releases->skip($this->component->environment->keep_releases) as $deployment) {
+            if (! $protected->contains($deployment->id)) {
+                $deployment->remove(true);
+            }
+        }
+    }
+
     public function activate(): void
     {
-        $this->site->deployments()->update(['active' => false]);
+        ($this->component ?? $this->site)->deployments()->update(['active' => false]);
         $this->active = true;
         $this->save();
     }

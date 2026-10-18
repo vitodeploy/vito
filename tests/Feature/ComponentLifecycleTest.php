@@ -10,6 +10,7 @@ use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\SyncComponentDeployKeys;
 use App\Actions\Environment\DeleteEnvironment;
 use App\DTOs\ToolingTargetDTO;
+use App\Enums\ComponentStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Jobs\Application\DeleteApplicationJob;
@@ -166,8 +167,12 @@ test('repository changes remove keys from their original source and register the
     app(InstallComponent::class)->install($this->component->id);
     app(UpdateApplication::class)->update($this->application, ['name' => $this->application->name, 'source_control_id' => $this->site->source_control_id, 'repository' => 'other/repo'], $this->user);
     Queue::assertPushed(SyncComponentDeployKeysJob::class);
+    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => ComponentStatus::PENDING]);
+    $this->environment->primary_component_id = $this->component->id;
+    $this->environment->save();
+    expect(fn () => app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->run($this->environment))->toThrow(ValidationException::class);
     (new SyncComponentDeployKeysJob($this->component->id, $this->server->id))->handle();
-    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_repository' => 'other/repo', 'needs_redeploy' => true]);
+    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => ComponentStatus::READY, 'deploy_key_repository' => 'other/repo', 'needs_redeploy' => true]);
     Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), '/organization/repository/keys/123'));
     Http::assertSent(fn ($request) => $request->method() === 'POST' && str_contains($request->url(), '/other/repo/keys'));
 });
@@ -178,6 +183,8 @@ test('changing to github app removes old provider and local keys', function () {
     app(SyncComponentDeployKeys::class)->handle($this->component->id);
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'ssh_key' => null, 'deploy_key_id' => null]);
     SSH::assertExecutedContains('rm -f -- "$HOME/.ssh/component_'.$this->component->id.'"');
+    SSH::assertExecutedContains('flock -w 60 9 || exit 1');
+    SSH::assertExecutedContains(') 9>"$HOME/.ssh/config.vito.lock"');
 });
 
 test('purging servers queues provider cleanup without remote teardown and records safe failures', function () {

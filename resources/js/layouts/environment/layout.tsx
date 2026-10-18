@@ -3,7 +3,8 @@ import { router, usePage, usePoll } from '@inertiajs/react';
 import { ReloadOptions } from '@inertiajs/core';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
-import { ArrowLeftIcon, BoxesIcon, HomeIcon, KeyRoundIcon, RefreshCwIcon } from 'lucide-react';
+import { ArrowLeftIcon, BoxesIcon, HomeIcon, KeyRoundIcon, RefreshCwIcon, RocketIcon, SettingsIcon } from 'lucide-react';
+import DeployButton from '@/pages/applications/components/deploy-button';
 import Container from '@/components/container';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { NavItem } from '@/types';
@@ -36,7 +37,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs', 'variables', 'warnings', 'canUpdate'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs', 'variables', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -69,6 +70,8 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
       } else {
         router.reload(reloadOptions);
       }
+    } else if (event.type === 'environment-deployment.updated' && event.data?.environment_id === environment.id) {
+      router.reload(reloadOptions);
     } else if (event.type?.startsWith('worker.') && component && event.data?.component_id === component.id) {
       router.reload(reloadOptions);
     } else if (event.type?.startsWith('component.') && event.data?.environment_id === environment.id) {
@@ -88,6 +91,8 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     { title: 'Overview', href: baseUrl, onlyActivePath: baseUrl, icon: HomeIcon },
     { title: 'Components', href: `${baseUrl}/components`, icon: BoxesIcon },
     { title: 'Variables', href: `${baseUrl}/variables`, icon: KeyRoundIcon },
+    { title: 'Deployments', href: `${baseUrl}/deployments`, icon: RocketIcon },
+    { title: 'Deployment settings', href: `${baseUrl}/deployment-settings`, icon: SettingsIcon },
   ];
 
   return (
@@ -96,7 +101,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
         <Alert>
           <RefreshCwIcon />
           <AlertTitle>Redeploy to apply</AlertTitle>
-          <AlertDescription>This environment has changes that will take effect on the next deploy.</AlertDescription>
+          <AlertDescription className="flex flex-col items-start gap-3"><p>This environment has changes that will take effect on the next deploy.</p><DeployButton application={application} environment={environment} /></AlertDescription>
         </Alert>
       </Container>}
       {children}

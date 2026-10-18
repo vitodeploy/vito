@@ -9,6 +9,7 @@ import { PencilIcon, Trash2Icon } from 'lucide-react';
 import EnvironmentLayout from '@/layouts/environment/layout';
 import { useDialog } from '@/hooks/use-dialog';
 import { Application, Environment, PrimaryCandidate } from '@/types/application';
+import DeployButton from '@/pages/applications/components/deploy-button';
 
 export default function ShowEnvironment() {
   const { application, environment, primaryCandidates, can } = usePage<{
@@ -32,7 +33,8 @@ export default function ShowEnvironment() {
             <Badge variant="warning">Beta</Badge>
             <Badge variant={environment.status_color}>{environment.status}</Badge>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
+            <DeployButton application={application} environment={environment} />
             {can.update && ready && <Button variant="outline" onClick={() => dialog.editEnvironment.open({ application, environment, primaryCandidates })}><PencilIcon />Edit</Button>}
             {can.delete && application.status === 'ready' && environment.status !== 'deleting' && <Button variant="destructive" onClick={() => dialog.deleteApplicationResource.open({ application, environment })}><Trash2Icon />{environment.status === 'deletion_failed' ? 'Retry deletion' : 'Delete'}</Button>}
           </div>
@@ -49,7 +51,7 @@ export default function ShowEnvironment() {
             </dl>
           </CardContent>
         </Card>
-        <p className="text-muted-foreground text-sm">Deployment controls will be available in a future update.</p>
+        <Link href={`${baseUrl}/deployments`} className="text-sm hover:underline">View deployments</Link>
       </Container>
     </EnvironmentLayout>
   );

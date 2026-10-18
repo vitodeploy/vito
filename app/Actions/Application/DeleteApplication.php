@@ -33,6 +33,10 @@ class DeleteApplication
                 throw ValidationException::withMessages(['name' => 'Application teardown is already in progress.']);
             }
 
+            foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
+                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
+            }
+
             if (! Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()) {
                 $application->delete();
                 $this->broadcast($application, true);

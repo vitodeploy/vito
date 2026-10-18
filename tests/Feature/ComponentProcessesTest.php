@@ -66,6 +66,58 @@ test('component shell quotes commands and paths without interpolating variables 
     expect($explicit)->toContain("cd -- '/tmp/staged release' || exit 1;", "'/tmp/env' /bin/bash -p -c ")->not->toContain('exit 0');
 });
 
+test('manual component process mutations reject pending and running deployments', function (string $operation, \App\Enums\EnvironmentDeploymentStatus $status) {
+    $worker = app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
+    \App\Models\EnvironmentDeployment::factory()->for($this->environment)->create(['status' => $status]);
+    $mutation = match ($operation) {
+        'create' => fn () => app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component),
+        'edit' => fn () => app(\App\Actions\Worker\EditWorker::class)->edit($worker, $this->workerInput),
+        'delete' => fn () => app(\App\Actions\Worker\DeleteWorker::class)->delete($worker),
+        'stop' => fn () => app(\App\Actions\Worker\ManageWorker::class)->stop($worker),
+        'cron' => fn () => app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component),
+    };
+    expect($mutation)->toThrow(\Illuminate\Validation\ValidationException::class);
+    SSH::assertNotExecutedContains('');
+    $this->assertDatabaseHas('workers', ['id' => $worker->id]);
+})->with(['create', 'edit', 'delete', 'stop', 'cron'])->with([\App\Enums\EnvironmentDeploymentStatus::PENDING, \App\Enums\EnvironmentDeploymentStatus::RUNNING]);
+
+test('queued worker mutations wait for active deployment completion before touching processes', function (string $operation) {
+    $worker = app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
+    $run = \App\Models\EnvironmentDeployment::factory()->for($this->environment)->create(['status' => \App\Enums\EnvironmentDeploymentStatus::RUNNING]);
+    $makeJob = fn () => match ($operation) {
+        'create' => new CreateJob($worker),
+        'edit' => new EditJob($worker),
+        'stop' => new ManageJob($worker, 'stop', WorkerStatus::STOPPED),
+    };
+    $job = $makeJob()->withFakeQueueInteractions();
+    $job->handle();
+    $job->assertReleased(30);
+    SSH::assertNotExecutedContains('');
+    $run->status = \App\Enums\EnvironmentDeploymentStatus::FINISHED;
+    $run->save();
+    $job = $makeJob()->withFakeQueueInteractions();
+    $job->handle();
+    $job->assertNotReleased();
+    $job->assertNotFailed();
+    $this->assertDatabaseHas('workers', ['id' => $worker->id, 'status' => WorkerStatus::STOPPED]);
+    SSH::assertExecutedContains('supervisorctl');
+})->with(['create', 'edit', 'stop']);
+
+test('worker operations share the deployment component mutex', function () {
+    $worker = app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
+    $lock = \Illuminate\Support\Facades\Cache::lock('unique-queue:component-'.$this->component->id, 60);
+    $lock->get();
+    try {
+        expect(fn () => app(\App\Actions\Worker\DeleteWorker::class)->delete($worker))->toThrow(\Illuminate\Validation\ValidationException::class);
+        $job = (new CreateJob($worker))->withFakeQueueInteractions();
+        $job->handle();
+        $job->assertReleased(30);
+        SSH::assertNotExecutedContains('');
+    } finally {
+        $lock->release();
+    }
+});
+
 test('component workers are installed stopped with a wrapped command and no per-worker environment', function () {
     $worker = app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
     $worker->environment = [['key' => 'SECRET', 'value' => 'never-in-process-config', 'is_secret' => true]];
@@ -327,7 +379,11 @@ test('component restart handles an absent process manager without dereferencing 
     $worker = $hasWorkers ? app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component) : null;
     $this->server->services()->where('type', 'process_manager')->delete();
     $this->mock(HasComponentRelease::class)->shouldReceive('check')->andReturn(true);
-    app(RestartComponentWorkers::class)->restart($this->component);
+    if ($hasWorkers) {
+        expect(fn () => app(RestartComponentWorkers::class)->restart($this->component))->toThrow(RuntimeException::class);
+    } else {
+        app(RestartComponentWorkers::class)->restart($this->component);
+    }
     SSH::assertNotExecutedContains('');
     if ($worker) {
         $this->assertDatabaseHas('workers', ['id' => $worker->id, 'status' => 'failed']);

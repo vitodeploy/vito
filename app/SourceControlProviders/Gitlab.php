@@ -194,7 +194,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits?ref_name='.$branch);
+            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits', ['ref_name' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 

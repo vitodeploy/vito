@@ -53,6 +53,13 @@ class Web extends AbstractComponentCapability
         app(\App\Actions\ComponentCapability\InstallWebCapability::class)->uninstall($this->capability, $component);
     }
 
+    public function afterRelease(Component $component, \App\Models\Deployment $deployment): void
+    {
+        if ($component->environment->application->preset()->webMode() === WebMode::PROXY && ! $component->hasCapability('worker')) {
+            app(\App\Actions\Component\RestartComponentWorkers::class)->restart($component);
+        }
+    }
+
     public function surfaces(): array
     {
         return isset($this->capability->config['start_command']) ? ['domains', 'workers'] : ['domains'];

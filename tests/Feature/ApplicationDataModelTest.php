@@ -217,7 +217,10 @@ test('application migration round trips while preserving site data', function ()
     Worker::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     CronJob::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     $migration = require database_path('migrations/2026_10_17_171647_create_applications_tables.php');
+    $deploymentsMigration = require database_path('migrations/2026_10_18_160459_create_environment_deployments_table.php');
 
+    $deploymentsMigration->down();
+    expect(Schema::hasTable('environment_deployments'))->toBeFalse();
     $migration->down();
     expect(Schema::hasTable('applications'))->toBeFalse()
         ->and(Schema::hasTable('environments'))->toBeFalse()
@@ -231,6 +234,9 @@ test('application migration round trips while preserving site data', function ()
         expect($column['nullable'])->toBeFalse();
     }
     $migration->up();
+    $deploymentsMigration->up();
+    expect(Schema::hasColumn('environments', 'live_run_id'))->toBeTrue()
+        ->and(Schema::hasColumn('deployments', 'previous_deployment_id'))->toBeTrue();
 
     foreach ([$siteDeployment, $siteScript, $siteWorker, $siteCron] as $preserved) {
         $this->assertDatabaseHas($preserved->getTable(), ['id' => $preserved->id, 'site_id' => $this->site->id]);

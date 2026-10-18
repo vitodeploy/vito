@@ -34,7 +34,7 @@ class Git
      */
     public function cloneRepository(GitCloneDTO $target): void
     {
-        $target->server->ssh($target->user)->variables($target->variables)->exec(
+        $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
             view('ssh.git.clone', [
                 'host' => $target->usesToken ? '' : str($target->repoUrl)->after('@')->before('-'),
                 'repo' => escapeshellarg($target->repoUrl),
@@ -49,7 +49,7 @@ class Git
         );
 
         if ($target->commit !== null) {
-            $target->server->ssh($target->user)->exec(
+            $target->server->ssh($target->user)->setLog($target->log)->exec(
                 view('ssh.git.checkout', [
                     'path' => escapeshellarg($target->path),
                     'branch' => escapeshellarg($target->commit),

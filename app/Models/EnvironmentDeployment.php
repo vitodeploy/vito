@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\DeploymentStage;
+use App\Enums\EnvironmentDeploymentStatus;
+use Carbon\Carbon;
+use Database\Factories\EnvironmentDeploymentFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+
+/**
+ * @property int $environment_id
+ * @property EnvironmentDeploymentStatus $status
+ * @property ?DeploymentStage $current_stage
+ * @property ?string $commit_id
+ * @property ?array<string, mixed> $commit_data
+ * @property string $release
+ * @property string $branch
+ * @property ?int $primary_component_id
+ * @property ?int $triggered_by
+ * @property ?Carbon $started_at
+ * @property ?Carbon $finished_at
+ * @property ?Carbon $stage_deadline_at
+ * @property bool $is_join
+ * @property bool $is_recovering
+ * @property list<array{key: string, value: string, is_secret: bool}> $variables
+ * @property int $variables_version
+ * @property Environment $environment
+ * @property ?User $triggeredBy
+ * @property Collection<int, Deployment> $deployments
+ */
+class EnvironmentDeployment extends AbstractModel
+{
+    /** @use HasFactory<EnvironmentDeploymentFactory> */
+    use HasFactory;
+
+    protected $attributes = ['is_join' => false, 'is_recovering' => false];
+
+    protected $hidden = ['variables'];
+
+    protected $casts = [
+        'environment_id' => 'integer',
+        'status' => EnvironmentDeploymentStatus::class,
+        'current_stage' => DeploymentStage::class,
+        'commit_data' => 'json',
+        'primary_component_id' => 'integer',
+        'triggered_by' => 'integer',
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'stage_deadline_at' => 'datetime',
+        'is_join' => 'boolean',
+        'is_recovering' => 'boolean',
+        'variables' => 'encrypted:json',
+        'variables_version' => 'integer',
+    ];
+
+    /** @return BelongsTo<Environment, covariant $this> */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
+    }
+
+    /** @return BelongsTo<User, covariant $this> */
+    public function triggeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'triggered_by');
+    }
+
+    /** @return HasMany<Deployment, covariant $this> */
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(Deployment::class);
+    }
+}

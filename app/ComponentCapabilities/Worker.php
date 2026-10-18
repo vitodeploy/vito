@@ -31,6 +31,11 @@ class Worker extends AbstractComponentCapability
         app(\App\Actions\Worker\DeleteWorker::class)->deleteForComponent($component);
     }
 
+    public function afterRelease(\App\Models\Component $component, \App\Models\Deployment $deployment): void
+    {
+        app(\App\Actions\Component\RestartComponentWorkers::class)->restart($component);
+    }
+
     public function surfaces(): array
     {
         return ['workers'];

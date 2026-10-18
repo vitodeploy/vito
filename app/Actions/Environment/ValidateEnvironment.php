@@ -19,7 +19,7 @@ class ValidateEnvironment
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', Rule::unique('environments')->where('application_id', $application->id)->ignore($environment)],
-            'branch' => ['required', 'string', 'max:255'],
+            'branch' => ['required', 'string', 'max:255', 'not_regex:/[\x00-\x20\x7f]/', 'not_regex:/\A-/'],
             'runtime_version' => [Rule::requiredIf($versions !== []), 'nullable', 'string', 'max:255', Rule::in($versions)],
         ])->validate();
 

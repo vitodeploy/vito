@@ -24,11 +24,50 @@ export interface Environment {
   primary_component_id: number | null;
   components_count?: number;
   needs_redeploy: boolean;
+  live_run_id: number | null;
+  shared_paths: string[];
+  keep_releases: number;
+  can_deploy: boolean;
   last_error: string | null;
   status: string;
   status_color: 'success' | 'danger';
   created_at: string;
   updated_at: string;
+}
+
+export type DeploymentStage = 'clone' | 'build' | 'Release command' | 'release' | 'post-release';
+
+export interface ComponentDeployment {
+  id: number;
+  component_id: number | null;
+  component_name: string | null;
+  server_id: number | null;
+  server_name: string | null;
+  log_id: number | null;
+  current_stage: DeploymentStage | null;
+  status: 'deploying' | 'finished' | 'failed';
+  status_color: 'warning' | 'success' | 'danger';
+  active: boolean;
+}
+
+export interface EnvironmentDeployment {
+  id: number;
+  environment_id: number;
+  status: 'pending' | 'running' | 'finished' | 'failed' | 'partial' | 'cancelled' | 'rolled_back' | 'superseded';
+  status_color: 'warning' | 'success' | 'danger' | 'gray';
+  current_stage: DeploymentStage | null;
+  commit_id: string | null;
+  commit_data: { message?: string | null } | null;
+  release: string;
+  branch: string;
+  primary_component_id: number | null;
+  triggered_by: string | null;
+  is_join: boolean;
+  is_recovering: boolean;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+  deployments: ComponentDeployment[];
 }
 
 export interface EnvironmentVariable {

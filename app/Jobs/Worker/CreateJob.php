@@ -22,7 +22,7 @@ class CreateJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->worker->server_id}", function () {
-            app(InstallWorker::class)->install($this->worker);
+            app(\App\Actions\Component\ValidateComponentProcess::class)->runQueued($this->worker->component, fn () => app(InstallWorker::class)->install($this->worker));
         });
     }
 

@@ -27,6 +27,11 @@ class UpdateApplication
             }
 
             $changed = $application->source_control_id !== (int) $input['source_control_id'] || $application->repository !== $input['repository'];
+            if ($changed) {
+                foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
+                    app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'repository');
+                }
+            }
             $application->update([
                 'name' => $input['name'],
                 'source_control_id' => $input['source_control_id'],
@@ -36,8 +41,10 @@ class UpdateApplication
             if ($changed) {
                 Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))
                     ->where('status', ComponentStatus::READY)->each(function (Component $component): void {
+                        $component->status = ComponentStatus::PENDING;
                         $component->needs_redeploy = true;
                         $component->save();
+                        DB::afterCommit(fn () => app(\App\Actions\Component\BroadcastComponentUpdate::class)->broadcast($component));
                         SyncComponentDeployKeysJob::dispatch($component->id, $component->server_id)->afterCommit();
                     });
             }

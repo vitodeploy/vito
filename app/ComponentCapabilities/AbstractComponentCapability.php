@@ -43,6 +43,8 @@ abstract class AbstractComponentCapability
 
     public function uninstall(Component $component): void {}
 
+    public function afterRelease(Component $component, \App\Models\Deployment $deployment): void {}
+
     /**
      * @return list<string>
      */

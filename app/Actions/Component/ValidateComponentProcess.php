@@ -34,17 +34,36 @@ class ValidateComponentProcess
         }
 
         try {
-            return Cache::lock('unique-queue:server-'.$component->server_id, 600)->block(0, fn () => DB::transaction(function () use ($component, $callback) {
-                Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);
-                Environment::query()->lockForUpdate()->findOrFail($component->environment_id);
-                Server::query()->lockForUpdate()->findOrFail($component->server_id);
-                $component->refresh();
-
-                return $callback();
-            }));
+            return Cache::lock('unique-queue:server-'.$component->server_id, 600)->block(0, fn () => $this->runQueued($component, $callback));
         } catch (LockTimeoutException) {
-            throw ValidationException::withMessages(['name' => 'Another operation on this server is in progress. Please retry.']);
+            throw ValidationException::withMessages(['name' => 'Another operation on this component or server is in progress. Please retry.']);
         }
+    }
+
+    /**
+     * @template T
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function runQueued(?Component $component, Closure $callback): mixed
+    {
+        if ($component === null) {
+            return $callback();
+        }
+
+        return Cache::lock('unique-queue:component-'.$component->id, 1260)->block(0, fn () => DB::transaction(function () use ($component, $callback) {
+            Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);
+            $environment = Environment::query()->lockForUpdate()->findOrFail($component->environment_id);
+            Server::query()->lockForUpdate()->findOrFail($component->server_id);
+            $component->refresh();
+            try {
+                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
+            } catch (ValidationException) {
+                throw new LockTimeoutException;
+            }
+
+            return $callback();
+        }));
     }
 
     /**
@@ -72,6 +91,10 @@ class ValidateComponentProcess
         if ($component->server_id !== $server->id || $component->project()->id !== $server->project_id
             || ($process && $process->component_id !== $component->id)) {
             throw ValidationException::withMessages(['name' => 'The process must belong to this component and server.']);
+        }
+
+        if ($managedBy === null) {
+            app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($component->environment, 'name');
         }
 
         if ($managedBy === null && ($component->status !== ComponentStatus::READY

@@ -30,7 +30,8 @@ class DeleteEnvironment
 
         DB::transaction(function () use ($environment): void {
             $application = Application::query()->lockForUpdate()->findOrFail($environment->application_id);
-            $environment->refresh();
+            $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
+            app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
             if ($environment->status === EnvironmentStatus::DELETING || $application->status !== ApplicationStatus::READY) {
                 throw ValidationException::withMessages(['name' => 'Teardown is already in progress. Retry it from the application if necessary.']);
             }
@@ -57,6 +58,7 @@ class DeleteEnvironment
      */
     public function jobs(Environment $environment): array
     {
+        app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
         $environment->status = EnvironmentStatus::DELETING;
         $environment->last_error = null;
         $environment->save();
