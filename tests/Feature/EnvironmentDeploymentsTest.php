@@ -324,3 +324,323 @@ test('cleanup timeout failures still promote pending runs exactly once', functio
         ->and((new ReflectionMethod($job, 'lockSeconds'))->invoke($job))->toBeGreaterThan($job->timeout);
     expect(Queue::pushed(StartEnvironmentDeploymentJob::class)->filter(fn ($queued): bool => $queued->runId === $pending->id))->toHaveCount(1);
 });
+
+test('stage deadlines and job timeouts are bounded by the ssh reservation lifetime', function () {
+    $this->freezeTime();
+    $run = startEnvironmentRun($this->environment);
+    foreach (DeploymentStage::cases() as $stage) {
+        app(AdvanceEnvironmentDeployment::class)->dispatch($run, $stage);
+        $job = Queue::pushed(DeployComponentStageJob::class)->last();
+        expect($job->timeout)->toBe(config('component.deploy.stage_timeouts.'.$stage->value))
+            ->toBeLessThan(config('queue.connections.ssh.retry_after') - 60)
+            ->and($job->deadline)->toBe(now()->addSeconds($job->timeout)->timestamp)
+            ->and($run->fresh()->stage_deadline_at->timestamp)->toBe($job->deadline);
+    }
+    config(['component.deploy.stage_timeouts.clone' => 99999]);
+    expect(DeploymentStage::CLONE->timeout())->toBeLessThan(config('queue.connections.ssh.retry_after') - 60);
+    $event = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())->first(fn ($event): bool => str_contains($event->command ?? '', 'deployments:check-stalled'));
+    expect($event)->not->toBeNull()->and($event->expression)->toBe('* * * * *')->and($event->withoutOverlapping)->toBeTrue()->and($event->expiresAt)->toBe(5);
+});
+
+test('the watchdog fails vanished stages and startup jobs and resumes a pending successor', function (bool $started) {
+    $run = $started ? startEnvironmentRun($this->environment) : app(DeployEnvironment::class)->run($this->environment);
+    $pending = app(DeployEnvironment::class)->run($this->environment);
+    $this->travel(601)->seconds();
+    $this->artisan('deployments:check-stalled')->assertSuccessful();
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::FAILED)
+        ->and($run->fresh()->last_error)->toContain('deadline')
+        ->and($pending->fresh()->status)->toBe(EnvironmentDeploymentStatus::RUNNING);
+    $this->artisan('deployments:check-stalled')->assertSuccessful();
+    expect(Queue::pushed(StartEnvironmentDeploymentJob::class)->filter(fn ($job): bool => $job->runId === $pending->id))->toHaveCount(1);
+})->with([false, true]);
+
+test('an overdue release recovers and an overdue recovery becomes partial', function () {
+    $run = startEnvironmentRun($this->environment);
+    for ($i = 0; $i < 3; $i++) {
+        finishEnvironmentStage($run);
+    }
+    $this->travel(301)->seconds();
+    app(\App\Actions\EnvironmentDeployment\FailStalledEnvironmentDeployments::class)->handle();
+    expect($run->fresh()->is_recovering)->toBeTrue()->and($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::RUNNING);
+    $this->travel(301)->seconds();
+    app(\App\Actions\EnvironmentDeployment\FailStalledEnvironmentDeployments::class)->handle();
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::PARTIAL)->and($run->fresh()->stage_deadline_at)->toBeNull();
+});
+
+test('watchdog waits for a live component mutex and late stage jobs do not run ssh', function () {
+    $run = startEnvironmentRun($this->environment);
+    $job = Queue::pushed(DeployComponentStageJob::class)->last();
+    $lock = \Illuminate\Support\Facades\Cache::lock('unique-queue:component-'.$this->component->id, 1260);
+    $lock->get();
+    $this->travel(601)->seconds();
+    app(\App\Actions\EnvironmentDeployment\FailStalledEnvironmentDeployments::class)->handle();
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::RUNNING);
+    $lock->release();
+    $job->handle();
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::FAILED);
+    SSH::assertNotExecutedContains('git clone');
+});
+
+test('pending cancellation does not affect the running deployment', function () {
+    $running = startEnvironmentRun($this->environment);
+    $pending = app(DeployEnvironment::class)->run($this->environment);
+    app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($pending);
+    app(FinishEnvironmentDeployment::class)->finish($pending->id);
+    expect($pending->fresh()->status)->toBe(EnvironmentDeploymentStatus::CANCELLED)
+        ->and($running->fresh()->status)->toBe(EnvironmentDeploymentStatus::RUNNING);
+});
+
+test('cancellation drains running work before accepting a successor or conflicting mutations', function () {
+    $run = startEnvironmentRun($this->environment);
+    $job = Queue::pushed(DeployComponentStageJob::class)->last();
+    $this->mock(\App\SSH\OS\Git::class)->shouldReceive('cloneRepository')->once()->andReturnUsing(function () use ($run): void {
+        app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($run);
+        $this->pendingRun = app(DeployEnvironment::class)->run($this->environment);
+        app(FinishEnvironmentDeployment::class)->next($this->environment);
+        expect($this->pendingRun->fresh()->status)->toBe(EnvironmentDeploymentStatus::PENDING);
+        expect(fn () => app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($this->environment, 'name'))->toThrow(ValidationException::class);
+    });
+    $job->handle();
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::CANCELLED)->and($run->fresh()->stage_deadline_at)->toBeNull();
+    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'needs_redeploy' => true]);
+    app(FinishEnvironmentDeployment::class)->finish($run->id);
+    expect($this->pendingRun->fresh()->status)->toBe(EnvironmentDeploymentStatus::RUNNING);
+    expect(Queue::pushed(DeployComponentStageJob::class))->toHaveCount(1);
+});
+
+test('cancelled queued jobs settle without ssh and vanished cancelled jobs are reaped', function (bool $vanished) {
+    $run = startEnvironmentRun($this->environment);
+    app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($run);
+    if ($vanished) {
+        $this->travel(601)->seconds();
+        app(\App\Actions\EnvironmentDeployment\FailStalledEnvironmentDeployments::class)->handle();
+    } else {
+        Queue::pushed(DeployComponentStageJob::class)->last()->handle();
+    }
+    expect($run->fresh()->status)->toBe(EnvironmentDeploymentStatus::CANCELLED)->and($run->fresh()->stage_deadline_at)->toBeNull();
+    SSH::assertNotExecutedContains('git clone');
+})->with([false, true]);
+
+test('cancellation is rejected at and after release', function (DeploymentStage $stage) {
+    $run = startEnvironmentRun($this->environment);
+    app(AdvanceEnvironmentDeployment::class)->dispatch($run, $stage);
+    expect(fn () => app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($run))->toThrow(ValidationException::class);
+})->with([DeploymentStage::RELEASE, DeploymentStage::POST_RELEASE]);
+
+test('rollback activates only retained code and keeps live variables for later joins', function () {
+    app(UpsertEnvironmentVariable::class)->upsert($this->environment, ['key' => 'VALUE', 'value' => 'old', 'is_secret' => false]);
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    app(UpsertEnvironmentVariable::class)->upsert($this->environment, ['key' => 'VALUE', 'value' => 'live', 'is_secret' => false], $this->environment->variables()->sole());
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    app(UpsertEnvironmentVariable::class)->upsert($this->environment, ['key' => 'VALUE', 'value' => 'unapplied', 'is_secret' => false], $this->environment->variables()->sole());
+    $new = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
+    \App\Models\ComponentCapability::factory()->for($this->component)->create(['capability' => 'worker']);
+    $this->mock(\App\Actions\Component\RestartComponentWorkers::class)->shouldReceive('restart')->once();
+    SSH::fake('');
+    Http::fake();
+    $rollback = app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target, $this->user);
+    app(StartEnvironmentDeployment::class)->start($rollback->id);
+    $rollback->refresh();
+    expect($rollback->current_stage)->toBe(DeploymentStage::RELEASE)->and($rollback->deployments->pluck('component_id')->all())->toBe([$this->component->id]);
+    finishEnvironmentStage($rollback);
+    expect($rollback->status)->toBe(EnvironmentDeploymentStatus::FINISHED)->and($rollback->rollback_of_id)->toBe($target->id)
+        ->and($rollback->variables)->toBe($live->variables)->and($this->environment->fresh()->live_run_id)->toBe($rollback->id);
+    SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg($this->component->releasesPath().'/'.$target->release));
+    SSH::assertNotExecutedContains('file.next');
+    SSH::assertNotExecutedContains('base64 -d');
+    SSH::assertNotExecutedContains('git clone');
+    Http::assertNothingSent();
+    app(FinishEnvironmentDeployment::class)->finish($rollback->id);
+    $join = $this->environment->deployments()->where('is_join', true)->sole();
+    app(StartEnvironmentDeployment::class)->start($join->id);
+    expect($join->release)->toBe($target->release)->and($join->variables)->toBe($live->variables)
+        ->and($join->fresh()->deployments->pluck('component_id')->all())->toBe([$new->id]);
+});
+
+test('rollback rejects foreign join unfinished and pruned targets', function (string $invalid) {
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    match ($invalid) {
+        'foreign' => $target->environment_id = Environment::factory()->for($this->application)->create()->id,
+        'join' => $target->is_join = true,
+        'unfinished' => $target->status = EnvironmentDeploymentStatus::FAILED,
+        'pruned' => $target->deployments()->update(['release' => null]),
+    };
+    $target->save();
+    expect(fn () => app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target))->toThrow(ValidationException::class);
+})->with(['foreign', 'join', 'unfinished', 'pruned']);
+
+test('queued rollbacks protect release names and retain active duplicate releases when pruning', function () {
+    $this->environment->keep_releases = 1;
+    $this->environment->save();
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $active = startEnvironmentRun($this->environment);
+    $pending = app(DeployEnvironment::class)->run($this->environment);
+    $rollback = app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target);
+    expect($rollback->status)->toBe(EnvironmentDeploymentStatus::PENDING)->and($pending->fresh()->status)->toBe(EnvironmentDeploymentStatus::SUPERSEDED);
+    app(FinishEnvironmentDeployment::class)->finish($live->id);
+    expect($target->deployments()->sole()->release)->toBe($target->release);
+    finishEnvironmentStage($active, $this->component->id);
+    app(FinishEnvironmentDeployment::class)->finish($active->id);
+    app(StartEnvironmentDeployment::class)->start($rollback->id);
+    finishEnvironmentStage($rollback);
+    app(FinishEnvironmentDeployment::class)->finish($rollback->id);
+    expect($target->deployments()->sole()->release)->toBe($target->release);
+    SSH::assertNotExecutedContains('rm -rf -- '.escapeshellarg($this->component->releasesPath().'/'.$target->release));
+});
+
+test('rollback failure restores code without restoring a previous environment file', function () {
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $rollback = app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target);
+    app(StartEnvironmentDeployment::class)->start($rollback->id);
+    $deployment = $rollback->deployments()->sole();
+    $deployment->release_started = true;
+    $deployment->save();
+    finishEnvironmentStage($rollback, $this->component->id);
+    SSH::fake('');
+    finishEnvironmentStage($rollback);
+    expect($rollback->status)->toBe(EnvironmentDeploymentStatus::ROLLED_BACK)->and($this->environment->fresh()->live_run_id)->toBe($live->id);
+    SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg($this->component->releasesPath().'/'.$live->release));
+    SSH::assertNotExecutedContains('file.prev');
+});
+
+test('cancelling joins leaves new components empty and does not retry the join', function (bool $started) {
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $new = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
+    $join = app(DeployEnvironment::class)->join($this->environment);
+    if ($started) {
+        app(StartEnvironmentDeployment::class)->start($join->id);
+    }
+    app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($join);
+    if ($started) {
+        Queue::pushed(DeployComponentStageJob::class)->last()->handle();
+    }
+    app(FinishEnvironmentDeployment::class)->finish($join->id);
+    expect($new->deployments()->where('active', true)->exists())->toBeFalse()->and($this->environment->deployments()->where('is_join', true)->count())->toBe(1);
+})->with([false, true]);
+
+test('operation endpoints enforce scoped policies and expose safe run controls', function () {
+    $base = '/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/deployments/';
+    $run = startEnvironmentRun($this->environment);
+    $this->actingAs($this->user)->post($base.$run->id.'/cancel')->assertRedirect();
+    $this->postJson($base.$run->id.'/cancel')->assertUnprocessable();
+    Queue::pushed(DeployComponentStageJob::class)->last()->handle();
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $this->get($base.$live->id)->assertOk()->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        ->where('deployment.cancellable', false)->where('deployment.rollback_available', true)->where('deployment.rollback_of_id', null));
+    $this->post($base.$live->id.'/rollback')->assertRedirect();
+    $foreign = EnvironmentDeployment::factory()->create();
+    $this->postJson($base.$foreign->id.'/cancel')->assertNotFound();
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => \App\Enums\UserRole::USER]);
+    $this->postJson($base.$live->id.'/rollback')->assertForbidden();
+    $this->postJson($base.$live->id.'/cancel')->assertForbidden();
+});
+
+test('rollback startup fails safely when a retained release disappeared from disk', function () {
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    $rollback = app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target);
+    SSH::fake('')->execWillFail();
+    $job = new StartEnvironmentDeploymentJob($rollback->id);
+    $queueJob = Mockery::mock(\Illuminate\Contracts\Queue\Job::class);
+    $queueJob->shouldReceive('fail')->once()->andReturnUsing(fn ($error) => $job->failed($error));
+    $job->setJob($queueJob);
+    $job->handle();
+    expect($rollback->fresh()->status)->toBe(EnvironmentDeploymentStatus::FAILED)
+        ->and($rollback->deployments()->count())->toBe(0)
+        ->and($this->environment->fresh()->live_run_id)->toBe($target->id);
+    SSH::assertNotExecutedContains('ln -sfn');
+});
+
+test('an unstarted cancelled or expired join is not recreated by unrelated runs or later component installs', function (bool $cancelled) {
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $new = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
+    $join = app(DeployEnvironment::class)->join($this->environment);
+    $pending = app(DeployEnvironment::class)->run($this->environment);
+    app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($pending);
+    if ($cancelled) {
+        app(\App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment::class)->cancel($join);
+    } else {
+        $this->travel(601)->seconds();
+        app(\App\Actions\EnvironmentDeployment\FailStalledEnvironmentDeployments::class)->handle();
+    }
+    app(FinishEnvironmentDeployment::class)->finish($pending->id);
+    app(FinishEnvironmentDeployment::class)->finish($join->id);
+    $this->assertDatabaseHas('deployments', ['component_id' => $new->id, 'environment_deployment_id' => $join->id, 'release' => null, 'active' => false, 'status' => DeploymentStatus::FAILED]);
+    expect($this->environment->deployments()->where('is_join', true)->count())->toBe(1);
+    expect(app(DeployEnvironment::class)->join($this->environment))->toBeNull();
+    $later = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
+    $nextJoin = app(DeployEnvironment::class)->join($this->environment);
+    app(StartEnvironmentDeployment::class)->start($nextJoin->id);
+    expect($nextJoin->deployments()->pluck('component_id')->all())->toBe([$later->id]);
+})->with([false, true]);
+
+test('retention holds the admission locks and pruned releases cannot be admitted for rollback', function () {
+    $this->environment->keep_releases = 1;
+    $this->environment->save();
+    $target = startEnvironmentRun($this->environment);
+    while (! $target->status->isTerminal()) {
+        finishEnvironmentStage($target);
+    }
+    $live = startEnvironmentRun($this->environment);
+    while (! $live->status->isTerminal()) {
+        finishEnvironmentStage($live);
+    }
+    $locks = [];
+    foreach ([Application::class, Environment::class] as $model) {
+        $model::addGlobalScope('verify-retention-locks', function (\Illuminate\Database\Eloquent\Builder $query) use (&$locks, $model): void {
+            if ($query->getQuery()->lock === true) {
+                $locks[] = $model;
+            }
+        });
+    }
+    app(FinishEnvironmentDeployment::class)->finish($live->id);
+    expect(array_slice($locks, 0, 2))->toBe([Application::class, Environment::class]);
+    $this->assertDatabaseHas('deployments', ['environment_deployment_id' => $target->id, 'release' => null]);
+    expect(fn () => app(\App\Actions\EnvironmentDeployment\RollbackEnvironment::class)->run($this->environment, $target))->toThrow(ValidationException::class);
+});
+
+test('release activation fails closed when its release identifier is missing', function () {
+    $run = startEnvironmentRun($this->environment);
+    app(AdvanceEnvironmentDeployment::class)->dispatch($run, DeploymentStage::RELEASE);
+    $deployment = $run->deployments()->sole();
+    $deployment->release = null;
+    $deployment->save();
+    SSH::fake('');
+    expect(fn () => app(RunComponentStage::class)->run($deployment->id, DeploymentStage::RELEASE))->toThrow(RuntimeException::class, 'The deployment release is unavailable.');
+    $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'active' => false, 'release_started' => false]);
+    SSH::assertNotExecutedContains('');
+});

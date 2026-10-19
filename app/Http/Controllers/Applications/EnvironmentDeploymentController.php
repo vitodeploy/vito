@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Applications;
 
+use App\Actions\EnvironmentDeployment\CancelEnvironmentDeployment;
 use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Actions\EnvironmentDeployment\RollbackEnvironment;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
 use App\Http\Controllers\Controller;
@@ -58,6 +60,24 @@ class EnvironmentDeploymentController extends Controller
         ]);
     }
 
+    #[Post('/deployments/{deployment}/cancel', name: 'environment-deployments.cancel')]
+    public function cancel(Application $application, Environment $environment, EnvironmentDeployment $deployment): RedirectResponse
+    {
+        $this->authorize('update', [$deployment, $environment, $application]);
+        app(CancelEnvironmentDeployment::class)->cancel($deployment);
+
+        return back()->with('success', 'Deployment cancelled. In-flight work will finish before the next run starts.');
+    }
+
+    #[Post('/deployments/{deployment}/rollback', name: 'environment-deployments.rollback')]
+    public function rollback(Application $application, Environment $environment, EnvironmentDeployment $deployment): RedirectResponse
+    {
+        $this->authorize('update', [$deployment, $environment, $application]);
+        $run = app(RollbackEnvironment::class)->run($environment, $deployment, user());
+
+        return to_route('environment-deployments.show', [$application, $environment, $run]);
+    }
+
     #[Get('/deployment-settings', name: 'environment-deployments.settings')]
     public function settings(Application $application, Environment $environment): Response
     {
@@ -67,7 +87,7 @@ class EnvironmentDeploymentController extends Controller
             'scripts' => DeploymentScriptResource::collection($environment->deploymentScripts()->get()),
             'scriptComponents' => $environment->components()->where('type', \App\Enums\ComponentType::APP)->get(['id', 'name'])->map(fn (Component $component): array => ['id' => $component->id, 'name' => $component->name]),
             'canUpdate' => user()->can('update', [$environment, $application]),
-            'deploymentActive' => $environment->deployments()->whereIn('status', [\App\Enums\EnvironmentDeploymentStatus::PENDING, \App\Enums\EnvironmentDeploymentStatus::RUNNING])->exists(),
+            'deploymentActive' => $environment->deployments()->blocking()->exists(),
         ]);
     }
 
@@ -100,7 +120,7 @@ class EnvironmentDeploymentController extends Controller
             'scriptComponent' => ['id' => $component->id, 'name' => $component->name],
             'scriptComponents' => [],
             'canUpdate' => user()->can('update', [$component, $environment, $application]),
-            'deploymentActive' => $environment->deployments()->whereIn('status', [\App\Enums\EnvironmentDeploymentStatus::PENDING, \App\Enums\EnvironmentDeploymentStatus::RUNNING])->exists(),
+            'deploymentActive' => $environment->deployments()->blocking()->exists(),
         ]);
     }
 

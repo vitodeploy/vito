@@ -8,9 +8,11 @@ use Database\Factories\GitHookFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 /**
- * @property int $site_id
+ * @property ?int $site_id
+ * @property ?string $repository
  * @property int $source_control_id
  * @property string $secret
  * @property array<string> $events
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  * @property string $hook_id
  * @property array<string, mixed> $hook_response
  * @property ?Site $site
- * @property SourceControl $sourceControl
+ * @property ?SourceControl $sourceControl
  */
 class GitHook extends AbstractModel
 {
@@ -50,7 +52,7 @@ class GitHook extends AbstractModel
      */
     public function ownerColumns(): array
     {
-        return ['site_id'];
+        return ['site_id', 'repository'];
     }
 
     public function requiresOwner(): bool
@@ -74,18 +76,24 @@ class GitHook extends AbstractModel
         return $this->belongsTo(SourceControl::class);
     }
 
+    public function repository(): string
+    {
+        return $this->site->repository ?? $this->repository ?? '';
+    }
+
     public function deployHook(): void
     {
+        $sourceControl = $this->sourceControl ?? throw new RuntimeException('Source control is unavailable.');
         $this->update(
-            $this->sourceControl->provider()->deployHook($this->site->repository, $this->events, $this->secret)
+            $sourceControl->provider()->deployHook($this->repository(), $this->events, $this->secret)
         );
     }
 
     public function destroyHook(): void
     {
         try {
-            if ($this->hook_id) {
-                $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+            if ($this->hook_id && $this->sourceControl) {
+                $this->sourceControl->provider()->destroyHook($this->repository(), $this->hook_id);
             }
         } catch (FailedToDestroyGitHook $e) {
             Log::warning('Failed to destroy git hook', ['error' => $e->getMessage()]);

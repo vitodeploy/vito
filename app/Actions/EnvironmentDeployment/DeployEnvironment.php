@@ -5,6 +5,7 @@ namespace App\Actions\EnvironmentDeployment;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
+use App\Enums\DeploymentStage;
 use App\Enums\EnvironmentDeploymentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Jobs\EnvironmentDeployment\StartEnvironmentDeploymentJob;
@@ -18,13 +19,18 @@ use Illuminate\Validation\ValidationException;
 
 class DeployEnvironment
 {
-    public function run(Environment $environment, ?User $user = null): EnvironmentDeployment
+    public function run(Environment $environment, ?User $user = null, ?EnvironmentDeployment $rollbackOf = null): EnvironmentDeployment
     {
-        return DB::transaction(function () use ($environment, $user): EnvironmentDeployment {
+        return DB::transaction(function () use ($environment, $user, $rollbackOf): EnvironmentDeployment {
             Application::query()->lockForUpdate()->findOrFail($environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
-            $this->validate($environment);
-            $running = $environment->deployments()->where('status', EnvironmentDeploymentStatus::RUNNING)->exists();
+            if ($rollbackOf) {
+                $rollbackOf = EnvironmentDeployment::query()->findOrFail($rollbackOf->id);
+                app(RollbackEnvironment::class)->validate($environment, $rollbackOf);
+            } else {
+                $this->validate($environment);
+            }
+            $running = $environment->deployments()->blocking()->where('status', '!=', EnvironmentDeploymentStatus::PENDING)->exists();
             foreach ($environment->deployments()->where('status', EnvironmentDeploymentStatus::PENDING)->get() as $pending) {
                 $pending->status = EnvironmentDeploymentStatus::SUPERSEDED;
                 $pending->finished_at = now();
@@ -34,7 +40,11 @@ class DeployEnvironment
             $run = new EnvironmentDeployment;
             $run->environment_id = $environment->id;
             $run->status = $running ? EnvironmentDeploymentStatus::PENDING : EnvironmentDeploymentStatus::RUNNING;
-            $run->release = (string) Str::ulid();
+            $run->release = $rollbackOf->release ?? (string) Str::ulid();
+            $run->rollback_of_id = $rollbackOf?->id;
+            $run->commit_id = $rollbackOf?->commit_id;
+            $run->commit_data = $rollbackOf?->commit_data;
+            $run->stage_deadline_at = $running ? null : now()->addSeconds(DeploymentStage::CLONE->timeout());
             $run->branch = $environment->branch;
             $run->triggered_by = $user?->id;
             $run->save();
@@ -53,7 +63,7 @@ class DeployEnvironment
             Application::query()->lockForUpdate()->findOrFail($environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
-                || ! $environment->liveRun || $environment->deployments()->whereIn('status', [EnvironmentDeploymentStatus::PENDING, EnvironmentDeploymentStatus::RUNNING])->exists()
+                || ! $environment->liveRun || $environment->deployments()->blocking()->exists()
                 || ! $environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->exists()) {
                 return null;
             }
@@ -62,6 +72,7 @@ class DeployEnvironment
             $run->environment_id = $environment->id;
             $run->status = EnvironmentDeploymentStatus::RUNNING;
             $run->is_join = true;
+            $run->stage_deadline_at = now()->addSeconds(DeploymentStage::CLONE->timeout());
             $run->release = $live->release;
             $run->branch = $live->branch;
             $run->commit_id = $live->commit_id;

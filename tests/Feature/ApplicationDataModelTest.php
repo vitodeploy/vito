@@ -218,7 +218,9 @@ test('application migration round trips while preserving site data', function ()
     CronJob::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     $migration = require database_path('migrations/2026_10_17_171647_create_applications_tables.php');
     $deploymentsMigration = require database_path('migrations/2026_10_18_160459_create_environment_deployments_table.php');
+    $operationsMigration = require database_path('migrations/2026_10_18_223613_add_environment_deployment_operations.php');
 
+    $operationsMigration->down();
     $deploymentsMigration->down();
     expect(Schema::hasTable('environment_deployments'))->toBeFalse();
     $migration->down();
@@ -235,6 +237,7 @@ test('application migration round trips while preserving site data', function ()
     }
     $migration->up();
     $deploymentsMigration->up();
+    $operationsMigration->up();
     expect(Schema::hasColumn('environments', 'live_run_id'))->toBeTrue()
         ->and(Schema::hasColumn('deployments', 'previous_deployment_id'))->toBeTrue();
 

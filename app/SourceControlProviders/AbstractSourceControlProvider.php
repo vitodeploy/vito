@@ -141,6 +141,17 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         return str($payload['ref'] ?? '')->after('refs/heads/')->toString();
     }
 
+    public function getPushBranches(array $payload): array
+    {
+        $ref = $payload['ref'] ?? '';
+        if (! is_string($ref) || ! str_starts_with($ref, 'refs/heads/') || ($payload['deleted'] ?? false)
+            || ($payload['after'] ?? null) === str_repeat('0', 40)) {
+            return [];
+        }
+
+        return [substr($ref, 11)];
+    }
+
     public function getSshPort(): int
     {
         return 22;

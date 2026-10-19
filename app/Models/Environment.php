@@ -31,6 +31,7 @@ use Illuminate\Support\Collection;
  * @property int $keep_releases
  * @property int $variables_version
  * @property bool $needs_redeploy
+ * @property bool $auto_deploy
  */
 class Environment extends AbstractModel
 {
@@ -53,6 +54,7 @@ class Environment extends AbstractModel
         'shared_paths' => 'array',
         'keep_releases' => 'integer',
         'variables_version' => 'integer',
+        'auto_deploy' => 'boolean',
     ];
 
     /**

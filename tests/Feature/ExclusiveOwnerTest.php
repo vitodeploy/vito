@@ -16,7 +16,7 @@ dataset('exclusive owner models', [
     'script' => [DeploymentScript::class, ['site_id', 'environment_id', 'component_id'], true],
     'worker' => [Worker::class, ['site_id', 'component_id'], false],
     'cron job' => [CronJob::class, ['site_id', 'component_id'], false],
-    'git hook' => [GitHook::class, ['site_id'], true],
+    'git hook' => [GitHook::class, ['site_id', 'repository'], true],
     'ssl' => [Ssl::class, ['site_id'], false],
 ]);
 
@@ -45,6 +45,7 @@ test('shared models accept each single owner', function (string $class, array $c
         'site_id' => $this->site->id,
         'environment_id' => $component->environment_id,
         'component_id' => $component->id,
+        'repository' => 'owner/repository',
     ];
 
     foreach ($columns as $column) {
@@ -59,8 +60,10 @@ test('shared models accept each single owner', function (string $class, array $c
             expect($model->site->is($this->site))->toBeTrue();
         } elseif ($column === 'environment_id') {
             expect($model->environment->is($component->environment))->toBeTrue();
-        } else {
+        } elseif ($column === 'component_id') {
             expect($model->component->is($component))->toBeTrue();
+        } else {
+            expect($model->repository())->toBe($ids[$column]);
         }
     }
 })->with('exclusive owner models');

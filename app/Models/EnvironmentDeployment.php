@@ -6,6 +6,7 @@ use App\Enums\DeploymentStage;
 use App\Enums\EnvironmentDeploymentStatus;
 use Carbon\Carbon;
 use Database\Factories\EnvironmentDeploymentFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,9 @@ use Illuminate\Support\Collection;
  * @property ?Carbon $started_at
  * @property ?Carbon $finished_at
  * @property ?Carbon $stage_deadline_at
+ * @property ?int $rollback_of_id
+ * @property ?EnvironmentDeployment $rollbackOf
+ * @property ?string $last_error
  * @property bool $is_join
  * @property bool $is_recovering
  * @property list<array{key: string, value: string, is_secret: bool}> $variables
@@ -51,11 +55,44 @@ class EnvironmentDeployment extends AbstractModel
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
         'stage_deadline_at' => 'datetime',
+        'rollback_of_id' => 'integer',
         'is_join' => 'boolean',
         'is_recovering' => 'boolean',
         'variables' => 'encrypted:json',
         'variables_version' => 'integer',
     ];
+
+    /** @param Builder<self> $query */
+    public function scopeBlocking(Builder $query): void
+    {
+        $query->where(fn (Builder $query) => $query
+            ->whereIn('status', [EnvironmentDeploymentStatus::PENDING, EnvironmentDeploymentStatus::RUNNING])
+            ->orWhere(fn (Builder $query) => $query->where('status', EnvironmentDeploymentStatus::CANCELLED)->whereNotNull('stage_deadline_at')));
+    }
+
+    public function canCancel(): bool
+    {
+        return $this->status === EnvironmentDeploymentStatus::PENDING
+            || ($this->status === EnvironmentDeploymentStatus::RUNNING && ! $this->is_recovering
+                && ! in_array($this->current_stage, [DeploymentStage::RELEASE, DeploymentStage::POST_RELEASE], true));
+    }
+
+    public function canRollback(): bool
+    {
+        if ($this->is_join || $this->status !== EnvironmentDeploymentStatus::FINISHED) {
+            return false;
+        }
+        $components = $this->environment->components()->where('type', \App\Enums\ComponentType::APP)->has('deployments');
+
+        return $components->exists() && ! $components->where(fn (Builder $query) => $query->where('status', '!=', \App\Enums\ComponentStatus::READY)
+            ->orWhereDoesntHave('deployments', fn (Builder $query) => $query->where('release', $this->release)->where('status', \App\Enums\DeploymentStatus::FINISHED)))->exists();
+    }
+
+    /** @return BelongsTo<self, covariant $this> */
+    public function rollbackOf(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'rollback_of_id');
+    }
 
     /** @return BelongsTo<Environment, covariant $this> */
     public function environment(): BelongsTo

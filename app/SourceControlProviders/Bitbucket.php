@@ -206,6 +206,13 @@ class Bitbucket extends AbstractSourceControlProvider
         ];
     }
 
+    public function getPushBranches(array $payload): array
+    {
+        return collect(data_get($payload, 'push.changes', []))
+            ->filter(fn (array $change): bool => data_get($change, 'new.type') === 'branch' && ! ($change['closed'] ?? false))
+            ->pluck('new.name')->filter(fn ($name): bool => is_string($name) && $name !== '')->unique()->values()->all();
+    }
+
     public function getWebhookBranch(array $payload): string
     {
         return data_get($payload, 'push.changes.0.new.name', 'default-branch');

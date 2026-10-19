@@ -59,9 +59,9 @@ return [
             'queue' => 'ssh',
             'timeout' => 1200,
             // Must stay greater than the longest per-job timeout on this queue
-            // (component stages take up to 1200s) so a long-running job is never
+            // (component stages stay below 3600s) so a long-running job is never
             // re-reserved while still executing, even with a shorter backup timeout.
-            'retry_after' => max(1200, (int) env('BACKUP_RUN_TIMEOUT', 3600)) + 60,
+            'retry_after' => max(3600, (int) env('BACKUP_RUN_TIMEOUT', 3600)) + 60,
             'block_for' => null,
             'after_commit' => false,
         ],

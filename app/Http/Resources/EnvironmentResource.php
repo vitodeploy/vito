@@ -20,6 +20,7 @@ class EnvironmentResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'branch' => $this->branch,
+            'auto_deploy' => $this->auto_deploy,
             'runtime_version' => $this->runtime_version,
             'primary_component_id' => $this->primary_component_id,
             'components_count' => $this->whenCounted('components'),

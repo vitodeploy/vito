@@ -16,6 +16,9 @@ import { Application, ComponentDeployment, DeploymentStage, Environment, Environ
 const stages: DeploymentStage[] = ['clone', 'build', 'Release command', 'release', 'post-release'];
 
 function StageStatus({ run, component, stage }: { run: EnvironmentDeployment; component: ComponentDeployment; stage: DeploymentStage }) {
+  if (run.rollback_of_id && stage !== 'release') {
+    return <span className="text-muted-foreground">Skipped</span>;
+  }
   if (stage === 'Release command' && (run.is_join || component.component_id !== run.primary_component_id)) {
     return <span className="text-muted-foreground">Skipped</span>;
   }
@@ -47,18 +50,34 @@ export default function Deployment() {
             <Heading title={`Deployment #${deployment.id}`} description={deployment.release} />
             <div className="flex flex-wrap gap-2">
               <Badge variant={deployment.status_color}>{humanizeStep(deployment.status)}</Badge>
+              {deployment.rollback_of_id && <Badge variant="info">Rollback of #{deployment.rollback_of_id}</Badge>}
               {deployment.is_join && <Badge variant="info">Live-release join</Badge>}
               {environment.live_run_id === deployment.id && <Badge variant="success">Live release</Badge>}
             </div>
           </div>
-          <DeployButton application={application} environment={environment} />
+          <div className="flex flex-wrap gap-2">
+            {environment.can_deploy && deployment.cancellable && <Button variant="outline" onClick={() => dialog.confirm.open({
+              title: 'Cancel deployment', description: 'No further stages will start. In-flight work finishes before the next deployment starts.',
+              confirmLabel: 'Cancel deployment', method: 'post', url: `${baseUrl}/deployments/${deployment.id}/cancel`,
+            })}>Cancel deployment</Button>}
+            {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && <Button variant="outline" disabled={!deployment.rollback_available}
+              title={deployment.rollback_available ? 'Activate this release without changing environment variables or running scripts' : 'This release is no longer available on every deployed component'}
+              onClick={() => dialog.confirm.open({
+                title: `Roll back ${application.name} / ${environment.name}`, description: `Activate deployment #${deployment.id} (${deployment.release}) on all deployed components and restart their processes. Current environment variables stay unchanged. Release-command effects are not reversed. If another run is active, this replaces any pending deployment.`,
+                confirmLabel: 'Roll back', method: 'post', url: `${baseUrl}/deployments/${deployment.id}/rollback`,
+              })}>Roll back</Button>}
+            <DeployButton application={application} environment={environment} />
+          </div>
         </HeaderContainer>
+        {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && !deployment.rollback_available && <p className="text-muted-foreground text-sm">Rollback is unavailable: this release is no longer available on every deployed component, or a component is not ready.</p>}
         <dl className="grid gap-4 sm:grid-cols-3">
           <div><dt className="text-muted-foreground text-sm">Commit</dt><dd className="break-all font-mono text-sm">{deployment.commit_id ?? 'Resolved when the run starts'}</dd></div>
           <div><dt className="text-muted-foreground text-sm">Branch</dt><dd>{deployment.branch}</dd></div>
           <div><dt className="text-muted-foreground text-sm">Triggered by</dt><dd>{deployment.triggered_by ?? 'Automatic'}</dd></div>
         </dl>
         {deployment.commit_data?.message && <p className="whitespace-pre-wrap break-words text-sm">{deployment.commit_data.message}</p>}
+        {deployment.last_error && <Alert variant="destructive"><AlertDescription>{deployment.last_error}</AlertDescription></Alert>}
+        {deployment.status === 'cancelled' && deployment.stage_deadline_at && <Alert><AlertDescription>Waiting for in-flight component work to settle before starting another deployment.</AlertDescription></Alert>}
         {deployment.is_recovering && <Alert><AlertDescription>A release failed and recovery was requested for its components. Review the recovery results below before deploying again.</AlertDescription></Alert>}
         <Table>
           <TableHeader><TableRow><TableHead>Component</TableHead>{stages.map((stage) => <TableHead key={stage}>{humanizeStep(stage)}</TableHead>)}<TableHead>Logs</TableHead></TableRow></TableHeader>

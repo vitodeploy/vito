@@ -30,6 +30,10 @@ class HandlePushWebhook
             return;
         }
 
+        if (str_starts_with((string) ($payload['ref'] ?? ''), 'refs/heads/') && ! ($payload['deleted'] ?? false)) {
+            app(\App\Actions\GitHook\TriggerRepositoryAutoDeploy::class)->trigger($sourceControl, $repository, $branch);
+        }
+
         $sites = Site::query()
             ->with('gitHook')
             ->where('source_control_id', $sourceControl->id)

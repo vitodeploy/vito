@@ -4,7 +4,7 @@ namespace App\Tables\Applications;
 
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
-use Forjed\InertiaTable\Columns\BooleanColumn;
+use App\Models\EnvironmentDeployment;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
@@ -15,7 +15,7 @@ class EnvironmentDeploymentTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->with('triggeredBy')->latest();
+        $this->query->with('triggeredBy', 'deployments.component')->latest();
     }
 
     protected function columns(): array
@@ -25,7 +25,9 @@ class EnvironmentDeploymentTable extends Table
             TextColumn::make('commit_id', 'Commit'),
             EnumColumn::make('status', 'Status'),
             EnumColumn::make('current_stage', 'Stage'),
-            BooleanColumn::make('is_join', 'Join'),
+            TextColumn::make('kind', 'Run')->value(fn (EnvironmentDeployment $run): string => $run->is_join
+                ? 'Join: '.$run->deployments->pluck('component.name')->filter()->implode(', ')
+                : ($run->rollback_of_id ? 'Rollback #'.$run->rollback_of_id : 'Deploy')),
             TextColumn::make('triggeredBy.name', 'Triggered by'),
             DateTimeColumn::make('created_at', 'Created')->sortable()->toLocal(),
             Column::data('id'),

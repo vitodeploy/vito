@@ -103,7 +103,7 @@ test('stage jobs use a component lock and advance only after releasing it', func
     $run = app(DeployEnvironment::class)->run($this->environment);
     (new StartEnvironmentDeploymentJob($run->id))->handle();
     $deployment = $run->deployments()->sole();
-    $job = (new DeployComponentStageJob($deployment->id, $this->component->id, $run->id, DeploymentStage::CLONE))->withFakeQueueInteractions();
+    $job = (new DeployComponentStageJob($deployment->id, $this->component->id, $run->id, DeploymentStage::CLONE, $run->fresh()->stage_deadline_at->timestamp))->withFakeQueueInteractions();
     $lock = Cache::lock('unique-queue:component-'.$this->component->id, 60);
     $lock->get();
     try {
@@ -119,15 +119,15 @@ test('stage jobs use a component lock and advance only after releasing it', func
         $lock->release();
     });
     $job->handle();
-    expect($job->timeout)->toBe(1200)->and($job->failOnTimeout)->toBeTrue()
-        ->and((new ReflectionMethod($job, 'lockSeconds'))->invoke($job))->toBe(1260);
+    expect($job->timeout)->toBe(600)->and($job->failOnTimeout)->toBeTrue()
+        ->and((new ReflectionMethod($job, 'lockSeconds'))->invoke($job))->toBe(660);
 });
 
 test('stage failures defer barrier advancement until the component mutex is free', function () {
     $run = app(DeployEnvironment::class)->run($this->environment);
     app(StartEnvironmentDeployment::class)->start($run->id);
     $deployment = $run->deployments()->sole();
-    $job = new DeployComponentStageJob($deployment->id, $this->component->id, $run->id, DeploymentStage::CLONE);
+    $job = new DeployComponentStageJob($deployment->id, $this->component->id, $run->id, DeploymentStage::CLONE, $run->fresh()->stage_deadline_at->timestamp);
     $job->failed(new Exception('Do not leak sensitive error data'));
     Queue::assertPushed(AdvanceEnvironmentDeploymentJob::class);
     $advance = (new AdvanceEnvironmentDeploymentJob($run->id, $this->component->id, DeploymentStage::CLONE, false))->withFakeQueueInteractions();

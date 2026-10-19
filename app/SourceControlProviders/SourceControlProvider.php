@@ -89,6 +89,12 @@ interface SourceControlProvider
      */
     public function getWebhookBranch(array $payload): string;
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<string>
+     */
+    public function getPushBranches(array $payload): array;
+
     public function getRepos(bool $useCache = true): array;
 
     public function getBranches(string $repo, bool $useCache = true): array;

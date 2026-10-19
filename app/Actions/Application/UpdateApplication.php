@@ -2,6 +2,7 @@
 
 namespace App\Actions\Application;
 
+use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Jobs\Component\SyncComponentDeployKeysJob;
@@ -26,6 +27,8 @@ class UpdateApplication
                 throw ValidationException::withMessages(['name' => 'The application cannot be edited during teardown.']);
             }
 
+            $oldSource = $application->sourceControl;
+            $oldRepository = $application->repository;
             $changed = $application->source_control_id !== (int) $input['source_control_id'] || $application->repository !== $input['repository'];
             if ($changed) {
                 foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
@@ -38,6 +41,7 @@ class UpdateApplication
                 'repository' => $input['repository'],
             ]);
 
+            $application->unsetRelation('sourceControl');
             if ($changed) {
                 Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))
                     ->where('status', ComponentStatus::READY)->each(function (Component $component): void {
@@ -48,6 +52,17 @@ class UpdateApplication
                         SyncComponentDeployKeysJob::dispatch($component->id, $component->server_id)->afterCommit();
                     });
             }
+            DB::afterCommit(function () use ($application, $oldSource, $oldRepository, $changed): void {
+                try {
+                    if ($changed && $oldSource) {
+                        app(SyncRepositoryGitHook::class)->sync($oldSource, $oldRepository);
+                    }
+                } finally {
+                    if ($application->sourceControl) {
+                        app(SyncRepositoryGitHook::class)->sync($application->sourceControl, $application->repository);
+                    }
+                }
+            });
 
             return $application;
         });

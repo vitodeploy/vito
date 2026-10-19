@@ -31,6 +31,14 @@ class GitHookController extends Controller
             ->where('secret', $request->input('secret'))
             ->firstOrFail();
 
+        if ($gitHook->repository !== null) {
+            foreach ($gitHook->sourceControl?->provider()->getPushBranches($request->array()) ?? [] as $branch) {
+                app(\App\Actions\GitHook\TriggerRepositoryAutoDeploy::class)->forBranch($gitHook, $branch);
+            }
+
+            return response()->json(['success' => true]);
+        }
+
         if (! $gitHook->site) {
             $gitHook->destroyHook();
 

@@ -24,6 +24,11 @@ class RunComponentStage
         if (! $deployment) {
             return;
         }
+        if ($deployment->environmentDeployment->status === EnvironmentDeploymentStatus::CANCELLED || $deployment->environmentDeployment->stage_deadline_at?->isPast()) {
+            $this->failed($deploymentId, $stage, $recovering);
+
+            return;
+        }
         $deployment->log?->write($recovering ? 'Restoring previous release.' : 'Starting '.$stage->getText().'.');
         if ($recovering) {
             app(RollbackComponentRelease::class)->rollback($deployment);
@@ -36,6 +41,10 @@ class RunComponentStage
         }
         $deployment->status = DeploymentStatus::FINISHED;
         $deployment->save();
+        if ($deployment->environmentDeployment->fresh()->status === EnvironmentDeploymentStatus::CANCELLED) {
+            $deployment->component->needs_redeploy = true;
+            $deployment->component->save();
+        }
         app(BroadcastEnvironmentDeploymentUpdate::class)->broadcast($deployment->environmentDeployment);
     }
 
@@ -53,7 +62,7 @@ class RunComponentStage
     private function pending(int $deploymentId, DeploymentStage $stage, bool $recovering): ?Deployment
     {
         $deployment = Deployment::query()->with('environmentDeployment', 'component.environment.application.sourceControl', 'component.server', 'component.capabilities', 'log')->find($deploymentId);
-        if (! $deployment || $deployment->environmentDeployment?->status !== EnvironmentDeploymentStatus::RUNNING
+        if (! $deployment || ! in_array($deployment->environmentDeployment?->status, [EnvironmentDeploymentStatus::RUNNING, EnvironmentDeploymentStatus::CANCELLED], true)
             || $deployment->environmentDeployment->current_stage !== $stage || $deployment->environmentDeployment->is_recovering !== $recovering
             || $deployment->current_stage !== $stage || $deployment->status !== DeploymentStatus::DEPLOYING) {
             return null;
@@ -115,10 +124,17 @@ class RunComponentStage
 
     private function release(Deployment $deployment): void
     {
+        if (! $deployment->release) {
+            throw new RuntimeException('The deployment release is unavailable.');
+        }
         $component = $deployment->component;
         $deployment->release_started = true;
         $deployment->save();
-        $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.release-env', ['component' => $component, 'deployment' => $deployment]));
+        if (! $deployment->environmentDeployment->rollback_of_id) {
+            $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.release-env', ['component' => $component, 'deployment' => $deployment]));
+        } else {
+            $component->server->ssh($component->user)->setLog($deployment->log)->exec('test -d '.escapeshellarg($deployment->path()));
+        }
         $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.modern-deployment.release', [
             'basePath' => $component->basePath(), 'releasePath' => $deployment->path(),
         ]));

@@ -22,6 +22,11 @@ class EnvironmentDeploymentPolicy
         return $deployment->environment_id === $environment->id && $this->viewAny($user, $environment, $application);
     }
 
+    public function update(User $user, EnvironmentDeployment $deployment, Environment $environment, Application $application): bool
+    {
+        return $deployment->environment_id === $environment->id && $this->create($user, $environment, $application);
+    }
+
     public function create(User $user, Environment $environment, Application $application): bool
     {
         return $environment->application_id === $application->id && $this->hasWriteAccess($user, $application->project);

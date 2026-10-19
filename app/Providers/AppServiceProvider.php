@@ -47,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceHttps();
         }
 
+        Event::listen('eloquent.deleting: '.\App\Models\Project::class, fn (\App\Models\Project $project) => app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disableProject($project));
         Event::listen(SocketEvent::class, SocketEventListener::class);
         Event::listen(SiteCreatedEvent::class, HandleSiteCreatedStats::class);
         Event::listen(SiteDeletedEvent::class, HandleSiteDeletedStats::class);

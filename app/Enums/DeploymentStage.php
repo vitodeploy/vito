@@ -24,6 +24,11 @@ enum DeploymentStage: string implements HasTableDisplay, VitoEnum
         };
     }
 
+    public function timeout(): int
+    {
+        return min(max(1, (int) config('component.deploy.stage_timeouts.'.$this->value)), (int) config('queue.connections.ssh.retry_after') - 61);
+    }
+
     public function getText(): string
     {
         return $this === self::PRE_RELEASE ? 'Release command' : $this->value;

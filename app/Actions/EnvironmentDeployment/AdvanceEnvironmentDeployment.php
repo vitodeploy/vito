@@ -27,11 +27,18 @@ class AdvanceEnvironmentDeployment
             Application::query()->lockForUpdate()->findOrFail($run->environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($run->environment_id);
             $run = EnvironmentDeployment::query()->lockForUpdate()->findOrFail($run->id);
-            if ($run->status !== EnvironmentDeploymentStatus::RUNNING || $run->current_stage !== $stage || $run->is_recovering !== $recovering) {
+            if (! in_array($run->status, [EnvironmentDeploymentStatus::RUNNING, EnvironmentDeploymentStatus::CANCELLED], true) || $run->current_stage !== $stage || $run->is_recovering !== $recovering) {
                 return;
             }
             $participants = $this->participants($run, $stage)->get();
             if ($participants->contains('status', DeploymentStatus::DEPLOYING)) {
+                return;
+            }
+            if ($run->status === EnvironmentDeploymentStatus::CANCELLED) {
+                if ($run->stage_deadline_at) {
+                    $this->finish($run, EnvironmentDeploymentStatus::CANCELLED);
+                }
+
                 return;
             }
             $failed = $participants->contains('status', DeploymentStatus::FAILED);
@@ -55,7 +62,7 @@ class AdvanceEnvironmentDeployment
                 $environment->live_run_id = $run->id;
                 $environment->save();
             }
-            $next = $stage->next();
+            $next = $run->rollback_of_id ? null : $stage->next();
             if ($run->is_join && $next === DeploymentStage::PRE_RELEASE) {
                 $next = DeploymentStage::RELEASE;
             }
@@ -87,20 +94,33 @@ class AdvanceEnvironmentDeployment
     public function dispatch(EnvironmentDeployment $run, DeploymentStage $stage): void
     {
         $run->current_stage = $stage;
+        $run->stage_deadline_at = now()->addSeconds($stage->timeout());
         $run->save();
         foreach ($this->participants($run, $stage)->get() as $deployment) {
             $deployment->current_stage = $stage;
             $deployment->status = DeploymentStatus::DEPLOYING;
             $deployment->save();
-            DeployComponentStageJob::dispatch($deployment->id, $deployment->component_id, $run->id, $stage, $run->is_recovering)->afterCommit();
+            DeployComponentStageJob::dispatch($deployment->id, $deployment->component_id, $run->id, $stage, $run->stage_deadline_at->timestamp, $run->is_recovering)->afterCommit();
         }
         app(BroadcastEnvironmentDeploymentUpdate::class)->broadcast($run);
     }
 
     public function finish(EnvironmentDeployment $run, EnvironmentDeploymentStatus $status): void
     {
+        if ($run->is_join && ! $run->deployments()->exists()) {
+            foreach ($run->environment->components()->where('type', \App\Enums\ComponentType::APP)->where('status', \App\Enums\ComponentStatus::READY)->doesntHave('deployments')->get() as $component) {
+                $run->deployments()->create([
+                    'component_id' => $component->id, 'commit_id' => $run->commit_id,
+                    'commit_data' => $run->commit_data, 'status' => DeploymentStatus::FAILED,
+                ]);
+            }
+        }
         $run->status = $status;
         $run->finished_at = now();
+        $draining = $status === EnvironmentDeploymentStatus::CANCELLED && $run->deployments()->where('status', DeploymentStatus::DEPLOYING)->exists();
+        if (! $draining) {
+            $run->stage_deadline_at = null;
+        }
         $run->save();
         if ($status !== EnvironmentDeploymentStatus::FINISHED) {
             Component::query()->whereIn('id', $run->deployments()->select('component_id'))->update(['needs_redeploy' => true]);
@@ -109,6 +129,8 @@ class AdvanceEnvironmentDeployment
         $environment->last_error = $status === EnvironmentDeploymentStatus::FINISHED ? null : 'Deployment did not finish successfully. Review its component stages and logs before deploying again.';
         $environment->save();
         app(BroadcastEnvironmentDeploymentUpdate::class)->broadcast($run);
-        FinishEnvironmentDeploymentJob::dispatch($run->id)->afterCommit();
+        if (! $draining) {
+            FinishEnvironmentDeploymentJob::dispatch($run->id)->afterCommit();
+        }
     }
 }

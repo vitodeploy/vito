@@ -19,6 +19,7 @@ class RollbackComponentRelease
         $previous = $deployment->previousDeployment;
         $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.rollback-release', [
             'component' => $component, 'deployment' => $deployment, 'previousPath' => $previous?->path(),
+            'restoreEnv' => ! $deployment->environmentDeployment->rollback_of_id,
         ]));
         if ($previous) {
             $previous->activate();

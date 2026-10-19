@@ -28,6 +28,7 @@ export interface Environment {
   shared_paths: string[];
   keep_releases: number;
   can_deploy: boolean;
+  auto_deploy: boolean;
   last_error: string | null;
   status: string;
   status_color: 'success' | 'danger';
@@ -64,6 +65,11 @@ export interface EnvironmentDeployment {
   triggered_by: string | null;
   is_join: boolean;
   is_recovering: boolean;
+  rollback_of_id: number | null;
+  last_error: string | null;
+  stage_deadline_at: string | null;
+  cancellable: boolean;
+  rollback_available: boolean;
   started_at: string | null;
   finished_at: string | null;
   created_at: string;

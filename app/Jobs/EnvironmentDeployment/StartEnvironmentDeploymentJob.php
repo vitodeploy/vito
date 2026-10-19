@@ -13,7 +13,19 @@ class StartEnvironmentDeploymentJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(public int $runId) {}
+    public int $timeout = 600;
+
+    public bool $failOnTimeout = true;
+
+    protected function lockSeconds(): int
+    {
+        return $this->timeout + 60;
+    }
+
+    public function __construct(public int $runId)
+    {
+        $this->onConnection('ssh')->onQueue('ssh');
+    }
 
     public function handle(): void
     {

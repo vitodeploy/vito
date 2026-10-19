@@ -156,6 +156,13 @@ class Deployment extends AbstractModel
         if ($this->component && ($this->active || ! $this->environmentDeployment?->status->isTerminal())) {
             return;
         }
+        if ($this->component && $this->release && (
+            $this->component->deployments()->where('release', $this->release)->where('active', true)->exists()
+            || $this->component->environment->deployments()->blocking()->where(fn ($query) => $query->where('release', $this->release)
+                ->orWhereHas('deployments.previousDeployment', fn ($query) => $query->where('component_id', $this->component_id)->where('release', $this->release)))->exists()
+        )) {
+            return;
+        }
         if ($this->release) {
             $owner = $this->component ?? $this->site;
             $command = 'rm -rf -- '.escapeshellarg($this->path());
@@ -163,6 +170,9 @@ class Deployment extends AbstractModel
                 $command .= ' && rm -f -- '.escapeshellarg($this->component->sharedPath().'/.env-'.$this->id.'.prepared');
             }
             $owner->server->ssh($owner->user)->exec($command);
+            if ($this->component) {
+                $this->component->deployments()->where('release', $this->release)->update(['release' => null]);
+            }
             $this->release = null;
         }
 
@@ -182,7 +192,7 @@ class Deployment extends AbstractModel
         }
         $releases = $this->component->deployments()->with('environmentDeployment')->whereNotNull('release')->orderByDesc('id')->get();
         $protected = $releases->filter(fn (Deployment $deployment): bool => ! $deployment->environmentDeployment?->status->isTerminal())->pluck('previous_deployment_id');
-        foreach ($releases->skip($this->component->environment->keep_releases) as $deployment) {
+        foreach ($releases->unique('release')->skip($this->component->environment->keep_releases) as $deployment) {
             if (! $protected->contains($deployment->id)) {
                 $deployment->remove(true);
             }

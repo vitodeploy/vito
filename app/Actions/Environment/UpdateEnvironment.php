@@ -3,6 +3,7 @@
 namespace App\Actions\Environment;
 
 use App\Actions\Component\BroadcastComponentUpdate;
+use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
@@ -33,6 +34,16 @@ class UpdateEnvironment
                 throw ValidationException::withMessages(['name' => 'The environment cannot be edited during teardown.']);
             }
 
+            Validator::make($input, [
+                'auto_deploy' => ['sometimes', 'boolean'],
+                'primary_component_id' => ['sometimes', 'nullable', 'integer', Rule::exists('components', 'id')
+                    ->where('environment_id', $environment->id)->where('type', ComponentType::APP->value)
+                    ->whereNotIn('status', [ComponentStatus::DELETING->value, ComponentStatus::DELETION_FAILED->value])],
+            ])->validate();
+            if (array_key_exists('primary_component_id', $input)) {
+                $input['primary_component_id'] = $input['primary_component_id'] === null ? null : (int) $input['primary_component_id'];
+            }
+
             $runtimeChanged = ($input['runtime_version'] ?? null) !== $environment->runtime_version;
             if ($runtimeChanged || $input['branch'] !== $environment->branch || (array_key_exists('primary_component_id', $input) && $input['primary_component_id'] !== $environment->primary_component_id)) {
                 app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, $runtimeChanged ? 'runtime_version' : 'branch');
@@ -41,12 +52,6 @@ class UpdateEnvironment
                 throw ValidationException::withMessages(['runtime_version' => 'All components must be ready before changing the runtime version.']);
             }
 
-            Validator::make($input, [
-                'primary_component_id' => ['sometimes', 'nullable', 'integer', Rule::exists('components', 'id')
-                    ->where('environment_id', $environment->id)->where('type', ComponentType::APP->value)
-                    ->whereNotIn('status', [ComponentStatus::DELETING->value, ComponentStatus::DELETION_FAILED->value])],
-            ])->validate();
-
             $environment->fill([
                 'name' => $input['name'],
                 'branch' => $input['branch'],
@@ -54,6 +59,12 @@ class UpdateEnvironment
             ]);
             if (array_key_exists('primary_component_id', $input)) {
                 $environment->primary_component_id = $input['primary_component_id'];
+            }
+            if (array_key_exists('auto_deploy', $input)) {
+                if ($input['auto_deploy'] && ! $application->sourceControl) {
+                    throw ValidationException::withMessages(['auto_deploy' => 'Select an available source control before enabling automatic deployment.']);
+                }
+                $environment->auto_deploy = (bool) $input['auto_deploy'];
             }
             $environment->save();
 
@@ -77,6 +88,10 @@ class UpdateEnvironment
                     DB::afterCommit(fn () => app(BroadcastComponentUpdate::class)->broadcast($component));
                     SyncComponentRuntimeJob::dispatch($component->id, $component->server_id)->afterCommit();
                 }
+            }
+
+            if (array_key_exists('auto_deploy', $input) && $application->sourceControl) {
+                DB::afterCommit(fn () => app(SyncRepositoryGitHook::class)->sync($application->sourceControl, $application->repository));
             }
 
             return $environment;

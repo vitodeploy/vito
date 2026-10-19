@@ -37,6 +37,7 @@ class DeleteEnvironment
             }
 
             if (! $environment->components()->exists()) {
+                app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
                 $environment->delete();
                 $this->broadcast($environment, true);
 
@@ -50,6 +51,7 @@ class DeleteEnvironment
                     app(self::class)->failed($id);
                 })->dispatch();
             });
+            app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
         });
     }
 
