@@ -52,7 +52,7 @@ export default function Firewall() {
           actions={(row: Row) => {
             const firewallRule = asRow<FirewallRule>(row, ['id', 'name', 'server_id']);
             if (firewallRule.component_managed) {
-              return <span className="text-muted-foreground text-sm">Managed by load balancer</span>;
+              return <span className="text-muted-foreground text-sm">Managed by application</span>;
             }
             return (
               <div className="flex items-center justify-end">

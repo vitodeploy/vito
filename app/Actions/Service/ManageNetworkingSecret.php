@@ -51,6 +51,7 @@ class ManageNetworkingSecret
      */
     private function validate(Service $service): SupportsNetworkingSecret
     {
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($service);
         $handler = $service->hasHandler() ? $service->handler() : null;
 
         if (! $handler instanceof SupportsNetworkingSecret) {

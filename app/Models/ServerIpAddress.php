@@ -58,19 +58,26 @@ class ServerIpAddress extends AbstractModel
     {
         static::updated(function (ServerIpAddress $address): void {
             if ($address->wasChanged(['ip', 'status'])) {
-                \Illuminate\Support\Facades\DB::afterCommit(fn () => app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id));
+                \Illuminate\Support\Facades\DB::afterCommit(function () use ($address): void {
+                    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id);
+                    app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
+                });
             }
         });
         static::deleting(function (ServerIpAddress $address): void {
             if ($address->is_managed) {
                 app(\App\Actions\Network\CheckLoadBalancerNetwork::class)->address($address);
+                app(\App\Actions\Network\CheckEnvironmentResourceNetwork::class)->address($address);
             }
             $address->reapplyNetworkIds = app(RemoveMembershipsForAddress::class)->capture($address);
         });
 
         static::deleted(function (ServerIpAddress $address): void {
             app(RemoveMembershipsForAddress::class)->handle($address->server_id, $address->reapplyNetworkIds);
-            \Illuminate\Support\Facades\DB::afterCommit(fn () => app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id));
+            \Illuminate\Support\Facades\DB::afterCommit(function () use ($address): void {
+                app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id);
+                app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
+            });
         });
     }
 

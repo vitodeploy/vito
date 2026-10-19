@@ -9,8 +9,10 @@ use App\Services\Database\Database;
 
 class DeleteDatabaseUser
 {
-    public function delete(Server $server, DatabaseUser $databaseUser): void
+    public function delete(Server $server, DatabaseUser $databaseUser, ?\App\Models\EnvironmentAttachment $attachment = null): void
     {
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->databaseUser($databaseUser, $attachment);
+
         /** @var Service $service */
         $service = $server->database();
         /** @var Database $handler */

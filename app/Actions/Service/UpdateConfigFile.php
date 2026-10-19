@@ -19,6 +19,19 @@ class UpdateConfigFile
      */
     public function update(Service $service, array $input): void
     {
+        try {
+            \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$service->server_id, 600)
+                ->block(10, fn () => $this->updateConfig($service, $input));
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+            throw ValidationException::withMessages(['content' => 'Another operation on this server is in progress. Please retry.']);
+        }
+    }
+
+    /** @param array<string, mixed> $input */
+    private function updateConfig(Service $service, array $input): void
+    {
+        $service->refresh();
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($service);
         $this->validate($service, $input);
 
         $configPaths = config("service.services.{$service->name}.config_paths", []);

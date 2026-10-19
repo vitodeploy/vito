@@ -3,7 +3,7 @@ import { router, usePage, usePoll } from '@inertiajs/react';
 import { ReloadOptions } from '@inertiajs/core';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
-import { ArrowLeftIcon, BoxesIcon, GlobeIcon, HomeIcon, KeyRoundIcon, RefreshCwIcon, RocketIcon, SettingsIcon } from 'lucide-react';
+import { ArrowLeftIcon, BoxesIcon, DatabaseIcon, GlobeIcon, HomeIcon, KeyRoundIcon, RefreshCwIcon, RocketIcon, SettingsIcon } from 'lucide-react';
 import DeployButton from '@/pages/applications/components/deploy-button';
 import Container from '@/components/container';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -37,7 +37,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'backendTargets', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'backendTargets', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'attachments', 'resourceOptions', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -93,6 +93,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     { title: 'Overview', href: baseUrl, onlyActivePath: baseUrl, icon: HomeIcon },
     { title: 'Components', href: `${baseUrl}/components`, icon: BoxesIcon },
     { title: 'Domains', href: `${baseUrl}/domains`, icon: GlobeIcon },
+    { title: 'Resources', href: `${baseUrl}/resources`, icon: DatabaseIcon },
     { title: 'Variables', href: `${baseUrl}/variables`, icon: KeyRoundIcon },
     { title: 'Deployments', href: `${baseUrl}/deployments`, icon: RocketIcon },
     { title: 'Deployment settings', href: `${baseUrl}/deployment-settings`, icon: SettingsIcon },

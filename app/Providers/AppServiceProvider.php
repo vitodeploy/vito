@@ -49,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen('eloquent.deleting: '.\App\Models\Project::class, fn (\App\Models\Project $project) => app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disableProject($project));
         Event::listen('eloquent.saved: '.\App\Models\NetworkServer::class, fn (\App\Models\NetworkServer $member) => app(\App\Actions\Component\SyncLoadBalancerBackends::class)->membershipChanged($member));
+        Event::listen('eloquent.saved: '.\App\Models\NetworkServer::class, fn (\App\Models\NetworkServer $member) => app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->membershipChanged($member));
         Event::listen(SocketEvent::class, SocketEventListener::class);
         Event::listen(SiteCreatedEvent::class, HandleSiteCreatedStats::class);
         Event::listen(SiteDeletedEvent::class, HandleSiteDeletedStats::class);

@@ -101,6 +101,15 @@ abstract class AbstractRuntimePreset
         return [];
     }
 
+    /**
+     * @param array<string, string> $generic
+     * @return array<string, string>
+     */
+    public function attachmentAliases(\App\Models\EnvironmentAttachment $attachment, array $generic): array
+    {
+        return [];
+    }
+
     public function form(): DynamicForm
     {
         return DynamicForm::make([]);

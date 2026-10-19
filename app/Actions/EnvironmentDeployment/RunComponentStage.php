@@ -102,6 +102,7 @@ class RunComponentStage
         $component->environment->setRelation('variables', new Collection(array_map(
             fn (array $variable): EnvironmentVariable => new EnvironmentVariable($variable), $run->variables,
         )));
+        $component->environment->setRelation('attachments', $component->environment->attachments()->whereKey($run->attachment_ids ?? [])->get());
         app(WriteComponentEnv::class)->write($component, $component->envPath().'.next');
         $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.link-shared', [
             'component' => $component, 'releasePath' => $deployment->path(), 'paths' => $component->environment->shared_paths ?? [],

@@ -64,6 +64,8 @@ class DeployEnvironment
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
                 || ! $environment->liveRun || $environment->deployments()->blocking()->exists()
+                || ! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)
+                || ($environment->liveRun->attachment_ids ?? []) !== $environment->attachments()->orderBy('id')->pluck('id')->all()
                 || ! $environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->exists()) {
                 return null;
             }
@@ -77,6 +79,7 @@ class DeployEnvironment
             $run->branch = $live->branch;
             $run->commit_id = $live->commit_id;
             $run->commit_data = $live->commit_data;
+            $run->attachment_ids = $live->attachment_ids ?? [];
             $run->variables = $live->variables;
             $run->variables_version = $live->variables_version;
             $run->save();
@@ -94,6 +97,9 @@ class DeployEnvironment
         }
         if (! $environment->components()->whereKey($environment->primary_component_id)->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->exists()) {
             throw ValidationException::withMessages(['deployment' => 'Select a ready app component as the primary before deploying.']);
+        }
+        if (! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)) {
+            throw ValidationException::withMessages(['deployment' => 'Wait for all resources to finish synchronizing or detaching before deploying.']);
         }
         if (! $environment->application->sourceControl) {
             throw ValidationException::withMessages(['deployment' => 'Select an available source control before deploying.']);

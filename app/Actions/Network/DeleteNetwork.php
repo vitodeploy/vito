@@ -19,6 +19,7 @@ class DeleteNetwork
             if (! $observed || $network->type !== \App\Enums\NetworkType::PROVIDER) {
                 foreach ($network->servers()->get() as $member) {
                     app(CheckLoadBalancerNetwork::class)->validate($member);
+                    app(CheckEnvironmentResourceNetwork::class)->validate($member);
                 }
             }
             $network->status = NetworkStatus::DELETING;

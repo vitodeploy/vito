@@ -52,6 +52,7 @@ import ImportEnv from '@/pages/applications/components/import-env';
 import DeploymentScriptEditor from '@/pages/applications/components/deployment-script';
 import DomainForm from '@/pages/applications/components/domain-form';
 import LoadBalancerBackends from '@/pages/applications/components/load-balancer-backends';
+import AttachResource from '@/pages/applications/components/attach-resource';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -122,6 +123,7 @@ export const dialogs = {
   environmentDeploymentScript: DeploymentScriptEditor,
   environmentDomainForm: DomainForm,
   loadBalancerBackends: LoadBalancerBackends,
+  attachResource: AttachResource,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

@@ -97,11 +97,11 @@ class SyncLoadBalancerBackends
                 }
                 $ids[] = $rule->id;
             }
-            foreach ($server->firewallRules()->where('component_managed', true)->whereNotIn('id', $ids)->get() as $rule) {
+            foreach ($server->firewallRules()->where('component_managed', true)->whereNull('environment_attachment_id')->whereNotIn('id', $ids)->get() as $rule) {
                 $rules->delete($rule);
             }
         });
-        $managed = $server->firewallRules()->where('component_managed', true)->get();
+        $managed = $server->firewallRules()->where('component_managed', true)->whereNull('environment_attachment_id')->get();
         if ($managed->isNotEmpty()) {
             /** @var Firewall $firewall */
             $firewall = $server->firewall()->handler();
@@ -127,11 +127,11 @@ class SyncLoadBalancerBackends
                 $firewall->applyRules();
             });
         }
-        $server->firewallRules()->where('component_managed', true)->update(['status' => FirewallRuleStatus::READY]);
+        $server->firewallRules()->where('component_managed', true)->whereNull('environment_attachment_id')->update(['status' => FirewallRuleStatus::READY]);
         foreach ($deleting as $id) {
             SocketEvent::dispatch(new SocketEventDTO(projectId: $server->project_id, type: 'firewall-rule.deleted', data: ['id' => $id]));
         }
-        foreach ($server->firewallRules()->where('component_managed', true)->get() as $rule) {
+        foreach ($server->firewallRules()->where('component_managed', true)->whereNull('environment_attachment_id')->get() as $rule) {
             SocketEvent::dispatch(new SocketEventDTO(projectId: $server->project_id, type: 'firewall-rule.updated', data: new FirewallRuleResource($rule)));
         }
     }

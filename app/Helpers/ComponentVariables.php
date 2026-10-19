@@ -31,6 +31,23 @@ class ComponentVariables
      */
     protected static function resources(Component $component): array
     {
-        return [];
+        if ($component->type !== \App\Enums\ComponentType::APP) {
+            return [];
+        }
+        $component->loadMissing('server', 'environment.attachments.server', 'environment.attachments.attachable');
+        $variables = [];
+        foreach ($component->environment->attachments as $attachment) {
+            $generic = AttachmentVariables::for($attachment, $component);
+            if ($generic === []) {
+                continue;
+            }
+            $aliases = $component->environment->application->preset()->attachmentAliases($attachment, $generic);
+            foreach ([...$generic, ...$aliases] as $key => $value) {
+                $variables[$key] = ['value' => $value, 'source' => 'resource',
+                    'is_secret' => array_key_exists($key, $aliases) || str_ends_with($key, '_PASSWORD') || str_ends_with($key, '_URL')];
+            }
+        }
+
+        return $variables;
     }
 }

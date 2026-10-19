@@ -19,7 +19,7 @@ test('enable networking', function (string $name) {
 
     $service = vitoPestFeatureServiceNetworkingTestMemoryDatabase($name);
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -42,7 +42,7 @@ test('enable networking', function (string $name) {
     SSH::assertExecutedContains("sudo install -o {$name} -g {$name} -m 600 /dev/null /etc/{$name}/vito-networking.conf");
     SSH::assertExecutedContains('printf \'requirepass "%s"\n\' "$VITO_MEMDB_PASSWORD"');
     SSH::assertExecutedContains('sudo sed -i \'/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d\'');
-    SSH::assertExecutedContains('# BEGIN VITO NETWORKING\nbind 0.0.0.0\ninclude %s\n# END VITO NETWORKING\n');
+    SSH::assertExecutedContains('# BEGIN VITO NETWORKING\nbind 0.0.0.0 -::\ninclude %s\n# END VITO NETWORKING\n');
     SSH::assertExecutedContains("sudo systemctl restart {$name}-server");
     SSH::assertNotExecutedContains((string) $service->secret, 'The networking password must never appear in a command.');
 })->with('memoryDatabases');
@@ -120,7 +120,7 @@ test('enable keeps the existing secret', function () {
     $service->secret = 'existing-secret';
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -485,7 +485,7 @@ test('a successful toggle clears a previous networking failure', function () {
     $service->type_data = ['networking' => false, 'networking_failed' => true];
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -506,7 +506,7 @@ test('failed disable does not roll back', function () {
     $service->secret = 'existing-secret';
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.disable', [
         'server' => $this->server,

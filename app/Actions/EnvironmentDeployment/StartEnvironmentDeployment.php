@@ -50,6 +50,7 @@ class StartEnvironmentDeployment
                 $run->branch = $run->rollbackOf->branch;
                 $run->variables = $environment->liveRun->variables ?? [];
                 $run->variables_version = $environment->liveRun->variables_version ?? 0;
+                $run->attachment_ids = $environment->liveRun->attachment_ids ?? [];
             } elseif (! $run->is_join) {
                 app(DeployEnvironment::class)->validate($environment);
                 $run->primary_component_id = $environment->primary_component_id;
@@ -58,6 +59,10 @@ class StartEnvironmentDeployment
                     'key' => $variable->key, 'value' => $variable->value, 'is_secret' => $variable->is_secret,
                 ])->all();
                 $run->variables_version = $environment->variables_version;
+                $run->attachment_ids = $environment->attachments()->orderBy('id')->pluck('id')->all();
+            } elseif (! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)
+                || ($run->attachment_ids ?? []) !== $environment->attachments()->orderBy('id')->pluck('id')->all()) {
+                throw new RuntimeException('Resource access changed before the component could join. Run a full deployment.');
             }
             $run->commit_id = $commit['commit_id'];
             $run->commit_data = $commit['commit_data'] ?? [];

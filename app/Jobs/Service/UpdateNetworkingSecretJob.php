@@ -37,6 +37,7 @@ class UpdateNetworkingSecretJob implements ShouldQueue
                 throw new RuntimeException("{$this->service->name} does not use a networking password.");
             }
 
+            app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($this->service);
             $secret = $this->remove ? null : $handler->generateNetworkingSecret();
 
             $handler->writeNetworkingSecret($secret);

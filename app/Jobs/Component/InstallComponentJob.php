@@ -23,6 +23,7 @@ class InstallComponentJob implements ShouldQueue
         $this->run("server-{$this->serverId}", fn () => app(InstallComponent::class)->install($this->componentId));
         $component = \App\Models\Component::query()->find($this->componentId);
         if ($component?->status === \App\Enums\ComponentStatus::READY && $component->type === \App\Enums\ComponentType::APP) {
+            app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
             app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->join($component->environment);
         }
     }

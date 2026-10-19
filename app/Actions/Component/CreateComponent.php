@@ -142,6 +142,8 @@ class CreateComponent
             throw ValidationException::withMessages(['name' => 'Connect a source control before adding components.']);
         }
 
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->component($environment, $server);
+
         $preset = $environment->application->preset();
         foreach ($preset->requiredServices($environment->runtime_version ?? '') as $type => $version) {
             if (! $server->services()->where('type', $type)->when($version !== null, fn ($query) => $query->where('version', $version))

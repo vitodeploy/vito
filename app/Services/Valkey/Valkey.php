@@ -30,6 +30,15 @@ class Valkey extends AbstractService implements HasLogs, SupportsNetworkingSecre
         return 'valkey-server';
     }
 
+    public function deletionRules(): array
+    {
+        return ['service' => [function (string $attribute, mixed $value, Closure $fail): void {
+            if (\App\Models\EnvironmentAttachment::forService($this->service)->exists()) {
+                $fail('Detach environment resources and finish cleanup before removing this service.');
+            }
+        }]];
+    }
+
     public function creationRules(array $input): array
     {
         return [

@@ -27,8 +27,9 @@ trait ManagesMysqlNetworking
         $this->service->server->ssh()->exec(
             view($this->getNetworkingScriptView('write-networking'), [
                 ...$this->networkingScriptData(),
-                'address' => $enable ? '0.0.0.0' : '127.0.0.1',
+                'address' => $enable ? '*' : '127.0.0.1',
                 'managesXPlugin' => $this->networkingManagesXPlugin(),
+                'xAddress' => $enable && ! \App\Models\EnvironmentAttachment::forService($this->service)->exists() ? '*' : '127.0.0.1',
             ]),
             ($enable ? 'enable' : 'disable').'-'.static::id().'-networking'
         );
@@ -50,13 +51,13 @@ trait ManagesMysqlNetworking
      */
     protected function verifyNetworking(bool $expectedOpen): void
     {
-        $expected = $expectedOpen ? '0.0.0.0' : '127.0.0.1';
+        $expected = $expectedOpen ? '*' : '127.0.0.1';
 
         if (! $this->networkingValueMatches($this->networkingBindAddress(), $expected)) {
             throw new SSHCommandError("{$this->service->name} is not bound to {$expected} after the restart.");
         }
 
-        $this->verifyXPluginNetworking($expected);
+        $this->verifyXPluginNetworking(\App\Models\EnvironmentAttachment::forService($this->service)->exists() ? '127.0.0.1' : $expected);
     }
 
     public function networkingProbeCommand(): string

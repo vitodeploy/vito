@@ -100,6 +100,32 @@ export interface EnvironmentDomainOptions {
   certificates: { id: number; server_id: number; domains: string[] }[];
 }
 
+export interface EnvironmentAttachment {
+  id: number;
+  environment_id: number;
+  alias: string | null;
+  kind: 'database' | 'redis';
+  name: string | null;
+  server_id: number;
+  server_name: string;
+  status: 'pending' | 'ready' | 'failed' | 'deleting' | 'deletion_failed';
+  status_color: 'warning' | 'success' | 'danger';
+  last_error: string | null;
+}
+
+export interface EnvironmentResourceOptions {
+  services: {
+    id: number;
+    name: string;
+    type: string;
+    server_id: number;
+    server_name: string;
+    databases: { id: number; name: string }[];
+    charsets: Record<string, { default: string | null; list: string[] }>;
+    default_charset: string;
+  }[];
+}
+
 export interface EnvironmentVariable {
   id: number | null;
   key: string;

@@ -18,8 +18,9 @@ class LinkUser
      *
      * @throws ValidationException
      */
-    public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
+    public function link(DatabaseUser $databaseUser, array $input, ?\App\Models\EnvironmentAttachment $attachment = null): DatabaseUser
     {
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->databaseUser($databaseUser, $attachment);
         $this->validate($databaseUser->server, $input);
 
         if (! isset($input['databases']) || ! is_array($input['databases'])) {

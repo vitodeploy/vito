@@ -19,6 +19,7 @@ class UpdateDatabaseUser
      */
     public function update(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->databaseUser($databaseUser);
         $this->validate($databaseUser, $input);
 
         $oldHost = $databaseUser->host;

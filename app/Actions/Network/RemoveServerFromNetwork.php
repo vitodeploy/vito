@@ -22,6 +22,7 @@ class RemoveServerFromNetwork
             if (! $observed || ($network->type !== NetworkType::PROVIDER
                 && ! ($network->type === NetworkType::CUSTOM && $member->server_ip_address_id === null))) {
                 app(CheckLoadBalancerNetwork::class)->validate($member);
+                app(CheckEnvironmentResourceNetwork::class)->validate($member);
             }
 
             $this->sync->teardown($member);

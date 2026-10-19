@@ -37,6 +37,10 @@ class TransferServer
                 ]);
             }
 
+            if (\App\Models\EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
+                throw ValidationException::withMessages(['project_id' => 'Detach the resources hosted by this server and finish cleanup before transferring it.']);
+            }
+
             $environments = $server->components()->with('environment.application')->get()
                 ->map(fn (Component $component): string => $component->environment->application->name.' / '.$component->environment->name)
                 ->unique();

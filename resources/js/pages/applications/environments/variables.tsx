@@ -42,7 +42,7 @@ export default function Variables() {
             {variables.map((variable) => <TableRow key={`${variable.source}-${variable.component_name ?? variable.id}-${variable.key}`}>
               <TableCell className="font-mono">{variable.key}</TableCell>
               <TableCell><pre className="max-h-32 max-w-sm overflow-auto whitespace-pre-wrap break-all text-sm">{variable.is_secret ? '••••••••' : variable.value}</pre></TableCell>
-              <TableCell><div className="flex flex-col items-start gap-1"><Badge variant="secondary">{variable.source === 'vito' ? 'Vito' : variable.source}</Badge>{variable.component_name && <span className="text-muted-foreground text-xs">{variable.component_name} · Read-only override</span>}</div></TableCell>
+              <TableCell><div className="flex flex-col items-start gap-1"><Badge variant="secondary">{variable.source === 'vito' ? 'Vito' : variable.source}</Badge>{variable.component_name && <span className="text-muted-foreground text-xs">{variable.component_name} · {variable.source === 'resource' ? 'Read-only default' : 'Read-only override'}</span>}</div></TableCell>
               <TableCell>{editable && variable.source === 'environment' && <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" aria-label={`Edit ${variable.key}`} onClick={() => dialog.variableForm.open({ application, environment, variable })}><PencilIcon /></Button>
                 <Button variant="outline" size="sm" aria-label={`Delete ${variable.key}`} onClick={() => dialog.confirm.open({

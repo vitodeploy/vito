@@ -28,6 +28,7 @@ class ToggleNetworking
      */
     public function disable(Service $service): void
     {
+        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($service);
         $this->validate($service);
 
         $this->dispatch($service, false);

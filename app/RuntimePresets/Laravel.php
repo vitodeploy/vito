@@ -31,6 +31,23 @@ class Laravel extends PHP
         return ['storage'];
     }
 
+    public function attachmentAliases(\App\Models\EnvironmentAttachment $attachment, array $generic): array
+    {
+        $prefix = $attachment->alias !== null ? $attachment->alias.'_' : '';
+        if ($attachment->kind() === 'redis') {
+            return [$prefix.'REDIS_PREFIX' => \Illuminate\Support\Str::slug($attachment->environment->application->name, '_').'_'.$attachment->environment->slug.'_'];
+        }
+
+        return [
+            $prefix.'DB_CONNECTION' => $attachment->service()?->name === 'postgresql' ? 'pgsql' : 'mysql',
+            $prefix.'DB_HOST' => $generic[$prefix.'DATABASE_HOST'],
+            $prefix.'DB_PORT' => $generic[$prefix.'DATABASE_PORT'],
+            $prefix.'DB_DATABASE' => $generic[$prefix.'DATABASE_NAME'],
+            $prefix.'DB_USERNAME' => $generic[$prefix.'DATABASE_USER'],
+            $prefix.'DB_PASSWORD' => $generic[$prefix.'DATABASE_PASSWORD'],
+        ];
+    }
+
     public function warnings(Environment $environment): array
     {
         if ($environment->components()->whereHas('capabilities', fn ($query) => $query->where('capability', 'web'))->count() <= 1) {

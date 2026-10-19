@@ -94,6 +94,7 @@ class DeleteComponent
             $component->delete();
         }
 
+        app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
         app(BroadcastComponentUpdate::class)->deleted($component);
     }
 

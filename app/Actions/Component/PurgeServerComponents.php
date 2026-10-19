@@ -20,6 +20,9 @@ class PurgeServerComponents
             \App\Models\Application::query()->whereHas('environments', fn ($query) => $query->whereKey($environmentIds))->orderBy('id')->lockForUpdate()->get();
             $environments = Environment::query()->whereKey($environmentIds)->orderBy('id')->lockForUpdate()->get();
             $server = Server::query()->lockForUpdate()->findOrFail($server->id);
+            if (\App\Models\EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['server' => 'Detach the resources hosted by this server and finish cleanup before deleting it.']);
+            }
             $components = $server->components()->lockForUpdate()
                 ->get(['id', 'server_id', 'environment_id', 'deploy_key_source_control_id', 'deploy_key_repository', 'deploy_key_id', 'ssh_key']);
             if ($components->pluck('environment_id')->diff($environments->modelKeys())->isNotEmpty()) {
@@ -48,6 +51,9 @@ class PurgeServerComponents
     {
         DB::afterCommit(function () use ($departure): void {
             app(SyncLoadBalancerBackends::class)->dispatch($departure['load_balancer_servers']);
+            foreach (Environment::query()->whereKey($departure['environments'])->get() as $environment) {
+                app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->dispatch($environment);
+            }
             foreach ($departure['keys'] as $key) {
                 try {
                     DeletePurgedComponentDeployKeyJob::dispatch($key['id'], $key['server_id'], $key['environment_id'], $key['deploy_key_source_control_id'], $key['deploy_key_repository'], $key['deploy_key_id'], $key['ssh_key']);

@@ -38,12 +38,15 @@ class ToggleNetworkingJob implements ShouldQueue
             }
 
             if ($this->enable) {
+                app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->protectNetworking($this->service);
                 $handler->enableNetworking();
             } else {
+                app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($this->service);
                 $handler->disableNetworking();
             }
 
             $this->service->jsonUpdate('type_data', 'networking', $this->enable, save: false);
+            $this->service->jsonUpdate('type_data', 'networking_dual_stack', $this->enable, save: false);
             $this->service->jsonForget('type_data', 'networking_failed', save: false);
             $handler->rememberEffectiveNetworking(
                 $this->enable,

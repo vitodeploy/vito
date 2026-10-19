@@ -16,14 +16,18 @@ class ManageRule
      * @param  array<string, mixed>  $input
      * @return FirewallRule $rule
      */
-    public function create(Server $server, array $input, bool $componentManaged = false): FirewallRule
+    public function create(Server $server, array $input, bool $componentManaged = false, ?\App\Models\EnvironmentAttachment $attachment = null): FirewallRule
     {
         $input = $this->normalizePort($input);
         $this->validate($input);
 
         $rule = new FirewallRule($this->attributesFromInput($input, FirewallRuleStatus::CREATING));
         $rule->server_id = $server->id;
-        $rule->component_managed = $componentManaged;
+        if ($attachment && $attachment->server_id !== $server->id) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['resource' => 'The resource belongs to another server.']);
+        }
+        $rule->component_managed = $componentManaged || $attachment !== null;
+        $rule->environment_attachment_id = $attachment?->id;
         $rule->save();
 
         if (! $rule->component_managed) {

@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
  * @property Collection<int, Component> $components
  * @property Collection<int, DeploymentScript> $deploymentScripts
  * @property Collection<int, EnvironmentVariable> $variables
+ * @property Collection<int, EnvironmentAttachment> $attachments
  * @property ?int $live_run_id
  * @property ?EnvironmentDeployment $liveRun
  * @property Collection<int, EnvironmentDeployment> $deployments
@@ -94,6 +95,12 @@ class Environment extends AbstractModel
     public function variables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
+    }
+
+    /** @return HasMany<EnvironmentAttachment, covariant $this> */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(EnvironmentAttachment::class);
     }
 
     /** @return HasMany<EnvironmentDeployment, covariant $this> */

@@ -31,6 +31,7 @@ use Illuminate\Support\Collection;
  * @property bool $is_join
  * @property bool $is_recovering
  * @property list<array{key: string, value: string, is_secret: bool}> $variables
+ * @property ?list<int> $attachment_ids
  * @property int $variables_version
  * @property Environment $environment
  * @property ?User $triggeredBy
@@ -58,6 +59,7 @@ class EnvironmentDeployment extends AbstractModel
         'rollback_of_id' => 'integer',
         'is_join' => 'boolean',
         'is_recovering' => 'boolean',
+        'attachment_ids' => 'array',
         'variables' => 'encrypted:json',
         'variables_version' => 'integer',
     ];

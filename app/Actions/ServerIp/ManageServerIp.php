@@ -106,6 +106,7 @@ class ManageServerIp
             Server::query()->lockForUpdate()->findOrFail($address->server_id);
             $address->refresh();
             app(\App\Actions\Network\CheckLoadBalancerNetwork::class)->address($address);
+            app(\App\Actions\Network\CheckEnvironmentResourceNetwork::class)->address($address);
             $address->status = IpAddressStatus::DELETING;
             $address->save();
         });

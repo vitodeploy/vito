@@ -36,7 +36,7 @@ class DeleteEnvironment
                 throw ValidationException::withMessages(['name' => 'Teardown is already in progress. Retry it from the application if necessary.']);
             }
 
-            if (! $environment->components()->exists() && ! \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
+            if (! $environment->attachments()->exists() && ! $environment->components()->exists() && ! \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
                 app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
                 $environment->delete();
                 $this->broadcast($environment, true);
@@ -56,7 +56,7 @@ class DeleteEnvironment
     }
 
     /**
-     * @return list<\App\Jobs\EnvironmentDomain\DeleteEnvironmentDomainsJob|DeleteComponentJob|DeleteEnvironmentJob>
+     * @return list<\App\Jobs\EnvironmentDomain\DeleteEnvironmentDomainsJob|\App\Jobs\EnvironmentAttachment\SyncEnvironmentResourceAccessJob|DeleteComponentJob|DeleteEnvironmentJob>
      */
     public function jobs(Environment $environment): array
     {
@@ -76,6 +76,10 @@ class DeleteEnvironment
             $component->save();
             $jobs[] = new DeleteComponentJob($component->id, $component->server_id);
         }
+        foreach ($environment->attachments()->orderBy('id')->get() as $attachment) {
+            app(\App\Actions\EnvironmentAttachment\DetachEnvironmentResource::class)->mark($attachment);
+            $jobs[] = new \App\Jobs\EnvironmentAttachment\SyncEnvironmentResourceAccessJob($attachment->id, $attachment->server_id);
+        }
         $this->broadcast($environment);
         $jobs[] = new DeleteEnvironmentJob($environment->id);
 
@@ -88,8 +92,8 @@ class DeleteEnvironment
         if (! $environment || $environment->status !== EnvironmentStatus::DELETING) {
             return;
         }
-        if ($environment->components()->exists() || \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
-            throw new RuntimeException('Component or certificate teardown is incomplete.');
+        if ($environment->attachments()->exists() || $environment->components()->exists() || \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
+            throw new RuntimeException('Component, resource or certificate teardown is incomplete.');
         }
         $environment->delete();
         $this->broadcast($environment, true);
