@@ -12,7 +12,7 @@ class RenewSslCertificatesCommand extends Command
 {
     protected $signature = 'ssl:renew-wildcards';
 
-    protected $description = 'Renew wildcard Let\'s Encrypt SSL certificates expiring within 30 days';
+    protected $description = 'Renew wildcard and environment Let\'s Encrypt SSL certificates expiring within 30 days';
 
     public function handle(): void
     {
@@ -28,6 +28,13 @@ class RenewSslCertificatesCommand extends Command
             ->each(function (Ssl $ssl) {
                 dispatch(new CreateLetsEncryptWildcardSslJob($ssl->server, $ssl, isRenewal: true))
                     ->onQueue('ssh-certbot');
+            });
+
+        Ssl::query()->whereNotNull('environment_id')->whereNotNull('server_id')
+            ->where('type', SslType::LETSENCRYPT)->where('is_wildcard', false)
+            ->where('status', SslStatus::CREATED)->where('expires_at', '<=', now()->addDays(30))
+            ->lazy()->each(function (Ssl $ssl): void {
+                \App\Jobs\SSL\RenewEnvironmentSslJob::dispatch($ssl->id, $ssl->server_id);
             });
     }
 }

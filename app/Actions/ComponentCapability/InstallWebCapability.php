@@ -20,6 +20,7 @@ class InstallWebCapability
         if ($mode === WebMode::FPM && $component->user !== $component->server->getSshUser()) {
             app(EnsureFpmPool::class)->ensure($component->server, $component->user, $component->environment->runtime_version ?? '');
         }
+        app(\App\Actions\Component\SyncComponentVhost::class)->sync($component);
         if ($mode !== WebMode::PROXY) {
             return;
         }
@@ -41,6 +42,7 @@ class InstallWebCapability
 
     public function uninstall(ComponentCapability $capability, Component $component): void
     {
+        app(\App\Actions\Component\SyncComponentVhost::class)->sync($component);
         foreach ($component->workers()->where('component_capability_id', $capability->id)->get() as $worker) {
             app(DeleteWorker::class)->remove($worker);
         }

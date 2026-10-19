@@ -50,6 +50,7 @@ import CapabilitiesDialog from '@/pages/applications/components/capabilities-dia
 import VariableForm from '@/pages/applications/components/variable-form';
 import ImportEnv from '@/pages/applications/components/import-env';
 import DeploymentScriptEditor from '@/pages/applications/components/deployment-script';
+import DomainForm from '@/pages/applications/components/domain-form';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -118,6 +119,7 @@ export const dialogs = {
   variableForm: VariableForm,
   importEnv: ImportEnv,
   environmentDeploymentScript: DeploymentScriptEditor,
+  environmentDomainForm: DomainForm,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

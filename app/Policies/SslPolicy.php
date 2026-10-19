@@ -29,20 +29,20 @@ class SslPolicy
     {
         return $this->hasReadAccess($user, $server->project) &&
             $server->isReady() &&
-            $ssl->server_id === $server->id;
+            $ssl->server_id === $server->id && $ssl->environment_id === null;
     }
 
     public function delete(User $user, Ssl $ssl, Server $server): bool
     {
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
-            $ssl->server_id === $server->id;
+            $ssl->server_id === $server->id && $ssl->environment_id === null;
     }
 
     public function activate(User $user, Ssl $ssl, Server $server): bool
     {
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
-            $ssl->server_id === $server->id;
+            $ssl->server_id === $server->id && $ssl->environment_id === null;
     }
 }

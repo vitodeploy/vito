@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
+ * @property ?int $environment_id
+ * @property ?Environment $environment
+ * @property \Illuminate\Database\Eloquent\Collection<int, EnvironmentDomain> $environmentDomains
  * @property ?int $site_id
  * @property ?int $server_id
  * @property ?int $domain_id
@@ -70,6 +73,7 @@ class Ssl extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'environment_id' => 'integer',
         'server_id' => 'integer',
         'domain_id' => 'integer',
         'certificate' => 'encrypted',
@@ -91,7 +95,7 @@ class Ssl extends AbstractModel
      */
     public function ownerColumns(): array
     {
-        return ['site_id'];
+        return ['site_id', 'environment_id'];
     }
 
     public function requiresOwner(): bool
@@ -131,13 +135,25 @@ class Ssl extends AbstractModel
         return $this->hasMany(HostedDomain::class);
     }
 
+    /** @return HasMany<EnvironmentDomain, covariant $this> */
+    public function environmentDomains(): HasMany
+    {
+        return $this->hasMany(EnvironmentDomain::class);
+    }
+
+    /** @return BelongsTo<Environment, covariant $this> */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
+    }
+
     /**
      * @return Builder<Ssl>
      */
     public static function activeServerLevel(int $serverId): Builder
     {
         return self::query()
-            ->whereNull('site_id')
+            ->whereNull('site_id')->whereNull('environment_id')
             ->where('server_id', $serverId)
             ->where('status', SslStatus::CREATED)
             ->whereNot('type', SslType::CSR)

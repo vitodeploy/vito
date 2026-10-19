@@ -40,6 +40,12 @@ class CreateSite
      */
     public function create(Server $server, array $input, User $actor): Site
     {
+        return app(AssertHostAvailable::class)->run($server->id, 'domain', fn (): Site => $this->createLocked($server, $input, $actor));
+    }
+
+    /** @param array<string, mixed> $input */
+    private function createLocked(Server $server, array $input, User $actor): Site
+    {
         $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
 
         $this->validate($server, $input);

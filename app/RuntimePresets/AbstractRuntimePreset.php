@@ -15,6 +15,25 @@ abstract class AbstractRuntimePreset
 
     abstract public function webMode(): WebMode;
 
+    /** @return array<string, mixed> */
+    public function vhostData(\App\Models\Component $component): array
+    {
+        $web = $component->capabilities->firstWhere('capability', 'web');
+        $version = $component->environment->runtime_version;
+        $socket = $component->user === $component->server->getSshUser()
+            ? '/var/run/php/php'.$version.'-fpm.sock'
+            : '/run/php/php'.$version.'-fpm-'.$component->user.'.sock';
+
+        return [
+            'root' => rtrim($component->currentPath().'/'.ltrim($web?->config['web_directory'] ?? '', '/'), '/'),
+            'is_php' => $this->webMode() === WebMode::FPM,
+            'is_component_proxy' => $this->webMode() === WebMode::PROXY,
+            'is_static' => $this->webMode() === WebMode::STATIC,
+            'php_socket' => $socket,
+            'proxy_address' => '127.0.0.1:'.($web?->config['port'] ?? ''),
+        ];
+    }
+
     /**
      * @return list<string>
      */

@@ -12,8 +12,10 @@ use App\Models\CronJob;
 use App\Models\Deployment;
 use App\Models\DeploymentScript;
 use App\Models\Environment;
+use App\Models\EnvironmentDomain;
 use App\Models\IsolatedUser;
 use App\Models\Server;
+use App\Models\Ssl;
 use App\Models\Worker;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -216,10 +218,19 @@ test('application migration round trips while preserving site data', function ()
     DeploymentScript::factory()->create(['site_id' => null, 'component_id' => $component->id]);
     Worker::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     CronJob::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
+    $siteSsl = Ssl::factory()->create(['site_id' => $this->site->id]);
+    $serverSsl = Ssl::factory()->serverLevel()->for($this->server)->create();
+    $environmentSsl = Ssl::factory()->create(['site_id' => null, 'server_id' => $component->server_id, 'environment_id' => $component->environment_id]);
+    EnvironmentDomain::factory()->for($component)->create(['ssl_id' => $environmentSsl->id]);
     $migration = require database_path('migrations/2026_10_17_171647_create_applications_tables.php');
     $deploymentsMigration = require database_path('migrations/2026_10_18_160459_create_environment_deployments_table.php');
     $operationsMigration = require database_path('migrations/2026_10_18_223613_add_environment_deployment_operations.php');
+    $domainsMigration = require database_path('migrations/2026_10_19_085705_create_environment_domains.php');
 
+    $domainsMigration->down();
+    expect(Schema::hasTable('environment_domains'))->toBeFalse()
+        ->and(Schema::hasColumn('ssls', 'environment_id'))->toBeFalse();
+    $this->assertDatabaseMissing('ssls', ['id' => $environmentSsl->id]);
     $operationsMigration->down();
     $deploymentsMigration->down();
     expect(Schema::hasTable('environment_deployments'))->toBeFalse();
@@ -238,10 +249,14 @@ test('application migration round trips while preserving site data', function ()
     $migration->up();
     $deploymentsMigration->up();
     $operationsMigration->up();
-    expect(Schema::hasColumn('environments', 'live_run_id'))->toBeTrue()
+    $domainsMigration->up();
+    expect(Schema::hasTable('environment_domains'))->toBeTrue()
+        ->and(Schema::hasColumn('ssls', 'environment_id'))->toBeTrue()
+        ->and(Schema::hasColumn('environments', 'live_run_id'))->toBeTrue()
         ->and(Schema::hasColumn('deployments', 'previous_deployment_id'))->toBeTrue();
+    $this->assertDatabaseHas('ssls', ['id' => $serverSsl->id, 'site_id' => null, 'environment_id' => null]);
 
-    foreach ([$siteDeployment, $siteScript, $siteWorker, $siteCron] as $preserved) {
+    foreach ([$siteDeployment, $siteScript, $siteWorker, $siteCron, $siteSsl] as $preserved) {
         $this->assertDatabaseHas($preserved->getTable(), ['id' => $preserved->id, 'site_id' => $this->site->id]);
     }
     expect(Component::query()->count())->toBe(0)

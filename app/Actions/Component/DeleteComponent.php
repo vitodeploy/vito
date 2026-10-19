@@ -33,6 +33,10 @@ class DeleteComponent
                     ->whereNot('id', $component->id)->whereNotIn('status', [ComponentStatus::DELETING->value, ComponentStatus::DELETION_FAILED->value])],
             ])->validate();
 
+            if ($component->domains()->exists()) {
+                throw ValidationException::withMessages(['component' => 'Remove the domains targeting this component before deleting it.']);
+            }
+
             if ($component->status === ComponentStatus::DELETING) {
                 throw ValidationException::withMessages(['component' => 'Component deletion is already in progress.']);
             }

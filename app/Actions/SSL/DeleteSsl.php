@@ -17,10 +17,22 @@ class DeleteSsl
      */
     public function delete(Ssl $ssl): void
     {
-        $this->ensureNotInUse($ssl);
-
-        $ssl->status = SslStatus::DELETING;
-        $ssl->save();
+        $markDeleting = function () use ($ssl): void {
+            $ssl->refresh();
+            $this->ensureNotInUse($ssl);
+            $ssl->status = SslStatus::DELETING;
+            $ssl->save();
+        };
+        $serverId = $ssl->server_id ?? $ssl->site?->server_id;
+        try {
+            if ($serverId) {
+                \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$serverId, 600)->block(10, $markDeleting);
+            } else {
+                $markDeleting();
+            }
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+            throw ValidationException::withMessages(['ssl' => 'Another operation on this server is in progress. Please retry.']);
+        }
 
         if ($ssl->site_id === null) {
             $this->deleteServerSsl($ssl);
@@ -58,6 +70,9 @@ class DeleteSsl
      */
     private function ensureNotInUse(Ssl $ssl): void
     {
+        if ($ssl->environmentDomains()->exists()) {
+            throw ValidationException::withMessages(['ssl' => 'This certificate is used by environment domains. Remove those references first.']);
+        }
         $hostedDomains = $ssl->hostedDomains()->with('site')->get();
 
         if ($hostedDomains->isEmpty()) {

@@ -76,6 +76,29 @@ export interface EnvironmentDeployment {
   deployments: ComponentDeployment[];
 }
 
+export interface EnvironmentDomain {
+  id: number;
+  environment_id: number;
+  component_id: number;
+  host: string;
+  type: 'alias' | 'redirect';
+  type_color: string;
+  redirect_to_domain_id: number | null;
+  ssl_method: 'disabled' | 'letsencrypt' | 'custom';
+  ssl_method_color: string;
+  ssl_id: number | null;
+  force_ssl: boolean;
+  status: 'pending' | 'updating' | 'active';
+  status_color: string;
+  error: string | null;
+}
+
+export interface EnvironmentDomainOptions {
+  components: { id: number; name: string; server_id: number; server_name: string; server_ip: string }[];
+  aliases: { id: number; host: string; component_id: number }[];
+  certificates: { id: number; server_id: number; domains: string[] }[];
+}
+
 export interface EnvironmentVariable {
   id: number | null;
   key: string;

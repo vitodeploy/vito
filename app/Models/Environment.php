@@ -21,6 +21,7 @@ use Illuminate\Support\Collection;
  * @property EnvironmentStatus $status
  * @property Application $application
  * @property ?Component $primaryComponent
+ * @property Collection<int, EnvironmentDomain> $domains
  * @property Collection<int, Component> $components
  * @property Collection<int, DeploymentScript> $deploymentScripts
  * @property Collection<int, EnvironmentVariable> $variables
@@ -63,6 +64,12 @@ class Environment extends AbstractModel
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+
+    /** @return HasMany<EnvironmentDomain, covariant $this> */
+    public function domains(): HasMany
+    {
+        return $this->hasMany(EnvironmentDomain::class);
     }
 
     /**

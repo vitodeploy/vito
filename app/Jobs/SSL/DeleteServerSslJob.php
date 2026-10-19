@@ -20,11 +20,33 @@ class DeleteServerSslJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    public bool $deleteWhenMissingModels = true;
+
     public function __construct(protected Server $server, protected Ssl $ssl) {}
 
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function () {
+            if (! $this->ssl->fresh()) {
+                return;
+            }
+            $this->ssl->refresh();
+            if ($this->ssl->server_id !== $this->server->id) {
+                return;
+            }
+            if ($this->ssl->environmentDomains()->exists() || $this->ssl->hostedDomains()->exists()) {
+                if ($this->ssl->status === SslStatus::DELETING) {
+                    $this->ssl->status = SslStatus::CREATED;
+                    $this->ssl->save();
+                    $this->broadcastSslUpdate();
+                }
+                return;
+            }
+            if ($this->ssl->environment_id) {
+                app(\App\Actions\EnvironmentDomain\DeleteEnvironmentDomain::class)->removeUnusedCertificate($this->ssl);
+
+                return;
+            }
             $ssh = $this->server->ssh()->setLog($this->ssl->log);
 
             $result = $ssh->exec(view('ssh.ssl.delete-ssl', [
@@ -44,6 +66,9 @@ class DeleteServerSslJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
+        if (! $this->ssl->fresh() || $this->ssl->environmentDomains()->exists() || $this->ssl->hostedDomains()->exists()) {
+            return;
+        }
         $this->ssl->status = SslStatus::FAILED;
         $this->ssl->save();
         $this->broadcastSslUpdate();

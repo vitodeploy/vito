@@ -37,7 +37,8 @@ class DeleteApplication
                 app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
             }
 
-            if (! Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()) {
+            if (! Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()
+                && ! \App\Models\Ssl::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()) {
                 foreach ($application->environments()->get() as $environment) {
                     app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
                 }

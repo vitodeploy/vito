@@ -19,6 +19,12 @@ class CreateHostedDomain
      */
     public function create(Site $site, array $input): HostedDomain
     {
+        return app(AssertHostAvailable::class)->run($site->server_id, 'domain', fn (): HostedDomain => $this->createLocked($site, $input));
+    }
+
+    /** @param array<string, mixed> $input */
+    private function createLocked(Site $site, array $input): HostedDomain
+    {
         $validated = $this->validate($site, $input);
         app(AssertHostAvailable::class)->assert($site->server, $validated['domain'], 'domain');
 

@@ -36,7 +36,7 @@ class DeleteEnvironment
                 throw ValidationException::withMessages(['name' => 'Teardown is already in progress. Retry it from the application if necessary.']);
             }
 
-            if (! $environment->components()->exists()) {
+            if (! $environment->components()->exists() && ! \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
                 app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
                 $environment->delete();
                 $this->broadcast($environment, true);
@@ -56,7 +56,7 @@ class DeleteEnvironment
     }
 
     /**
-     * @return list<DeleteComponentJob|DeleteEnvironmentJob>
+     * @return list<\App\Jobs\EnvironmentDomain\DeleteEnvironmentDomainsJob|DeleteComponentJob|DeleteEnvironmentJob>
      */
     public function jobs(Environment $environment): array
     {
@@ -65,6 +65,11 @@ class DeleteEnvironment
         $environment->last_error = null;
         $environment->save();
         $jobs = [];
+        $domainServers = $environment->components()->whereHas('domains')->distinct()->pluck('server_id')
+            ->merge(\App\Models\Ssl::query()->where('environment_id', $environment->id)->whereNotNull('server_id')->pluck('server_id'))->unique();
+        foreach ($domainServers as $serverId) {
+            $jobs[] = new \App\Jobs\EnvironmentDomain\DeleteEnvironmentDomainsJob($environment->id, $serverId);
+        }
         foreach ($environment->components()->orderBy('id')->get() as $component) {
             $component->status = ComponentStatus::DELETING;
             $component->last_error = null;
@@ -83,8 +88,8 @@ class DeleteEnvironment
         if (! $environment || $environment->status !== EnvironmentStatus::DELETING) {
             return;
         }
-        if ($environment->components()->exists()) {
-            throw new RuntimeException('Component teardown is incomplete.');
+        if ($environment->components()->exists() || \App\Models\Ssl::query()->where('environment_id', $environment->id)->exists()) {
+            throw new RuntimeException('Component or certificate teardown is incomplete.');
         }
         $environment->delete();
         $this->broadcast($environment, true);

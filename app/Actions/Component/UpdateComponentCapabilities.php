@@ -63,6 +63,9 @@ class UpdateComponentCapabilities
                     $existing->forget($configuration['capability']);
                 }
                 foreach ($existing as $capability) {
+                    if ($capability->capability === 'web' && $component->domains()->exists()) {
+                        throw ValidationException::withMessages(['capabilities' => 'Remove the domains targeting this component before removing web.']);
+                    }
                     $capability->status = ComponentStatus::DELETING;
                     $capability->save();
                 }

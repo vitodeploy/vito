@@ -17,7 +17,7 @@ dataset('exclusive owner models', [
     'worker' => [Worker::class, ['site_id', 'component_id'], false],
     'cron job' => [CronJob::class, ['site_id', 'component_id'], false],
     'git hook' => [GitHook::class, ['site_id', 'repository'], true],
-    'ssl' => [Ssl::class, ['site_id'], false],
+    'ssl' => [Ssl::class, ['site_id', 'environment_id'], false],
 ]);
 
 test('shared models enforce their zero owner contract', function (string $class, array $columns, bool $required) {
@@ -99,6 +99,7 @@ test('shared models reject every pair of owners on create and update', function 
     [DeploymentScript::class, ['site_id', 'environment_id', 'component_id']],
     [Worker::class, ['site_id', 'component_id']],
     [CronJob::class, ['site_id', 'component_id']],
+    [Ssl::class, ['site_id', 'environment_id']],
 ]);
 
 test('required owners cannot be cleared on existing models', function (string $class) {

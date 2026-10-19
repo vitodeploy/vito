@@ -20,6 +20,12 @@ class UpdateHostedDomain
      */
     public function update(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
     {
+        return app(AssertHostAvailable::class)->run($site->server_id, 'domain', fn (): HostedDomain => $this->updateLocked($hostedDomain->refresh(), $site, $input));
+    }
+
+    /** @param array<string, mixed> $input */
+    private function updateLocked(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
+    {
         if ($hostedDomain->status->isProcessing()) {
             throw ValidationException::withMessages([
                 'domain' => ['Cannot update a domain while it is '.$hostedDomain->status->value.'.'],

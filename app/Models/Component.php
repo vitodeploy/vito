@@ -29,6 +29,7 @@ use Illuminate\Support\Collection;
  * @property Environment $environment
  * @property Server $server
  * @property ?IsolatedUser $isolatedUser
+ * @property Collection<int, EnvironmentDomain> $domains
  * @property Collection<int, ComponentCapability> $capabilities
  * @property Collection<int, Worker> $workers
  * @property Collection<int, CronJob> $cronJobs
@@ -80,6 +81,12 @@ class Component extends AbstractModel
     public function isolatedUser(): BelongsTo
     {
         return $this->belongsTo(IsolatedUser::class);
+    }
+
+    /** @return HasMany<EnvironmentDomain, covariant $this> */
+    public function domains(): HasMany
+    {
+        return $this->hasMany(EnvironmentDomain::class);
     }
 
     /**
