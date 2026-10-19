@@ -12,16 +12,24 @@ class DeleteNetwork
         private RecomputeNetworkStatus $recompute,
     ) {}
 
-    public function delete(Network $network): void
+    public function delete(Network $network, bool $observed = false): void
     {
-        $network->status = NetworkStatus::DELETING;
-        $network->save();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($network, $observed): void {
+            \App\Models\Server::query()->whereIn('id', $network->servers()->select('server_id'))->orderBy('id')->lockForUpdate()->get();
+            if (! $observed || $network->type !== \App\Enums\NetworkType::PROVIDER) {
+                foreach ($network->servers()->get() as $member) {
+                    app(CheckLoadBalancerNetwork::class)->validate($member);
+                }
+            }
+            $network->status = NetworkStatus::DELETING;
+            $network->save();
 
-        $network->load('servers.server');
-        foreach ($network->servers as $member) {
-            $this->sync->teardown($member);
-        }
+            $network->load('servers.server');
+            foreach ($network->servers as $member) {
+                $this->sync->teardown($member);
+            }
 
-        $this->recompute->handle($network);
+            $this->recompute->handle($network);
+        });
     }
 }

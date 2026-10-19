@@ -42,6 +42,7 @@ export interface ComponentDeployment {
   id: number;
   component_id: number | null;
   component_name: string | null;
+  component_type: 'app' | 'load_balancer' | null;
   server_id: number | null;
   server_name: string | null;
   log_id: number | null;
@@ -128,12 +129,27 @@ export interface Component {
   last_error: string | null;
   needs_redeploy: boolean;
   ssh_key: string | null;
+  load_balancer_method: string | null;
+  backends?: ComponentBackend[];
+  webserver?: string | null;
   capabilities: string[];
   capability_configs: (CapabilityConfiguration & { status: string; status_color: Component['status_color'] })[];
   surfaces: string[];
   created_at: string;
   updated_at: string;
 }
+
+export interface ComponentBackend {
+  id: number;
+  target_component_id: number | null;
+  target_name?: string | null;
+  ip: string | null;
+  port: number;
+  weight: number | null;
+  backup: boolean;
+}
+
+export type BackendTarget = { id: number; name: string; server_name: string };
 
 export interface ComponentOptions {
   servers: { id: number; name: string; ssh_user: string }[];

@@ -39,7 +39,7 @@ class UpdateComponentCapabilities
                 $server = Server::query()->lockForUpdate()->findOrFail($component->server_id);
                 $component->refresh();
                 app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($component->environment, 'capabilities');
-                if ($component->status !== ComponentStatus::READY || ! $server->isReady()
+                if ($component->type !== \App\Enums\ComponentType::APP || $component->status !== ComponentStatus::READY || ! $server->isReady()
                     || $component->environment->status !== EnvironmentStatus::READY
                     || $component->environment->application->status !== ApplicationStatus::READY) {
                     throw ValidationException::withMessages(['capabilities' => 'Only a ready component outside teardown can change capabilities.']);

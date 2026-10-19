@@ -87,7 +87,7 @@ test('environment domain targets must be ready web components of the same enviro
         'server' => $this->server->update(['status' => ServerStatus::INSTALLING]),
         'foreign-server' => $this->server->update(['project_id' => Project::factory()->create()->id]),
         'foreign-environment' => $this->component->update(['environment_id' => Environment::factory()->create()->id]),
-        'lb' => $this->component->update(['type' => ComponentType::LOAD_BALANCER]),
+        'lb-pending' => $this->component->forceFill(['type' => ComponentType::LOAD_BALANCER, 'status' => ComponentStatus::PENDING])->save(),
         'no-web' => $this->component->capabilities()->delete(),
         'web-pending' => $this->component->capabilities()->update(['status' => ComponentStatus::PENDING]),
         'no-webserver' => $this->server->services()->where('type', 'webserver')->delete(),
@@ -96,7 +96,7 @@ test('environment domain targets must be ready web components of the same enviro
     };
     expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, $this->input))->toThrow(ValidationException::class);
     $this->assertDatabaseCount('environment_domains', 0);
-})->with(['component', 'server', 'foreign-server', 'foreign-environment', 'lb', 'no-web', 'web-pending', 'no-webserver', 'environment', 'application']);
+})->with(['component', 'server', 'foreign-server', 'foreign-environment', 'lb-pending', 'no-web', 'web-pending', 'no-webserver', 'environment', 'application']);
 
 test('domain collisions include sites aliases hosted domains and other environments on the target server', function (string $kind) {
     match ($kind) {

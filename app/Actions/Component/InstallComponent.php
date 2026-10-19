@@ -40,6 +40,21 @@ class InstallComponent
         }
         app(BroadcastComponentUpdate::class)->broadcast($component);
 
+        if ($component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+            app(SyncComponentVhost::class)->sync($component);
+            DB::transaction(function () use ($component): void {
+                Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);
+                $component->refresh();
+                if ($component->status === ComponentStatus::INSTALLING) {
+                    $component->status = ComponentStatus::READY;
+                    $component->save();
+                }
+            });
+            app(BroadcastComponentUpdate::class)->broadcast($component);
+
+            return;
+        }
+
         if ($component->isolatedUser) {
             app(EnsureIsolatedUser::class)->ensure($component->server, $component->user);
         }

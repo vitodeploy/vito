@@ -135,8 +135,8 @@ class Server extends AbstractModel
      */
     protected array $networkDeparture = ['members' => [], 'networks' => []];
 
-    /** @var array{environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>} */
-    protected array $componentDeparture = ['environments' => [], 'keys' => []];
+    /** @var array{load_balancer_servers: list<int>, environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>} */
+    protected array $componentDeparture = ['environments' => [], 'keys' => [], 'load_balancer_servers' => []];
 
     public static function boot(): void
     {
@@ -259,8 +259,14 @@ class Server extends AbstractModel
      */
     public function componentsUsing(Service $service): Collection
     {
-        return $this->components()->with(['environment.application', 'capabilities'])->get()
+        return $this->components()->with(['environment.application', 'capabilities'])->withExists('loadBalancerBackends')->get()
             ->filter(function (Component $component) use ($service): bool {
+                if ($component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+                    return $service->type === 'webserver';
+                }
+                if ($service->type === 'firewall' && $component->load_balancer_backends_exists) {
+                    return true;
+                }
                 $preset = $component->environment->application->preset();
                 $versions = array_unique([
                     $component->environment->runtime_version ?? '',

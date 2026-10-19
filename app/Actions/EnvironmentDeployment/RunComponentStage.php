@@ -30,7 +30,13 @@ class RunComponentStage
             return;
         }
         $deployment->log?->write($recovering ? 'Restoring previous release.' : 'Starting '.$stage->getText().'.');
-        if ($recovering) {
+        if ($deployment->component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+            if ($stage !== DeploymentStage::RELEASE || $deployment->environmentDeployment->is_join) {
+                throw new RuntimeException('Load balancers only participate in the release stage.');
+            }
+            \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$deployment->component->server_id, $stage->timeout() + 60)
+                ->block(10, fn () => app(\App\Actions\Component\SyncComponentVhost::class)->sync($deployment->component));
+        } elseif ($recovering) {
             app(RollbackComponentRelease::class)->rollback($deployment);
         } else {
             match ($stage) {
@@ -41,7 +47,7 @@ class RunComponentStage
         }
         $deployment->status = DeploymentStatus::FINISHED;
         $deployment->save();
-        if ($deployment->environmentDeployment->fresh()->status === EnvironmentDeploymentStatus::CANCELLED) {
+        if ($deployment->component->type === \App\Enums\ComponentType::APP && $deployment->environmentDeployment->fresh()->status === EnvironmentDeploymentStatus::CANCELLED) {
             $deployment->component->needs_redeploy = true;
             $deployment->component->save();
         }

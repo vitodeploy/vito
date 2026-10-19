@@ -89,10 +89,10 @@ class ValidateEnvironmentDomain
             throw ValidationException::withMessages(['redirect_to_domain_id' => 'Select a non-wildcard alias in this environment.']);
         }
         $component = $environment->components()->with('server', 'capabilities')->find($target->component_id ?? $data['component_id']);
-        if (! $component || $component->type !== ComponentType::APP || $component->status !== ComponentStatus::READY
+        if (! $component || $component->status !== ComponentStatus::READY
             || ! $component->server->isReady() || $component->server->project_id !== $environment->application->project_id
-            || ! $component->capabilities->contains(fn ($capability): bool => $capability->capability === 'web' && $capability->status === ComponentStatus::READY)) {
-            throw ValidationException::withMessages(['component_id' => 'Select a ready web component in this environment.']);
+            || ($component->type !== ComponentType::LOAD_BALANCER && ! $component->capabilities->contains(fn ($capability): bool => $capability->capability === 'web' && $capability->status === ComponentStatus::READY))) {
+            throw ValidationException::withMessages(['component_id' => 'Select a ready web component or load balancer in this environment.']);
         }
         $webserver = $component->server->webserver();
         if (! $webserver || ! in_array($webserver->name, ['nginx', 'caddy'], true)) {

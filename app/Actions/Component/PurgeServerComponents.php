@@ -11,7 +11,7 @@ use Throwable;
 class PurgeServerComponents
 {
     /**
-     * @return array{environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>}
+     * @return array{load_balancer_servers: list<int>, environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>}
      */
     public function purge(Server $server): array
     {
@@ -28,7 +28,10 @@ class PurgeServerComponents
             foreach ($environments as $environment) {
                 app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'server');
             }
+            $backends = \App\Models\ComponentBackend::query()->whereIn('component_id', $components->modelKeys())
+                ->orWhereIn('target_component_id', $components->modelKeys())->with('component', 'targetComponent')->get();
             $departure = [
+                'load_balancer_servers' => array_values(array_diff(app(SyncLoadBalancerBackends::class)->servers($backends), [$server->id])),
                 'environments' => $components->pluck('environment_id')->unique()->values()->all(),
                 'keys' => $components->filter(fn ($component) => $component->deploy_key_id !== null || $component->deploy_key_source_control_id !== null)->values()->toArray(),
             ];
@@ -39,11 +42,12 @@ class PurgeServerComponents
     }
 
     /**
-     * @param  array{environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>}  $departure
+     * @param  array{load_balancer_servers: list<int>, environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>}  $departure
      */
     public function handle(array $departure): void
     {
         DB::afterCommit(function () use ($departure): void {
+            app(SyncLoadBalancerBackends::class)->dispatch($departure['load_balancer_servers']);
             foreach ($departure['keys'] as $key) {
                 try {
                     DeletePurgedComponentDeployKeyJob::dispatch($key['id'], $key['server_id'], $key['environment_id'], $key['deploy_key_source_control_id'], $key['deploy_key_repository'], $key['deploy_key_id'], $key['ssh_key']);

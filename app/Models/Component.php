@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
+use App\Enums\LoadBalancerMethod;
 use Database\Factories\ComponentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,10 +18,14 @@ use Illuminate\Support\Collection;
  * @property string $user
  * @property string $name
  * @property ComponentType $type
+ * @property ?LoadBalancerMethod $load_balancer_method
+ * @property Collection<int, ComponentBackend> $backends
+ * @property Collection<int, ComponentBackend> $loadBalancerBackends
  * @property string $path
  * @property ComponentStatus $status
  * @property ?string $last_error
  * @property ?string $installed_runtime_version
+ * @property bool $load_balancer_backends_exists
  * @property bool $needs_redeploy
  * @property ?string $deploy_key_id
  * @property ?string $ssh_key
@@ -55,6 +60,7 @@ class Component extends AbstractModel
         'isolated_user_id' => 'integer',
         'deploy_key_source_control_id' => 'integer',
         'type' => ComponentType::class,
+        'load_balancer_method' => LoadBalancerMethod::class,
         'status' => ComponentStatus::class,
         'needs_redeploy' => 'boolean',
     ];
@@ -127,6 +133,18 @@ class Component extends AbstractModel
     public function deploymentScripts(): HasMany
     {
         return $this->hasMany(DeploymentScript::class);
+    }
+
+    /** @return HasMany<ComponentBackend, covariant $this> */
+    public function backends(): HasMany
+    {
+        return $this->hasMany(ComponentBackend::class);
+    }
+
+    /** @return HasMany<ComponentBackend, covariant $this> */
+    public function loadBalancerBackends(): HasMany
+    {
+        return $this->hasMany(ComponentBackend::class, 'target_component_id');
     }
 
     public function basePath(): string

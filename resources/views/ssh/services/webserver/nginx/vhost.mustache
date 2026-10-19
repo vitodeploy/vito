@@ -1,3 +1,21 @@
+{{#backend_blocks}}
+geo $realip_remote_addr ${{backend_key}}_allowed {
+    default 0;
+    {{#trusted_proxies}}
+    {{ip}} 1;
+    {{/trusted_proxies}}
+}
+map $http_x_forwarded_proto ${{backend_key}}_scheme {
+    default $scheme;
+    https https;
+    http http;
+}
+map ${{backend_key}}_scheme ${{backend_key}}_https {
+    default off;
+    https on;
+}
+{{/backend_blocks}}
+
 {{#has_upstream}}
 upstream {{upstream_name}} {
     {{#upstream_method_least_conn}}
@@ -7,10 +25,10 @@ upstream {{upstream_name}} {
     ip_hash;
     {{/upstream_method_ip_hash}}
     {{#upstream_servers}}
-    server {{ip}}:{{port}}{{#backup}} backup{{/backup}}{{#has_weight}} weight={{weight}}{{/has_weight}};
+    server {{ip}}:{{port}}{{#backup}} backup{{/backup}}{{#has_weight}} weight={{weight}}{{/has_weight}}{{#is_component}} max_fails=3 fail_timeout=10s{{/is_component}};
     {{/upstream_servers}}
     {{^upstream_servers}}
-    server 127.0.0.1;
+    server 127.0.0.1{{#is_component}}:9 down{{/is_component}};
     {{/upstream_servers}}
 }
 {{/has_upstream}}
@@ -47,6 +65,19 @@ server {
 
 {{#server_blocks}}
 server {
+    {{#is_backend}}
+    {{#backend_listeners}}
+    listen {{address}};
+    {{/backend_listeners}}
+    {{#trusted_proxies}}
+    set_real_ip_from {{ip}};
+    {{/trusted_proxies}}
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+    if (${{backend_key}}_allowed = 0) {
+        return 403;
+    }
+    {{/is_backend}}
     {{#listen_80}}
     listen 80;
     listen [::]:80;
@@ -107,6 +138,10 @@ server {
         {{#php_value}}fastcgi_param PHP_VALUE "@@VITO_PHP_VALUE@@";{{/php_value}}
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
+        {{#is_backend}}
+        fastcgi_param HTTPS ${{backend_key}}_https;
+        fastcgi_param HTTP_X_FORWARDED_PROTO ${{backend_key}}_scheme;
+        {{/is_backend}}
         {{#fastcgi_read_timeout}}fastcgi_read_timeout {{fastcgi_read_timeout}};{{/fastcgi_read_timeout}}
         fastcgi_hide_header X-Powered-By;
     }
@@ -128,7 +163,8 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto {{#is_backend}}${{backend_key}}_scheme{{/is_backend}}{{^is_backend}}$scheme{{/is_backend}};
+        proxy_set_header X-Forwarded-Host $host;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
     }
@@ -160,6 +196,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        {{#is_component}}proxy_set_header X-Forwarded-Host $host;{{/is_component}}
     }
 
     error_page 404 /index.html;

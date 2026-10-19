@@ -7,6 +7,20 @@ use App\Services\AbstractService;
 
 abstract class AbstractFirewall extends AbstractService implements Firewall
 {
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()
+                        || $this->service->server->firewallRules()->where('component_managed', true)->exists()) {
+                        $fail('Remove load balancer backends and finish their firewall cleanup before stopping or removing the firewall.');
+                    }
+                },
+            ],
+        ];
+    }
+
     protected function createBasicFirewallRules(): void
     {
         $this->service->server->firewallRules()->createMany([

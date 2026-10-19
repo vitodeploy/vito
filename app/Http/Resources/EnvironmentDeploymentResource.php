@@ -39,6 +39,7 @@ class EnvironmentDeploymentResource extends JsonResource
                 'id' => $deployment->id,
                 'component_id' => $deployment->component_id,
                 'component_name' => $deployment->component?->name,
+                'component_type' => $deployment->component?->type->getText(),
                 'server_id' => $deployment->component?->server_id,
                 'server_name' => $deployment->component?->server->name,
                 'log_id' => $deployment->log_id,

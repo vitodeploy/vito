@@ -313,7 +313,7 @@ test('server deletion purges only its components and their owned rows without re
     Component::factory()->for($environment)->for($this->server)->create(['user' => 'other']);
 
     $this->partialMock(PurgeServerComponents::class)->shouldReceive('handle')->once()
-        ->with(['environments' => [$environment->id, $otherEnvironment->id], 'keys' => []])
+        ->with(['load_balancer_servers' => [], 'environments' => [$environment->id, $otherEnvironment->id], 'keys' => []])
         ->andReturnUsing(function () use ($environment): void {
             $this->assertDatabaseMissing('servers', ['id' => $this->server->id]);
             $this->assertDatabaseHas('environments', ['id' => $environment->id, 'primary_component_id' => null]);

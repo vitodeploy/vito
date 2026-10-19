@@ -16,16 +16,19 @@ class ManageRule
      * @param  array<string, mixed>  $input
      * @return FirewallRule $rule
      */
-    public function create(Server $server, array $input): FirewallRule
+    public function create(Server $server, array $input, bool $componentManaged = false): FirewallRule
     {
         $input = $this->normalizePort($input);
         $this->validate($input);
 
         $rule = new FirewallRule($this->attributesFromInput($input, FirewallRuleStatus::CREATING));
         $rule->server_id = $server->id;
+        $rule->component_managed = $componentManaged;
         $rule->save();
 
-        $this->queueApply($rule);
+        if (! $rule->component_managed) {
+            $this->queueApply($rule);
+        }
 
         return $rule;
     }
@@ -41,7 +44,9 @@ class ManageRule
 
         $rule->update($this->attributesFromInput($input, FirewallRuleStatus::UPDATING));
 
-        $this->queueApply($rule);
+        if (! $rule->component_managed) {
+            $this->queueApply($rule);
+        }
 
         return $rule;
     }
@@ -51,7 +56,9 @@ class ManageRule
         $rule->status = FirewallRuleStatus::DELETING;
         $rule->save();
 
-        $this->queueApply($rule);
+        if (! $rule->component_managed) {
+            $this->queueApply($rule);
+        }
     }
 
     private function validate(array $input): void

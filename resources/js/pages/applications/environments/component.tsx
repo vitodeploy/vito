@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { loadBalancerMethodLabel } from '@/lib/utils';
 import ErrorIndicator from '@/components/error-indicator';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
@@ -13,7 +14,7 @@ import InputError from '@/components/ui/input-error';
 import { PlusIcon, RotateCwIcon, SettingsIcon, Trash2Icon } from 'lucide-react';
 import EnvironmentLayout from '@/layouts/environment/layout';
 import { useDialog } from '@/hooks/use-dialog';
-import { Application, Component, ComponentOptions, Environment, PrimaryCandidate } from '@/types/application';
+import { Application, BackendTarget, Component, ComponentOptions, Environment, PrimaryCandidate } from '@/types/application';
 import { Worker } from '@/types/worker';
 import { CronJob } from '@/types/cronjob';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
@@ -21,11 +22,12 @@ import { Actions as WorkerActions } from '@/pages/workers/components/columns';
 import { Actions as CronJobActions } from '@/pages/cronjobs/components/columns';
 
 export default function ShowComponent() {
-  const { application, environment, component, primaryCandidates, options, workers, cronjobs, can } = usePage<{
+  const { application, environment, component, primaryCandidates, backendTargets, options, workers, cronjobs, can } = usePage<{
     application: Application;
     environment: Environment;
     component: Component;
     primaryCandidates: PrimaryCandidate[];
+    backendTargets: BackendTarget[];
     options: ComponentOptions;
     workers: InertiaTableData;
     cronjobs: InertiaTableData;
@@ -36,6 +38,7 @@ export default function ShowComponent() {
   const [tab, setTab] = useState('overview');
   const baseUrl = `/applications/${application.id}/environments/${environment.id}/components/${component.id}`;
   const ready = component.status === 'ready' && application.status === 'ready' && environment.status === 'ready';
+  const loadBalancer = component.type === 'load_balancer';
   const owner = { user: component.user, url: baseUrl };
   const processTabs = [
     { surface: 'workers', label: 'Workers' },
@@ -52,7 +55,8 @@ export default function ShowComponent() {
             <Badge variant={component.status_color}>{component.status}</Badge>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {can.update && ready && <Button variant="outline" onClick={() => dialog.componentCapabilities.open({ application, environment, component, options })}><SettingsIcon />Capabilities</Button>}
+            {can.update && ready && !loadBalancer && <Button variant="outline" onClick={() => dialog.componentCapabilities.open({ application, environment, component, options })}><SettingsIcon />Capabilities</Button>}
+            {can.update && ready && loadBalancer && <Button variant="outline" onClick={() => dialog.loadBalancerBackends.open({ application, environment, component, targets: backendTargets })}><SettingsIcon />Backends</Button>}
             {can.update && component.status === 'installation_failed' && application.status === 'ready' && environment.status === 'ready' && <Button variant="outline" disabled={retry.processing} onClick={() => retry.post(`${baseUrl}/retry`)}><RotateCwIcon />Retry installation</Button>}
             {can.delete && component.status !== 'deleting' && <Button variant="destructive" onClick={() => dialog.deleteComponent.open({ application, environment, component, primaryCandidates })}><Trash2Icon />{component.status === 'deletion_failed' ? 'Retry deletion' : 'Delete'}</Button>}
           </div>
@@ -72,13 +76,22 @@ export default function ShowComponent() {
                   <div><dt className="text-muted-foreground text-sm">Server</dt><dd><Link className="hover:underline" href={`/servers/${component.server_id}`}>{component.server_name}</Link></dd></div>
                   <div><dt className="text-muted-foreground text-sm">Linux user</dt><dd>{component.user}</dd></div>
                   <div><dt className="text-muted-foreground text-sm">Type</dt><dd>{component.type}</dd></div>
-                  <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Path</dt><dd className="break-all font-mono text-sm">{component.path}</dd></div>
-                  <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Capabilities</dt><dd className="flex flex-wrap gap-2">{component.capability_configs.length ? component.capability_configs.map((capability) => <Badge key={capability.capability} variant={capability.status_color}>{capability.capability}: {capability.status}</Badge>) : 'None'}</dd></div>
+                  {!loadBalancer && <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Path</dt><dd className="break-all font-mono text-sm">{component.path}</dd></div>}
+                  {!loadBalancer && <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Capabilities</dt><dd className="flex flex-wrap gap-2">{component.capability_configs.length ? component.capability_configs.map((capability) => <Badge key={capability.capability} variant={capability.status_color}>{capability.capability}: {capability.status}</Badge>) : 'None'}</dd></div>}
                 </dl>
-                <div className="flex flex-col gap-2">
+                {!loadBalancer && <div className="flex flex-col gap-2">
                   <h2 className="font-medium">Deploy public key</h2>
                   {component.ssh_key ? <pre className="bg-muted overflow-x-auto rounded-md p-3 text-sm">{component.ssh_key}</pre> : <p className="text-muted-foreground text-sm">No deploy key. GitHub App sources do not need one; other sources create it during installation.</p>}
-                </div>
+                </div>}
+                {loadBalancer && <div className="flex flex-col gap-2">
+                  <h2 className="font-medium">Backends · {loadBalancerMethodLabel(component.load_balancer_method)}</h2>
+                  {(component.backends ?? []).length ? <ul className="flex flex-col gap-2">{component.backends?.map((backend) => <li key={backend.id} className="flex flex-wrap items-center gap-2 text-sm">
+                    <span>{backend.target_name ?? (backend.ip?.includes(':') ? `[${backend.ip}]` : backend.ip)}:{backend.port}</span>
+                    <Badge variant="outline">Weight {backend.weight ?? 1}</Badge>
+                    {backend.backup && <Badge variant="warning">Backup</Badge>}
+                    {backend.ip && <span className="text-muted-foreground">External · firewall not managed</span>}
+                  </li>)}</ul> : <p className="text-muted-foreground text-sm">No backends configured. This load balancer is not forwarding traffic.</p>}
+                </div>}
               </CardContent>
             </Card>
           </TabsContent>

@@ -47,7 +47,7 @@ class SyncComponentRuntime
             if ($component->user !== $component->server->getSshUser()) {
                 app(EnsureFpmPool::class)->ensure($component->server, $component->user, $version ?? '');
             }
-            if ($component->domains()->exists()) {
+            if ($component->domains()->exists() || $component->loadBalancerBackends()->exists()) {
                 app(SyncComponentVhost::class)->sync($component);
             }
             if ($component->installed_runtime_version !== null && $component->installed_runtime_version !== $version) {

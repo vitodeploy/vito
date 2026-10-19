@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
+use App\Enums\LoadBalancerMethod;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Jobs\Component\InstallComponentJob;
@@ -31,12 +32,16 @@ class CreateComponent
     {
         Validator::make($input, [
             'server_id' => ['required', 'integer', Rule::exists('servers', 'id')->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY->value)],
-            'user' => ['required', 'string', 'regex:/\A[a-z_][a-z0-9_-]*[a-z0-9]\z/', 'min:3', 'max:32'],
+            'type' => ['required', Rule::enum(ComponentType::class)],
+            'user' => ($input['type'] ?? null) === ComponentType::LOAD_BALANCER->value ? ['nullable', 'string'] : ['required', 'string', 'regex:/\A[a-z_][a-z0-9_-]*[a-z0-9]\z/', 'min:3', 'max:32'],
         ])->validate();
 
         try {
             $component = Cache::lock('unique-queue:server-'.$input['server_id'], 600)->block(10, function () use ($environment, $input): Component {
                 $server = Server::query()->findOrFail($input['server_id']);
+                if ($input['type'] === ComponentType::LOAD_BALANCER->value) {
+                    $input['user'] = $server->getSshUser();
+                }
 
                 return $server->isolatedUserLock($input['user'])->block(30, fn (): Component => $this->attach($environment, $input));
             });
@@ -69,10 +74,11 @@ class CreateComponent
                 'server_id' => $server->id,
                 'user' => $input['user'],
                 'name' => $input['name'],
-                'type' => ComponentType::APP,
+                'type' => ComponentType::from($input['type']),
             ]);
             $component->isolated_user_id = $isolatedUser?->id;
-            $component->path = '/home/'.$component->user.'/app-'.$application->id.'-'.$environment->slug;
+            $component->path = $component->type === ComponentType::APP ? '/home/'.$component->user.'/app-'.$application->id.'-'.$environment->slug : '';
+            $component->load_balancer_method = $component->type === ComponentType::LOAD_BALANCER ? LoadBalancerMethod::ROUND_ROBIN : null;
             $component->status = ComponentStatus::PENDING;
             $component->save();
             $component->setRelation('environment', $environment);
@@ -92,7 +98,7 @@ class CreateComponent
                 $capability->save();
             }
 
-            if (! $environment->primary_component_initialized) {
+            if ($component->type === ComponentType::APP && ! $environment->primary_component_initialized) {
                 $environment->primary_component_id = $component->id;
                 $environment->primary_component_initialized = true;
                 $environment->save();
@@ -107,14 +113,14 @@ class CreateComponent
      */
     private function validate(Environment $environment, Server $server, array $input): void
     {
+        $loadBalancer = $input['type'] === ComponentType::LOAD_BALANCER->value;
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', Rule::unique('components')->where('environment_id', $environment->id)],
             'server_id' => [Rule::exists('servers', 'id')->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY->value)],
-            'type' => ['required', Rule::in([ComponentType::APP->value])],
             'user' => [Rule::notIn(array_diff(config('core.reserved_user_names'), [$server->getSshUser()])),
-                Rule::unique('components')->where('environment_id', $environment->id)->where('server_id', $server->id),
+                Rule::unique('components')->where('environment_id', $environment->id)->where('server_id', $server->id)->where('type', $input['type']),
             ],
-            'capabilities' => ['sometimes', 'array', 'list'],
+            'capabilities' => $loadBalancer ? ['prohibited'] : ['sometimes', 'array', 'list'],
             'capabilities.*' => ['array:capability,config'],
             'capabilities.*.capability' => ['required', 'string', 'distinct', Rule::in(array_keys(config('component.capabilities', [])))],
             'capabilities.*.config' => ['sometimes', 'nullable', 'array'],
@@ -122,6 +128,14 @@ class CreateComponent
 
         if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY) {
             throw ValidationException::withMessages(['name' => 'Components cannot be added during teardown.']);
+        }
+
+        if ($loadBalancer) {
+            if (! $server->services()->where('type', 'webserver')->whereIn('name', ['nginx', 'caddy'])->where('status', ServiceStatus::READY)->exists()) {
+                throw ValidationException::withMessages(['server_id' => 'Install a ready Nginx or Caddy webserver before adding a load balancer.']);
+            }
+
+            return;
         }
 
         if (! $environment->application->sourceControl) {
@@ -135,6 +149,5 @@ class CreateComponent
                 throw ValidationException::withMessages(['server_id' => "The required {$type} service version must be installed on the server."]);
             }
         }
-
     }
 }

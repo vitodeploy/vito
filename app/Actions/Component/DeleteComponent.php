@@ -61,6 +61,14 @@ class DeleteComponent
         }
 
         app(BroadcastComponentUpdate::class)->broadcast($component);
+        app(SyncLoadBalancerBackends::class)->remove($component);
+        if ($component->type === ComponentType::LOAD_BALANCER) {
+            app(SyncComponentVhost::class)->sync($component);
+            $component->delete();
+            app(BroadcastComponentUpdate::class)->deleted($component);
+
+            return;
+        }
         foreach ($component->capabilities()->get() as $capability) {
             $capability->handler()->uninstall($component);
         }

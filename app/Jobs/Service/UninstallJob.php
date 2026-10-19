@@ -26,6 +26,7 @@ class UninstallJob implements ShouldQueue
         $this->run("server-{$this->service->server_id}", function () use (&$succeeded) {
             $projectId = $this->service->server->project_id;
             $serviceId = $this->service->id;
+            app(\App\Actions\Service\Uninstall::class)->validate($this->service);
             $this->service->handler()->uninstall();
             $this->service->delete();
 
@@ -44,8 +45,7 @@ class UninstallJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
-        // force delete if retried.
-        if ($this->previousStatus === ServiceStatus::FAILED) {
+        if ($this->previousStatus === ServiceStatus::FAILED && ! $e instanceof \Illuminate\Validation\ValidationException) {
             $this->service->delete();
 
             return;

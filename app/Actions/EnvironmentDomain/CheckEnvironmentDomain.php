@@ -28,7 +28,7 @@ class CheckEnvironmentDomain
             $domain->refresh();
             if ($domain->status !== HostedDomainStatus::PENDING || $domain->component->server_id !== $serverId
                 || $domain->component->status !== ComponentStatus::READY || ! $domain->component->server->isReady()
-                || ! $domain->component->capabilities()->where('capability', 'web')->where('status', ComponentStatus::READY)->exists()
+                || ($domain->component->type !== \App\Enums\ComponentType::LOAD_BALANCER && ! $domain->component->capabilities()->where('capability', 'web')->where('status', ComponentStatus::READY)->exists())
                 || $domain->environment->status !== EnvironmentStatus::READY || $domain->environment->application->status !== ApplicationStatus::READY) {
                 return null;
             }

@@ -8,6 +8,7 @@ export interface FirewallRule {
   source: string;
   mask: number;
   note: string;
+  component_managed?: boolean;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   created_at: string;

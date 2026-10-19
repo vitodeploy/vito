@@ -14,7 +14,8 @@ class GetEnvironmentDomainOptions
     public function get(Environment $environment): array
     {
         $components = $environment->components()->with('server')->where('status', ComponentStatus::READY)
-            ->whereHas('capabilities', fn ($query) => $query->where('capability', 'web')->where('status', ComponentStatus::READY))->get();
+            ->where(fn ($query) => $query->where('type', \App\Enums\ComponentType::LOAD_BALANCER)
+                ->orWhereHas('capabilities', fn ($query) => $query->where('capability', 'web')->where('status', ComponentStatus::READY)))->get();
 
         return [
             'components' => $components->map(fn (Component $component): array => [

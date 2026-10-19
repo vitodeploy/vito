@@ -30,7 +30,7 @@ class BroadcastComponentUpdate
 
     public function broadcast(Component $component): void
     {
-        $component->refresh()->load(['environment.application', 'server', 'capabilities']);
+        $component->refresh()->load(['environment.application', 'server', 'capabilities', 'backends.targetComponent']);
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $component->environment->application->project_id,

@@ -40,6 +40,16 @@ class GetComponentOptions
         ];
     }
 
+    /** @return list<array{id: int, name: string, server_name: string}> */
+    public function backendTargets(Environment $environment): array
+    {
+        return $environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)
+            ->whereHas('capabilities', fn ($query) => $query->where('capability', 'web')->where('status', ComponentStatus::READY))
+            ->with('server')->orderBy('name')->get()->map(fn (Component $component): array => [
+                'id' => $component->id, 'name' => $component->name, 'server_name' => $component->server->name,
+            ])->all();
+    }
+
     /**
      * @return list<array{id: int, name: string}>
      */

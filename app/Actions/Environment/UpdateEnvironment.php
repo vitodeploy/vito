@@ -48,7 +48,7 @@ class UpdateEnvironment
             if ($runtimeChanged || $input['branch'] !== $environment->branch || (array_key_exists('primary_component_id', $input) && $input['primary_component_id'] !== $environment->primary_component_id)) {
                 app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, $runtimeChanged ? 'runtime_version' : 'branch');
             }
-            if ($runtimeChanged && $environment->components()->where('status', '!=', ComponentStatus::READY)->exists()) {
+            if ($runtimeChanged && $environment->components()->where('type', ComponentType::APP)->where('status', '!=', ComponentStatus::READY)->exists()) {
                 throw ValidationException::withMessages(['runtime_version' => 'All components must be ready before changing the runtime version.']);
             }
 
@@ -69,7 +69,7 @@ class UpdateEnvironment
             $environment->save();
 
             if ($runtimeChanged) {
-                $components = $environment->components()->with('capabilities', 'server')->get();
+                $components = $environment->components()->where('type', ComponentType::APP)->with('capabilities', 'server')->get();
                 Server::query()->whereKey($components->pluck('server_id')->unique())->orderBy('id')->lockForUpdate()->get();
                 foreach ($components as $component) {
                     $component->setRelation('environment', $environment);

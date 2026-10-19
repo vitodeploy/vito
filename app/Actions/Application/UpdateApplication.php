@@ -44,7 +44,7 @@ class UpdateApplication
             $application->unsetRelation('sourceControl');
             if ($changed) {
                 Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))
-                    ->where('status', ComponentStatus::READY)->each(function (Component $component): void {
+                    ->where('type', \App\Enums\ComponentType::APP)->where('status', ComponentStatus::READY)->each(function (Component $component): void {
                         $component->status = ComponentStatus::PENDING;
                         $component->needs_redeploy = true;
                         $component->save();

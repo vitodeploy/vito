@@ -87,8 +87,10 @@ class AdvanceEnvironmentDeployment
     /** @return Builder<Deployment> */
     public function participants(EnvironmentDeployment $run, DeploymentStage $stage): Builder
     {
-        return $run->deployments()->getQuery()->when($stage === DeploymentStage::PRE_RELEASE,
-            fn ($query) => $query->where('component_id', $run->primary_component_id));
+        return $run->deployments()->getQuery()
+            ->whereHas('component', fn ($query) => $query->whereIn('type', $stage === DeploymentStage::RELEASE && ! $run->is_join
+                ? [\App\Enums\ComponentType::APP, \App\Enums\ComponentType::LOAD_BALANCER] : [\App\Enums\ComponentType::APP]))
+            ->when($stage === DeploymentStage::PRE_RELEASE, fn ($query) => $query->where('component_id', $run->primary_component_id));
     }
 
     public function dispatch(EnvironmentDeployment $run, DeploymentStage $stage): void
@@ -123,7 +125,7 @@ class AdvanceEnvironmentDeployment
         }
         $run->save();
         if ($status !== EnvironmentDeploymentStatus::FINISHED) {
-            Component::query()->whereIn('id', $run->deployments()->select('component_id'))->update(['needs_redeploy' => true]);
+            Component::query()->where('type', \App\Enums\ComponentType::APP)->whereIn('id', $run->deployments()->select('component_id'))->update(['needs_redeploy' => true]);
         }
         $environment = $run->environment;
         $environment->last_error = $status === EnvironmentDeploymentStatus::FINISHED ? null : 'Deployment did not finish successfully. Review its component stages and logs before deploying again.';

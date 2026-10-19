@@ -37,7 +37,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'backendTargets', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {

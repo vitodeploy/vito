@@ -67,6 +67,7 @@ class ValidateWebCapability
             ->pluck('config')
             ->map(fn (?array $config): int => (int) ($config['port'] ?? 0))
             ->merge($server->sites()->whereNotNull('port')->pluck('port'))
+            ->merge(\App\Models\ComponentBackend::query()->whereHas('targetComponent', fn ($query) => $query->where('server_id', $server->id))->pluck('port'))
             ->map(fn ($port): int => (int) $port)
             ->all();
 

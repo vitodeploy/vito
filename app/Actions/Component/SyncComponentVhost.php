@@ -43,18 +43,24 @@ class SyncComponentVhost
     public function generate(Component $component): string
     {
         $component->load('capabilities', 'environment.application');
-        if (! $component->capabilities->contains(fn ($capability): bool => $capability->capability === 'web' && $capability->status !== ComponentStatus::DELETING)) {
+        $loadBalancer = $component->type === \App\Enums\ComponentType::LOAD_BALANCER;
+        if (in_array($component->status, [ComponentStatus::DELETING, ComponentStatus::DELETION_FAILED], true)
+            || (! $loadBalancer && ! $component->capabilities->contains(fn ($capability): bool => $capability->capability === 'web'
+                && ! in_array($capability->status, [ComponentStatus::DELETING, ComponentStatus::DELETION_FAILED], true)))) {
             return '';
         }
         $name = $component->server->webserver()?->name;
         $domains = $component->domains()->where('status', HostedDomainStatus::ACTIVE)->with('ssl', 'component', 'redirectToDomain.ssl', 'redirectToDomain.component')->orderBy('id')->get();
-        $data = $component->environment->application->preset()->vhostData($component);
-        $data['php_socket'] = ($name === 'caddy' ? 'unix/' : 'unix:').$data['php_socket'];
+        $data = $loadBalancer ? app(GenerateLoadBalancerConfig::class)->upstream($component) : $component->environment->application->preset()->vhostData($component);
+        if (isset($data['php_socket'])) {
+            $data['php_socket'] = ($name === 'caddy' ? 'unix/' : 'unix:').$data['php_socket'];
+        }
+        $data['backend_blocks'] = $loadBalancer ? [] : app(GenerateLoadBalancerConfig::class)->backendBlocks($component);
         $data += [
             'is_component' => true,
             'primary_domain' => 'component-'.$component->id,
             'verification_key' => $this->verificationKey($component->environment),
-            'server_blocks' => [], 'redirect_blocks' => [], 'force_ssl_domains' => [], 'http_verification_domains' => [],
+            'server_blocks' => $data['backend_blocks'], 'redirect_blocks' => [], 'force_ssl_domains' => [], 'http_verification_domains' => [],
         ];
         foreach ($domains as $domain) {
             if ($domain->type === HostedDomainType::REDIRECT && $domain->redirectToDomain?->status !== HostedDomainStatus::ACTIVE) {
@@ -72,9 +78,6 @@ class SyncComponentVhost
                 'ssl_certificate_path' => $certificate ? $domain->ssl->certificate_path : '',
                 'ssl_certificate_key_path' => $certificate ? $domain->ssl->pk_path : '',
             ];
-            if ($tls && ! $force && $name === 'caddy') {
-                $block['domains'][] = ['name' => $domain->host, 'address' => 'http://'.$domain->host];
-            }
             if ($force) {
                 $data['force_ssl_domains'][] = ['name' => $domain->host];
                 $data['http_verification_domains'][] = ['address' => 'http://'.$domain->host];
@@ -84,9 +87,13 @@ class SyncComponentVhost
                 $targetTls = $this->hasCertificate($target) || ($name === 'caddy' && $target->ssl_method === SslMethod::LETSENCRYPT && $target->ssl_id === null);
                 $block['redirect_target'] = $target->host;
                 $block['redirect_scheme'] = $target->force_ssl && $targetTls ? 'https' : 'http';
-                $data['redirect_blocks'][] = $block;
-            } else {
-                $data['server_blocks'][] = $block;
+            }
+            $key = $domain->type === HostedDomainType::REDIRECT ? 'redirect_blocks' : 'server_blocks';
+            $data[$key][] = $block;
+            if ($tls && ! $force && $name === 'caddy') {
+                $block['domains'] = [['name' => $domain->host, 'address' => 'http://'.$domain->host]];
+                $block['has_tls'] = false;
+                $data[$key][] = $block;
             }
         }
         if ($data['server_blocks'] === [] && $data['redirect_blocks'] === []) {

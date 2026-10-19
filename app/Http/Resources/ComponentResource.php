@@ -32,6 +32,9 @@ class ComponentResource extends JsonResource
             'last_error' => $this->last_error,
             'needs_redeploy' => $this->needs_redeploy,
             'ssh_key' => $this->ssh_key,
+            'load_balancer_method' => $this->load_balancer_method?->getText(),
+            'backends' => ComponentBackendResource::collection($this->whenLoaded('backends')),
+            'webserver' => $this->whenLoaded('server', fn (): ?string => $this->server->webserver()?->name),
             'capabilities' => $this->whenLoaded('capabilities', fn (): array => $this->capabilities->pluck('capability')->all()),
             'capability_configs' => $this->whenLoaded('capabilities', fn (): array => $this->capabilities->map(fn (ComponentCapability $capability): array => [
                 'capability' => $capability->capability,

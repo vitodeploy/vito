@@ -42,6 +42,7 @@ class InstallWebCapability
 
     public function uninstall(ComponentCapability $capability, Component $component): void
     {
+        app(\App\Actions\Component\SyncLoadBalancerBackends::class)->remove($component);
         app(\App\Actions\Component\SyncComponentVhost::class)->sync($component);
         foreach ($component->workers()->where('component_capability_id', $capability->id)->get() as $worker) {
             app(DeleteWorker::class)->remove($worker);

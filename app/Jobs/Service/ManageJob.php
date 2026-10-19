@@ -27,6 +27,9 @@ class ManageJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->service->server_id}", function () {
+            if (in_array($this->action, ['stop', 'disable'], true)) {
+                app(\App\Actions\Service\Manage::class)->validateStopping($this->service);
+            }
             $succeeded = $this->service->handler()->manage($this->action);
             $this->service->status = $succeeded ? $this->successStatus : ServiceStatus::FAILED;
             $this->service->save();

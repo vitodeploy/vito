@@ -16,7 +16,7 @@ import { Application, ComponentDeployment, DeploymentStage, Environment, Environ
 const stages: DeploymentStage[] = ['clone', 'build', 'Release command', 'release', 'post-release'];
 
 function StageStatus({ run, component, stage }: { run: EnvironmentDeployment; component: ComponentDeployment; stage: DeploymentStage }) {
-  if (run.rollback_of_id && stage !== 'release') {
+  if ((run.rollback_of_id || component.component_type === 'load_balancer') && stage !== 'release') {
     return <span className="text-muted-foreground">Skipped</span>;
   }
   if (stage === 'Release command' && (run.is_join || component.component_id !== run.primary_component_id)) {

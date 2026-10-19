@@ -13,18 +13,26 @@ class RemoveServerFromNetwork
         private ApplyNetworkFirewall $firewall,
     ) {}
 
-    public function remove(NetworkServer $member): void
+    public function remove(NetworkServer $member, bool $observed = false): void
     {
-        $network = $member->network;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($member, $observed): void {
+            \App\Models\Server::query()->lockForUpdate()->findOrFail($member->server_id);
+            $member->refresh();
+            $network = $member->network;
+            if (! $observed || ($network->type !== NetworkType::PROVIDER
+                && ! ($network->type === NetworkType::CUSTOM && $member->server_ip_address_id === null))) {
+                app(CheckLoadBalancerNetwork::class)->validate($member);
+            }
 
-        $this->sync->teardown($member);
+            $this->sync->teardown($member);
 
-        if ($network->type === NetworkType::WIREGUARD) {
-            $this->sync->resyncMembers($network, $member->id);
-        } else {
-            $this->firewall->handle($network);
-        }
+            if ($network->type === NetworkType::WIREGUARD) {
+                $this->sync->resyncMembers($network, $member->id);
+            } else {
+                $this->firewall->handle($network);
+            }
 
-        $this->recompute->handle($network);
+            $this->recompute->handle($network);
+        });
     }
 }

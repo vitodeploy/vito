@@ -28,6 +28,9 @@ class PersistServerIpsJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function (): void {
+            foreach ($this->server->ipAddresses()->where('status', IpAddressStatus::DELETING)->get() as $address) {
+                app(\App\Actions\Network\CheckLoadBalancerNetwork::class)->address($address);
+            }
             app(RefreshServerIps::class)->handle($this->server);
 
             $managed = $this->server->ipAddresses()

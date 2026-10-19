@@ -102,8 +102,13 @@ class ManageServerIp
             ]);
         }
 
-        $address->status = IpAddressStatus::DELETING;
-        $address->save();
+        DB::transaction(function () use ($address): void {
+            Server::query()->lockForUpdate()->findOrFail($address->server_id);
+            $address->refresh();
+            app(\App\Actions\Network\CheckLoadBalancerNetwork::class)->address($address);
+            $address->status = IpAddressStatus::DELETING;
+            $address->save();
+        });
 
         $this->queueApply($address->server);
     }

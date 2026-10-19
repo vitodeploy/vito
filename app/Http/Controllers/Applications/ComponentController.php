@@ -7,6 +7,7 @@ use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\GetComponentOptions;
 use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\UpdateComponentCapabilities;
+use App\Actions\Component\UpdateLoadBalancerBackends;
 use App\Tables\Applications\ComponentWorkerTable;
 use App\Tables\Applications\ComponentCronJobTable;
 use Spatie\RouteAttributes\Attributes\Put;
@@ -60,10 +61,11 @@ class ComponentController extends Controller
         $this->authorize('view', [$component, $environment, $application]);
 
         return Inertia::render('applications/environments/component', [
-            'component' => new ComponentResource($component->load('server', 'capabilities')),
+            'component' => new ComponentResource($component->load('server', 'capabilities', 'backends.targetComponent')),
             'options' => app(GetComponentOptions::class)->get($environment),
             'workers' => ComponentWorkerTable::make($component->workers())->identifier('workers')->simplePaginate(),
             'cronjobs' => ComponentCronJobTable::make($component->cronJobs())->identifier('cronjobs')->simplePaginate(),
+            'backendTargets' => app(GetComponentOptions::class)->backendTargets($environment),
             'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
             'can' => [
                 'update' => user()->can('update', [$component, $environment, $application]),
@@ -80,6 +82,16 @@ class ComponentController extends Controller
         app(UpdateComponentCapabilities::class)->update($component, $request->all());
 
         return back()->with('success', 'Capability changes queued.');
+    }
+
+    #[Put('/{component}/backends', name: 'components.backends.update')]
+    public function backends(Request $request, Application $application, Environment $environment, Component $component): RedirectResponse
+    {
+        $this->authorize('update', [$component, $environment, $application]);
+
+        app(UpdateLoadBalancerBackends::class)->update($component, $request->all());
+
+        return back()->with('success', 'Load balancer changes queued.');
     }
 
     #[Post('/{component}/retry', name: 'components.retry')]

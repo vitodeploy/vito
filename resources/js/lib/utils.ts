@@ -10,6 +10,11 @@ export function rowId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
 }
 
+export function loadBalancerMethodLabel(method: string | null): string {
+  const labels: Record<string, string> = { 'round-robin': 'Round robin', 'least-connections': 'Least connections', 'ip-hash': 'IP hash' };
+  return labels[method ?? 'round-robin'] ?? method ?? 'Round robin';
+}
+
 export function currentPath(): string {
   return window.location.pathname;
 }

@@ -63,15 +63,16 @@ class StartEnvironmentDeployment
             $run->commit_data = $commit['commit_data'] ?? [];
             $run->started_at = now();
             $run->save();
-            $components = $environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)
+            $components = $environment->components()->whereIn('type', $run->is_join ? [ComponentType::APP] : [ComponentType::APP, ComponentType::LOAD_BALANCER])->where('status', ComponentStatus::READY)
                 ->when($run->is_join, fn ($query) => $query->doesntHave('deployments'))
-                ->when($run->rollback_of_id, fn ($query) => $query->has('deployments'))->with('server')->get();
+                ->when($run->rollback_of_id, fn ($query) => $query->where(fn ($query) => $query->has('deployments')->orWhere('type', ComponentType::LOAD_BALANCER)))->with('server')->get();
             foreach ($components as $component) {
                 $log = ServerLog::newLog($component->server, 'component-'.$component->id.'-deployment-'.$run->id);
                 $log->save();
                 $deployment = new Deployment([
                     'component_id' => $component->id, 'log_id' => $log->id, 'commit_id' => $run->commit_id,
-                    'commit_data' => $run->commit_data, 'release' => $run->release, 'status' => DeploymentStatus::DEPLOYING,
+                    'commit_data' => $run->commit_data, 'release' => $component->type === ComponentType::APP ? $run->release : null,
+                    'status' => $component->type === ComponentType::APP ? DeploymentStatus::DEPLOYING : DeploymentStatus::FINISHED,
                 ]);
                 $deployment->environment_deployment_id = $run->id;
                 $deployment->previous_deployment_id = $component->deployments()->where('active', true)->value('id');

@@ -4,6 +4,17 @@
     import compression
     import security_headers
 
+    {{#is_backend}}
+    bind{{#backend_listeners}} {{ip}}{{/backend_listeners}}
+    map {http.request.header.X-Forwarded-Proto} {{backend_https}} {
+        default off
+        https on
+    }
+    route {
+        @untrusted not remote_ip{{#trusted_proxies}} {{ip}}{{/trusted_proxies}}
+        respond @untrusted 403
+    {{/is_backend}}
+
     {{#has_tls}}
     tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
     {{/has_tls}}
@@ -36,9 +47,18 @@
     }
     {{/request_body_max_size}}
     try_files {path} {path}/ /index.php?{query}
+    {{#is_backend}}
+    php_fastcgi {{php_socket}} {
+        trusted_proxies{{#trusted_proxies}} {{ip}}{{/trusted_proxies}}
+        env HTTPS {{backend_https}}
+        env REMOTE_ADDR {http.request.header.X-Real-IP}
+    }
+    {{/is_backend}}
+    {{^is_backend}}
     php_fastcgi {{php_socket}}{{#php_value}} {
         env PHP_VALUE "@@VITO_PHP_VALUE@@"
     }{{/php_value}}
+    {{/is_backend}}
     file_server
     {{/is_php}}
 
@@ -56,13 +76,21 @@
     file_server
     {{/is_static}}
     {{#is_component_proxy}}
-    reverse_proxy {{proxy_address}}
+    reverse_proxy {{proxy_address}}{{#is_backend}} {
+        trusted_proxies{{#trusted_proxies}} {{ip}}{{/trusted_proxies}}
+        header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+        header_up X-Forwarded-Host {host}
+    }{{/is_backend}}
     {{/is_component_proxy}}
     {{#is_reverse_proxy}}
     reverse_proxy localhost:{{port}}
     {{/is_reverse_proxy}}
 
     {{#is_load_balancer}}
+    {{#is_component}}
+    {{^has_lb_servers}}respond 503{{/has_lb_servers}}
+    {{/is_component}}
+    {{#render_lb_proxy}}
     reverse_proxy {
         {{#lb_servers}}
         to {{address}}
@@ -71,11 +99,18 @@
         to 127.0.0.1
         {{/lb_servers}}
         lb_policy {{lb_policy}}
+        {{#is_component}}
+        fail_duration 10s
+        max_fails 3
+        unhealthy_status 5xx
+        header_up X-Forwarded-Host {host}
+        {{/is_component}}
         header_up Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
     }
+    {{/render_lb_proxy}}
     {{/is_load_balancer}}
 
     {{#redirects}}
@@ -97,6 +132,9 @@
     {{#is_component}}
     }
     {{/is_component}}
+    {{#is_backend}}
+    }
+    {{/is_backend}}
 }
 
 {{/server_blocks}}

@@ -68,11 +68,20 @@ class Ufw extends AbstractFirewall implements HasLogs
         $deletingIds = $server->networkRules()->where('status', FirewallRuleStatus::DELETING)->pluck('id')->all();
 
         $serverRules = $server->firewallRules()
-            ->where('status', '!=', FirewallRuleStatus::DELETING)
             ->orderBy('id')
             ->get();
 
-        $rules = $networkRules->concat($serverRules);
+        $managed = $serverRules->where('component_managed', true);
+        $denies = $managed->unique('port')->map(function ($rule) {
+            $deny = clone $rule;
+            $deny->type = 'deny';
+            $deny->source = null;
+            $deny->mask = null;
+
+            return $deny;
+        });
+        $rules = $managed->where('status', '!=', FirewallRuleStatus::DELETING)->concat($denies)->concat($networkRules)
+            ->concat($serverRules->where('component_managed', false)->where('status', '!=', FirewallRuleStatus::DELETING));
 
         $finalize = app(FinalizeServerNetworkRules::class);
 
