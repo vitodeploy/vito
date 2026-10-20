@@ -53,6 +53,10 @@ class ValidateWebCapability
                 throw ValidationException::withMessages(['capabilities' => 'Rename the worker named "app" before adding the web capability.']);
             }
             $config['port'] = $this->port($capability, $server, $config['port'] === null ? null : (int) $config['port']);
+            if ((int) ($capability->getOriginal('config')['port'] ?? 0) !== $config['port']
+                && $component->deployments()->where(fn ($query) => $query->where('active', true)->orWhere('release_started', true))->exists()) {
+                throw ValidationException::withMessages(['port' => 'Proxy ports cannot be assigned or changed after a release has started. Create a new component to use a different port.']);
+            }
         }
 
         $capability->config = $config;
@@ -67,6 +71,7 @@ class ValidateWebCapability
             ->pluck('config')
             ->map(fn (?array $config): int => (int) ($config['port'] ?? 0))
             ->merge($server->sites()->whereNotNull('port')->pluck('port'))
+            ->merge([2019, 3306, 5432, 6379, (int) $server->port])
             ->merge(\App\Models\ComponentBackend::query()->whereHas('targetComponent', fn ($query) => $query->where('server_id', $server->id))->pluck('port'))
             ->map(fn ($port): int => (int) $port)
             ->all();
@@ -74,7 +79,7 @@ class ValidateWebCapability
         if ($requested !== null) {
             if (in_array($requested, $used, true)) {
                 throw ValidationException::withMessages([
-                    'port' => __('The port is already used by another component or Site on this server.'),
+                    'port' => __('The port is reserved or already used by another component or Site on this server.'),
                 ]);
             }
 

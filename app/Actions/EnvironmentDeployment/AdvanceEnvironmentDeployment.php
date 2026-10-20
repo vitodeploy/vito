@@ -111,10 +111,12 @@ class AdvanceEnvironmentDeployment
     {
         if ($run->is_join && ! $run->deployments()->exists()) {
             foreach ($run->environment->components()->where('type', \App\Enums\ComponentType::APP)->where('status', \App\Enums\ComponentStatus::READY)->doesntHave('deployments')->get() as $component) {
-                $run->deployments()->create([
-                    'component_id' => $component->id, 'commit_id' => $run->commit_id,
+                $deployment = $run->deployments()->make([
+                    'commit_id' => $run->commit_id,
                     'commit_data' => $run->commit_data, 'status' => DeploymentStatus::FAILED,
                 ]);
+                $deployment->component_id = $component->id;
+                $deployment->save();
             }
         }
         $run->status = $status;

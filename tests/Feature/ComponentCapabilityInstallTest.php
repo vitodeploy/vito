@@ -164,6 +164,45 @@ test('proxy port changes are revalidated and mark redeploy', function () {
     $this->assertDatabaseHas('workers', ['component_id' => $component->id, 'command' => 'node new.mjs']);
 });
 
+test('released proxy components reject changing or adding a port without partial mutations', function (bool $web, string $runtime, string $checkpoint) {
+    $this->application->update(['runtime' => $runtime]);
+    if ($runtime === 'custom') {
+        $this->environment->update(['runtime_version' => null]);
+    }
+    $component = installCapabilityComponent($web ? [['capability' => 'web', 'config' => ['port' => 14000, 'start_command' => './serve']]] : []);
+    app(InstallComponent::class)->install($component->id);
+    $run = \App\Models\EnvironmentDeployment::factory()->for($this->environment)->create(['status' => \App\Enums\EnvironmentDeploymentStatus::FINISHED]);
+    \App\Models\Deployment::factory()->create([
+        'site_id' => null, 'deployment_script_id' => null, 'log_id' => null, 'component_id' => $component->id,
+        'environment_deployment_id' => $run->id, 'release' => $run->release, $checkpoint => true,
+    ]);
+    SSH::fake();
+    Queue::fake();
+    Event::fake([SocketEvent::class]);
+    $url = '/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/components/'.$component->id.'/capabilities';
+    foreach ([16000, null, ''] as $port) {
+        $this->actingAs($this->user)->putJson($url, ['capabilities' => [
+            ['capability' => 'worker'], ['capability' => 'web', 'config' => ['port' => $port, 'start_command' => './new-serve']],
+        ]])->assertUnprocessable()->assertJsonValidationErrors('capabilities');
+        $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'ready']);
+        $this->assertDatabaseMissing('component_capabilities', ['component_id' => $component->id, 'capability' => 'worker']);
+        if ($web) {
+            $this->assertDatabaseHas('component_capabilities', ['component_id' => $component->id, 'config->port' => 14000, 'status' => 'ready']);
+            $this->assertDatabaseHas('workers', ['component_id' => $component->id, 'command' => './serve']);
+        } else {
+            $this->assertDatabaseMissing('component_capabilities', ['component_id' => $component->id, 'capability' => 'web']);
+        }
+    }
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+    Event::assertNotDispatched(SocketEvent::class);
+    if ($web) {
+        $this->putJson($url, ['capabilities' => [['capability' => 'web', 'config' => ['port' => '14000', 'start_command' => './new-serve']]]])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('component_capabilities', ['component_id' => $component->id, 'config->port' => 14000, 'config->start_command' => './new-serve']);
+        Queue::assertPushed(SyncComponentCapabilitiesJob::class);
+    }
+})->with([false, true])->with(['node', 'custom'])->with(['active', 'release_started']);
+
 test('failed capability install and removal retain recoverable rows and retry safely', function (bool $removal) {
     $component = installCapabilityComponent($removal ? [['capability' => 'web']] : []);
     app(InstallComponent::class)->install($component->id);
@@ -239,13 +278,13 @@ test('capability and runtime jobs respect the shared server mutex and ignore del
         $job = (new $jobClass($component->id, $this->server->id))->withFakeQueueInteractions();
         $job->handle();
         $job->assertReleased(30);
-        SSH::assertNotExecutedContains('');
+        expect(SSH::getExecutedCommands())->toBeEmpty();
     } finally {
         $lock->release();
     }
     $component->delete();
     (new $jobClass($component->id, $this->server->id))->handle();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([SyncComponentCapabilitiesJob::class, SyncComponentRuntimeJob::class]);
 
 test('capability and runtime jobs do nothing once a parent begins teardown', function (string $jobClass, string $parent) {
@@ -258,7 +297,7 @@ test('capability and runtime jobs do nothing once a parent begins teardown', fun
         $this->environment->save();
     }
     (new $jobClass($component->id, $component->server_id))->handle();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending']);
 })->with([SyncComponentCapabilitiesJob::class, SyncComponentRuntimeJob::class])->with(['application', 'environment']);
 
@@ -324,8 +363,16 @@ test('fpm retries activate an already written pool before advancing the runtime 
     $attempts = 0;
     $active = false;
     $ssh->shouldReceive('exec')->withArgs(fn ($command) => str_contains((string) $command, 'test -f /etc/php/8.3/fpm/pool.d/runtime.conf'))
-        ->twice()->andReturnUsing(function ($command) use (&$attempts, &$active): string {
-            if (! $active && ($attempts === 0 || str_contains((string) $command, 'test -S /run/php/php8.3-fpm-runtime.sock'))) {
+        ->twice()->andReturnUsing(function () use (&$attempts): string {
+            if ($attempts === 0) {
+                throw new \App\Exceptions\SSHCommandError;
+            }
+
+            return '';
+        });
+    $ssh->shouldReceive('exec')->withArgs(fn ($command) => str_contains((string) $command, 'test -S /run/php/php8.3-fpm-runtime.sock'))
+        ->twice()->andReturnUsing(function () use (&$active): string {
+            if (! $active) {
                 throw new \App\Exceptions\SSHCommandError;
             }
 

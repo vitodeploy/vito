@@ -222,6 +222,16 @@ class PHP extends AbstractService implements HasLogs
             $domainsByUser[$user][] = $site->domain;
         }
 
+        $this->service->server->loadMissing('components.environment.application');
+        foreach ($this->service->server->components->sortBy('id') as $component) {
+            if ($component->type !== \App\Enums\ComponentType::APP
+                || ! in_array($version, [$component->environment->runtime_version, $component->installed_runtime_version], true)
+                || $component->environment->application->preset()->webMode() !== \App\Enums\WebMode::FPM) {
+                continue;
+            }
+            $domainsByUser[$component->user][] = $component->name.' (component #'.$component->id.')';
+        }
+
         foreach ($domainsByUser as $user => $domains) {
             $logs[] = new ServiceLog(
                 key: 'php:'.$version.':user:'.$user,

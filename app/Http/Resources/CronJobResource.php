@@ -21,6 +21,7 @@ class CronJobResource extends JsonResource
             'site_id' => $this->site_id,
             $this->mergeWhen(! $request->is('api/*'), [
                 'component_id' => $this->component_id,
+                'component_name' => $this->whenLoaded('component', fn (): string => $this->component->name),
                 'managed' => $this->component_capability_id !== null,
                 'component_url' => $this->whenLoaded('component', fn (): string => route('components.show', [$this->component->environment->application_id, $this->component->environment_id, $this->component->id], false)),
             ]),

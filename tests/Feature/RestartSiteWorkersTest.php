@@ -49,6 +49,31 @@ test('successful restart marks running and clears error', function () {
     expect($worker->error)->toBeNull();
 });
 
+test('supervisor group updates do not replace process restart results', function (?string $processStatus, WorkerStatus $expected, ?string $error) {
+    Storage::fake(config('core.logs_disk'));
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+        'error' => 'stale error',
+    ]);
+    SSH::fake("{$worker->id}: changed\n{$worker->id}: stopped\n{$worker->id}: updated process group\n".
+        ($processStatus === null ? '' : "{$worker->id}:{$worker->id}_00: {$processStatus}"));
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $this->assertDatabaseHas('workers', [
+        'id' => $worker->id,
+        'status' => $expected,
+        'error' => $error === 'ERROR (spawn error)' ? "{$worker->id}:{$worker->id}_00: {$error}" : $error,
+    ]);
+})->with([
+    ['started', WorkerStatus::RUNNING, null],
+    ['stopped', WorkerStatus::STOPPED, 'Unable to restart (stopped)'],
+    ['ERROR (spawn error)', WorkerStatus::FAILED, 'ERROR (spawn error)'],
+    [null, WorkerStatus::FAILED, 'Unable to restart'],
+]);
+
 test('worker left stopped is marked stopped with generic error', function () {
     Storage::fake(config('core.logs_disk'));
 

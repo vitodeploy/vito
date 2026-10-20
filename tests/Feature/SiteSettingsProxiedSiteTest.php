@@ -4,7 +4,10 @@ use App\Enums\DeploymentStatus;
 use App\Enums\WorkerStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\Deployment;
+use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
 use App\SiteTypes\NodeSite;
@@ -56,6 +59,37 @@ test('update port updates site and regenerates vhost', function () {
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event) => $event->data->type === 'site.updated');
 });
+
+test('update port rejects component reservations without persistence or ssh', function (int|string $port) {
+    SSH::fake();
+    Event::fake([SocketEvent::class]);
+    $component = Component::factory()->for($this->server)->create();
+    ComponentCapability::factory()->for($component)->create(['capability' => 'web', 'config' => ['port' => $port]]);
+
+    $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'port' => 4000,
+    ])->assertSessionHasErrors('port');
+
+    $this->assertDatabaseHas('sites', ['id' => $this->proxiedSite->id, 'port' => 3000]);
+    expect(SSH::getExecutedCommands())->toBe([]);
+    Event::assertNotDispatched(SocketEvent::class);
+})->with([4000, '4000']);
+
+test('update port ignores other servers and non web capabilities', function (bool $sameServer) {
+    SSH::fake();
+    Event::fake([SocketEvent::class]);
+    $component = Component::factory()->for($sameServer ? $this->server : Server::factory()->create())->create();
+    ComponentCapability::factory()->for($component)->create([
+        'capability' => $sameServer ? 'worker' : 'web', 'config' => ['port' => 4000],
+    ]);
+
+    $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+        'port' => 4000,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->proxiedSite->id, 'port' => 4000]);
+    expect(SSH::getExecutedCommands())->not->toBe([]);
+})->with([false, true]);
 
 test('update port validates', function () {
     SSH::fake();

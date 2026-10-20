@@ -24,9 +24,9 @@ class GetEnvironmentDomainOptions
             ])->all(),
             'aliases' => $environment->domains()->where('type', HostedDomainType::ALIAS)->whereNotLike('host', '*.%')
                 ->get(['id', 'host', 'component_id'])->toArray(),
-            'certificates' => $components->pluck('server_id')->unique()->flatMap(fn (int $serverId) => Ssl::activeServerLevel($serverId)
+            'certificates' => Ssl::activeServerLevel($components->pluck('server_id')->unique()->values()->all())
                 ->where('expires_at', '>', now())->get()->filter(fn (Ssl $ssl): bool => is_array($ssl->domains) && $ssl->domains !== [])
-                ->map(fn (Ssl $ssl): array => ['id' => $ssl->id, 'server_id' => $ssl->server_id, 'domains' => $ssl->domains]))->values()->all(),
+                ->map(fn (Ssl $ssl): array => ['id' => $ssl->id, 'server_id' => $ssl->server_id, 'domains' => $ssl->domains])->values()->all(),
         ];
     }
 }

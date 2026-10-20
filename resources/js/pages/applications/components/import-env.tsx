@@ -27,7 +27,7 @@ export default function ImportEnv({ open, onOpenChange, application, environment
     }
     form.post(`${baseUrl}/preview`, {
       onSuccess: (page) => {
-        const data = (page.props as SharedData).flash?.data;
+        const data = (page.props.flash as SharedData['flash'])?.data;
         if (!data || typeof data !== 'object' || !('variables' in data) || !Array.isArray(data.variables) || !data.variables.every(
           (variable): variable is EnvironmentVariablePreview => !!variable && typeof variable === 'object' && typeof variable.key === 'string' && typeof variable.is_secret === 'boolean',
         )) {

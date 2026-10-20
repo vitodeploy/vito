@@ -52,6 +52,16 @@ VITO_RESOURCE_UNIT
 then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
+for unit in mysql.service mariadb.service postgresql.service postgresql@.service redis-server.service valkey-server.service; do
+    if ! sudo mkdir -p "/etc/systemd/system/$unit.d" || ! sudo tee "/etc/systemd/system/$unit.d/50-vito-resource-guard.conf" >/dev/null <<'VITO_RESOURCE_DEPENDENCY'
+[Unit]
+Requires=vito-resource-guard.service
+After=vito-resource-guard.service
+VITO_RESOURCE_DEPENDENCY
+    then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+done
 if ! sudo systemctl daemon-reload || ! sudo systemctl enable vito-resource-guard.service || ! sudo bash /etc/vito-resource-guard; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
@@ -116,6 +126,14 @@ for executable in iptables ip6tables; do
         fi
     fi
 done
+for unit in mysql.service mariadb.service postgresql.service postgresql@.service redis-server.service valkey-server.service; do
+    if ! sudo rm -f "/etc/systemd/system/$unit.d/50-vito-resource-guard.conf"; then
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+done
+if ! sudo systemctl daemon-reload; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
 if [ -f /etc/systemd/system/vito-resource-guard.service ]; then
     if ! sudo systemctl disable --now vito-resource-guard.service || ! sudo rm -f /etc/systemd/system/vito-resource-guard.service /etc/vito-resource-guard || ! sudo systemctl daemon-reload; then
         echo 'VITO_SSH_ERROR' && exit 1

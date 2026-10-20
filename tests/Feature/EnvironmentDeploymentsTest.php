@@ -642,5 +642,5 @@ test('release activation fails closed when its release identifier is missing', f
     SSH::fake('');
     expect(fn () => app(RunComponentStage::class)->run($deployment->id, DeploymentStage::RELEASE))->toThrow(RuntimeException::class, 'The deployment release is unavailable.');
     $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'active' => false, 'release_started' => false]);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });

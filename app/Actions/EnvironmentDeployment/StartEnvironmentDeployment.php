@@ -31,7 +31,7 @@ class StartEnvironmentDeployment
         }
         $environment = $run->environment;
         $commit = ($run->is_join || $run->rollback_of_id) ? ['commit_id' => $run->commit_id, 'commit_data' => $run->commit_data]
-            : $environment->application->sourceControl?->provider()->getLastCommit($environment->application->repository, $environment->branch);
+            : app(\App\Actions\Application\GetApplicationSourceControl::class)->get($environment->application)->provider()->getLastCommit($environment->application->repository, $environment->branch);
         if (! is_string($commit['commit_id'] ?? null) || preg_match('/\A(?:[a-f0-9]{40}|[a-f0-9]{64})\z/i', $commit['commit_id']) !== 1) {
             throw new RuntimeException('Unable to resolve a full commit SHA for this deployment.');
         }
@@ -75,10 +75,11 @@ class StartEnvironmentDeployment
                 $log = ServerLog::newLog($component->server, 'component-'.$component->id.'-deployment-'.$run->id);
                 $log->save();
                 $deployment = new Deployment([
-                    'component_id' => $component->id, 'log_id' => $log->id, 'commit_id' => $run->commit_id,
+                    'log_id' => $log->id, 'commit_id' => $run->commit_id,
                     'commit_data' => $run->commit_data, 'release' => $component->type === ComponentType::APP ? $run->release : null,
                     'status' => $component->type === ComponentType::APP ? DeploymentStatus::DEPLOYING : DeploymentStatus::FINISHED,
                 ]);
+                $deployment->component_id = $component->id;
                 $deployment->environment_deployment_id = $run->id;
                 $deployment->previous_deployment_id = $component->deployments()->where('active', true)->value('id');
                 $deployment->save();

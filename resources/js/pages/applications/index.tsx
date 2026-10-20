@@ -10,6 +10,7 @@ import Layout from '@/layouts/app/layout';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
 import { useDialog } from '@/hooks/use-dialog';
 import { SourceControl } from '@/types/source-control';
+import DocsLink from './components/docs-link';
 
 export default function Applications() {
   const { applications, sourceControls, canCreate } = usePage<{
@@ -18,7 +19,7 @@ export default function Applications() {
     canCreate: boolean;
   }>().props;
   const dialog = useDialog();
-  usePoll(10000, { only: ['applications'] });
+  usePoll(10000, { only: ['applications', 'canCreate'] });
 
   return (
     <Layout>
@@ -38,6 +39,7 @@ export default function Applications() {
             </Button>
           </div>
         )} />
+        {applications.data.length === 0 && <DocsLink />}
       </Container>
     </Layout>
   );

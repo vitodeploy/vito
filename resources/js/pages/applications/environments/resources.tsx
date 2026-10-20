@@ -6,6 +6,8 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import DocsLink from '@/pages/applications/components/docs-link';
 import { VitoTable } from '@/components/vito-table';
 import { useDialog } from '@/hooks/use-dialog';
 import EnvironmentLayout from '@/layouts/environment/layout';
@@ -28,7 +30,7 @@ export default function Resources() {
       <Head title={`Resources - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Resources" description="Managed access for app components. Connection variables apply on the next deploy." />
+          <div className="flex items-center gap-3"><Heading title="Resources" description="Managed access for app components. Connection variables apply on the next deploy." /><Badge variant="warning">Beta</Badge></div>
           {editable && <Button onClick={() => dialog.attachResource.open({ application, environment, options: resourceOptions })}><PlusIcon />Attach resource</Button>}
         </HeaderContainer>
         <VitoTable tableData={attachments} actions={(row) => {
@@ -43,6 +45,7 @@ export default function Resources() {
             })}><UnplugIcon /></Button>}
           </div>;
         }} />
+        {attachments.data.length === 0 && <DocsLink page="resources" />}
       </Container>
     </EnvironmentLayout>
   );

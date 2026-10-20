@@ -189,6 +189,19 @@ test('explicit ports cannot conflict with another component or Site', function (
     assertCapabilityValidationError(fn () => $record->handler()->validate($this->component, $this->server), 'port');
 })->with(['component', 'site']);
 
+test('proxy ports reject and skip reserved service and SSH ports', function (int $port) {
+    $this->server->update(['port' => 2222]);
+    $record = componentCapabilityForTest($this->component, config: ['port' => $port]);
+    assertCapabilityValidationError(fn () => $record->handler()->validate($this->component, $this->server), 'port');
+
+    config(['component.port_range' => ['min' => $port, 'max' => $port + 1]]);
+    $record->config = ['port' => null];
+    $record->handler()->validate($this->component, $this->server);
+    expect($record->config['port'])->toBe($port + 1);
+    $this->assertDatabaseCount('component_capabilities', 0);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+})->with([2019, 2222, 3306, 5432, 6379]);
+
 test('proxy ports are server scoped and an existing capability may keep or edit its port', function () {
     $other = Component::factory()->create();
     ComponentCapability::factory()->for($other)->create(['config' => ['port' => 13000]]);

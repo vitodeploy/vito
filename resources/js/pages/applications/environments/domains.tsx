@@ -5,6 +5,8 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import DocsLink from '@/pages/applications/components/docs-link';
 import { VitoTable } from '@/components/vito-table';
 import { useDialog } from '@/hooks/use-dialog';
 import EnvironmentLayout from '@/layouts/environment/layout';
@@ -27,7 +29,7 @@ export default function Domains() {
       <Head title={`Domains - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Domains" description="Route verified hosts to a web component in this environment." />
+          <div className="flex items-center gap-3"><Heading title="Domains" description="Route verified hosts to a web component in this environment." /><Badge variant="warning">Beta</Badge></div>
           {editable && <Button onClick={() => dialog.environmentDomainForm.open({ application, environment, options: domainOptions })}><PlusIcon />Add domain</Button>}
         </HeaderContainer>
         <VitoTable tableData={domains} actions={(row) => {
@@ -44,6 +46,7 @@ export default function Domains() {
             })}><TrashIcon /></Button>
           </div>;
         }} />
+        {domains.data.length === 0 && <DocsLink page="domains" />}
       </Container>
     </EnvironmentLayout>
   );

@@ -27,6 +27,7 @@ class RetryComponentInstall
             $component->status = ComponentStatus::PENDING;
             $component->last_error = null;
             $component->save();
+            DB::afterCommit(fn () => app(BroadcastComponentUpdate::class)->broadcast($component));
             InstallComponentJob::dispatch($component->id, $component->server_id)->afterCommit();
         });
     }

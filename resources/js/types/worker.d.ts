@@ -4,6 +4,7 @@ export interface Worker {
   site_id: number | null;
   component_id: number | null;
   component_url?: string | null;
+  component_name?: string | null;
   managed: boolean;
   name: string;
   command: string;

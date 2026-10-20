@@ -51,6 +51,70 @@ beforeEach(function () {
     $this->environment->save();
 });
 
+test('deployment admission accepts only global or same project source controls', function (string $scope) {
+    $source = $this->application->sourceControl;
+    if ($scope === 'deleted') {
+        $source->delete();
+    } else {
+        $source->update(['project_id' => match ($scope) {
+            'global' => null,
+            'project' => $this->application->project_id,
+            default => \App\Models\Project::factory()->create()->id,
+        }]);
+    }
+    if (in_array($scope, ['global', 'project'], true)) {
+        $run = app(DeployEnvironment::class)->run($this->environment);
+        $this->assertDatabaseHas('environment_deployments', ['id' => $run->id, 'environment_id' => $this->environment->id]);
+    } else {
+        $this->actingAs($this->user)->postJson('/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/deployments')
+            ->assertUnprocessable()->assertJsonValidationErrors('deployment');
+        expect($this->environment->deployments()->count())->toBe(0);
+        Queue::assertNothingPushed();
+    }
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+})->with(['global', 'project', 'foreign', 'deleted']);
+
+test('queued commit resolution rechecks source control project access before provider calls', function () {
+    $run = app(DeployEnvironment::class)->run($this->environment);
+    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    expect(fn () => app(StartEnvironmentDeployment::class)->start($run->id))->toThrow(ValidationException::class);
+    app(StartEnvironmentDeployment::class)->failed($run->id);
+    $this->assertDatabaseHas('environment_deployments', ['id' => $run->id, 'status' => EnvironmentDeploymentStatus::FAILED]);
+    expect($run->deployments()->count())->toBe(0);
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+});
+
+test('clone rechecks source control access before obtaining credentials or running SSH', function (bool $githubApp) {
+    if ($githubApp) {
+        $source = SourceControl::factory()->githubApp()->create();
+        Cache::put('github_app_token_'.$source->external_identifier, 'installation-secret', 3600);
+        $this->application->update(['source_control_id' => $source->id]);
+    }
+    $run = app(DeployEnvironment::class)->run($this->environment);
+    app(StartEnvironmentDeployment::class)->start($run->id);
+    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::preventStrayRequests();
+    Http::fake();
+    $this->mock(\App\SSH\OS\Git::class)->shouldNotReceive('cloneRepository');
+    if ($githubApp) {
+        $provider = new class($source) extends \App\SourceControlProviders\GithubApp
+        {
+            public function installationAccessToken(): string
+            {
+                throw new LogicException('Installation credentials must not be requested.');
+            }
+        };
+        config(['source-control.providers.github-app.handler' => $provider::class]);
+    }
+    $deployment = $run->deployments()->sole();
+    expect(fn () => app(RunComponentStage::class)->run($deployment->id, DeploymentStage::CLONE))->toThrow(ValidationException::class);
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+})->with([false, true]);
+
 test('github app clones receive the installation token and the pinned SHA without a token in logs', function () {
     $source = SourceControl::factory()->githubApp()->create(['project_id' => $this->server->project_id]);
     Cache::put('github_app_token_'.$source->external_identifier, 'installation-secret', 3600);
@@ -96,7 +160,7 @@ test('environment scripts are inherited and empty component scripts intentionall
     $this->component->deploymentScripts()->create(['name' => 'build', 'content' => '']);
     app(AdvanceEnvironmentDeployment::class)->dispatch($run->fresh(), DeploymentStage::BUILD);
     app(RunComponentStage::class)->run($deployment->id, DeploymentStage::BUILD);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('stage jobs use a component lock and advance only after releasing it', function () {
@@ -110,7 +174,7 @@ test('stage jobs use a component lock and advance only after releasing it', func
         $job->handle();
         $job->assertReleased(30);
         expect($run->fresh()->current_stage)->toBe(DeploymentStage::CLONE);
-        SSH::assertNotExecutedContains('');
+        expect(SSH::getExecutedCommands())->toBeEmpty();
     } finally {
         $lock->release();
     }
@@ -145,7 +209,7 @@ test('stage failures defer barrier advancement until the component mutex is free
         ->and($deployment->log->getContent())->not->toContain('Do not leak sensitive error data');
     SSH::fake('');
     $job->handle();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('start failures become terminal without participant side effects and duplicate starts are harmless', function () {
@@ -170,7 +234,7 @@ test('start failures become terminal without participant side effects and duplic
     app(StartEnvironmentDeployment::class)->failed($run->id);
     app(StartEnvironmentDeployment::class)->failed(999999);
     expect($run->deployments()->count())->toBe(0);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('rollback restores a previous active deployment and restarts its processes', function () {
@@ -195,7 +259,7 @@ test('first release rollback removes current and stops processes while untouched
     app(StartEnvironmentDeployment::class)->start($run->id);
     $deployment = $run->deployments()->sole();
     app(RollbackComponentRelease::class)->rollback($deployment);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     $worker = Worker::factory()->for($this->component)->for($this->server)->create(['site_id' => null, 'status' => WorkerStatus::RUNNING]);
     $deployment->release_started = true;
     $deployment->save();
@@ -218,7 +282,7 @@ test('node releases execute suggested build and start the proxy process once eve
     }
     $worker = Worker::factory()->for($this->component)->for($this->server)->create(['site_id' => null, 'status' => WorkerStatus::STOPPED]);
     $this->mock(HasComponentRelease::class)->shouldReceive('check')->andReturn(true);
-    SSH::fake("{$worker->id}:{$worker->id}_00: started");
+    SSH::fake("{$worker->id}: changed\n{$worker->id}: stopped\n{$worker->id}: updated process group\n{$worker->id}:{$worker->id}_00: stopped\n{$worker->id}:{$worker->id}_00: started");
     $run = app(DeployEnvironment::class)->run($this->environment);
     app(StartEnvironmentDeployment::class)->start($run->id);
     $run->refresh();

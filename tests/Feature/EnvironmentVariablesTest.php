@@ -110,7 +110,7 @@ test('environment variables are encrypted preserve whitespace and mark only thei
         $this->assertDatabaseHas('components', ['id' => $component->id, 'needs_redeploy' => true]);
     }
     $this->assertDatabaseHas('components', ['id' => $other->id, 'needs_redeploy' => false]);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     Queue::assertNothingPushed();
     Http::assertNothingSent();
 })->with([
@@ -165,24 +165,41 @@ test('variables page masks secrets and exposes readonly computed values and rede
     expect($response->getContent())->not->toContain('never-return-this');
 });
 
+test('variables resolve component servers in one query', function () {
+    Component::factory()->count(2)->for($this->environment)->create();
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+    try {
+        app(\App\Actions\EnvironmentVariable\GetEnvironmentVariables::class)->get($this->environment->fresh());
+        $queries = collect(DB::getQueryLog())->filter(fn (array $query): bool => preg_match('/from ["`]servers["`]/i', $query['query']) === 1);
+        expect($queries)->toHaveCount(1);
+    } finally {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+});
+
 test('import preview contains only keys and secret guesses and import honors toggles and multiline values', function () {
-    $content = "# comment\r\nNAME=example\r\nPASSWORD=private\r\nAPI_SECRET=private\r\nTOKEN=private\r\nAPI_KEY=private\r\nKEYBOARD=public\r\nPRIVATE_PEM=\"-----BEGIN KEY-----\r\nline two\r\n-----END KEY-----\"\r\nREFERENCE='\${NAME}'";
+    $content = "# comment\r\nNAME=example\r\nPASSWORD=private\r\nAPI_SECRET=private\r\nTOKEN=private\r\nAPI_KEY=private\r\nKEYBOARD=public\r\nPRIVATE_PEM=\"-----BEGIN KEY-----\r\nline two\r\n-----END KEY-----\"\r\nREFERENCE='\${NAME}'\r\nDATABASE_URL=postgres://user:private@localhost/data\r\nREDIS_URL=redis://user:private@localhost";
     $this->post($this->url.'/preview', ['content' => $content])->assertSessionHasNoErrors()->assertSessionHas('data.variables', [
         ['key' => 'NAME', 'is_secret' => false], ['key' => 'PASSWORD', 'is_secret' => true], ['key' => 'API_SECRET', 'is_secret' => true],
-        ['key' => 'TOKEN', 'is_secret' => true], ['key' => 'API_KEY', 'is_secret' => true], ['key' => 'KEYBOARD', 'is_secret' => false],
-        ['key' => 'PRIVATE_PEM', 'is_secret' => false], ['key' => 'REFERENCE', 'is_secret' => false],
+        ['key' => 'TOKEN', 'is_secret' => true], ['key' => 'API_KEY', 'is_secret' => true], ['key' => 'KEYBOARD', 'is_secret' => true],
+        ['key' => 'PRIVATE_PEM', 'is_secret' => true], ['key' => 'REFERENCE', 'is_secret' => false],
+        ['key' => 'DATABASE_URL', 'is_secret' => true], ['key' => 'REDIS_URL', 'is_secret' => true],
     ]);
     $this->assertDatabaseCount('environment_variables', 0);
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'needs_redeploy' => false]);
     EnvironmentVariable::factory()->for($this->environment)->create(['key' => 'NAME', 'value' => 'old']);
-    $this->post($this->url.'/import', ['content' => $content, 'secret_keys' => ['NAME', 'PRIVATE_PEM']])->assertSessionHasNoErrors();
-    $this->assertDatabaseCount('environment_variables', 8);
+    $this->post($this->url.'/import', ['content' => $content, 'secret_keys' => ['NAME', 'PRIVATE_PEM', 'DATABASE_URL', 'REDIS_URL']])->assertSessionHasNoErrors();
+    $this->assertDatabaseCount('environment_variables', 10);
     $this->assertDatabaseHas('environment_variables', ['environment_id' => $this->environment->id, 'key' => 'NAME', 'is_secret' => true]);
     $this->assertDatabaseHas('environment_variables', ['environment_id' => $this->environment->id, 'key' => 'PASSWORD', 'is_secret' => false]);
     expect($this->environment->variables()->where('key', 'PRIVATE_PEM')->sole()->value)->toBe("-----BEGIN KEY-----\nline two\n-----END KEY-----")
         ->and($this->environment->variables()->where('key', 'REFERENCE')->sole()->value)->toBe('${NAME}');
+    $response = $this->get($this->url)->assertSuccessful();
+    expect($response->getContent())->not->toContain('-----BEGIN KEY-----', 'postgres://user:private', 'redis://user:private');
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'needs_redeploy' => true]);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     Queue::assertNothingPushed();
 });
 
@@ -222,7 +239,7 @@ test('deleting a variable marks all components and environment deletion cascades
     $remaining = EnvironmentVariable::factory()->for($this->environment)->create();
     $this->environment->delete();
     $this->assertDatabaseMissing('environment_variables', ['id' => $remaining->id]);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('variable routes enforce both parent bindings', function () {

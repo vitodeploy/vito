@@ -269,7 +269,7 @@ class Caddy extends AbstractWebserver implements HasLogs
 
     public function logs(): array
     {
-        return [
+        $logs = [
             new ServiceLog(
                 key: 'caddy:error',
                 serviceLabel: 'Caddy',
@@ -278,5 +278,21 @@ class Caddy extends AbstractWebserver implements HasLogs
                 target: '/var/log/caddy/errors.log',
             ),
         ];
+
+        $this->service->server->loadMissing('components.capabilities');
+        foreach ($this->service->server->components->sortBy('id') as $component) {
+            if ($component->type !== \App\Enums\ComponentType::LOAD_BALANCER && ! $component->capabilities->contains('capability', 'web')) {
+                continue;
+            }
+            $logs[] = new ServiceLog(
+                key: 'caddy:component:'.$component->id.':access',
+                serviceLabel: 'Caddy',
+                label: $component->name.' access log (component #'.$component->id.')',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/caddy/component-'.$component->id.'-access.log',
+            );
+        }
+
+        return $logs;
     }
 }

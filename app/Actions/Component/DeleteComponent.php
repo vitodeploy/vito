@@ -49,6 +49,7 @@ class DeleteComponent
             $component->status = ComponentStatus::DELETING;
             $component->last_error = null;
             $component->save();
+            DB::afterCommit(fn () => app(BroadcastComponentUpdate::class)->broadcast($component));
             DeleteComponentJob::dispatch($component->id, $component->server_id)->afterCommit();
         });
     }

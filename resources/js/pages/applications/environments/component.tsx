@@ -20,6 +20,7 @@ import { CronJob } from '@/types/cronjob';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
 import { Actions as WorkerActions } from '@/pages/workers/components/columns';
 import { Actions as CronJobActions } from '@/pages/cronjobs/components/columns';
+import DocsLink from '@/pages/applications/components/docs-link';
 
 export default function ShowComponent() {
   const { application, environment, component, primaryCandidates, backendTargets, options, workers, cronjobs, can } = usePage<{
@@ -52,6 +53,7 @@ export default function ShowComponent() {
         <HeaderContainer>
           <div className="flex items-center gap-3">
             <Heading title={component.name} description={environment.name} />
+            <Badge variant="warning">Beta</Badge>
             <Badge variant={component.status_color}>{component.status}</Badge>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -91,6 +93,7 @@ export default function ShowComponent() {
                     {backend.backup && <Badge variant="warning">Backup</Badge>}
                     {backend.ip && <span className="text-muted-foreground">External · firewall not managed</span>}
                   </li>)}</ul> : <p className="text-muted-foreground text-sm">No backends configured. This load balancer is not forwarding traffic.</p>}
+                  {(component.backends ?? []).length === 0 && <DocsLink page="load-balancing" />}
                 </div>}
               </CardContent>
             </Card>
@@ -110,6 +113,7 @@ export default function ShowComponent() {
               }}
               actions={(row) => <WorkerActions worker={row.worker as Worker} canManage={can.update && ready} />}
             />
+            {workers.data.length === 0 && <DocsLink page="components" />}
           </TabsContent>}
           {component.surfaces.includes('cron_jobs') && <TabsContent value="cron_jobs" className="flex flex-col gap-4">
             <HeaderContainer>
@@ -117,6 +121,7 @@ export default function ShowComponent() {
               {can.update && ready && <Button onClick={() => dialog.cronjobForm.open({ serverId: component.server_id, component: owner })}><PlusIcon />Create cron job</Button>}
             </HeaderContainer>
             <VitoTable tableData={cronjobs} actions={(row) => <CronJobActions cronJob={row.cronjob as CronJob} canManage={can.update && ready} />} />
+            {cronjobs.data.length === 0 && <DocsLink page="components" />}
           </TabsContent>}
         </Tabs>
       </Container>

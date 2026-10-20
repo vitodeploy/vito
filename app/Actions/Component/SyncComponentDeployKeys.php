@@ -48,7 +48,7 @@ class SyncComponentDeployKeys
     public function sync(Component $component): void
     {
         $application = $component->environment->application;
-        $sourceControl = $application->sourceControl ?? throw new RuntimeException('The application source control is unavailable.');
+        $sourceControl = app(\App\Actions\Application\GetApplicationSourceControl::class)->get($application);
 
         if ($component->deploy_key_source_control_id === $sourceControl->id
             && $component->deploy_key_repository === $application->repository) {

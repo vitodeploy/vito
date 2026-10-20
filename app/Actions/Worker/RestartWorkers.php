@@ -105,7 +105,7 @@ class RestartWorkers
             [$process, $status] = explode(': ', $line, 2);
             $group = strtok($process, ':');
 
-            if ($group === false || ! ctype_digit($group)) {
+            if ($group === false || ! ctype_digit($group) || ! str_contains($process, ':')) {
                 continue;
             }
 

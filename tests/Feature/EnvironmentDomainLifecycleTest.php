@@ -273,7 +273,7 @@ test('wildcard renewal failures keep valid certificates and active routes', func
     expect($ssl->fresh()->status)->toBe(SslStatus::CREATED)->and($this->domain->fresh()->status)->toBe(HostedDomainStatus::ACTIVE)
         ->and($this->domain->fresh()->error)->toContain('renewal failed');
     expect(app(SyncComponentVhost::class)->generate($this->component->fresh()))->toContain('app.example.com')->toContain('return 301 https://');
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('initial wildcard failure remains retryable without clobbering unrelated activation', function () {
@@ -349,7 +349,7 @@ test('certificate deletion jobs protect certificates attached after they were qu
     $job->handle();
     $job->failed(new Exception('stale failure'));
     $this->assertDatabaseHas('ssls', ['id' => $ssl->id, 'status' => 'created']);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([false, true]);
 
 test('certificate deletion shares the domain attachment server lock', function () {
@@ -409,7 +409,7 @@ test('server purge cascades environment domains and owned certificates without r
     $this->server->delete();
     $this->assertDatabaseMissing('environment_domains', ['id' => $this->domain->id]);
     $this->assertDatabaseMissing('ssls', ['id' => $ssl->id]);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('environment certificates are excluded from server lists and owner guards still apply', function () {
@@ -445,7 +445,7 @@ test('stale verification jobs do not provision after teardown deletion or retarg
         'retargeted' => $this->component->update(['server_id' => Server::factory()->create()->id]),
     };
     (new CheckEnvironmentDomainJob($this->domain->id, $this->server->id))->handle();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     Http::assertNothingSent();
 })->with(['deleted', 'environment', 'application', 'active', 'retargeted']);
 
@@ -472,7 +472,7 @@ test('certificate completion rejects invalid certificates and skips tearing down
     SSH::fake();
     app(ActivateEnvironmentDomain::class)->complete($ssl);
     app(\App\Actions\SSL\RenewEnvironmentSsl::class)->renew($ssl->id);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('domain and certificate job failures expose safe errors and tolerate deleted rows', function () {

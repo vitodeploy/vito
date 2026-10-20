@@ -22,7 +22,7 @@ class ImportEnvironmentVariables
     {
         return array_map(fn (string $key): array => [
             'key' => $key,
-            'is_secret' => preg_match('/PASSWORD|SECRET|TOKEN|KEY$/', $key) === 1,
+            'is_secret' => \App\Helpers\EnvParser::isSecretKey($key) || str_ends_with($key, '_URL'),
         ], array_keys($this->parse($content)));
     }
 

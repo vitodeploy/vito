@@ -16,6 +16,7 @@ import { useConfigs } from '@/stores/bootstrap-store';
 import { Application, Environment } from '@/types/application';
 import { SourceControl } from '@/types/source-control';
 import Settings from './components/settings';
+import DocsLink from './components/docs-link';
 
 export default function ShowApplication() {
   const { application, environments, sourceControls, can } = usePage<{
@@ -39,7 +40,7 @@ export default function ShowApplication() {
     });
   };
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environments'],
+    only: ['application', 'environments', 'can'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -78,7 +79,7 @@ export default function ShowApplication() {
             <Heading title="Environments" />
             {can.createEnvironment && application.status === 'ready' && <Button onClick={() => dialog.createEnvironment.open({ application })}><PlusIcon />Create environment</Button>}
           </HeaderContainer>
-          {environments.length === 0 && <p className="text-muted-foreground text-sm">No environments yet. Create one to get started.</p>}
+          {environments.length === 0 && <div className="flex flex-col items-start gap-2"><p className="text-muted-foreground text-sm">No environments yet. Create one to get started.</p><DocsLink /></div>}
           <div className="grid gap-4 sm:grid-cols-2">
             {environments.map((environment) => (
               <Card key={environment.id}>

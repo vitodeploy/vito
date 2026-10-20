@@ -122,7 +122,7 @@ class Github extends AbstractSourceControlProvider
             $response = $this->getClient()
                 ->delete(self::API_BASE_URL."/repos/$repo/hooks/$hookId");
 
-            if ($response->status() !== 204) {
+            if (! in_array($response->status(), [204, 404], true)) {
                 throw new FailedToDestroyGitHook($response->body());
             }
 

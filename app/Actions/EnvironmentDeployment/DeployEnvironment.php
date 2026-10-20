@@ -101,8 +101,6 @@ class DeployEnvironment
         if (! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)) {
             throw ValidationException::withMessages(['deployment' => 'Wait for all resources to finish synchronizing or detaching before deploying.']);
         }
-        if (! $environment->application->sourceControl) {
-            throw ValidationException::withMessages(['deployment' => 'Select an available source control before deploying.']);
-        }
+        app(\App\Actions\Application\GetApplicationSourceControl::class)->get($environment->application);
     }
 }

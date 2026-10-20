@@ -1,4 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
+import { Link } from '@inertiajs/react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { LockKeyholeIcon, MoreVerticalIcon } from 'lucide-react';
@@ -112,6 +113,15 @@ function getColumns(site?: Site, sites?: Array<{ id: number; domain: string }>):
         const site = sites?.find((s) => s.id === siteId);
         return <span>{site ? site.domain : `Site #${siteId}`}</span>;
       },
+    },
+    {
+      accessorKey: 'component_name',
+      header: 'Component',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => row.original.component_url
+        ? <Link href={row.original.component_url} className="hover:underline">{row.original.component_name ?? `Component #${row.original.component_id}`}</Link>
+        : <span>-</span>,
     },
     {
       accessorKey: 'frequency',

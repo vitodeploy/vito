@@ -148,13 +148,14 @@ class Ssl extends AbstractModel
     }
 
     /**
+     * @param int|list<int> $serverId
      * @return Builder<Ssl>
      */
-    public static function activeServerLevel(int $serverId): Builder
+    public static function activeServerLevel(int|array $serverId): Builder
     {
         return self::query()
             ->whereNull('site_id')->whereNull('environment_id')
-            ->where('server_id', $serverId)
+            ->whereIn('server_id', (array) $serverId)
             ->where('status', SslStatus::CREATED)
             ->whereNot('type', SslType::CSR)
             ->whereNotNull('certificate_path')

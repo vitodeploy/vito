@@ -40,7 +40,6 @@ class Deployment extends AbstractModel
 
     protected $fillable = [
         'site_id',
-        'component_id',
         'deployment_script_id',
         'log_id',
         'commit_id',

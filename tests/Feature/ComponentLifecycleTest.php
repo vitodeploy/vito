@@ -49,6 +49,23 @@ beforeEach(function () {
     ]);
 });
 
+test('component key registration rejects a source moved to another project even with a cached relation', function () {
+    $this->component->load('environment.application.sourceControl');
+    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    expect(fn () => app(SyncComponentDeployKeys::class)->sync($this->component))->toThrow(ValidationException::class);
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_id' => null]);
+});
+
+test('component key cleanup retains custody after source reassignment', function () {
+    app(InstallComponent::class)->install($this->component->id);
+    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    app(SyncComponentDeployKeys::class)->remove($this->component->fresh());
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
+    $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_id' => null, 'deploy_key_source_control_id' => null]);
+});
+
 test('component install provisions directories tooling and its own deploy key idempotently', function () {
     app(InstallComponent::class)->install($this->component->id);
     app(InstallComponent::class)->install($this->component->id);
@@ -90,7 +107,10 @@ test('component failed jobs store only safe errors and installation can be retri
     (new InstallComponentJob($this->component->id, $this->server->id))->failed(new Exception('SECRET=never-expose'));
     expect($this->component->fresh()->last_error)->not->toContain('SECRET');
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => 'installation_failed']);
+    Event::fake([SocketEvent::class]);
     app(RetryComponentInstall::class)->retry($this->component);
+    Event::assertDispatched(SocketEvent::class, fn ($event) => $event->data->type === 'component.updated'
+        && $event->data->data['status'] === 'pending' && $event->data->data['last_error'] === null);
     (new InstallComponentJob($this->component->id, $this->server->id))->handle();
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => 'ready', 'last_error' => null]);
     expect(fn () => app(RetryComponentInstall::class)->retry($this->component))->toThrow(ValidationException::class);
@@ -109,7 +129,10 @@ test('component teardown preserves shared isolated users and deletes unshared us
         $this->site->update(['user' => 'runtime', 'isolated_user_id' => $this->component->isolated_user_id]);
     }
     app(InstallComponent::class)->install($this->component->id);
+    Event::fake([SocketEvent::class]);
     app(DeleteComponent::class)->delete($this->component, []);
+    Event::assertDispatched(SocketEvent::class, fn ($event) => $event->data->type === 'component.updated'
+        && $event->data->data['status'] === 'deleting');
     (new DeleteComponentJob($this->component->id, $this->server->id))->handle();
     $this->assertDatabaseMissing('components', ['id' => $this->component->id]);
     expect(IsolatedUser::query()->whereKey($this->component->isolated_user_id)->exists())->toBe($shared);
@@ -197,7 +220,7 @@ test('purging servers queues provider cleanup without remote teardown and record
     $job->handle();
     $job->failed(new Exception('SECRET'));
     expect($this->environment->fresh()->last_error)->toContain('deploy key')->not->toContain('SECRET');
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('mise rejects mismatched target servers before any remote command', function (bool $install) {
@@ -206,7 +229,7 @@ test('mise rejects mismatched target servers before any remote command', functio
     $mise = new Mise($this->server);
     expect(fn () => $install ? $mise->installRuntime($target, 'node', '22') : $mise->uninstallRuntime($target, 'node'))
         ->toThrow(InvalidArgumentException::class);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([false, true]);
 
 test('queued site tooling removal rechecks components attached after enqueue', function () {

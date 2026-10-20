@@ -42,7 +42,7 @@ test('components create atomically with normalized capabilities and a first prim
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'primary_component_id' => $component->id, 'primary_component_initialized' => true]);
     expect($component->isolated_user_id === null)->toBe($defaultUser);
     Queue::assertPushed(InstallComponentJob::class);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([false, true]);
 
 test('components reject invalid placement and capability input without partial rows', function (string $field, mixed $value) {

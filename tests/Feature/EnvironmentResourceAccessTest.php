@@ -142,6 +142,27 @@ test('detach removes only managed access while preserving databases users ordina
     }
 })->with(['mysql', 'postgresql']);
 
+test('resource firewall dependencies require a successful guard and are removed before stopping it', function () {
+    $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
+    $this->sync->sync($attachment);
+
+    SSH::assertExecutedContains('Requires=vito-resource-guard.service');
+    SSH::assertExecutedContains('After=vito-resource-guard.service');
+    SSH::assertExecutedContains('postgresql@.service');
+    SSH::assertExecutedContains('50-vito-resource-guard.conf');
+
+    SSH::fake('');
+    app(DetachEnvironmentResource::class)->detach($attachment);
+    $this->sync->sync($attachment);
+
+    $cleanup = collect(SSH::getExecutedCommands())->first(fn ($command) => str_contains($command, 'systemctl disable --now vito-resource-guard.service'));
+    expect($cleanup)->not->toBeNull();
+    expect(strpos($cleanup, 'rm -f "/etc/systemd/system/$unit.d/50-vito-resource-guard.conf"'))
+        ->toBeLessThan(strpos($cleanup, 'systemctl daemon-reload'));
+    expect(strpos($cleanup, 'systemctl daemon-reload'))
+        ->toBeLessThan(strpos($cleanup, 'systemctl disable --now vito-resource-guard.service'));
+});
+
 test('failed provisioning retains ownership and can be retried or detached without orphaning users', function (bool $detach) {
     $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
     $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();

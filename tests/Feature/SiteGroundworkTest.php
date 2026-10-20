@@ -153,6 +153,44 @@ test('fpm pool setup creates only a missing pool', function () {
     expect($this->server->isolatedUserLock('runtime')->get(fn () => true))->toBeTrue();
 });
 
+test('fpm pool recovery restarts without overwriting existing configuration and verifies readiness', function (bool $recovers) {
+    $ssh = Mockery::mock(SSHFake::class, [null])->makePartial();
+    SSH::swap($ssh);
+    $checks = 0;
+    $ssh->shouldReceive('exec')
+        ->withArgs(fn ($command) => str_contains((string) $command, 'test -S /run/php/php8.2-fpm-runtime.sock'))
+        ->twice()
+        ->andReturnUsing(function () use (&$checks, $recovers): string {
+            if ($checks++ === 0 || ! $recovers) {
+                throw new SSHCommandError;
+            }
+
+            return '';
+        });
+
+    if ($recovers) {
+        app(EnsureFpmPool::class)->ensure($this->server, 'runtime', '8.2');
+    } else {
+        expect(fn () => app(EnsureFpmPool::class)->ensure($this->server, 'runtime', '8.2'))->toThrow(SSHCommandError::class);
+    }
+
+    expect($ssh->getUploadedContent())->toBe('');
+    $restarts = array_filter(SSH::getExecutedCommands(), fn ($command) => str_contains($command, 'restart php8.2-fpm'));
+    expect($restarts)->toHaveCount(1);
+    expect($this->server->isolatedUserLock('runtime')->get(fn () => true))->toBeTrue();
+})->with([false, true]);
+
+test('fpm pool setup leaves healthy existing configuration unchanged', function () {
+    $ssh = SSH::fake();
+
+    app(EnsureFpmPool::class)->ensure($this->server, 'runtime', '8.2');
+
+    expect($ssh->getUploadedContent())->toBe('');
+    SSH::assertExecutedContains('test -S /run/php/php8.2-fpm-runtime.sock');
+    SSH::assertExecutedContains('systemctl is-active --quiet php8.2-fpm');
+    SSH::assertNotExecutedContains('systemctl restart');
+});
+
 test('fpm pool setup does not treat connection failures as missing pools', function () {
     $ssh = Mockery::mock(SSHFake::class, [null])->makePartial();
     SSH::swap($ssh);

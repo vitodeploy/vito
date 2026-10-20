@@ -4,6 +4,8 @@ import { InertiaTableData } from '@forjedio/inertia-table-react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import DocsLink from '@/pages/applications/components/docs-link';
 import { Button } from '@/components/ui/button';
 import { VitoTable } from '@/components/vito-table';
 import EnvironmentLayout from '@/layouts/environment/layout';
@@ -23,7 +25,7 @@ export default function Deployments() {
       <Head title={`Deployments - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Deployments" description="Each run deploys a pinned commit to every ready app component. Only the latest queued run is kept." />
+          <div className="flex items-center gap-3"><Heading title="Deployments" description="Each run deploys a pinned commit to every ready app component. Only the latest queued run is kept." /><Badge variant="warning">Beta</Badge></div>
           <div className="flex items-start gap-2">
             <Button variant="outline" asChild><Link href={`${baseUrl}/deployment-settings`}><SettingsIcon />Settings</Link></Button>
             <DeployButton application={application} environment={environment} />
@@ -36,6 +38,7 @@ export default function Deployments() {
             </Button>
           </div>
         )} />
+        {deployments.data.length === 0 && <DocsLink page="deployments" />}
       </Container>
     </EnvironmentLayout>
   );

@@ -1,6 +1,11 @@
 <?php
 
+use App\Enums\ComponentType;
 use App\Facades\SSH;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\ComponentCapability;
+use App\Models\Environment;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -271,6 +276,60 @@ test('multiple sites per user deduped', function () {
     expect($userEntries)->toHaveCount(1);
     $this->assertStringContainsString('vito.test', $userEntries[0]['label']);
     $this->assertStringContainsString('second.test', $userEntries[0]['label']);
+});
+
+test('webserver catalogue includes component web and load balancer logs only on their server', function (string $webserver) {
+    $this->server->services()->where('type', 'webserver')->update(['name' => $webserver]);
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'custom']);
+    $environment = Environment::factory()->for($application)->create();
+    $web = Component::factory()->for($environment)->for($this->server)->create();
+    ComponentCapability::factory()->for($web)->create(['capability' => 'web']);
+    $balancer = Component::factory()->for($environment)->for($this->server)->create(['type' => ComponentType::LOAD_BALANCER]);
+    $worker = Component::factory()->for($environment)->for($this->server)->create(['user' => 'worker']);
+    ComponentCapability::factory()->for($worker)->create(['capability' => 'worker']);
+    $other = Component::factory()->for($environment)->create(['type' => ComponentType::LOAD_BALANCER]);
+
+    $response = $this->actingAs($this->user)->get(route('logs.services', $this->server))->assertOk();
+    $entries = collect($response->viewData('page')['props']['catalogue'])->keyBy('key');
+    foreach ([$web, $balancer] as $component) {
+        foreach ($webserver === 'nginx' ? ['access', 'error'] : ['access'] as $type) {
+            $entry = $entries[$webserver.':component:'.$component->id.':'.$type];
+            expect($entry['display_target'])->toBe('/var/log/'.$webserver.'/component-'.$component->id.'-'.$type.'.log')
+                ->and($entry['label'])->toContain($component->name, 'component #'.$component->id);
+        }
+    }
+    expect($entries->keys()->all())->not->toContain($webserver.':component:'.$worker->id.':access', $webserver.':component:'.$other->id.':access');
+    if ($webserver === 'caddy') {
+        expect($entries->keys()->all())->toContain('caddy:error')->not->toContain('caddy:component:'.$web->id.':error');
+    }
+    SSH::fake('component-access-output');
+    $this->postJson(route('logs.services.read', $this->server), ['key' => $webserver.':component:'.$web->id.':access'])
+        ->assertOk()->assertJsonPath('content', 'component-access-output');
+    SSH::assertExecutedContains('/var/log/'.$webserver.'/component-'.$web->id.'-access.log');
+})->with(['nginx', 'caddy']);
+
+test('php catalogue deduplicates site and component pools and retains installed version logs during upgrades', function () {
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'php']);
+    $environment = Environment::factory()->for($application)->create(['runtime_version' => '8.2']);
+    $shared = Component::factory()->for($environment)->for($this->server)->create(['user' => $this->site->user]);
+    $upgrading = Component::factory()->for($environment)->for($this->server)->create(['user' => 'upgrading', 'installed_runtime_version' => '8.2']);
+    $environment->update(['runtime_version' => '8.3']);
+    $shared->installed_runtime_version = '8.2';
+    $shared->save();
+    $desired = Environment::factory()->for($application)->create(['runtime_version' => '8.2']);
+    $desiredComponent = Component::factory()->for($desired)->for($this->server)->create(['user' => 'desired']);
+    Component::factory()->for($desired)->for($this->server)->create(['user' => 'balancer', 'type' => ComponentType::LOAD_BALANCER]);
+    $proxy = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'custom']);
+    Component::factory()->for(Environment::factory()->for($proxy)->state(['runtime_version' => '8.2']))->for($this->server)->create(['user' => 'proxy']);
+
+    $response = $this->actingAs($this->user)->get(route('logs.services', $this->server))->assertOk();
+    $entries = collect($response->viewData('page')['props']['catalogue']);
+    $pool = $entries->where('key', 'php:8.2:user:'.$this->site->user)->sole();
+    expect($pool['label'])->toContain($this->site->domain, $shared->name)
+        ->and($pool['display_target'])->toBe('/home/'.$this->site->user.'/.logs/php_errors.log')
+        ->and($entries->firstWhere('key', 'php:8.2:user:upgrading')['label'])->toContain($upgrading->name)
+        ->and($entries->firstWhere('key', 'php:8.2:user:desired')['label'])->toContain($desiredComponent->name)
+        ->and($entries->pluck('key')->all())->not->toContain('php:8.2:user:proxy', 'php:8.2:user:balancer');
 });
 
 test('unauthorized user cannot view', function () {

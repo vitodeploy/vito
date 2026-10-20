@@ -482,6 +482,21 @@ test('deploy key deletion is retryable and rejects provider failures without exp
     }
 })->with(['github', 'gitlab', 'gitea', 'bitbucket', 'bitbucket-v2'])->with([204, 404, 500]);
 
+test('hook deletion accepts already absent hooks and propagates other provider failures', function (string $provider, int $status) {
+    Http::preventStrayRequests();
+    Http::fake([
+        'bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'token']),
+        '*' => Http::response([], $status),
+    ]);
+    $source = SourceControl::factory()->create(['provider' => $provider])->provider();
+    if (in_array($status, [204, 404], true)) {
+        $source->destroyHook('owner/repository', '123');
+    } else {
+        expect(fn () => $source->destroyHook('owner/repository', '123'))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
+    }
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_ends_with($request->url(), '/hooks/123'));
+})->with(['github', 'gitlab', 'gitea', 'bitbucket', 'bitbucket-v2'])->with([204, 404, 403, 500]);
+
 test('deploy key registration recovers existing keys after an ambiguous response', function (string $provider) {
     Http::preventStrayRequests();
     Http::fake(function ($request) use ($provider) {

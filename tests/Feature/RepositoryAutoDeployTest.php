@@ -61,6 +61,19 @@ test('two applications share one repository hook until their last auto deploy en
     Http::assertSentCount(2);
 });
 
+test('repository hook reconciliation removes local custody when the remote hook is already absent', function () {
+    setEnvironmentAutoDeploy($this->environment, true);
+    $hook = GitHook::query()->whereNotNull('repository')->sole();
+    $this->environment->forceFill(['auto_deploy' => false])->save();
+    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::preventStrayRequests();
+    Http::fake(['https://api.github.com/repos/owner/shared/hooks/123' => Http::response([], 404)]);
+
+    app(SyncRepositoryGitHook::class)->sync($this->source, 'owner/shared');
+    $this->assertDatabaseMissing('git_hooks', ['id' => $hook->id]);
+    Http::assertSentCount(1);
+});
+
 test('repository hook ownership is exclusive and site hooks keep their repository lookup', function () {
     setEnvironmentAutoDeploy($this->environment, true);
     $hook = GitHook::query()->whereNotNull('repository')->sole();

@@ -266,6 +266,21 @@ Other optional suggestions are `webRoot()`, `startCommand()`, `schedulerCommand(
 override this method to load their own files. These are suggested script contents, not executed during
 registration. Existing Site deployment scripts are unchanged.
 
+Additional extension points:
+
+- `warnings(Environment $environment): array` returns advisory strings shown on the overview and Variables page.
+  Keep framework-specific recommendations here, not in core Actions or UI.
+- `vhostData(Component $component): array` derives webserver data from the selected web mode. The default uses
+  the component's current release/web directory, its user/version FPM socket or its loopback proxy port.
+  `SyncComponentVhost` remains the only vhost writer; presets must not write configuration themselves.
+- `attachmentAliases(EnvironmentAttachment $attachment, array $generic): array` adds a string map of
+  resource-variable aliases. The default is empty; Laravel supplies its own `DB_*`/Redis conventions.
+  These aliases have lower priority than explicit environment variables and are conservatively masked in UI
+  responses. Never expose credentials through warnings, catalogue descriptors or dynamic-form defaults.
+
+Runtime tooling is installed per component directory through `ToolingTargetDTO::forComponent()`, not globally
+for its Linux user. See [Applications](applications/concepts.md) for the deployment and environment-file contracts.
+
 ### Component capabilities (Beta)
 
 Extend `App\ComponentCapabilities\AbstractComponentCapability` and register with:
@@ -303,8 +318,20 @@ Implement static `id()` / `label()` and override these hooks as needed:
   unless the preset supplies a suggestion. Explicitly empty commands are rejected.
 
 Callers that create/update capabilities must serialize validation and persistence per server for ports
-and per environment for schedulers; validation alone does not reserve either. Installation, release
-hooks, and other remote operations are not part of this pure framework phase.
+and per environment for schedulers; validation alone does not reserve either.
+
+Remote lifecycle hooks are separate from pure validation:
+
+- `install(Component $component): void` prepares the capability's owned services/configuration. Processes
+  remain stopped until the first release.
+- `uninstall(Component $component): void` removes only capability-owned resources and must be retryable.
+- `afterRelease(Component $component, Deployment $deployment): void` runs after activation; built-in web/worker
+  handlers start or restart processes, while scheduler commands load the env file on each invocation.
+
+Delegate business operations to Actions, use the SSH facade and Blade scripts, and preserve ownership on failures
+so cleanup can retry. Use `ComponentShell::wrap()` for commands so the current release, per-directory runtime and
+literal env loader are respected. Never place variable values in Supervisor, cron, vhost or pool configuration.
+Only the deployment pipeline calls `WriteComponentEnv`; validation and registry boot must not do remote work.
 
 Both registration builders require instantiable handler classes. Registry IDs are literal map keys,
 so dotted plugin IDs are supported; access the registry map rather than building dot-separated config paths.

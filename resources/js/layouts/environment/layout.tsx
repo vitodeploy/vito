@@ -8,11 +8,11 @@ import DeployButton from '@/pages/applications/components/deploy-button';
 import Container from '@/components/container';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { NavItem } from '@/types';
-import { Application, Component, Environment } from '@/types/application';
+import { Application, Component, Environment, EnvironmentTopology } from '@/types/application';
 import Layout from '@/layouts/app/layout';
 
 export default function EnvironmentLayout({ children }: { children: ReactNode }) {
-  const { application, environment, component } = usePage<{ application: Application; environment: Environment; component?: Component }>().props;
+  const { application, environment, component, topology } = usePage<{ application: Application; environment: Environment; component?: Component; topology?: EnvironmentTopology }>().props;
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
   const leaving = useRef(false);
   const leave = useCallback((url: string) => {
@@ -37,7 +37,7 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
     });
   }, []);
   const reloadOptions: ReloadOptions = {
-    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'backendTargets', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'attachments', 'resourceOptions', 'warnings', 'canUpdate', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents'],
+    only: ['application', 'environment', 'components', 'component', 'primaryCandidates', 'backendTargets', 'workers', 'cronjobs', 'variables', 'domains', 'domainOptions', 'attachments', 'resourceOptions', 'warnings', 'can', 'canCreate', 'canUpdate', 'options', 'deployments', 'deployment', 'deploymentActive', 'scripts', 'inheritedScripts', 'scriptComponents', 'topology', 'lastDeployment'],
     onBefore: () => !leaving.current,
     onHttpException: (response) => {
       if (response.status === 404) {
@@ -76,6 +76,8 @@ export default function EnvironmentLayout({ children }: { children: ReactNode })
       router.reload(reloadOptions);
     } else if (event.type?.startsWith('worker.') && component && event.data?.component_id === component.id) {
       router.reload(reloadOptions);
+    } else if (event.type === 'server.updated' && topology?.nodes.some((node) => node.server_id === event.data?.id)) {
+      router.reload({ ...reloadOptions, only: ['topology'] });
     } else if (event.type?.startsWith('component.') && event.data?.environment_id === environment.id) {
       if (event.data.application_status === 'deleting') {
         leave('/applications');

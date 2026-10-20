@@ -12,7 +12,7 @@ class GetEnvironmentVariables
      */
     public function get(Environment $environment): array
     {
-        $environment->loadMissing('variables', 'application', 'components.capabilities');
+        $environment->loadMissing('variables', 'application', 'components.capabilities', 'components.server');
         $variables = [];
         foreach ($environment->variables->sortBy('key') as $variable) {
             $variables[] = [

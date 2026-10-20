@@ -74,7 +74,7 @@ test('environment domains reject malformed input before side effects', function 
         ->toThrow(ValidationException::class);
     $this->assertDatabaseCount('environment_domains', 0);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([
     ['host', ''], ['host', []], ['host', 'https://example.com'], ['host', 'example.com;id'], ['host', "example.com\nother"],
     ['host', '-invalid.example.com'], ['host', 'foo.*.example.com'], ['type', 'primary'], ['type', 'other'],
@@ -220,7 +220,7 @@ test('site hosted and environment writers share the server host reservation lock
     $this->assertDatabaseCount('environment_domains', 0);
     $this->assertDatabaseHas('hosted_domains', ['id' => $hosted->id, 'domain' => $hosted->domain]);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with(['site', 'hosted-create', 'hosted-update', 'environment']);
 
 test('certificate options exclude expired unknown and environment certificates', function () {
@@ -229,8 +229,25 @@ test('certificate options exclude expired unknown and environment certificates',
     Ssl::factory()->create($attributes + ['expires_at' => now()->subDay()]);
     Ssl::factory()->create($attributes + ['expires_at' => null]);
     Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'environment_id' => $this->environment->id]);
-    $options = app(\App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions::class)->get($this->environment);
-    expect(array_column($options['certificates'], 'id'))->toBe([$valid->id]);
+    $server = Server::factory()->create(['project_id' => $this->server->project_id]);
+    $component = Component::factory()->for($this->environment)->for($server)->create(['status' => ComponentStatus::READY]);
+    \App\Models\ComponentCapability::factory()->for($component)->create(['capability' => 'web', 'status' => ComponentStatus::READY]);
+    $other = Ssl::factory()->create(array_replace($attributes, ['server_id' => $server->id, 'expires_at' => now()->addDay()]));
+    Ssl::factory()->create(array_replace($attributes, ['server_id' => Server::factory()->create()->id, 'expires_at' => now()->addDay()]));
+    Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'status' => SslStatus::FAILED]);
+    Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'certificate_path' => null]);
+    Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'pk_path' => null]);
+    Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'type' => 'csr']);
+    Ssl::factory()->create(array_replace($attributes, ['expires_at' => now()->addDay(), 'domains' => []]));
+    $connection = (new Ssl)->getConnection();
+    $connection->enableQueryLog();
+    try {
+        $options = app(\App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions::class)->get($this->environment);
+        expect(collect($connection->getQueryLog())->filter(fn (array $query): bool => str_contains($query['query'], 'from "ssls"')))->toHaveCount(1);
+    } finally {
+        $connection->disableQueryLog();
+    }
+    expect(array_column($options['certificates'], 'id'))->toBe([$valid->id, $other->id]);
 });
 
 test('domain endpoints list scoped options create edit verify and delete', function () {
@@ -244,6 +261,7 @@ test('domain endpoints list scoped options create edit verify and delete', funct
     $this->get(route('environments.domains', $parents))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/domains')->has('domains.data', 1)->has('domainOptions.components', 1)
         ->where('domains.data.0.domain.id', $domain->id)->where('domains.data.0.domain.ssl_method', 'disabled')
+        ->where('domains.data.0._type_enum_color', 'default')
         ->where('domainOptions.components.0.server_ip', $this->server->ip)->where('canUpdate', true)
         ->missing('domains.data.0.domain.certificate_path'));
     $this->put(route('environments.domains.update', [...$parents, $domain]), array_replace($this->input, ['host' => 'new.example.com']))->assertSessionDoesntHaveErrors();

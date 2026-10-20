@@ -17,6 +17,9 @@ class CreateDatabase
      */
     public function create(Server $server, array $input, bool $defer = false): Database
     {
+        if ($defer) {
+            Validator::make($input, array_fill_keys(['user', 'existing_user_id', 'username', 'password'], ['prohibited']))->validate();
+        }
         $this->validate($server, $input);
 
         $database = new Database([

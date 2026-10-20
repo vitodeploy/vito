@@ -60,6 +60,7 @@ export default function EnvironmentForm({ open, onOpenChange, application, envir
               <InputError message={form.errors.auto_deploy} />
             </div>}
             {environment && <PrimaryComponentPicker value={String(form.data.primary_component_id)} onChange={(value) => form.setData('primary_component_id', value)} candidates={primaryCandidates} error={form.errors.primary_component_id} />}
+            {Object.entries(form.errors).filter(([key]) => !['name', 'branch', 'runtime_version', ...(preset?.form ?? []).map((field) => field.name), ...(environment ? ['auto_deploy', 'primary_component_id'] : [])].includes(key)).map(([key, message]) => <InputError key={key} message={message} />)}
           </FormFields>
         </Form>
         <DialogFooter>

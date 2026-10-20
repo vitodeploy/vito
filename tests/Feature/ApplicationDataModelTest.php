@@ -112,6 +112,14 @@ test('component deployments do not invoke site release pruning', function () {
     $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'release' => 'release-one']);
 });
 
+test('component deployment ownership cannot be mass assigned', function () {
+    $component = Component::factory()->create(['server_id' => $this->server->id]);
+    $deployment = Deployment::factory()->create(['site_id' => $this->site->id]);
+    $deployment->fill(['component_id' => $component->id]);
+    $deployment->save();
+    $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'site_id' => $this->site->id, 'component_id' => null]);
+});
+
 test('application schema enforces scoped unique keys', function (string $key) {
     $component = Component::factory()->create();
     $environment = $component->environment;

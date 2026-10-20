@@ -208,7 +208,7 @@ test('site repository http failures bubble up without mutations or provider deta
     $this->assertDatabaseMissing('isolated_users', ['server_id' => $this->server->id, 'username' => 'providerfailure']);
     $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([429, 500])->with([false, true]);
 
 test('web site resources hide installation passwords from read-only users', function () {

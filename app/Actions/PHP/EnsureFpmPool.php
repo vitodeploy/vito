@@ -32,6 +32,14 @@ class EnsureFpmPool
                 $php = $service->handler();
                 $php->createFpmPool($user, $phpVersion);
             }
+
+            $check = view('ssh.site.check-fpm-pool-ready', ['user' => $user, 'version' => $phpVersion]);
+            try {
+                $server->ssh()->exec($check);
+            } catch (SSHCommandError) {
+                $server->systemd()->restart($service->handler()->unit());
+                $server->ssh()->exec($check);
+            }
         });
     }
 }

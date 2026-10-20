@@ -84,7 +84,7 @@ class Web extends AbstractComponentCapability
             $fields[] = DynamicField::make('port')
                 ->text()
                 ->label('Port')
-                ->description('Leave empty to assign an available port automatically.');
+                ->description('Leave empty to assign an available port automatically before the first release. Ports cannot be added or changed after a release has started.');
         }
 
         return DynamicForm::make($fields);

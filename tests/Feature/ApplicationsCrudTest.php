@@ -70,7 +70,7 @@ test('create application and its first environment without server work', functio
     ]);
     $this->assertDatabaseCount('components', 0);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     Http::assertSentCount(1);
 })->with(['node', 'php', 'bun', 'static', 'custom', 'laravel']);
 
@@ -248,7 +248,7 @@ test('delete application requires its name and cascades environments', function 
     $this->assertDatabaseMissing('applications', ['id' => $application->id]);
     $this->assertDatabaseMissing('environments', ['id' => $environment->id]);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('application index is project scoped searchable and sortable', function () {
@@ -260,6 +260,7 @@ test('application index is project scoped searchable and sortable', function () 
     $this->get(route('applications', ['sort' => 'name']))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/index')->has('applications.columns')->has('applications.meta')
         ->has('applications.data', 2)->where('applications.data.0.id', $alpha->id)
+        ->where('applications.data.0._status_enum_color', 'success')
         ->where('applications.data.0.environments_count', 1)->where('canCreate', true));
     $this->get(route('applications', ['search' => 'Beta']))->assertInertia(fn (AssertableInertia $page) => $page
         ->has('applications.data', 1)->where('applications.data.0.id', $beta->id));

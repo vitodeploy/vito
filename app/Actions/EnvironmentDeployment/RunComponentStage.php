@@ -82,7 +82,7 @@ class RunComponentStage
         $component = $deployment->component;
         $run = $deployment->environmentDeployment;
         $application = $component->environment->application;
-        $source = $application->sourceControl ?? throw new RuntimeException('Source control is unavailable.');
+        $source = app(\App\Actions\Application\GetApplicationSourceControl::class)->get($application);
         $provider = $source->provider();
         $key = 'component_'.$component->id;
         $url = $provider->fullRepoUrl($application->repository, $key);

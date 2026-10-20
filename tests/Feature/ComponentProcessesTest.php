@@ -77,7 +77,7 @@ test('manual component process mutations reject pending and running deployments'
         'cron' => fn () => app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component),
     };
     expect($mutation)->toThrow(\Illuminate\Validation\ValidationException::class);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     $this->assertDatabaseHas('workers', ['id' => $worker->id]);
 })->with(['create', 'edit', 'delete', 'stop', 'cron'])->with([\App\Enums\EnvironmentDeploymentStatus::PENDING, \App\Enums\EnvironmentDeploymentStatus::RUNNING]);
 
@@ -92,7 +92,7 @@ test('queued worker mutations wait for active deployment completion before touch
     $job = $makeJob()->withFakeQueueInteractions();
     $job->handle();
     $job->assertReleased(30);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     $run->status = \App\Enums\EnvironmentDeploymentStatus::FINISHED;
     $run->save();
     $job = $makeJob()->withFakeQueueInteractions();
@@ -112,7 +112,7 @@ test('worker operations share the deployment component mutex', function () {
         $job = (new CreateJob($worker))->withFakeQueueInteractions();
         $job->handle();
         $job->assertReleased(30);
-        SSH::assertNotExecutedContains('');
+        expect(SSH::getExecutedCommands())->toBeEmpty();
     } finally {
         $lock->release();
     }
@@ -243,6 +243,23 @@ test('server restart all and release restart skip undeployed component processes
     $this->assertDatabaseHas('workers', ['id' => $worker->id, 'status' => 'stopped']);
 });
 
+test('server process lists expose component owners alongside site owners', function (string $kind) {
+    if ($kind === 'workers') {
+        app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
+        \App\Models\Worker::factory()->for($this->server)->for($this->site)->create();
+    } else {
+        app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component);
+        CronJob::factory()->for($this->server)->for($this->site)->create(['hidden' => false]);
+    }
+    $response = $this->actingAs($this->user)->get(route($kind, $this->server))->assertOk();
+    $rows = collect($response->viewData('page')['props'][$kind]['data']);
+    $owner = $rows->firstWhere('component_id', $this->component->id);
+    expect($owner['component_name'])->toBe($this->component->name)
+        ->and($owner['component_url'])->toBe($this->url)
+        ->and($owner['site_id'])->toBeNull()
+        ->and($rows->firstWhere('site_id', $this->site->id)['component_id'])->toBeNull();
+})->with(['workers', 'cronjobs']);
+
 test('component surfaces return safe backend tables and locked process metadata', function () {
     app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
     app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component);
@@ -268,7 +285,7 @@ test('component process mutations refuse a held server lock without changing row
         $this->actingAs($this->user)->json($method, $url, $kind === 'workers' ? $this->workerInput : $this->cronInput)
             ->assertUnprocessable()->assertJsonValidationErrors('name');
         $this->assertDatabaseHas($process->getTable(), ['id' => $process->id, 'command' => $process->command]);
-        SSH::assertNotExecutedContains('');
+        expect(SSH::getExecutedCommands())->toBeEmpty();
     } finally {
         $lock->release();
     }
@@ -315,7 +332,7 @@ test('component process metadata does not expand the public API response', funct
     $resource = $kind === 'worker'
         ? new \App\Http\Resources\WorkerResource(app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component))
         : new \App\Http\Resources\CronJobResource(app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component));
-    expect($resource->resolve(\Illuminate\Http\Request::create('/api/servers/1/workers')))->not->toHaveKeys(['component_id', 'managed', 'component_url']);
+    expect($resource->resolve(\Illuminate\Http\Request::create('/api/servers/1/workers')))->not->toHaveKeys(['component_id', 'managed', 'component_url', 'component_name']);
 })->with(['worker', 'cronjob']);
 
 test('cron sync identifies component entries independently of mutable command context', function (string $change) {
@@ -353,7 +370,7 @@ test('all user cron mutation entrypoints share the crontab mutex', function (str
     SSH::fake('');
     try {
         expect($mutation)->toThrow(\Illuminate\Validation\ValidationException::class);
-        SSH::assertNotExecutedContains('');
+        expect(SSH::getExecutedCommands())->toBeEmpty();
         $this->assertDatabaseHas('cron_jobs', ['id' => $cron->id, 'status' => 'ready']);
     } finally {
         $lock->release();
@@ -366,7 +383,7 @@ test('managed process creation requires its capability component', function (str
     $action = $kind === 'worker' ? CreateWorker::class : CreateCronJob::class;
     expect(fn () => app($action)->create($this->server, $kind === 'worker' ? $this->workerInput : $this->cronInput, component: $component, managedBy: $capability))
         ->toThrow(\Illuminate\Validation\ValidationException::class);
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     $this->assertDatabaseMissing($kind === 'worker' ? 'workers' : 'cron_jobs', ['component_capability_id' => $capability->id]);
 })->with(['worker', 'cron'])->with([false, true]);
 
@@ -384,7 +401,7 @@ test('component restart handles an absent process manager without dereferencing 
     } else {
         app(RestartComponentWorkers::class)->restart($this->component);
     }
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
     if ($worker) {
         $this->assertDatabaseHas('workers', ['id' => $worker->id, 'status' => 'failed']);
     }

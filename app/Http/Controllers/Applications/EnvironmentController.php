@@ -42,7 +42,11 @@ class EnvironmentController extends Controller
         $this->authorize('view', [$environment, $application]);
 
         return Inertia::render('applications/environments/show', [
-            'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
+            'primaryCandidates' => fn () => app(GetComponentOptions::class)->primaryCandidates($environment),
+            'topology' => fn () => app(\App\Actions\Environment\GetEnvironmentTopology::class)->get($environment),
+            'lastDeployment' => fn () => ($run = $environment->deployments()->latest('id')->first())
+                ? new \App\Http\Resources\EnvironmentDeploymentResource($run) : null,
+            'warnings' => fn () => $application->preset()->warnings($environment),
             'can' => [
                 'update' => user()->can('update', [$environment, $application]),
                 'delete' => user()->can('delete', [$environment, $application]),

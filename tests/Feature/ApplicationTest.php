@@ -457,7 +457,7 @@ test('disable auto deployment even if hook destroy fails', function () {
         'api.github.com/repos/organization/repository' => Http::response([
             'id' => '123',
         ], 200),
-        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 404),
+        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 503),
     ]);
 
     $this->actingAs($this->user);

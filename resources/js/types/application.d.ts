@@ -36,6 +36,23 @@ export interface Environment {
   updated_at: string;
 }
 
+export interface TopologyNode {
+  id: string;
+  type: 'server' | 'domain' | 'load_balancer' | 'app' | 'external' | 'database' | 'redis';
+  name: string;
+  server_id: number | null;
+  status: string;
+  status_color: 'default' | 'success' | 'danger' | 'warning' | 'gray' | 'info';
+  url: string;
+  capabilities: string[];
+  needs_redeploy: boolean;
+}
+
+export interface EnvironmentTopology {
+  nodes: TopologyNode[];
+  edges: { id: string; source: string; target: string }[];
+}
+
 export type DeploymentStage = 'clone' | 'build' | 'Release command' | 'release' | 'post-release';
 
 export interface ComponentDeployment {
@@ -76,6 +93,8 @@ export interface EnvironmentDeployment {
   created_at: string;
   deployments: ComponentDeployment[];
 }
+
+export type EnvironmentDeploymentSummary = Omit<EnvironmentDeployment, 'deployments' | 'triggered_by'>;
 
 export interface EnvironmentDomain {
   id: number;

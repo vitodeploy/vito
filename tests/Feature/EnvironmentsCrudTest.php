@@ -41,7 +41,7 @@ test('create environment derives its slug and ignores lifecycle and parent input
     ]);
     Queue::assertNothingPushed();
     Http::assertNothingSent();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('update environment preserves slug and internal fields', function () {
@@ -111,7 +111,7 @@ test('delete environment requires its name and retains its application and sibli
     $this->assertDatabaseHas('environments', ['id' => $sibling->id]);
     $this->assertDatabaseHas('applications', ['id' => $this->application->id]);
     Queue::assertNothingPushed();
-    SSH::assertNotExecutedContains('');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('environment page shares its authorized application and environment', function () {

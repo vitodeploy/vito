@@ -198,7 +198,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
             throw new FailedToDestroyGitHook($e->getMessage());
         }
 
-        if ($response->status() !== 204) {
+        if (! in_array($response->status(), [204, 404], true)) {
             $errorBody = $response->json();
             $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
             throw new FailedToDestroyGitHook($errorMessage);

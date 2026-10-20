@@ -49,6 +49,7 @@ export default function Deployment() {
           <div className="flex flex-col gap-2">
             <Heading title={`Deployment #${deployment.id}`} description={deployment.release} />
             <div className="flex flex-wrap gap-2">
+              <Badge variant="warning">Beta</Badge>
               <Badge variant={deployment.status_color}>{humanizeStep(deployment.status)}</Badge>
               {deployment.rollback_of_id && <Badge variant="info">Rollback of #{deployment.rollback_of_id}</Badge>}
               {deployment.is_join && <Badge variant="info">Live-release join</Badge>}

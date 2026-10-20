@@ -4,6 +4,7 @@ use App\Enums\ServerStatus;
 use App\Facades\SSH;
 use App\Helpers\SSH as SSHHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use phpseclib3\Net\SSH2;
 
 uses(RefreshDatabase::class);
@@ -43,8 +44,10 @@ test('connection failed', function () {
     ]);
 });
 
-test('exec keeps multiline commands inside the target user shell', function (string $command) {
+test('exec keeps scripts and secrets on collision safe stdin inside the target user shell', function (string $command, bool $stream) {
     $ssh = (new SSHHelper)->init($this->server, 'deploy');
+    $secret = "literal'\nEOF\n\$(touch /tmp/ssh-secret-escape)";
+    $ssh->variables(['GIT_HTTP_TOKEN' => $secret]);
 
     $connection = $this->getMockBuilder(SSH2::class)
         ->disableOriginalConstructor()
@@ -70,7 +73,7 @@ test('exec keeps multiline commands inside the target user shell', function (str
             return '';
         });
 
-    $connection->expects($this->once())
+    $connection->expects($stream ? $this->never() : $this->once())
         ->method('getExitStatus')
         ->willReturn(0);
 
@@ -79,13 +82,24 @@ test('exec keeps multiline commands inside the target user shell', function (str
     $reflection = new ReflectionProperty(SSHHelper::class, 'connection');
     $reflection->setValue($ssh, $connection);
 
-    $output = $ssh->exec($command);
-    $ssh->disconnect();
+    Str::createRandomStringsUsingSequence([str_repeat('a', 32), str_repeat('b', 32)]);
+    try {
+        $output = $ssh->exec($command, stream: $stream, streamCallback: fn (string $output): bool => true);
+    } finally {
+        Str::createRandomStringsNormally();
+        $ssh->disconnect();
+    }
 
-    $expected = "sudo -u 'deploy' bash -c ".escapeshellarg(
-        "cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }\nset -e; ".$command
-    );
+    $delimiter = 'VITO_SSH_'.str_repeat(str_contains($command, 'VITO_SSH_') ? 'b' : 'a', 32);
+    $expected = "sudo -u 'deploy' bash -s <<'{$delimiter}'\n"
+        ."cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }\n"
+        .'export GIT_HTTP_TOKEN='.escapeshellarg($secret).'; set -e; '.$command."\n".$delimiter;
 
     expect($output)->toBe('');
-    expect($executedCommand)->toBe($expected)->not->toContain("bash <<'EOF'");
-})->with(["pwd\nls -la", "printf '%s' 'main#\nEOF\ntouch /tmp/ssh-escape\n#'"]);
+    expect($executedCommand)->toBe($expected)->not->toContain('bash -c');
+    expect(strtok($executedCommand, "\n"))->not->toContain('GIT_HTTP_TOKEN', 'literal', 'touch');
+})->with([
+    "pwd\nls -la",
+    "printf '%s' 'main#\nEOF\ntouch /tmp/ssh-escape\n#'",
+    "printf '%s' 'VITO_SSH_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nEOF'",
+])->with([false, true]);

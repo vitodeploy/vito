@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { PencilIcon } from 'lucide-react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +49,7 @@ export default function DeploymentSettings() {
     <EnvironmentLayout>
       <Head title={`Deployment settings - ${environment.name}`} />
       <Container className="max-w-5xl">
-        <Heading title={scriptComponent ? `${scriptComponent.name} scripts` : 'Deployment settings'} description="Scripts are plain shell. Component overrides replace, rather than append to, the environment script." />
+        <div className="flex items-center gap-3"><Heading title={scriptComponent ? `${scriptComponent.name} scripts` : 'Deployment settings'} description="Scripts are plain shell. Component overrides replace, rather than append to, the environment script." /><Badge variant="warning">Beta</Badge></div>
         {deploymentActive && <Alert><AlertDescription>Scripts and settings are locked while a deployment is running or queued. Variable edits remain available for the next deploy.</AlertDescription></Alert>}
         {stages.map((stage) => {
           const script = scripts.find((item) => item.name === stage.id);
