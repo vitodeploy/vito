@@ -49,7 +49,7 @@ export default function DeploymentSettings() {
     <EnvironmentLayout>
       <Head title={`Deployment settings - ${environment.name}`} />
       <Container className="max-w-5xl">
-        <div className="flex items-center gap-3"><Heading title={scriptComponent ? `${scriptComponent.name} scripts` : 'Deployment settings'} description="Scripts are plain shell. Component overrides replace, rather than append to, the environment script." /><Badge variant="warning">Beta</Badge></div>
+        <Heading title={scriptComponent ? `${scriptComponent.name} scripts` : 'Deployment settings'} description="Scripts are plain shell. Component overrides replace, rather than append to, the environment script." badges={<Badge variant="warning">Beta</Badge>} />
         {deploymentActive && <Alert><AlertDescription>Scripts and settings are locked while a deployment is running or queued. Variable edits remain available for the next deploy.</AlertDescription></Alert>}
         {stages.map((stage) => {
           const script = scripts.find((item) => item.name === stage.id);
@@ -59,7 +59,7 @@ export default function DeploymentSettings() {
               <CardTitle>{stage.label}{scriptComponent && !script ? ' · Inherited' : ''}</CardTitle>
               {editable && <Button variant="outline" size="sm" onClick={() => dialog.environmentDeploymentScript.open({ url: scriptUrl, stage: stage.id, label: stage.label, script, inheritedScript, componentOverride: !!scriptComponent })}><PencilIcon />Edit</Button>}
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 p-4">
               <p className="text-muted-foreground text-sm">{stage.description}</p>
               <pre className="bg-muted max-h-48 overflow-auto rounded-md p-3 text-sm">{(script ?? inheritedScript)?.content || 'No commands. This stage is skipped.'}</pre>
             </CardContent>

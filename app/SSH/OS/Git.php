@@ -5,6 +5,7 @@ namespace App\SSH\OS;
 use App\DTOs\GitCloneDTO;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use RuntimeException;
 
 class Git
 {
@@ -34,9 +35,13 @@ class Git
      */
     public function cloneRepository(GitCloneDTO $target): void
     {
+        $host = $target->usesToken ? '' : str($target->repoUrl)->after('@')->before(':')->replaceEnd('-'.$target->keyName, '')->toString();
+        if (! $target->usesToken && preg_match('/\A[a-zA-Z0-9.-]+\z/', $host) !== 1) {
+            throw new RuntimeException('Invalid SSH repository host.');
+        }
         $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
             view('ssh.git.clone', [
-                'host' => $target->usesToken ? '' : str($target->repoUrl)->after('@')->before('-'),
+                'host' => $host,
                 'repo' => escapeshellarg($target->repoUrl),
                 'path' => escapeshellarg($target->path),
                 'branch' => escapeshellarg($target->branch),

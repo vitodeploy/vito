@@ -1,9 +1,12 @@
 <?php
 
+use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\ServerLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -81,4 +84,20 @@ test('unauthorized user cannot clear log', function () {
 
     $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))
         ->assertForbidden();
+});
+
+test('log messages get their own lines while streamed output is kept exactly as received', function () {
+    Storage::fake('server-logs');
+    Event::fake([SocketEvent::class]);
+    $log = ServerLog::factory()->create(['server_id' => $this->server->id, 'disk' => 'server-logs']);
+
+    $log->write('Starting clone.');
+    $log->writeOutput('Receiving objects: 50%');
+    $log->writeOutput(", done.\nsecond line\n");
+    $log->writeOutput('partial');
+    $log->write('Starting build.');
+
+    expect(Storage::disk('server-logs')->get($log->name))->toBe("Starting clone.\nReceiving objects: 50%, done.\nsecond line\npartial\nStarting build.\n");
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => ($event->data->data['content'] ?? null) === 'Receiving objects: 50%');
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => ($event->data->data['content'] ?? null) === "\nStarting build.\n");
 });

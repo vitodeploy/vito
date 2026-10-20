@@ -1,8 +1,8 @@
 import { FormEvent } from 'react';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, RocketIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import InputError from '@/components/ui/input-error';
 import { Application, Environment } from '@/types/application';
 
 export default function DeployButton({ application, environment }: { application: Application; environment: Environment }) {
@@ -11,15 +11,16 @@ export default function DeployButton({ application, environment }: { application
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(`/applications/${application.id}/environments/${environment.id}/deployments`);
+    form.post(`/applications/${application.id}/environments/${environment.id}/deployments`, {
+      onError: (errors) => toast.error(errors.deployment ?? 'The deployment could not be started.'),
+    });
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col items-start gap-2">
+    <form onSubmit={submit}>
       <Button type="submit" disabled={form.processing}>
         {form.processing ? <LoaderCircleIcon className="animate-spin" /> : <RocketIcon />}Deploy
       </Button>
-      <InputError message={form.errors.deployment} />
     </form>
   );
 }

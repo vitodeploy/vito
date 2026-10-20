@@ -37,11 +37,10 @@ export default function ShowEnvironment() {
       <Head title={`${environment.name} - ${application.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3">
-            <Heading title={environment.name} description={application.name} />
+          <Heading title={environment.name} description={application.name} badges={<>
             <Badge variant="warning">Beta</Badge>
             <Badge variant={environment.status_color}>{environment.status}</Badge>
-          </div>
+          </>} />
           <div className="flex items-start gap-2">
             <DeployButton application={application} environment={environment} />
             {can.update && ready && <Button variant="outline" onClick={() => dialog.editEnvironment.open({ application, environment, primaryCandidates })}><PencilIcon />Edit</Button>}
@@ -62,7 +61,7 @@ export default function ShowEnvironment() {
                 <Link href={`${baseUrl}/deployments/${lastDeployment.id}`} className="hover:underline">#{lastDeployment.id} · {lastDeployment.commit_id?.slice(0, 7) ?? 'Resolving commit'}</Link>
                 <Badge variant={lastDeployment.status_color}>{lastDeployment.status}</Badge>
                 <DateTime date={lastDeployment.created_at} />
-              </> : <>No deployments yet.<DocsLink page="deployments" /></>}</dd></div>
+              </> : 'No deployments yet.'}</dd></div>
             </dl>
           </CardContent>
         </Card>
@@ -77,12 +76,12 @@ export default function ShowEnvironment() {
               <Link href={node.url} className="min-w-0 break-words font-medium hover:underline">{node.name}</Link><Badge variant={node.status_color}>{node.status}</Badge>
               {node.needs_redeploy && <span className="text-muted-foreground text-xs">Redeploy to apply</span>}
             </div>)}
-            {components.length === 0 && <DocsLink page="components" />}
+            {components.length === 0 && <p className="text-muted-foreground text-sm">No components yet.</p>}
           </section>
           <section className="flex flex-col gap-3" aria-label="Domains">
             <Heading title="Domains" />
             {domains.map((node) => <div key={node.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3"><Link href={node.url} className="min-w-0 break-words font-medium hover:underline">{node.name}</Link><Badge variant={node.status_color}>{node.status}</Badge></div>)}
-            {domains.length === 0 && <div className="flex flex-col items-start gap-2"><p className="text-muted-foreground text-sm">No domains yet.</p><DocsLink page="domains" /></div>}
+            {domains.length === 0 && <p className="text-muted-foreground text-sm">No domains yet.</p>}
           </section>
         </div>
         <Link href={`${baseUrl}/deployments`} className="text-sm hover:underline">View deployments</Link>

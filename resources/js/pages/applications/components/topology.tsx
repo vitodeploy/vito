@@ -22,11 +22,11 @@ function TopologyCard({ data }: NodeProps<TopologyFlowNode>) {
   const capabilities = useConfigs()?.application.capabilities;
 
   return (
-    <FlowNode connectable={false} className="h-32 w-60 p-0">
-      <button type="button" className="nodrag flex h-full w-full flex-col gap-2 overflow-hidden rounded-md p-3 text-left focus-visible:outline-2 focus-visible:outline-ring" aria-label={`Open ${node.name}, ${node.status}`}>
+    <FlowNode connectable={false} className="w-60 p-0">
+      <button type="button" className="nodrag flex min-h-32 w-full flex-col gap-2 rounded-md p-3 text-left focus-visible:outline-2 focus-visible:outline-ring" aria-label={`Open ${node.name}, ${node.status}`}>
         <span className="flex w-full items-center gap-2"><Icon className="size-4 shrink-0" /><span className="truncate font-medium" title={node.name}>{node.name}</span></span>
         <span className="flex items-center gap-2 text-sm"><StatusRipple variant={node.status_color} aria-hidden="true" />{node.status}</span>
-        <span className="flex w-full gap-1 overflow-hidden">{node.capabilities.map((id) => <Badge key={id} variant="outline">{capabilities?.find((capability) => capability.id === id)?.label ?? id}</Badge>)}</span>
+        <span className="flex w-full flex-wrap gap-1">{node.capabilities.map((id) => <Badge key={id} variant="outline">{capabilities?.find((capability) => capability.id === id)?.label ?? id}</Badge>)}</span>
         {node.needs_redeploy && <span className="text-muted-foreground text-xs">Redeploy to apply</span>}
       </button>
     </FlowNode>
@@ -45,25 +45,34 @@ const nodeTypes = { topology: TopologyCard, group: ServerBand };
 
 function layout(topology: EnvironmentTopology): TopologyFlowNode[] {
   const nodes: TopologyFlowNode[] = [];
+  const positions = new Map<string, number>();
   let y = 20;
   for (const server of topology.nodes.filter((node) => node.type === 'server')) {
     const children = topology.nodes.filter((node) => node.server_id === server.server_id && !['server', 'domain', 'external'].includes(node.type));
-    const counts = new Map<number, number>();
-    const height = 60 + Math.max(1, ...[1, 2, 3].map((column) => children.filter((node) => columns[node.type] === column).length)) * 160;
+    const counts = new Map<number, number>([[2, children.filter((node) => columns[node.type] === 1).length]]);
+    const rows = children.map((node) => {
+      const row = counts.get(columns[node.type]) ?? 0;
+      counts.set(columns[node.type], row + 1);
+      return row;
+    });
+    const height = 60 + Math.max(1, ...rows.map((row) => row + 1)) * 160;
     nodes.push({ id: server.id, type: 'group', data: { node: server }, position: { x: 300, y }, style: { width: 860, height }, className: '!bg-muted/30 !border-border !rounded-lg', focusable: false });
-    for (const node of children) {
-      const column = columns[node.type];
-      const row = counts.get(column) ?? 0;
-      counts.set(column, row + 1);
-      nodes.push({ id: node.id, type: 'topology', data: { node }, parentId: server.id, extent: 'parent', position: { x: 20 + (column - 1) * 280, y: 60 + row * 160 }, focusable: false });
-    }
+    children.forEach((node, index) => {
+      positions.set(node.id, y + 60 + rows[index] * 160);
+      nodes.push({ id: node.id, type: 'topology', data: { node }, parentId: server.id, extent: 'parent', position: { x: 20 + (columns[node.type] - 1) * 280, y: 60 + rows[index] * 160 }, focusable: false });
+    });
     y += height + 30;
   }
-  for (const type of ['domain', 'external'] as const) {
-    topology.nodes.filter((node) => node.type === type).forEach((node, index) => {
-      nodes.push({ id: node.id, type: 'topology', data: { node }, position: { x: type === 'domain' ? 20 : 600, y: (type === 'domain' ? 80 : y) + index * 160 }, focusable: false });
-    });
+  const targetY = (node: TopologyNode) => positions.get(topology.edges.find((edge) => edge.source === node.id)?.target ?? '');
+  let domainY = 80;
+  for (const node of topology.nodes.filter((item) => item.type === 'domain').sort((a, b) => (targetY(a) ?? Number.MAX_SAFE_INTEGER) - (targetY(b) ?? Number.MAX_SAFE_INTEGER))) {
+    domainY = Math.max(domainY, targetY(node) ?? domainY);
+    nodes.push({ id: node.id, type: 'topology', data: { node }, position: { x: 20, y: domainY }, focusable: false });
+    domainY += 160;
   }
+  topology.nodes.filter((node) => node.type === 'external').forEach((node, index) => {
+    nodes.push({ id: node.id, type: 'topology', data: { node }, position: { x: 600, y: y + index * 160 }, focusable: false });
+  });
   return nodes;
 }
 

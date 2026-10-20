@@ -56,7 +56,10 @@ class UpsertEnvironmentVariable
                 ->where('environment_id', $environment->id)->ignore($variable?->id)],
             'value' => [$variable?->is_secret ? 'sometimes' : 'present', ...($variable?->is_secret ? ['nullable'] : []), 'string', 'not_regex:/\x00/'],
             'is_secret' => ['required', 'boolean'],
-        ], ['key.not_regex' => 'This key is reserved by the command shell.'])->validate();
+        ], [
+            'key.regex' => 'Use uppercase letters, digits and underscores, starting with a letter or underscore.',
+            'key.not_regex' => 'This key is reserved by the command shell.',
+        ])->validate();
 
         if ($variable?->is_secret && ! $input['is_secret'] && ! isset($input['value'])) {
             throw ValidationException::withMessages(['value' => 'Enter a new value to make a secret public.']);

@@ -439,6 +439,7 @@ test('clone script renders custom port', function () {
 
     $this->assertStringContainsString('Port 2222', $rendered);
     $this->assertStringContainsString('ssh-keyscan -T 5 -p 2222 -H gitea.example.com', $rendered);
+    $this->assertStringContainsString("ssh-keygen -F '[gitea.example.com]:2222'", $rendered);
     $this->assertStringContainsString("alias_name='gitea.example.com-site_1'", $rendered);
 });
 
@@ -454,6 +455,7 @@ test('clone script renders default port 22', function () {
 
     $this->assertStringContainsString('Port 22', $rendered);
     $this->assertStringContainsString('ssh-keyscan -T 5 -p 22 -H gitea.example.com', $rendered);
+    $this->assertStringContainsString("ssh-keygen -F 'gitea.example.com'", $rendered);
 });
 
 dataset('data', /** @return array<int, array{0: string, 1: ?string, 2: array<string, mixed>}> */ function (): array {

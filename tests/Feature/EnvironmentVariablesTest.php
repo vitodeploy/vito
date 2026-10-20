@@ -284,3 +284,8 @@ test('variable mutations are blocked during teardown', function () {
     $this->postJson($this->url.'/import', ['content' => 'NAME=value', 'secret_keys' => []])->assertUnprocessable();
     $this->assertDatabaseCount('environment_variables', 1);
 });
+
+test('invalid variable keys explain the allowed format', function () {
+    $this->postJson($this->url, ['key' => '1bad-key', 'value' => 'value', 'is_secret' => false])
+        ->assertUnprocessable()->assertJsonValidationErrors(['key' => 'Use uppercase letters, digits and underscores, starting with a letter or underscore.']);
+});

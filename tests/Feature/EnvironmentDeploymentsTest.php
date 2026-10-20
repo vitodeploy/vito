@@ -283,7 +283,9 @@ test('deployment pages expose stages and safe script metadata with scoped permis
     $run = $this->environment->deployments()->sole();
     app(StartEnvironmentDeployment::class)->start($run->id);
     $this->get($base.'/deployments')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployments')->has('deployments.data', 1)->missing('deployments.data.0.variables')->where('environment.can_deploy', true));
+        ->component('applications/environments/deployments')->has('deployments.data', 1)->missing('deployments.data.0.variables')->where('environment.can_deploy', true)
+        ->where('deployments.data.0.id', $run->id)->where('deployments.data.0.number', '#'.$run->id)
+        ->where('deployments.data.0.commit', substr((string) $run->fresh()->commit_id, 0, 7))->where('deployments.data.0.commit_id', $run->fresh()->commit_id)->where('deployments.data.0.release', $run->fresh()->release));
     $this->get($base.'/deployments/'.$run->id)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/deployment')->where('deployment.current_stage', 'clone')->has('deployment.deployments', 1)->missing('deployment.variables'));
     $foreign = Environment::factory()->for($this->application)->create();
@@ -469,6 +471,7 @@ test('rollback activates only retained code and keeps live variables for later j
     $new = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
     ComponentCapability::factory()->for($this->component)->create(['capability' => 'worker']);
     $this->mock(RestartComponentWorkers::class)->shouldReceive('restart')->once();
+    $this->environment->forceFill(['shared_paths' => ['storage']])->save();
     SSH::fake('');
     Http::fake();
     $rollback = app(RollbackEnvironment::class)->run($this->environment, $target, $this->user);
@@ -479,6 +482,7 @@ test('rollback activates only retained code and keeps live variables for later j
     expect($rollback->status)->toBe(EnvironmentDeploymentStatus::FINISHED)->and($rollback->rollback_of_id)->toBe($target->id)
         ->and($rollback->variables)->toBe($live->variables)->and($this->environment->fresh()->live_run_id)->toBe($rollback->id);
     SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg($this->component->releasesPath().'/'.$target->release));
+    SSH::assertExecutedContains('release='.escapeshellarg($this->component->releasesPath().'/'.$target->release.'/storage'));
     SSH::assertNotExecutedContains('file.next');
     SSH::assertNotExecutedContains('base64 -d');
     SSH::assertNotExecutedContains('git clone');

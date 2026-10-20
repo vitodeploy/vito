@@ -23,10 +23,10 @@ class EnvironmentDomainTable extends Table
     {
         return [
             TextColumn::make('host', 'Host')->sortable(),
-            TextColumn::make('component.name', 'Component'),
-            TextColumn::make('component.server.name', 'Server'),
+            TextColumn::make('target', 'Target')->value(fn (EnvironmentDomain $domain): string => $domain->redirectToDomain
+                ? '→ '.$domain->redirectToDomain->host
+                : $domain->component->name.' · '.$domain->component->server->name),
             EnumColumn::make('type', 'Type'),
-            TextColumn::make('redirectToDomain.host', 'Redirect to'),
             EnumColumn::make('ssl_method', 'SSL'),
             BooleanColumn::make('force_ssl', 'Force SSL'),
             EnumColumn::make('status', 'Status'),

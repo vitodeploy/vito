@@ -28,7 +28,7 @@ export default function Components() {
       <Head title={`Components - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3"><Heading title="Components" description={`Server placements for ${environment.name}`} /><Badge variant="warning">Beta</Badge></div>
+          <Heading title="Components" description={`Server placements for ${environment.name}`} badges={<Badge variant="warning">Beta</Badge>} />
           {canCreate && application.status === 'ready' && environment.status === 'ready' && <Button onClick={() => dialog.addComponent.open({ application, environment, options })}><PlusIcon />Add component</Button>}
         </HeaderContainer>
         {environment.last_error && <p role="alert" className="text-destructive text-sm">{environment.last_error}</p>}

@@ -348,3 +348,11 @@ test('database deletion rejects a database from another server', function () {
     expect($ssh->getExecutedCommands())->toBeEmpty();
     Queue::assertNothingPushed();
 });
+
+test('mysql install refuses a different apt candidate before touching an existing installation', function (string $version) {
+    $rendered = view('ssh.services.database.mysql.install', ['version' => $version])->render();
+
+    expect($rendered)->toContain("mysql-{$version}-lts", "    {$version}.*) ;;", "VITO_SSH_ERROR: MySQL {$version} packages are not available")
+        ->and(strpos($rendered, 'apt-cache policy mysql-server'))->toBeLessThan(strpos($rendered, 'sudo systemctl stop mysql'))
+        ->and(strpos($rendered, 'sudo systemctl stop mysql'))->toBeLessThan(strpos($rendered, 'apt-get purge -y mysql-server'));
+})->with(['8.4', '9.7']);

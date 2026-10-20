@@ -29,7 +29,7 @@ function StageStatus({ run, component, stage }: { run: EnvironmentDeployment; co
   if (stage === 'release' && run.is_recovering) {
     return <Badge variant={component.status_color}>{component.status === 'deploying' ? 'Restoring' : component.status === 'failed' ? 'Recovery failed' : 'Restored'}</Badge>;
   }
-  return <Badge variant={component.status_color}>{humanizeStep(component.status)}</Badge>;
+  return <Badge variant={component.status_color}>{component.status === 'deploying' ? 'Running' : humanizeStep(component.status)}</Badge>;
 }
 
 export default function Deployment() {
@@ -61,7 +61,7 @@ export default function Deployment() {
               title: 'Cancel deployment', description: 'No further stages will start. In-flight work finishes before the next deployment starts.',
               confirmLabel: 'Cancel deployment', method: 'post', url: `${baseUrl}/deployments/${deployment.id}/cancel`,
             })}>Cancel deployment</Button>}
-            {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && <Button variant="outline" disabled={!deployment.rollback_available}
+            {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && environment.live_run_id !== deployment.id && <Button variant="outline" disabled={!deployment.rollback_available}
               title={deployment.rollback_available ? 'Activate this release without changing environment variables or running scripts' : 'This release is no longer available on every deployed component'}
               onClick={() => dialog.confirm.open({
                 title: `Roll back ${application.name} / ${environment.name}`, description: `Activate deployment #${deployment.id} (${deployment.release}) on all deployed components and restart their processes. Current environment variables stay unchanged. Release-command effects are not reversed. If another run is active, this replaces any pending deployment.`,
@@ -70,7 +70,7 @@ export default function Deployment() {
             <DeployButton application={application} environment={environment} />
           </div>
         </HeaderContainer>
-        {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && !deployment.rollback_available && <p className="text-muted-foreground text-sm">Rollback is unavailable: this release is no longer available on every deployed component, or a component is not ready.</p>}
+        {environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && environment.live_run_id !== deployment.id && !deployment.rollback_available && <p className="text-muted-foreground text-sm">Rollback is unavailable: this release is no longer available on every deployed component, or a component is not ready.</p>}
         <dl className="grid gap-4 sm:grid-cols-3">
           <div><dt className="text-muted-foreground text-sm">Commit</dt><dd className="break-all font-mono text-sm">{deployment.commit_id ?? 'Resolved when the run starts'}</dd></div>
           <div><dt className="text-muted-foreground text-sm">Branch</dt><dd>{deployment.branch}</dd></div>

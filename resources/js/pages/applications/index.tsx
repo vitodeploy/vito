@@ -26,10 +26,7 @@ export default function Applications() {
       <Head title="Applications" />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3">
-            <Heading title="Applications" description="Repositories and environments in this project" />
-            <Badge variant="warning">Beta</Badge>
-          </div>
+          <Heading title="Applications" description="Repositories and environments in this project" badges={<Badge variant="warning">Beta</Badge>} />
           {canCreate && <Button onClick={() => dialog.createApplication.open({ sourceControls })}><PlusIcon />Create application</Button>}
         </HeaderContainer>
         <VitoTable tableData={applications} actions={(row) => (

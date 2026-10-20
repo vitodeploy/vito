@@ -108,6 +108,15 @@ class RunComponentStage
         )));
         $component->environment->setRelation('attachments', $component->environment->attachments()->whereKey($run->attachment_ids ?? [])->get());
         app(WriteComponentEnv::class)->write($component, $component->envPath().'.next');
+        $this->linkShared($deployment);
+    }
+
+    /**
+     * Link the environment's current shared paths and live env file into the deployment's release.
+     */
+    private function linkShared(Deployment $deployment): void
+    {
+        $component = $deployment->component;
         $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.link-shared', [
             'component' => $component, 'releasePath' => $deployment->path(), 'paths' => $component->environment->shared_paths ?? [],
         ]));
@@ -145,6 +154,7 @@ class RunComponentStage
             $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.applications.release-env', ['component' => $component, 'deployment' => $deployment]));
         } else {
             $component->server->ssh($component->user)->setLog($deployment->log)->exec('test -d '.escapeshellarg($deployment->path()));
+            $this->linkShared($deployment);
         }
         $component->server->ssh($component->user)->setLog($deployment->log)->exec(view('ssh.modern-deployment.release', [
             'basePath' => $component->basePath(), 'releasePath' => $deployment->path(),

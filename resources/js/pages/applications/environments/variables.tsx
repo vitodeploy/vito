@@ -29,7 +29,7 @@ export default function Variables() {
       <Head title={`Variables - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3"><Heading title="Variables" description="Shared by all components in this environment. Changes apply on the next deploy." /><Badge variant="warning">Beta</Badge></div>
+          <Heading title="Variables" description="Shared by all components in this environment. Changes apply on the next deploy." badges={<Badge variant="warning">Beta</Badge>} />
           {editable && <div className="flex gap-2">
             <Button variant="outline" onClick={() => dialog.importEnv.open({ application, environment })}><UploadIcon />Import .env</Button>
             <Button onClick={() => dialog.variableForm.open({ application, environment })}><PlusIcon />Add variable</Button>

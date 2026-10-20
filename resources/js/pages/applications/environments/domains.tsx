@@ -29,7 +29,7 @@ export default function Domains() {
       <Head title={`Domains - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3"><Heading title="Domains" description="Route verified hosts to a web component in this environment." /><Badge variant="warning">Beta</Badge></div>
+          <Heading title="Domains" description="Route verified hosts to a web component in this environment." badges={<Badge variant="warning">Beta</Badge>} />
           {editable && <Button onClick={() => dialog.environmentDomainForm.open({ application, environment, options: domainOptions })}><PlusIcon />Add domain</Button>}
         </HeaderContainer>
         <VitoTable tableData={domains} actions={(row) => {

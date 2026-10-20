@@ -25,7 +25,7 @@ class ComponentWorkerTable extends Table
             TextColumn::make('name', 'Name')->sortable(),
             TextColumn::make('command', 'Command'),
             TextColumn::make('numprocs', 'Processes'),
-            BooleanColumn::make('managed', 'Managed')->value(fn (Worker $worker): bool => $worker->component_capability_id !== null),
+            BooleanColumn::make('managed', 'Managed')->accessor('component_capability_id'),
             EnumColumn::make('status', 'Status'),
             Column::data('worker', fn (Worker $worker): array => (new WorkerResource($worker))->resolve()),
             ActionsColumn::make(),

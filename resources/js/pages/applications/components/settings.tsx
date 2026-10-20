@@ -26,7 +26,7 @@ export default function Settings({ application, sourceControls }: { application:
         <CardTitle>Application settings</CardTitle>
         <CardDescription>Repository changes immediately re-register component deploy keys. The running release changes on the next deploy. The runtime preset cannot be changed.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <Form id="application-settings-form" onSubmit={submit}>
           <FormFields>
             <ApplicationFields data={form.data} errors={form.errors} onChange={(name, value) => form.setData(name, value)} sourceControls={sourceControls} />

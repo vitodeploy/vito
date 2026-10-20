@@ -66,12 +66,11 @@ export default function ShowApplication() {
       <Container className="max-w-5xl">
         <div><Button variant="ghost" size="sm" asChild><Link href="/applications"><ArrowLeftIcon />Applications</Link></Button></div>
         <HeaderContainer>
-          <div className="flex items-center gap-3">
-            <Heading title={application.name} description={application.repository} />
+          <Heading title={application.name} description={application.repository} badges={<>
             <Badge variant="warning">Beta</Badge>
             <Badge variant="outline">{runtime?.label ?? application.runtime}</Badge>
             <Badge variant={application.status_color}>{application.status}</Badge>
-          </div>
+          </>} />
           {can.delete && application.status !== 'deleting' && <Button variant="destructive" onClick={() => dialog.deleteApplicationResource.open({ application })}><Trash2Icon />{application.status === 'deletion_failed' ? 'Retry deletion' : 'Delete'}</Button>}
         </HeaderContainer>
         <section className="flex flex-col gap-4" aria-label="Environments">

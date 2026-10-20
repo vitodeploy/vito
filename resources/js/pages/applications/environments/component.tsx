@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { loadBalancerMethodLabel } from '@/lib/utils';
+import { humanizeStep, loadBalancerMethodLabel } from '@/lib/utils';
 import ErrorIndicator from '@/components/error-indicator';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
@@ -35,6 +35,7 @@ export default function ShowComponent() {
     can: { update: boolean; delete: boolean };
   }>().props;
   const dialog = useDialog();
+  const capabilityLabel = (id: string) => options.capabilities.find((capability) => capability.id === id)?.label ?? humanizeStep(id);
   const retry = useForm({});
   const [tab, setTab] = useState('overview');
   const baseUrl = `/applications/${application.id}/environments/${environment.id}/components/${component.id}`;
@@ -51,11 +52,10 @@ export default function ShowComponent() {
       <Head title={`${component.name} - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3">
-            <Heading title={component.name} description={environment.name} />
+          <Heading title={component.name} description={environment.name} badges={<>
             <Badge variant="warning">Beta</Badge>
             <Badge variant={component.status_color}>{component.status}</Badge>
-          </div>
+          </>} />
           <div className="flex flex-wrap items-center gap-2">
             {can.update && ready && !loadBalancer && <Button variant="outline" onClick={() => dialog.componentCapabilities.open({ application, environment, component, options })}><SettingsIcon />Capabilities</Button>}
             {can.update && ready && loadBalancer && <Button variant="outline" onClick={() => dialog.loadBalancerBackends.open({ application, environment, component, targets: backendTargets })}><SettingsIcon />Backends</Button>}
@@ -79,7 +79,10 @@ export default function ShowComponent() {
                   <div><dt className="text-muted-foreground text-sm">Linux user</dt><dd>{component.user}</dd></div>
                   <div><dt className="text-muted-foreground text-sm">Type</dt><dd>{component.type}</dd></div>
                   {!loadBalancer && <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Path</dt><dd className="break-all font-mono text-sm">{component.path}</dd></div>}
-                  {!loadBalancer && <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Capabilities</dt><dd className="flex flex-wrap gap-2">{component.capability_configs.length ? component.capability_configs.map((capability) => <Badge key={capability.capability} variant={capability.status_color}>{capability.capability}: {capability.status}</Badge>) : 'None'}</dd></div>}
+                  {!loadBalancer && <div className="sm:col-span-3"><dt className="text-muted-foreground text-sm">Capabilities</dt><dd className="flex flex-wrap gap-2">{component.capability_configs.length ? component.capability_configs.map((capability) => <Badge key={capability.capability} variant={capability.status_color}>{capabilityLabel(capability.capability)}: {capability.status}</Badge>) : 'None'}</dd></div>}
+                  {!loadBalancer && component.capability_configs.flatMap((capability) => (options.capabilities.find((item) => item.id === capability.capability)?.form ?? [])
+                    .filter((field) => ['text', 'textarea', 'select'].includes(field.type) && ['string', 'number'].includes(typeof capability.config[field.name]) && capability.config[field.name] !== '')
+                    .map((field) => <div key={`${capability.capability}-${field.name}`}><dt className="text-muted-foreground text-sm">{capabilityLabel(capability.capability)} · {field.label ?? humanizeStep(field.name)}</dt><dd className="break-all font-mono text-sm">{String(capability.config[field.name])}</dd></div>))}
                 </dl>
                 {!loadBalancer && <div className="flex flex-col gap-2">
                   <h2 className="font-medium">Deploy public key</h2>

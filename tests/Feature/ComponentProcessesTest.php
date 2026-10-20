@@ -282,6 +282,7 @@ test('component surfaces return safe backend tables and locked process metadata'
         ->component('applications/environments/component')
         ->where('component.surfaces', fn ($surfaces) => $surfaces->sort()->values()->all() === ['cron_jobs', 'workers'])
         ->has('workers.data', 1)->has('cronjobs.data', 1)
+        ->where('workers.data.0.managed', 'No')->where('cronjobs.data.0.managed', 'No')
         ->where('workers.data.0.worker.component_id', $this->component->id)
         ->where('workers.data.0.worker.component_url', $this->url)
         ->missing('workers.data.0.worker.environment')

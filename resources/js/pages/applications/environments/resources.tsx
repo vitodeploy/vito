@@ -30,7 +30,7 @@ export default function Resources() {
       <Head title={`Resources - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3"><Heading title="Resources" description="Managed access for app components. Connection variables apply on the next deploy." /><Badge variant="warning">Beta</Badge></div>
+          <Heading title="Resources" description="Managed access for app components. Connection variables apply on the next deploy." badges={<Badge variant="warning">Beta</Badge>} />
           {editable && <Button onClick={() => dialog.attachResource.open({ application, environment, options: resourceOptions })}><PlusIcon />Attach resource</Button>}
         </HeaderContainer>
         <VitoTable tableData={attachments} actions={(row) => {

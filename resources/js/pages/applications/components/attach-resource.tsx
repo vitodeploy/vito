@@ -1,9 +1,10 @@
 import { FormEvent } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
 import { DialogControlProps } from '@/components/dialogs/registry';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -23,10 +24,14 @@ export default function AttachResource({ open, onOpenChange, application, enviro
   const redis = form.data.mode === 'redis';
   const services = options.services.filter((service) => redis ? service.type === 'memory_database' : service.type === 'database');
   const service = services.find((item) => item.id.toString() === form.data.service_id);
+  const defaultCollation = (charsets: EnvironmentResourceOptions['services'][number]['charsets'] | undefined, charset: string) => {
+    const collations = charsets?.[charset];
+    return collations?.default && collations.list.includes(collations.default) ? collations.default : collations?.list[0] ?? '';
+  };
   const selectService = (id: string) => {
     const selected = services.find((item) => item.id.toString() === id);
-    const charset = selected?.default_charset ?? '';
-    form.setData({ ...form.data, service_id: id, server_id: selected?.server_id.toString() ?? '', database_id: '', charset, collation: selected?.charsets[charset]?.default ?? '' });
+    const charset = selected?.charsets.utf8mb4 ? 'utf8mb4' : selected?.default_charset ?? '';
+    form.setData({ ...form.data, service_id: id, server_id: selected?.server_id.toString() ?? '', database_id: '', charset, collation: defaultCollation(selected?.charsets, charset) });
   };
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -47,7 +52,14 @@ export default function AttachResource({ open, onOpenChange, application, enviro
         </DialogHeader>
         <Form id="attach-resource-form" className="p-4" onSubmit={submit}>
           <FormFields>
-            <Alert variant="destructive"><AlertDescription>Attaching restricts this service's ports to attached component IPs. MySQL X Protocol remains local-only. Other remote clients, including existing sites, may lose access. Enabling networking restarts the service. Stored data and local network access are kept, but enabling Redis / Valkey authentication may require local clients to use its password.</AlertDescription></Alert>
+            <Alert>
+              <TriangleAlertIcon />
+              <AlertDescription>
+                {redis
+                  ? 'Attaching restricts this Redis / Valkey port to attached components. Other remote clients may lose access. Enabling networking restarts the service, and enabling authentication requires local clients to use its password.'
+                  : `Attaching restricts this database port to attached components. Other remote clients, including existing Sites, may lose access.${service?.name === 'mysql' ? ' MySQL X Protocol stays local-only.' : ''} Enabling networking restarts the service. Stored data and local access are kept.`}
+              </AlertDescription>
+            </Alert>
             <FormField>
               <Label htmlFor="resource-mode">Resource</Label>
               <Select value={form.data.mode} disabled={form.processing} onValueChange={(mode) => form.setData({ ...form.data, mode, service_id: '', server_id: '', database_id: '', charset: '', collation: '' })}>
@@ -72,8 +84,25 @@ export default function AttachResource({ open, onOpenChange, application, enviro
             </FormField>}
             {form.data.mode === 'new' && <>
               <FormField><Label htmlFor="resource-name">Database name</Label><Input id="resource-name" required value={form.data.name} disabled={form.processing} onChange={(e) => form.setData('name', e.target.value)} /></FormField>
-              <FormField><Label htmlFor="resource-charset">Charset</Label><Input id="resource-charset" required list="resource-charsets" value={form.data.charset} disabled={form.processing} onChange={(e) => form.setData({ ...form.data, charset: e.target.value, collation: service?.charsets[e.target.value]?.default ?? '' })} /><datalist id="resource-charsets">{Object.keys(service?.charsets ?? {}).map((charset) => <option key={charset} value={charset} />)}</datalist></FormField>
-              <FormField><Label htmlFor="resource-collation">Collation</Label><Input id="resource-collation" required list="resource-collations" value={form.data.collation} disabled={form.processing} onChange={(e) => form.setData('collation', e.target.value)} /><datalist id="resource-collations">{service?.charsets[form.data.charset]?.list.map((collation) => <option key={collation} value={collation} />)}</datalist></FormField>
+              <FormField>
+                <Label htmlFor="resource-charset">Charset</Label>
+                <Select value={form.data.charset} disabled={form.processing || !service} onValueChange={(charset) => charset && form.setData({ ...form.data, charset, collation: defaultCollation(service?.charsets, charset) })}>
+                  <SelectTrigger id="resource-charset"><SelectValue placeholder="Select a charset" /></SelectTrigger>
+                  <SelectContent>{Object.keys(service?.charsets ?? {}).map((charset) => <SelectItem key={charset} value={charset}>{charset}</SelectItem>)}</SelectContent>
+                </Select>
+              </FormField>
+              <FormField>
+                <Label htmlFor="resource-collation">Collation</Label>
+                <Combobox
+                  id="resource-collation"
+                  items={(service?.charsets[form.data.charset]?.list ?? []).map((collation) => ({ value: collation, label: collation }))}
+                  value={form.data.collation}
+                  onValueChange={(collation) => form.setData('collation', collation)}
+                  placeholder="Select a collation"
+                  searchText="Search collations..."
+                  noneFoundText="No collations found."
+                />
+              </FormField>
             </>}
             <FormField>
               <Label htmlFor="resource-alias">Alias (optional)</Label>
@@ -86,7 +115,7 @@ export default function AttachResource({ open, onOpenChange, application, enviro
         </Form>
         <DialogFooter>
           <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-          <Button form="attach-resource-form" type="submit" disabled={form.processing || !service || (form.data.mode === 'existing' && !form.data.database_id)}>{form.processing && <LoaderCircleIcon className="animate-spin" />}Attach</Button>
+          <Button form="attach-resource-form" type="submit" disabled={form.processing || !service || (form.data.mode === 'existing' && !form.data.database_id) || (form.data.mode === 'new' && (!form.data.name || !form.data.charset || !form.data.collation))}>{form.processing && <LoaderCircleIcon className="animate-spin" />}Attach</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

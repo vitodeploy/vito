@@ -245,6 +245,33 @@ test('repository clone supports token and ssh authentication with optional commi
     }
 })->with([false, true])->with([null, str_repeat('a', 40)]);
 
+test('ssh clones keep hyphenated self hosted hosts intact', function () {
+    SSH::fake();
+
+    app(Git::class)->cloneRepository(new GitCloneDTO(
+        server: $this->server, user: 'runtime', repoUrl: 'git@git.my-company.example-component_7:owner/repo.git',
+        branch: 'main', path: '/home/runtime/release', keyName: 'component_7', port: 2222,
+    ));
+
+    expect(SSH::getExecutedCommands()[0])->toContain(
+        'Hostname git.my-company.example',
+        "alias_name='git.my-company.example-component_7'",
+        "ssh-keygen -F '[git.my-company.example]:2222'",
+        'host_keys=$(ssh-keyscan -T 5 -p 2222 -H git.my-company.example 2> /dev/null)',
+        "VITO_SSH_ERROR: could not read the SSH host key of git.my-company.example:2222",
+    );
+});
+
+test('ssh clones reject repository hosts that are not plain hostnames', function () {
+    SSH::fake();
+
+    expect(fn () => app(Git::class)->cloneRepository(new GitCloneDTO(
+        server: $this->server, user: 'runtime', repoUrl: 'git@evil.example;id-component_7:owner/repo.git',
+        branch: 'main', path: '/home/runtime/release', keyName: 'component_7',
+    )))->toThrow(RuntimeException::class, 'Invalid SSH repository host.');
+    expect(SSH::getExecutedCommands())->toBe([]);
+});
+
 test('source control clone variables expose only github app authentication', function () {
     Http::fake();
     $sourceControl = SourceControl::factory()->githubApp()->create(['external_identifier' => '12345']);

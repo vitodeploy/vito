@@ -34,7 +34,7 @@ Repository, runtime and capability changes that conflict with a run are blocked.
 - Failure during release requests recovery for participants: restore previous code/env and restart processes. The run becomes **rolled back** on successful recovery or **partial** if recovery fails. This is coordinated recovery, not an instantaneous cross-server transaction.
 - Failure after release leaves the new release live and reports the post-release failure.
 
-From a finished deployment, **Roll back** creates a code-only environment run if that release remains available on every deployed component and the environment is ready. It restarts processes and reloads load balancers, but skips build/release-command/post-release scripts and keeps current variables. It does not reverse migrations, external calls or other release-command side effects. Back up data and design reversible changes yourself.
+From a finished deployment, **Roll back** creates a code-only environment run if that release remains available on every deployed component and the environment is ready. It links the current shared paths into the restored release, restarts processes and reloads load balancers, but skips build/release-command/post-release scripts and keeps current variables. It does not reverse migrations, external calls or other release-command side effects. Back up data and design reversible changes yourself.
 
 ## Auto-deploy and live-release join
 

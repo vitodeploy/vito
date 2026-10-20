@@ -266,7 +266,7 @@ test('domain endpoints list scoped options create edit verify and delete', funct
     $this->get(route('environments.domains', $parents))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/domains')->has('domains.data', 1)->has('domainOptions.components', 1)
         ->where('domains.data.0.domain.id', $domain->id)->where('domains.data.0.domain.ssl_method', 'disabled')
-        ->where('domains.data.0._type_enum_color', 'default')
+        ->where('domains.data.0._type_enum_color', 'default')->where('domains.data.0.target', $this->component->name.' · '.$this->server->name)
         ->where('domainOptions.components.0.server_ip', $this->server->ip)->where('canUpdate', true)
         ->missing('domains.data.0.domain.certificate_path'));
     $this->put(route('environments.domains.update', [...$parents, $domain]), array_replace($this->input, ['host' => 'new.example.com']))->assertSessionDoesntHaveErrors();

@@ -106,7 +106,19 @@ class SSH
                 ($this->logOutputCallback)($chunk);
             }
         } else {
-            $this->log?->write($chunk);
+            $this->log?->writeOutput($chunk);
+        }
+    }
+
+    /**
+     * Write a message line to either a file on a disk or the server log.
+     */
+    protected function writeMessage(string $message): void
+    {
+        if ($this->logDisk && $this->logPath) {
+            $this->writeOutput($message);
+        } else {
+            $this->log?->write($message);
         }
     }
 
@@ -197,7 +209,7 @@ class SSH
                 $this->connect();
             }
         } catch (Throwable $e) {
-            $this->writeOutput($e->getMessage());
+            $this->writeMessage($e->getMessage());
             throw new SSHConnectionError($e->getMessage());
         }
 
@@ -245,7 +257,7 @@ class SSH
                 'msg' => $e->getMessage(),
                 'log' => $this->log,
             ]);
-            $this->writeOutput($e->getMessage());
+            $this->writeMessage($e->getMessage());
             throw new SSHCommandError(
                 message: $e->getMessage(),
                 log: $this->log

@@ -25,7 +25,7 @@ export default function Deployments() {
       <Head title={`Deployments - ${environment.name}`} />
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <div className="flex items-center gap-3"><Heading title="Deployments" description="Each run deploys a pinned commit to every ready app component. Only the latest queued run is kept." /><Badge variant="warning">Beta</Badge></div>
+          <Heading title="Deployments" description="Each run deploys a pinned commit to every ready app component. Only the latest queued run is kept." badges={<Badge variant="warning">Beta</Badge>} />
           <div className="flex items-start gap-2">
             <Button variant="outline" asChild><Link href={`${baseUrl}/deployment-settings`}><SettingsIcon />Settings</Link></Button>
             <DeployButton application={application} environment={environment} />
