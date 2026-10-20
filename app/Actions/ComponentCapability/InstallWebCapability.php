@@ -2,6 +2,8 @@
 
 namespace App\Actions\ComponentCapability;
 
+use App\Actions\Component\SyncComponentVhost;
+use App\Actions\Component\SyncLoadBalancerBackends;
 use App\Actions\PHP\EnsureFpmPool;
 use App\Actions\Worker\CreateWorker;
 use App\Actions\Worker\DeleteWorker;
@@ -9,7 +11,6 @@ use App\Actions\Worker\InstallWorker;
 use App\Enums\WebMode;
 use App\Models\Component;
 use App\Models\ComponentCapability;
-use App\Models\Worker;
 use App\Services\PHP\PHP;
 
 class InstallWebCapability
@@ -20,7 +21,7 @@ class InstallWebCapability
         if ($mode === WebMode::FPM && $component->user !== $component->server->getSshUser()) {
             app(EnsureFpmPool::class)->ensure($component->server, $component->user, $component->environment->runtime_version ?? '');
         }
-        app(\App\Actions\Component\SyncComponentVhost::class)->sync($component);
+        app(SyncComponentVhost::class)->sync($component);
         if ($mode !== WebMode::PROXY) {
             return;
         }
@@ -42,8 +43,8 @@ class InstallWebCapability
 
     public function uninstall(ComponentCapability $capability, Component $component): void
     {
-        app(\App\Actions\Component\SyncLoadBalancerBackends::class)->remove($component);
-        app(\App\Actions\Component\SyncComponentVhost::class)->sync($component);
+        app(SyncLoadBalancerBackends::class)->remove($component);
+        app(SyncComponentVhost::class)->sync($component);
         foreach ($component->workers()->where('component_capability_id', $capability->id)->get() as $worker) {
             app(DeleteWorker::class)->remove($worker);
         }

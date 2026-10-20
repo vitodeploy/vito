@@ -11,24 +11,35 @@ use App\Actions\ComponentCapability\InstallWebCapability;
 use App\Actions\Environment\UpdateEnvironment;
 use App\Actions\PHP\EnsureFpmPool;
 use App\Actions\Worker\CreateWorker;
+use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
+use App\Enums\EnvironmentDeploymentStatus;
+use App\Enums\EnvironmentStatus;
 use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Helpers\ComponentShell;
+use App\Jobs\Component\DeleteComponentJob;
+use App\Jobs\Component\InstallComponentJob;
 use App\Jobs\Component\SyncComponentCapabilitiesJob;
 use App\Jobs\Component\SyncComponentRuntimeJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\ComponentCapability;
 use App\Models\CronJob;
+use App\Models\Deployment;
 use App\Models\Environment;
+use App\Models\EnvironmentDeployment;
 use App\Models\SourceControl;
+use App\Support\Testing\SSHFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
@@ -171,8 +182,8 @@ test('released proxy components reject changing or adding a port without partial
     }
     $component = installCapabilityComponent($web ? [['capability' => 'web', 'config' => ['port' => 14000, 'start_command' => './serve']]] : []);
     app(InstallComponent::class)->install($component->id);
-    $run = \App\Models\EnvironmentDeployment::factory()->for($this->environment)->create(['status' => \App\Enums\EnvironmentDeploymentStatus::FINISHED]);
-    \App\Models\Deployment::factory()->create([
+    $run = EnvironmentDeployment::factory()->for($this->environment)->create(['status' => EnvironmentDeploymentStatus::FINISHED]);
+    Deployment::factory()->create([
         'site_id' => null, 'deployment_script_id' => null, 'log_id' => null, 'component_id' => $component->id,
         'environment_deployment_id' => $run->id, 'release' => $run->release, $checkpoint => true,
     ]);
@@ -209,7 +220,7 @@ test('failed capability install and removal retain recoverable rows and retry sa
     app(UpdateComponentCapabilities::class)->update($component, ['capabilities' => $removal ? [] : [['capability' => 'web']]]);
     SSH::fake()->execWillFail();
     $job = new SyncComponentCapabilitiesJob($component->id, $component->server_id);
-    expect(fn () => app(SyncComponentCapabilities::class)->handle($component->id))->toThrow(\App\Exceptions\SSHCommandError::class);
+    expect(fn () => app(SyncComponentCapabilities::class)->handle($component->id))->toThrow(SSHCommandError::class);
     $job->failed(new Exception('SECRET'));
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'installation_failed']);
     $this->assertDatabaseHas('component_capabilities', ['component_id' => $component->id, 'status' => $removal ? 'deletion_failed' : 'installation_failed']);
@@ -228,7 +239,7 @@ test('runtime changes re-pin components and retain the old checkpoint on failure
     Queue::assertPushed(SyncComponentRuntimeJob::class);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending', 'installed_runtime_version' => '22', 'needs_redeploy' => true]);
     SSH::fake()->execWillFail();
-    expect(fn () => app(SyncComponentRuntime::class)->handle($component->id))->toThrow(\App\Exceptions\SSHCommandError::class);
+    expect(fn () => app(SyncComponentRuntime::class)->handle($component->id))->toThrow(SSHCommandError::class);
     (new SyncComponentRuntimeJob($component->id, $component->server_id))->failed(new Exception('SECRET'));
     $this->assertDatabaseHas('components', ['id' => $component->id, 'installed_runtime_version' => '22', 'status' => 'installation_failed']);
     SSH::fake('');
@@ -290,10 +301,10 @@ test('capability and runtime jobs respect the shared server mutex and ignore del
 test('capability and runtime jobs do nothing once a parent begins teardown', function (string $jobClass, string $parent) {
     $component = installCapabilityComponent([['capability' => 'web']]);
     if ($parent === 'application') {
-        $this->application->status = \App\Enums\ApplicationStatus::DELETING;
+        $this->application->status = ApplicationStatus::DELETING;
         $this->application->save();
     } else {
-        $this->environment->status = \App\Enums\EnvironmentStatus::DELETING;
+        $this->environment->status = EnvironmentStatus::DELETING;
         $this->environment->save();
     }
     (new $jobClass($component->id, $component->server_id))->handle();
@@ -320,11 +331,11 @@ test('scheduler command retries reconcile the old remote line without importing 
     $capability = $component->capabilities()->sole();
     $capability->config = ['command' => 'node new.mjs'];
     $capability->save();
-    $ssh = Mockery::mock(\App\Support\Testing\SSHFake::class, [$oldCrontab])->makePartial();
+    $ssh = Mockery::mock(SSHFake::class, [$oldCrontab])->makePartial();
     SSH::swap($ssh);
-    $ssh->shouldReceive('exec')->withArgs(fn ($command, $log = '') => $log === 'update-cron')->once()->andThrow(new \App\Exceptions\SSHCommandError);
+    $ssh->shouldReceive('exec')->withArgs(fn ($command, $log = '') => $log === 'update-cron')->once()->andThrow(new SSHCommandError);
 
-    expect(fn () => $capability->handler()->install($component))->toThrow(\App\Exceptions\SSHCommandError::class);
+    expect(fn () => $capability->handler()->install($component))->toThrow(SSHCommandError::class);
     $this->assertDatabaseHas('cron_jobs', ['component_id' => $component->id, 'command' => 'node old.mjs', 'status' => 'ready']);
     SSH::fake($oldCrontab);
     $capability->handler()->install($component);
@@ -345,10 +356,10 @@ test('runtime checkpoint protects the previous service until resync finishes', f
     $service = $this->server->php('8.2');
 
     expect($this->server->componentsUsing($service)->modelKeys())->toBe([$component->id]);
-    expect(fn () => \Illuminate\Support\Facades\Validator::make(['service' => $service->id], $service->handler()->deletionRules())->validate())->toThrow(ValidationException::class);
+    expect(fn () => Validator::make(['service' => $service->id], $service->handler()->deletionRules())->validate())->toThrow(ValidationException::class);
     app(SyncComponentRuntime::class)->handle($component->id);
     expect($this->server->componentsUsing($service))->toBeEmpty();
-    \Illuminate\Support\Facades\Validator::make(['service' => $service->id], $service->handler()->deletionRules())->validate();
+    Validator::make(['service' => $service->id], $service->handler()->deletionRules())->validate();
 })->with([false, true]);
 
 test('fpm retries activate an already written pool before advancing the runtime checkpoint', function () {
@@ -358,14 +369,14 @@ test('fpm retries activate an already written pool before advancing the runtime 
     app(InstallComponent::class)->install($component->id);
     $this->server->services()->create(['type' => 'php', 'name' => 'php', 'version' => '8.3', 'status' => ServiceStatus::READY]);
     app(UpdateEnvironment::class)->update($this->environment, ['name' => $this->environment->name, 'branch' => 'main', 'runtime_version' => '8.3']);
-    $ssh = Mockery::mock(\App\Support\Testing\SSHFake::class, [''])->makePartial();
+    $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();
     SSH::swap($ssh);
     $attempts = 0;
     $active = false;
     $ssh->shouldReceive('exec')->withArgs(fn ($command) => str_contains((string) $command, 'test -f /etc/php/8.3/fpm/pool.d/runtime.conf'))
         ->twice()->andReturnUsing(function () use (&$attempts): string {
             if ($attempts === 0) {
-                throw new \App\Exceptions\SSHCommandError;
+                throw new SSHCommandError;
             }
 
             return '';
@@ -373,7 +384,7 @@ test('fpm retries activate an already written pool before advancing the runtime 
     $ssh->shouldReceive('exec')->withArgs(fn ($command) => str_contains((string) $command, 'test -S /run/php/php8.3-fpm-runtime.sock'))
         ->twice()->andReturnUsing(function () use (&$active): string {
             if (! $active) {
-                throw new \App\Exceptions\SSHCommandError;
+                throw new SSHCommandError;
             }
 
             return '';
@@ -381,7 +392,7 @@ test('fpm retries activate an already written pool before advancing the runtime 
     $ssh->shouldReceive('exec')->withArgs(fn ($command) => str_contains((string) $command, 'restart php8.3-fpm'))
         ->twice()->andReturnUsing(function () use (&$attempts, &$active): string {
             if ($attempts++ === 0) {
-                throw new \App\Exceptions\SSHCommandError;
+                throw new SSHCommandError;
             }
             $active = true;
 
@@ -391,7 +402,7 @@ test('fpm retries activate an already written pool before advancing the runtime 
         expect($active)->toBeTrue();
     });
 
-    expect(fn () => app(SyncComponentRuntime::class)->handle($component->id))->toThrow(\App\Exceptions\SSHCommandError::class);
+    expect(fn () => app(SyncComponentRuntime::class)->handle($component->id))->toThrow(SSHCommandError::class);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'installed_runtime_version' => '8.2', 'status' => 'pending']);
     app(SyncComponentRuntime::class)->handle($component->id);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'installed_runtime_version' => '8.3', 'status' => 'ready']);
@@ -402,7 +413,7 @@ test('pending configuration events are emitted only after the mutation commits',
     app(InstallComponent::class)->install($component->id);
     Event::fake([SocketEvent::class]);
     try {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($component, $kind, $rollback): void {
+        DB::transaction(function () use ($component, $kind, $rollback): void {
             if ($kind === 'capability') {
                 app(UpdateComponentCapabilities::class)->update($component, ['capabilities' => [['capability' => 'worker']]]);
             } else {
@@ -435,8 +446,8 @@ test('background scheduler operations requeue on cron contention and finish with
         }
     }
     $jobClass = match ($operation) {
-        'install' => \App\Jobs\Component\InstallComponentJob::class,
-        'delete' => \App\Jobs\Component\DeleteComponentJob::class,
+        'install' => InstallComponentJob::class,
+        'delete' => DeleteComponentJob::class,
         default => SyncComponentCapabilitiesJob::class,
     };
     $lock = Cache::lock('cron-jobs:server-'.$this->server->id, 60);

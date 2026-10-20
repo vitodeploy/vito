@@ -3,6 +3,7 @@
 namespace App\Actions\EnvironmentDomain;
 
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\HostedDomainType;
 use App\Models\Component;
 use App\Models\Environment;
@@ -14,7 +15,7 @@ class GetEnvironmentDomainOptions
     public function get(Environment $environment): array
     {
         $components = $environment->components()->with('server')->where('status', ComponentStatus::READY)
-            ->where(fn ($query) => $query->where('type', \App\Enums\ComponentType::LOAD_BALANCER)
+            ->where(fn ($query) => $query->where('type', ComponentType::LOAD_BALANCER)
                 ->orWhereHas('capabilities', fn ($query) => $query->where('capability', 'web')->where('status', ComponentStatus::READY)))->get();
 
         return [

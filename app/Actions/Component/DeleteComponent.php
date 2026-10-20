@@ -3,6 +3,8 @@
 namespace App\Actions\Component;
 
 use App\Actions\CronJob\DeleteCronJob;
+use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Actions\Worker\DeleteWorker;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
@@ -25,7 +27,7 @@ class DeleteComponent
         DB::transaction(function () use ($component, $input): void {
             Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($component->environment_id);
-            app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'component');
+            app(AssertEnvironmentIdle::class)->validate($environment, 'component');
             $component->refresh();
             Validator::make($input, [
                 'primary_component_id' => ['nullable', 'integer', Rule::exists('components', 'id')
@@ -95,7 +97,7 @@ class DeleteComponent
             $component->delete();
         }
 
-        app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
+        app(SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
         app(BroadcastComponentUpdate::class)->deleted($component);
     }
 

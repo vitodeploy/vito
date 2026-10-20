@@ -2,14 +2,15 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Models\Application;
 use App\Models\Component;
-use App\Models\Environment;
 use App\Models\ComponentCapability;
 use App\Models\CronJob;
+use App\Models\Environment;
 use App\Models\Server;
 use App\Models\Worker;
 use Closure;
@@ -24,6 +25,7 @@ class ValidateComponentProcess
 {
     /**
      * @template T
+     *
      * @param  Closure(): T  $callback
      * @return T
      */
@@ -42,6 +44,7 @@ class ValidateComponentProcess
 
     /**
      * @template T
+     *
      * @param  Closure(): T  $callback
      * @return T
      */
@@ -57,7 +60,7 @@ class ValidateComponentProcess
             Server::query()->lockForUpdate()->findOrFail($component->server_id);
             $component->refresh();
             try {
-                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
+                app(AssertEnvironmentIdle::class)->validate($environment, 'name');
             } catch (ValidationException) {
                 throw new LockTimeoutException;
             }
@@ -94,7 +97,7 @@ class ValidateComponentProcess
         }
 
         if ($managedBy === null) {
-            app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($component->environment, 'name');
+            app(AssertEnvironmentIdle::class)->validate($component->environment, 'name');
         }
 
         if ($managedBy === null && ($component->status !== ComponentStatus::READY

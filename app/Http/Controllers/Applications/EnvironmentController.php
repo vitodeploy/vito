@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Applications;
 use App\Actions\Component\GetComponentOptions;
 use App\Actions\Environment\CreateEnvironment;
 use App\Actions\Environment\DeleteEnvironment;
+use App\Actions\Environment\GetEnvironmentTopology;
 use App\Actions\Environment\UpdateEnvironment;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\EnvironmentDeploymentResource;
 use App\Models\Application;
 use App\Models\Environment;
 use Illuminate\Http\RedirectResponse;
@@ -43,9 +45,9 @@ class EnvironmentController extends Controller
 
         return Inertia::render('applications/environments/show', [
             'primaryCandidates' => fn () => app(GetComponentOptions::class)->primaryCandidates($environment),
-            'topology' => fn () => app(\App\Actions\Environment\GetEnvironmentTopology::class)->get($environment),
+            'topology' => fn () => app(GetEnvironmentTopology::class)->get($environment),
             'lastDeployment' => fn () => ($run = $environment->deployments()->latest('id')->first())
-                ? new \App\Http\Resources\EnvironmentDeploymentResource($run) : null,
+                ? new EnvironmentDeploymentResource($run) : null,
             'warnings' => fn () => $application->preset()->warnings($environment),
             'can' => [
                 'update' => user()->can('update', [$environment, $application]),

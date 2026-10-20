@@ -2,6 +2,7 @@
 
 namespace App\Jobs\SSL;
 
+use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
 use App\Events\SocketEvent;
@@ -40,10 +41,11 @@ class DeleteServerSslJob implements ShouldQueue
                     $this->ssl->save();
                     $this->broadcastSslUpdate();
                 }
+
                 return;
             }
             if ($this->ssl->environment_id) {
-                app(\App\Actions\EnvironmentDomain\DeleteEnvironmentDomain::class)->removeUnusedCertificate($this->ssl);
+                app(DeleteEnvironmentDomain::class)->removeUnusedCertificate($this->ssl);
 
                 return;
             }

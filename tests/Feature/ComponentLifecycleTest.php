@@ -2,6 +2,7 @@
 
 use App\Actions\Application\DeleteApplication;
 use App\Actions\Application\UpdateApplication;
+use App\Actions\Component\BroadcastComponentUpdate;
 use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\InstallComponent;
@@ -9,9 +10,13 @@ use App\Actions\Component\PurgeServerComponents;
 use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\SyncComponentDeployKeys;
 use App\Actions\Environment\DeleteEnvironment;
+use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Actions\Site\Tooling\UninstallSiteTooling;
+use App\Actions\SourceControl\SetupDeployKey;
 use App\DTOs\ToolingTargetDTO;
 use App\Enums\ComponentStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\FailedToDeployGitKey;
 use App\Facades\SSH;
 use App\Jobs\Application\DeleteApplicationJob;
 use App\Jobs\Component\DeleteComponentJob;
@@ -24,10 +29,14 @@ use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
 use App\Models\IsolatedUser;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\SourceControl;
 use App\SSH\Mise\Mise;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -51,7 +60,7 @@ beforeEach(function () {
 
 test('component key registration rejects a source moved to another project even with a cached relation', function () {
     $this->component->load('environment.application.sourceControl');
-    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    $this->application->sourceControl->update(['project_id' => Project::factory()->create()->id]);
     expect(fn () => app(SyncComponentDeployKeys::class)->sync($this->component))->toThrow(ValidationException::class);
     Http::assertNothingSent();
     expect(SSH::getExecutedCommands())->toBeEmpty();
@@ -60,7 +69,7 @@ test('component key registration rejects a source moved to another project even 
 
 test('component key cleanup retains custody after source reassignment', function () {
     app(InstallComponent::class)->install($this->component->id);
-    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    $this->application->sourceControl->update(['project_id' => Project::factory()->create()->id]);
     app(SyncComponentDeployKeys::class)->remove($this->component->fresh());
     Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_id' => null, 'deploy_key_source_control_id' => null]);
@@ -193,7 +202,7 @@ test('repository changes remove keys from their original source and register the
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => ComponentStatus::PENDING]);
     $this->environment->primary_component_id = $this->component->id;
     $this->environment->save();
-    expect(fn () => app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->run($this->environment))->toThrow(ValidationException::class);
+    expect(fn () => app(DeployEnvironment::class)->run($this->environment))->toThrow(ValidationException::class);
     (new SyncComponentDeployKeysJob($this->component->id, $this->server->id))->handle();
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'status' => ComponentStatus::READY, 'deploy_key_repository' => 'other/repo', 'needs_redeploy' => true]);
     Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), '/organization/repository/keys/123'));
@@ -236,7 +245,7 @@ test('queued site tooling removal rechecks components attached after enqueue', f
     $this->site->update(['user' => 'runtime', 'isolated_user_id' => $this->component->isolated_user_id]);
     $this->component->isolatedUser->setToolingVersion('node', '22');
     $this->component->delete();
-    app(\App\Actions\Site\Tooling\UninstallSiteTooling::class)->uninstall($this->site, 'node');
+    app(UninstallSiteTooling::class)->uninstall($this->site, 'node');
     Queue::assertPushed(UninstallSiteToolingJob::class);
     app(CreateComponent::class)->create($this->environment, [
         'name' => 'Attached later', 'server_id' => $this->server->id, 'user' => 'runtime', 'type' => 'app',
@@ -251,7 +260,7 @@ test('queued site tooling removal rechecks components attached after enqueue', f
 test('failed key registration retains the public key and completed removal for retry', function () {
     app(InstallComponent::class)->install($this->component->id);
     $this->application->update(['repository' => 'other/repository']);
-    $this->mock(\App\Actions\SourceControl\SetupDeployKey::class, function ($mock) {
+    $this->mock(SetupDeployKey::class, function ($mock) {
         $mock->shouldReceive('setup')->once()->andThrow(new RuntimeException('Provider unavailable'));
     });
 
@@ -260,13 +269,13 @@ test('failed key registration retains the public key and completed removal for r
         'id' => $this->component->id, 'ssh_key' => 'ssh-rsa component-public-key',
         'deploy_key_id' => null, 'deploy_key_source_control_id' => $this->application->source_control_id, 'deploy_key_repository' => 'other/repository',
     ]);
-    app()->forgetInstance(\App\Actions\SourceControl\SetupDeployKey::class);
+    app()->forgetInstance(SetupDeployKey::class);
     app(SyncComponentDeployKeys::class)->handle($this->component->id);
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_repository' => 'other/repository']);
 });
 
 test('failed initial key registration persists its generated public key', function () {
-    $this->mock(\App\Actions\SourceControl\SetupDeployKey::class, function ($mock) {
+    $this->mock(SetupDeployKey::class, function ($mock) {
         $mock->shouldReceive('generateKey')->once()->andReturn('ssh-rsa persisted-key');
         $mock->shouldReceive('setup')->once()->andThrow(new RuntimeException('Provider unavailable'));
     });
@@ -276,7 +285,7 @@ test('failed initial key registration persists its generated public key', functi
 });
 
 test('pending deploy key ownership survives lost responses and is reconciled before cleanup', function (string $operation) {
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake(function ($request) {
         $this->assertDatabaseHas('components', [
@@ -284,15 +293,15 @@ test('pending deploy key ownership survives lost responses and is reconciled bef
             'deploy_key_repository' => $this->application->repository, 'ssh_key' => 'ssh-rsa component-public-key',
         ]);
         if ($request->method() === 'POST') {
-            throw new \Illuminate\Http\Client\ConnectionException('Lost response');
+            throw new ConnectionException('Lost response');
         }
 
         return Http::response([], 503);
     });
-    expect(fn () => app(InstallComponent::class)->install($this->component->id))->toThrow(\App\Exceptions\FailedToDeployGitKey::class);
+    expect(fn () => app(InstallComponent::class)->install($this->component->id))->toThrow(FailedToDeployGitKey::class);
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_id' => null, 'deploy_key_repository' => $this->application->repository]);
 
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake(fn ($request) => match ($request->method()) {
         'GET' => Http::response([['id' => 321, 'key' => 'ssh-rsa component-public-key']]),
@@ -310,6 +319,7 @@ test('pending deploy key ownership survives lost responses and is reconciled bef
         $purge->handle($departure);
         Queue::assertPushed(DeletePurgedComponentDeployKeyJob::class, function ($job): bool {
             $job->handle();
+
             return true;
         });
     } else {
@@ -361,13 +371,13 @@ test('component deletion broadcasts skip parents already removed', function () {
     $this->component->delete();
     $this->environment->delete();
 
-    app(\App\Actions\Component\BroadcastComponentUpdate::class)->deleted($this->component);
+    app(BroadcastComponentUpdate::class)->deleted($this->component);
 
     Event::assertNotDispatched(SocketEvent::class, fn ($event) => $event->data->type === 'component.deleted');
 });
 
 test('server purge cleanup waits for in flight deploy key registration', function () {
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake(function ($request) {
         if ($request->method() === 'POST') {
@@ -399,7 +409,7 @@ test('server purge cleanup waits for in flight deploy key registration', functio
 });
 
 test('components removed before pending ownership is persisted never register a provider key', function () {
-    $this->mock(\App\Actions\SourceControl\SetupDeployKey::class, function ($mock) {
+    $this->mock(SetupDeployKey::class, function ($mock) {
         $mock->shouldReceive('generateKey')->once()->andReturnUsing(function (): string {
             $this->component->delete();
 
@@ -408,7 +418,7 @@ test('components removed before pending ownership is persisted never register a 
         $mock->shouldNotReceive('setup');
     });
 
-    expect(fn () => app(InstallComponent::class)->install($this->component->id))->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+    expect(fn () => app(InstallComponent::class)->install($this->component->id))->toThrow(ModelNotFoundException::class);
     Http::assertNothingSent();
 });
 
@@ -417,7 +427,7 @@ test('pending key retries recover their recorded repository without another regi
         'ssh_key' => 'ssh-rsa component-public-key', 'deploy_key_source_control_id' => $this->application->source_control_id,
         'deploy_key_repository' => $this->application->repository,
     ])->save();
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response([['id' => 789, 'key' => 'ssh-rsa component-public-key']])]);
 
     app(InstallComponent::class)->install($this->component->id);
@@ -432,11 +442,11 @@ test('inconclusive pending key cleanup preserves ownership and local resources',
         'ssh_key' => 'ssh-rsa component-public-key', 'deploy_key_source_control_id' => $this->application->source_control_id,
         'deploy_key_repository' => $this->application->repository,
     ])->save();
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['*' => Http::response('invalid JSON')]);
     app(DeleteComponent::class)->delete($this->component, []);
 
-    expect(fn () => app(DeleteComponent::class)->handle($this->component->id))->toThrow(\App\Exceptions\FailedToDeployGitKey::class);
+    expect(fn () => app(DeleteComponent::class)->handle($this->component->id))->toThrow(FailedToDeployGitKey::class);
     $this->assertDatabaseHas('components', ['id' => $this->component->id, 'deploy_key_repository' => $this->application->repository, 'ssh_key' => 'ssh-rsa component-public-key']);
     expect(SSH::getExecutedCommands())->toBe([]);
 });

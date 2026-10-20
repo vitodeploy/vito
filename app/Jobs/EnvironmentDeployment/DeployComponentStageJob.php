@@ -9,6 +9,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Jobs\RedisJob;
 
 class DeployComponentStageJob implements ShouldQueue
 {
@@ -38,7 +39,7 @@ class DeployComponentStageJob implements ShouldQueue
 
     public function handle(): void
     {
-        if ($this->job instanceof \Illuminate\Queue\Jobs\RedisJob && function_exists('pcntl_alarm')) {
+        if ($this->job instanceof RedisJob && function_exists('pcntl_alarm')) {
             pcntl_alarm(max(1, min($this->timeout, $this->deadline - now()->timestamp)));
         }
         $completed = false;

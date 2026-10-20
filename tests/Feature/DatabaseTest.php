@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Database\CreateDatabase;
 use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
 use App\Enums\ServiceStatus;
@@ -11,6 +12,7 @@ use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -34,9 +36,9 @@ test('create database', function () {
 
 test('deferred database creation rejects user options instead of discarding them', function (string $field, mixed $value) {
     SSH::fake();
-    expect(fn () => app(\App\Actions\Database\CreateDatabase::class)->create($this->server, [
+    expect(fn () => app(CreateDatabase::class)->create($this->server, [
         'name' => 'deferred', 'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci', $field => $value,
-    ], defer: true))->toThrow(\Illuminate\Validation\ValidationException::class);
+    ], defer: true))->toThrow(ValidationException::class);
     $this->assertDatabaseMissing('databases', ['name' => 'deferred']);
     expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([['user', true], ['existing_user_id', 1], ['username', 'ignored_user'], ['password', 'ignored_password']]);

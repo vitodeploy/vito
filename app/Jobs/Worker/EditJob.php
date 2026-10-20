@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Worker;
 
+use App\Actions\Component\ValidateComponentProcess;
 use App\Actions\Site\BroadcastSiteUpdate;
 use App\Actions\Worker\InstallWorker;
 use App\Models\Worker;
@@ -22,7 +23,7 @@ class EditJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->worker->server_id}", function () {
-            app(\App\Actions\Component\ValidateComponentProcess::class)->runQueued($this->worker->component, fn () => app(InstallWorker::class)->install($this->worker, replace: true));
+            app(ValidateComponentProcess::class)->runQueued($this->worker->component, fn () => app(InstallWorker::class)->install($this->worker, replace: true));
         });
     }
 

@@ -8,15 +8,14 @@ use App\Actions\Component\GetComponentOptions;
 use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\Component\UpdateLoadBalancerBackends;
-use App\Tables\Applications\ComponentWorkerTable;
-use App\Tables\Applications\ComponentCronJobTable;
-use Spatie\RouteAttributes\Attributes\Put;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ComponentResource;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
+use App\Tables\Applications\ComponentCronJobTable;
 use App\Tables\Applications\ComponentTable;
+use App\Tables\Applications\ComponentWorkerTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,6 +25,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 use Spatie\RouteAttributes\Attributes\ScopeBindings;
 
 #[Prefix('applications/{application}/environments/{environment}/components')]

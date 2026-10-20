@@ -6,6 +6,7 @@ use App\Enums\EnvironmentAttachmentStatus;
 use Database\Factories\EnvironmentAttachmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -54,7 +55,7 @@ class EnvironmentAttachment extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, covariant $this> */
+    /** @return MorphTo<Model, covariant $this> */
     public function attachable(): MorphTo
     {
         return $this->morphTo();

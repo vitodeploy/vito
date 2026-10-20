@@ -2,6 +2,8 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
 use App\Enums\DeploymentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
@@ -89,7 +91,7 @@ class AdvanceEnvironmentDeployment
     {
         return $run->deployments()->getQuery()
             ->whereHas('component', fn ($query) => $query->whereIn('type', $stage === DeploymentStage::RELEASE && ! $run->is_join
-                ? [\App\Enums\ComponentType::APP, \App\Enums\ComponentType::LOAD_BALANCER] : [\App\Enums\ComponentType::APP]))
+                ? [ComponentType::APP, ComponentType::LOAD_BALANCER] : [ComponentType::APP]))
             ->when($stage === DeploymentStage::PRE_RELEASE, fn ($query) => $query->where('component_id', $run->primary_component_id));
     }
 
@@ -110,7 +112,7 @@ class AdvanceEnvironmentDeployment
     public function finish(EnvironmentDeployment $run, EnvironmentDeploymentStatus $status): void
     {
         if ($run->is_join && ! $run->deployments()->exists()) {
-            foreach ($run->environment->components()->where('type', \App\Enums\ComponentType::APP)->where('status', \App\Enums\ComponentStatus::READY)->doesntHave('deployments')->get() as $component) {
+            foreach ($run->environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->get() as $component) {
                 $deployment = $run->deployments()->make([
                     'commit_id' => $run->commit_id,
                     'commit_data' => $run->commit_data, 'status' => DeploymentStatus::FAILED,
@@ -127,7 +129,7 @@ class AdvanceEnvironmentDeployment
         }
         $run->save();
         if ($status !== EnvironmentDeploymentStatus::FINISHED) {
-            Component::query()->where('type', \App\Enums\ComponentType::APP)->whereIn('id', $run->deployments()->select('component_id'))->update(['needs_redeploy' => true]);
+            Component::query()->where('type', ComponentType::APP)->whereIn('id', $run->deployments()->select('component_id'))->update(['needs_redeploy' => true]);
         }
         $environment = $run->environment;
         $environment->last_error = $status === EnvironmentDeploymentStatus::FINISHED ? null : 'Deployment did not finish successfully. Review its component stages and logs before deploying again.';

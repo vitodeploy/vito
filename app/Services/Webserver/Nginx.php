@@ -5,6 +5,7 @@ namespace App\Services\Webserver;
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\DTOs\ServiceLog;
+use App\Enums\ComponentType;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -311,7 +312,7 @@ class Nginx extends AbstractWebserver implements HasLogs
 
         $this->service->server->loadMissing('components.capabilities');
         foreach ($this->service->server->components->sortBy('id') as $component) {
-            if ($component->type !== \App\Enums\ComponentType::LOAD_BALANCER && ! $component->capabilities->contains('capability', 'web')) {
+            if ($component->type !== ComponentType::LOAD_BALANCER && ! $component->capabilities->contains('capability', 'web')) {
                 continue;
             }
             foreach (['access', 'error'] as $type) {

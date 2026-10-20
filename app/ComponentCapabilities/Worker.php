@@ -2,6 +2,10 @@
 
 namespace App\ComponentCapabilities;
 
+use App\Actions\Component\RestartComponentWorkers;
+use App\Actions\Worker\DeleteWorker;
+use App\Models\Component;
+use App\Models\Deployment;
 use App\RuntimePresets\AbstractRuntimePreset;
 
 class Worker extends AbstractComponentCapability
@@ -26,14 +30,14 @@ class Worker extends AbstractComponentCapability
         return ['process_manager'];
     }
 
-    public function uninstall(\App\Models\Component $component): void
+    public function uninstall(Component $component): void
     {
-        app(\App\Actions\Worker\DeleteWorker::class)->deleteForComponent($component);
+        app(DeleteWorker::class)->deleteForComponent($component);
     }
 
-    public function afterRelease(\App\Models\Component $component, \App\Models\Deployment $deployment): void
+    public function afterRelease(Component $component, Deployment $deployment): void
     {
-        app(\App\Actions\Component\RestartComponentWorkers::class)->restart($component);
+        app(RestartComponentWorkers::class)->restart($component);
     }
 
     public function surfaces(): array

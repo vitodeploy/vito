@@ -27,7 +27,8 @@ class ValidateEnvironmentDomain
 {
     /**
      * @template T
-     * @param Closure(): T $callback
+     *
+     * @param  Closure(): T  $callback
      * @return T
      */
     public function run(Environment $environment, Closure $callback): mixed

@@ -3,6 +3,7 @@
 namespace App\Services\Firewall;
 
 use App\Enums\FirewallRuleStatus;
+use App\Models\EnvironmentAttachment;
 use App\Services\AbstractService;
 
 abstract class AbstractFirewall extends AbstractService implements Firewall
@@ -13,7 +14,7 @@ abstract class AbstractFirewall extends AbstractService implements Firewall
             'service' => [
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     if ($this->service->server->componentsUsing($this->service)->isNotEmpty()
-                        || \App\Models\EnvironmentAttachment::query()->where('server_id', $this->service->server_id)->exists()
+                        || EnvironmentAttachment::query()->where('server_id', $this->service->server_id)->exists()
                         || $this->service->server->firewallRules()->where('component_managed', true)->exists()) {
                         $fail('Remove load balancer backends and environment resources and finish their firewall cleanup before stopping or removing the firewall.');
                     }

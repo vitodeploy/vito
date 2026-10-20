@@ -2,12 +2,12 @@
 
 namespace App\Actions\Worker;
 
-use App\Actions\Component\ValidateComponentProcess;
 use App\Actions\Component\HasComponentRelease;
-use Illuminate\Validation\ValidationException;
+use App\Actions\Component\ValidateComponentProcess;
 use App\Enums\WorkerStatus;
 use App\Jobs\Worker\ManageJob;
 use App\Models\Worker;
+use Illuminate\Validation\ValidationException;
 
 class ManageWorker
 {
@@ -37,6 +37,7 @@ class ManageWorker
         $worker->save();
         dispatch(new ManageJob($worker, 'restart', WorkerStatus::RUNNING))->onQueue('ssh');
     }
+
     public function validate(Worker $worker, bool $starting): void
     {
         app(ValidateComponentProcess::class)->validate($worker->server, [], $worker->component, 'worker', $worker);

@@ -229,7 +229,7 @@ class Gitea extends AbstractSourceControlProvider
             if (! $response->successful() && $response->status() !== 404) {
                 throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }

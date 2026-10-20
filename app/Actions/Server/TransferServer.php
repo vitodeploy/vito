@@ -3,6 +3,7 @@
 namespace App\Actions\Server;
 
 use App\Models\Component;
+use App\Models\EnvironmentAttachment;
 use App\Models\NetworkServer;
 use App\Models\Project;
 use App\Models\Server;
@@ -37,7 +38,7 @@ class TransferServer
                 ]);
             }
 
-            if (\App\Models\EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
+            if (EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
                 throw ValidationException::withMessages(['project_id' => 'Detach the resources hosted by this server and finish cleanup before transferring it.']);
             }
 

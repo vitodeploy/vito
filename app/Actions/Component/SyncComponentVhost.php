@@ -3,6 +3,7 @@
 namespace App\Actions\Component;
 
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SslMethod;
@@ -43,7 +44,7 @@ class SyncComponentVhost
     public function generate(Component $component): string
     {
         $component->load('capabilities', 'environment.application');
-        $loadBalancer = $component->type === \App\Enums\ComponentType::LOAD_BALANCER;
+        $loadBalancer = $component->type === ComponentType::LOAD_BALANCER;
         if (in_array($component->status, [ComponentStatus::DELETING, ComponentStatus::DELETION_FAILED], true)
             || (! $loadBalancer && ! $component->capabilities->contains(fn ($capability): bool => $capability->capability === 'web'
                 && ! in_array($capability->status, [ComponentStatus::DELETING, ComponentStatus::DELETION_FAILED], true)))) {

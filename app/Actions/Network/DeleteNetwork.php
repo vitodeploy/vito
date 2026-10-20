@@ -3,7 +3,10 @@
 namespace App\Actions\Network;
 
 use App\Enums\NetworkStatus;
+use App\Enums\NetworkType;
 use App\Models\Network;
+use App\Models\Server;
+use Illuminate\Support\Facades\DB;
 
 class DeleteNetwork
 {
@@ -14,9 +17,9 @@ class DeleteNetwork
 
     public function delete(Network $network, bool $observed = false): void
     {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($network, $observed): void {
-            \App\Models\Server::query()->whereIn('id', $network->servers()->select('server_id'))->orderBy('id')->lockForUpdate()->get();
-            if (! $observed || $network->type !== \App\Enums\NetworkType::PROVIDER) {
+        DB::transaction(function () use ($network, $observed): void {
+            Server::query()->whereIn('id', $network->servers()->select('server_id'))->orderBy('id')->lockForUpdate()->get();
+            if (! $observed || $network->type !== NetworkType::PROVIDER) {
                 foreach ($network->servers()->get() as $member) {
                     app(CheckLoadBalancerNetwork::class)->validate($member);
                     app(CheckEnvironmentResourceNetwork::class)->validate($member);

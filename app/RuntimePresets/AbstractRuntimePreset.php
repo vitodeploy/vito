@@ -4,7 +4,9 @@ namespace App\RuntimePresets;
 
 use App\DTOs\DynamicForm;
 use App\Enums\WebMode;
+use App\Models\Component;
 use App\Models\Environment;
+use App\Models\EnvironmentAttachment;
 use Illuminate\Support\Facades\File;
 
 abstract class AbstractRuntimePreset
@@ -16,7 +18,7 @@ abstract class AbstractRuntimePreset
     abstract public function webMode(): WebMode;
 
     /** @return array<string, mixed> */
-    public function vhostData(\App\Models\Component $component): array
+    public function vhostData(Component $component): array
     {
         $web = $component->capabilities->firstWhere('capability', 'web');
         $version = $component->environment->runtime_version;
@@ -102,10 +104,10 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * @param array<string, string> $generic
+     * @param  array<string, string>  $generic
      * @return array<string, string>
      */
-    public function attachmentAliases(\App\Models\EnvironmentAttachment $attachment, array $generic): array
+    public function attachmentAliases(EnvironmentAttachment $attachment, array $generic): array
     {
         return [];
     }

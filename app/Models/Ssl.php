@@ -8,6 +8,7 @@ use App\Traits\HasExclusiveOwner;
 use Carbon\Carbon;
 use Database\Factories\SslFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
 /**
  * @property ?int $environment_id
  * @property ?Environment $environment
- * @property \Illuminate\Database\Eloquent\Collection<int, EnvironmentDomain> $environmentDomains
+ * @property Collection<int, EnvironmentDomain> $environmentDomains
  * @property ?int $site_id
  * @property ?int $server_id
  * @property ?int $domain_id
@@ -148,7 +149,7 @@ class Ssl extends AbstractModel
     }
 
     /**
-     * @param int|list<int> $serverId
+     * @param  int|list<int>  $serverId
      * @return Builder<Ssl>
      */
     public static function activeServerLevel(int|array $serverId): Builder

@@ -2,7 +2,10 @@
 
 use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
+use App\Actions\Component\GetComponentOptions;
 use App\Actions\Environment\UpdateEnvironment;
+use App\ComponentCapabilities\Web;
+use App\DTOs\DynamicForm;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\ServerStatus;
@@ -10,16 +13,23 @@ use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Jobs\Component\DeleteComponentJob;
 use App\Jobs\Component\InstallComponentJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
+use App\Models\Project;
 use App\Models\Server;
+use App\Plugins\RegisterComponentCapability;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
@@ -147,7 +157,7 @@ test('component endpoints create show retry and queue deletion with scoped resou
     $this->post(route('components.store', $parents), $this->input)->assertSessionDoesntHaveErrors();
     $component = $this->environment->components()->sole();
     $this->get(route('components.show', [...$parents, $component]))->assertSuccessful()
-        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('applications/environments/component')
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/component')
             ->where('component.id', $component->id)->where('component.status', 'pending')->where('component.status_color', 'gray')
             ->where('component.server_name', $this->server->name)->where('component.capabilities', ['web'])
             ->where('environment.primary_component_id', $component->id)->where('environment.components_count', 1)
@@ -157,7 +167,7 @@ test('component endpoints create show retry and queue deletion with scoped resou
     $this->post(route('components.retry', [...$parents, $component]))->assertSessionDoesntHaveErrors();
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending']);
     $this->delete(route('components.destroy', [...$parents, $component]))->assertRedirect(route('components.index', $parents));
-    Queue::assertPushed(\App\Jobs\Component\DeleteComponentJob::class);
+    Queue::assertPushed(DeleteComponentJob::class);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'deleting']);
 });
 
@@ -167,7 +177,7 @@ test('component listing scopes tables ready servers and dynamic capability forms
     Component::factory()->create();
     Server::factory()->create(['project_id' => $this->server->project_id, 'status' => ServerStatus::INSTALLING]);
     $this->get(route('components.index', [$this->application, $this->environment]))->assertSuccessful()
-        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('applications/environments/components')
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/components')
             ->has('components.data', 1)->where('components.data.0.id', $component->id)
             ->has('options.servers', 1)->where('options.servers.0.id', $this->server->id)
             ->has('options.capabilities', 3)->where('options.capabilities.0.id', 'web')
@@ -193,7 +203,7 @@ test('component endpoints enforce project membership authentication and write ac
     if ($access === 'guest') {
         auth()->logout();
     } elseif ($access === 'foreign') {
-        $this->application->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+        $this->application->update(['project_id' => Project::factory()->create()->id]);
     } else {
         $this->user->currentProject->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
     }
@@ -201,9 +211,9 @@ test('component endpoints enforce project membership authentication and write ac
     $status = $access === 'guest' ? 401 : 403;
     if ($access === 'reader') {
         $this->get(route('components.index', $parents))->assertSuccessful()
-            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('canCreate', false));
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('canCreate', false));
         $this->get(route('components.show', [...$parents, $component]))->assertSuccessful()
-            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('can.update', false)->where('can.delete', false));
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false)->where('can.delete', false));
     } else {
         $this->getJson(route('components.index', $parents))->assertStatus($status);
         $this->getJson(route('components.show', [...$parents, $component]))->assertStatus($status);
@@ -217,7 +227,7 @@ test('component endpoints enforce project membership authentication and write ac
 test('component attachment holds the same isolated user lock as site teardown', function () {
     Event::listen('eloquent.creating: '.Component::class, function (): void {
         expect($this->server->isolatedUserLock('runtime')->get())->toBeFalse();
-        expect(\Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$this->server->id, 600)->get())->toBeFalse();
+        expect(Cache::lock('unique-queue:server-'.$this->server->id, 600)->get())->toBeFalse();
     });
 
     app(CreateComponent::class)->create($this->environment, $this->input);
@@ -225,9 +235,9 @@ test('component attachment holds the same isolated user lock as site teardown', 
 });
 
 test('busy component servers return validation errors without attaching rows', function () {
-    $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
-    $lock->shouldReceive('block')->once()->with(10, Mockery::type(Closure::class))->andThrow(new \Illuminate\Contracts\Cache\LockTimeoutException);
-    \Illuminate\Support\Facades\Cache::shouldReceive('lock')->once()->with('unique-queue:server-'.$this->server->id, 600)->andReturn($lock);
+    $lock = Mockery::mock(Lock::class);
+    $lock->shouldReceive('block')->once()->with(10, Mockery::type(Closure::class))->andThrow(new LockTimeoutException);
+    Cache::shouldReceive('lock')->once()->with('unique-queue:server-'.$this->server->id, 600)->andReturn($lock);
 
     try {
         app(CreateComponent::class)->create($this->environment, $this->input);
@@ -240,10 +250,10 @@ test('busy component servers return validation errors without attaching rows', f
 });
 
 test('component options honor registered capability labels and explicit forms', function () {
-    \App\Plugins\RegisterComponentCapability::make('web')->handler(\App\ComponentCapabilities\Web::class)
-        ->label('Custom web')->form(new \App\DTOs\DynamicForm)->register();
+    RegisterComponentCapability::make('web')->handler(Web::class)
+        ->label('Custom web')->form(new DynamicForm)->register();
 
-    $options = app(\App\Actions\Component\GetComponentOptions::class)->get($this->environment);
+    $options = app(GetComponentOptions::class)->get($this->environment);
     expect($options['capabilities'][0]['label'])->toBe('Custom web')
         ->and($options['capabilities'][0]['form'])->toBe([]);
 });

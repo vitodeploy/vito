@@ -22,6 +22,7 @@ use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
@@ -32,7 +33,7 @@ test('site attachment shares the isolated user teardown lock and releases it bef
     SSH::fake();
     Http::fake();
     Queue::fake();
-    \Illuminate\Support\Facades\Event::listen('eloquent.creating: '.Site::class, function (): void {
+    Event::listen('eloquent.creating: '.Site::class, function (): void {
         expect($this->server->isolatedUserLock('sharedruntime')->get())->toBeFalse();
     });
 

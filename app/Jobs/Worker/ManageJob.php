@@ -2,7 +2,9 @@
 
 namespace App\Jobs\Worker;
 
+use App\Actions\Component\ValidateComponentProcess;
 use App\Actions\Site\BroadcastSiteUpdate;
+use App\Actions\Worker\ManageWorker;
 use App\Enums\WorkerStatus;
 use App\Models\Service;
 use App\Models\Worker;
@@ -27,9 +29,9 @@ class ManageJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->worker->server_id}", fn () => app(\App\Actions\Component\ValidateComponentProcess::class)->runQueued($this->worker->component, function () {
+        $this->run("server-{$this->worker->server_id}", fn () => app(ValidateComponentProcess::class)->runQueued($this->worker->component, function () {
             $this->worker->refresh();
-            app(\App\Actions\Worker\ManageWorker::class)->validate($this->worker, $this->action !== 'stop');
+            app(ManageWorker::class)->validate($this->worker, $this->action !== 'stop');
             /** @var Service $service */
             $service = $this->worker->server->processManager();
             /** @var ProcessManager $handler */

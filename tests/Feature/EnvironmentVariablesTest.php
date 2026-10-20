@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\EnvironmentVariable\DeleteEnvironmentVariable;
+use App\Actions\EnvironmentVariable\GetEnvironmentVariables;
 use App\Actions\EnvironmentVariable\ImportEnvironmentVariables;
 use App\Actions\EnvironmentVariable\UpsertEnvironmentVariable;
 use App\Enums\EnvironmentStatus;
@@ -170,7 +171,7 @@ test('variables resolve component servers in one query', function () {
     DB::enableQueryLog();
     DB::flushQueryLog();
     try {
-        app(\App\Actions\EnvironmentVariable\GetEnvironmentVariables::class)->get($this->environment->fresh());
+        app(GetEnvironmentVariables::class)->get($this->environment->fresh());
         $queries = collect(DB::getQueryLog())->filter(fn (array $query): bool => preg_match('/from ["`]servers["`]/i', $query['query']) === 1);
         expect($queries)->toHaveCount(1);
     } finally {

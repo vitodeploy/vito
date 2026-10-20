@@ -3,6 +3,7 @@
 namespace App\Actions\Component;
 
 use App\Actions\Worker\RestartWorkers;
+use App\Enums\WorkerStatus;
 use App\Models\Component;
 
 class RestartComponentWorkers
@@ -14,7 +15,7 @@ class RestartComponentWorkers
         }
 
         app(RestartWorkers::class)->restart($component->server, $component->workers()->with('component.environment.application', 'component.isolatedUser')->get());
-        if ($component->workers()->where('status', '!=', \App\Enums\WorkerStatus::RUNNING)->exists()) {
+        if ($component->workers()->where('status', '!=', WorkerStatus::RUNNING)->exists()) {
             throw new \RuntimeException('Component processes failed to restart.');
         }
     }

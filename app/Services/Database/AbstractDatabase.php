@@ -7,6 +7,7 @@ use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Models\BackupFile;
 use App\Models\DatabaseUser;
+use App\Models\EnvironmentAttachment;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Services\AbstractService;
@@ -104,7 +105,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         return [
             'service' => [
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    if (\App\Models\EnvironmentAttachment::forService($this->service)->exists()) {
+                    if (EnvironmentAttachment::forService($this->service)->exists()) {
                         $fail('Detach environment resources and finish cleanup before removing this service.');
                     }
                     $hasDatabase = $this->service->server->databases()->exists();
@@ -142,7 +143,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 'name' => $name,
                 'charset' => $charset,
                 'collation' => $collation,
-                'managed' => \App\Models\EnvironmentAttachment::query()->where('server_id', $this->service->server_id)
+                'managed' => EnvironmentAttachment::query()->where('server_id', $this->service->server_id)
                     ->whereHasMorph('attachable', [\App\Models\Database::class], fn ($query) => $query->where('name', $name))->exists(),
             ]),
             'create-database'

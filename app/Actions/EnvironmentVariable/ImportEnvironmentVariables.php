@@ -3,6 +3,7 @@
 namespace App\Actions\EnvironmentVariable;
 
 use App\Actions\Environment\MarkEnvironmentForRedeploy;
+use App\Helpers\EnvParser;
 use App\Models\Application;
 use App\Models\Environment;
 use App\Models\EnvironmentVariable;
@@ -22,12 +23,12 @@ class ImportEnvironmentVariables
     {
         return array_map(fn (string $key): array => [
             'key' => $key,
-            'is_secret' => \App\Helpers\EnvParser::isSecretKey($key) || str_ends_with($key, '_URL'),
+            'is_secret' => EnvParser::isSecretKey($key) || str_ends_with($key, '_URL'),
         ], array_keys($this->parse($content)));
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      * @return list<array{key: string, is_secret: bool}>
      */
     public function previewInput(array $input): array
@@ -38,7 +39,7 @@ class ImportEnvironmentVariables
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     public function import(Environment $environment, array $input): void
     {

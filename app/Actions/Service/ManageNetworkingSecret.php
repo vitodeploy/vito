@@ -2,6 +2,7 @@
 
 namespace App\Actions\Service;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ServiceStatus;
 use App\Jobs\Service\UpdateNetworkingSecretJob;
 use App\Models\Service;
@@ -51,7 +52,7 @@ class ManageNetworkingSecret
      */
     private function validate(Service $service): SupportsNetworkingSecret
     {
-        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->unattached($service);
+        app(ValidateEnvironmentResource::class)->unattached($service);
         $handler = $service->hasHandler() ? $service->handler() : null;
 
         if (! $handler instanceof SupportsNetworkingSecret) {

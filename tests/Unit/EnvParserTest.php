@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\EnvParser;
+use Dotenv\Dotenv;
 
 test('literal application env format has stable quoting and round trips through phpdotenv', function () {
     $values = [
@@ -28,7 +29,7 @@ ENV;
     }
 
     expect(EnvParser::stringifyLiteral($variables))->toBe($golden)
-        ->and(\Dotenv\Dotenv::parse($golden))->toBe($values)
+        ->and(Dotenv::parse($golden))->toBe($values)
         ->and(EnvParser::stringifyLiteral([]))->toBe('');
 });
 

@@ -3,6 +3,8 @@
 namespace App\Actions\Application;
 
 use App\Actions\Environment\DeleteEnvironment;
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
+use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ApplicationStatus;
 use App\Enums\EnvironmentStatus;
@@ -10,6 +12,8 @@ use App\Events\SocketEvent;
 use App\Jobs\Application\DeleteApplicationJob;
 use App\Models\Application;
 use App\Models\Component;
+use App\Models\EnvironmentAttachment;
+use App\Models\Ssl;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -34,14 +38,14 @@ class DeleteApplication
             }
 
             foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
-                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'name');
+                app(AssertEnvironmentIdle::class)->validate($environment, 'name');
             }
 
             if (! Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()
-                && ! \App\Models\EnvironmentAttachment::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()
-                && ! \App\Models\Ssl::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()) {
+                && ! EnvironmentAttachment::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()
+                && ! Ssl::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))->exists()) {
                 foreach ($application->environments()->get() as $environment) {
-                    app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
+                    app(SyncRepositoryGitHook::class)->disable($environment);
                 }
                 $application->delete();
                 $this->broadcast($application, true);
@@ -64,7 +68,7 @@ class DeleteApplication
                 })->dispatch();
             });
             foreach ($application->environments()->get() as $environment) {
-                app(\App\Actions\GitHook\SyncRepositoryGitHook::class)->disable($environment);
+                app(SyncRepositoryGitHook::class)->disable($environment);
             }
         });
     }

@@ -2,8 +2,10 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
 use App\Jobs\Component\SyncComponentCapabilitiesJob;
 use App\Models\Application;
@@ -38,8 +40,8 @@ class UpdateComponentCapabilities
                 Environment::query()->lockForUpdate()->findOrFail($component->environment_id);
                 $server = Server::query()->lockForUpdate()->findOrFail($component->server_id);
                 $component->refresh();
-                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($component->environment, 'capabilities');
-                if ($component->type !== \App\Enums\ComponentType::APP || $component->status !== ComponentStatus::READY || ! $server->isReady()
+                app(AssertEnvironmentIdle::class)->validate($component->environment, 'capabilities');
+                if ($component->type !== ComponentType::APP || $component->status !== ComponentStatus::READY || ! $server->isReady()
                     || $component->environment->status !== EnvironmentStatus::READY
                     || $component->environment->application->status !== ApplicationStatus::READY) {
                     throw ValidationException::withMessages(['capabilities' => 'Only a ready component outside teardown can change capabilities.']);

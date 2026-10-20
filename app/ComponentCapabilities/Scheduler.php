@@ -2,6 +2,7 @@
 
 namespace App\ComponentCapabilities;
 
+use App\Actions\ComponentCapability\InstallSchedulerCapability;
 use App\Actions\ComponentCapability\ValidateSchedulerCapability;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
@@ -35,12 +36,12 @@ class Scheduler extends AbstractComponentCapability
 
     public function install(Component $component): void
     {
-        app(\App\Actions\ComponentCapability\InstallSchedulerCapability::class)->install($this->capability, $component);
+        app(InstallSchedulerCapability::class)->install($this->capability, $component);
     }
 
     public function uninstall(Component $component): void
     {
-        app(\App\Actions\ComponentCapability\InstallSchedulerCapability::class)->uninstall($this->capability, $component);
+        app(InstallSchedulerCapability::class)->uninstall($this->capability, $component);
     }
 
     public function surfaces(): array

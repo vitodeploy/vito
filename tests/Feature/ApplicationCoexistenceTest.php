@@ -2,9 +2,11 @@
 
 use App\Actions\Component\PurgeServerComponents;
 use App\ComponentCapabilities\AbstractComponentCapability;
+use App\Enums\ComponentStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Events\SocketEvent;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Jobs\Service\UninstallJob;
 use App\Models\Application;
@@ -27,7 +29,9 @@ use App\RuntimePresets\AbstractRuntimePreset;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
 use App\SiteTypes\PHPBlank;
+use App\Support\Testing\SSHFake;
 use Illuminate\Database\DeadlockException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -373,7 +377,7 @@ test('failed server deletion after cleanup restores components and primary refer
 test('server purge locks placement before capturing components in the deletion transaction', function () {
     $locked = false;
     $depth = DB::transactionLevel();
-    Server::addGlobalScope('verify-purge-lock', function (\Illuminate\Database\Eloquent\Builder $query) use (&$locked, $depth): void {
+    Server::addGlobalScope('verify-purge-lock', function (Builder $query) use (&$locked, $depth): void {
         if ($query->getQuery()->lock === true) {
             expect(DB::transactionLevel())->toBeGreaterThan($depth);
             $locked = true;
@@ -483,16 +487,16 @@ test('site provisioning ensures its pool even when an uninstalled component shar
         'domain' => 'shared.test', 'path' => '/home/shared/shared.test', 'php_version' => '8.2',
     ]);
     $this->component->forceFill(['isolated_user_id' => $site->isolated_user_id, 'user' => $site->user])->save();
-    $this->component->status = \App\Enums\ComponentStatus::from($status);
+    $this->component->status = ComponentStatus::from($status);
     $this->component->save();
     $this->component->environment->application->update(['runtime' => 'php']);
     $this->component->environment->update(['runtime_version' => '8.2']);
     ComponentCapability::factory()->for($this->component)->create(['capability' => 'web']);
-    $ssh = Mockery::mock(\App\Support\Testing\SSHFake::class, [null])->makePartial();
+    $ssh = Mockery::mock(SSHFake::class, [null])->makePartial();
     SSH::swap($ssh);
     $ssh->shouldReceive('exec')
         ->withArgs(fn ($command): bool => str_contains((string) $command, 'test -f /etc/php/8.2/fpm/pool.d/shared.conf'))
-        ->once()->andThrow(new \App\Exceptions\SSHCommandError);
+        ->once()->andThrow(new SSHCommandError);
 
     $type = $site->type();
     (new ReflectionMethod($type, 'isolate'))->invoke($type);

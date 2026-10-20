@@ -10,6 +10,7 @@ use App\Enums\ComponentType;
 use App\Enums\EnvironmentAttachmentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Enums\ServiceStatus;
+use App\Models\DatabaseUser;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
 use App\Models\Server;
@@ -82,7 +83,7 @@ class ValidateEnvironmentResource
         return true;
     }
 
-    public function databaseUser(\App\Models\DatabaseUser $user, ?EnvironmentAttachment $attachment = null): void
+    public function databaseUser(DatabaseUser $user, ?EnvironmentAttachment $attachment = null): void
     {
         if ($user->environment_attachment_id !== null && $user->environment_attachment_id !== $attachment?->id) {
             throw ValidationException::withMessages(['database_user' => 'This user is managed by an environment resource. Detach the resource to remove its access.']);

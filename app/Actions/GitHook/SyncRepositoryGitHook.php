@@ -2,6 +2,8 @@
 
 namespace App\Actions\GitHook;
 
+use App\Jobs\GitHook\SyncRepositoryGitHookJob;
+use App\Models\Application;
 use App\Models\Environment;
 use App\Models\GitHook;
 use App\Models\Project;
@@ -69,11 +71,11 @@ class SyncRepositoryGitHook
 
     public function reconcile(): void
     {
-        $pairs = \App\Models\Application::query()->whereHas('environments', fn ($query) => $query->where('auto_deploy', true))
+        $pairs = Application::query()->whereHas('environments', fn ($query) => $query->where('auto_deploy', true))
             ->select('source_control_id', 'repository')->union(GitHook::query()->whereNotNull('repository')->select('source_control_id', 'repository'))->get();
         foreach ($pairs as $pair) {
             if ($pair->source_control_id) {
-                \App\Jobs\GitHook\SyncRepositoryGitHookJob::dispatch($pair->source_control_id, $pair->repository);
+                SyncRepositoryGitHookJob::dispatch($pair->source_control_id, $pair->repository);
             }
         }
     }

@@ -2,6 +2,8 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Actions\Application\GetApplicationSourceControl;
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
@@ -31,7 +33,7 @@ class StartEnvironmentDeployment
         }
         $environment = $run->environment;
         $commit = ($run->is_join || $run->rollback_of_id) ? ['commit_id' => $run->commit_id, 'commit_data' => $run->commit_data]
-            : app(\App\Actions\Application\GetApplicationSourceControl::class)->get($environment->application)->provider()->getLastCommit($environment->application->repository, $environment->branch);
+            : app(GetApplicationSourceControl::class)->get($environment->application)->provider()->getLastCommit($environment->application->repository, $environment->branch);
         if (! is_string($commit['commit_id'] ?? null) || preg_match('/\A(?:[a-f0-9]{40}|[a-f0-9]{64})\z/i', $commit['commit_id']) !== 1) {
             throw new RuntimeException('Unable to resolve a full commit SHA for this deployment.');
         }
@@ -60,7 +62,7 @@ class StartEnvironmentDeployment
                 ])->all();
                 $run->variables_version = $environment->variables_version;
                 $run->attachment_ids = $environment->attachments()->orderBy('id')->pluck('id')->all();
-            } elseif (! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)
+            } elseif (! app(ValidateEnvironmentResource::class)->ready($environment)
                 || ($run->attachment_ids ?? []) !== $environment->attachments()->orderBy('id')->pluck('id')->all()) {
                 throw new RuntimeException('Resource access changed before the component could join. Run a full deployment.');
             }

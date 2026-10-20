@@ -4,11 +4,13 @@ namespace App\Actions\FirewallRule;
 
 use App\Enums\FirewallRuleStatus;
 use App\Jobs\FirewallRule\ApplyRulesJob;
+use App\Models\EnvironmentAttachment;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Support\Cidr;
 use App\ValidationRules\PortOrPortRangeRule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ManageRule
 {
@@ -16,7 +18,7 @@ class ManageRule
      * @param  array<string, mixed>  $input
      * @return FirewallRule $rule
      */
-    public function create(Server $server, array $input, bool $componentManaged = false, ?\App\Models\EnvironmentAttachment $attachment = null): FirewallRule
+    public function create(Server $server, array $input, bool $componentManaged = false, ?EnvironmentAttachment $attachment = null): FirewallRule
     {
         $input = $this->normalizePort($input);
         $this->validate($input);
@@ -24,7 +26,7 @@ class ManageRule
         $rule = new FirewallRule($this->attributesFromInput($input, FirewallRuleStatus::CREATING));
         $rule->server_id = $server->id;
         if ($attachment && $attachment->server_id !== $server->id) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['resource' => 'The resource belongs to another server.']);
+            throw ValidationException::withMessages(['resource' => 'The resource belongs to another server.']);
         }
         $rule->component_managed = $componentManaged || $attachment !== null;
         $rule->environment_attachment_id = $attachment?->id;

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\DeploymentStatus;
 use App\Enums\DeploymentStage;
+use App\Enums\DeploymentStatus;
 use App\Traits\HasExclusiveOwner;
 use Database\Factories\DeploymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

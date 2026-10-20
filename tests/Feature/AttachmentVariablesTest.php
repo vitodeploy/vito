@@ -5,8 +5,13 @@ use App\Actions\EnvironmentAttachment\AttachDatabase;
 use App\Actions\EnvironmentAttachment\AttachRedis;
 use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
 use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Actions\EnvironmentDeployment\RunComponentStage;
+use App\Actions\EnvironmentDeployment\StartEnvironmentDeployment;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
+use App\Enums\DeploymentStage;
+use App\Enums\EnvironmentAttachmentStatus;
+use App\Enums\EnvironmentDeploymentStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Helpers\AttachmentVariables;
@@ -15,8 +20,10 @@ use App\Models\Application;
 use App\Models\Component;
 use App\Models\Database;
 use App\Models\Environment;
+use App\Models\EnvironmentAttachment;
 use App\Models\EnvironmentDeployment;
 use App\Models\EnvironmentVariable;
+use App\Models\SourceControl;
 use App\Support\Testing\SSHFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -77,8 +84,8 @@ test('redis URLs and preset prefixes are provided without disclosing passwords i
         ->and($values['REDIS_PREFIX']['is_secret'])->toBeTrue();
     $this->actingAs($this->user)->get('/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/variables')
         ->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->has('variables', 5)
-            ->where('variables', fn ($variables) => collect($variables)->filter(fn ($row) => $row['is_secret'])->every(fn ($row) => $row['value'] === null && $row['source'] === 'resource')));
-    $attachment->status = \App\Enums\EnvironmentAttachmentStatus::DELETING;
+        ->where('variables', fn ($variables) => collect($variables)->filter(fn ($row) => $row['is_secret'])->every(fn ($row) => $row['value'] === null && $row['source'] === 'resource')));
+    $attachment->status = EnvironmentAttachmentStatus::DELETING;
     $attachment->save();
     expect(AttachmentVariables::for($attachment, $this->component))->toBe([]);
 });
@@ -101,7 +108,7 @@ test('deployments wait for resource readiness and new components cannot join a d
     $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
     expect(fn () => app(DeployEnvironment::class)->run($this->environment))->toThrow(ValidationException::class);
     app(SyncEnvironmentResourceAccess::class)->sync($attachment);
-    $live = EnvironmentDeployment::factory()->for($this->environment)->create(['attachment_ids' => [], 'status' => \App\Enums\EnvironmentDeploymentStatus::FINISHED]);
+    $live = EnvironmentDeployment::factory()->for($this->environment)->create(['attachment_ids' => [], 'status' => EnvironmentDeploymentStatus::FINISHED]);
     $this->environment->live_run_id = $live->id;
     $this->environment->save();
     expect(app(DeployEnvironment::class)->join($this->environment))->toBeNull();
@@ -112,22 +119,22 @@ test('deployments wait for resource readiness and new components cannot join a d
 });
 
 test('full deployments snapshot attachment membership and env generation honors that snapshot', function () {
-    $source = \App\Models\SourceControl::factory()->github()->create(['project_id' => $this->server->project_id, 'user_id' => $this->user->id]);
+    $source = SourceControl::factory()->github()->create(['project_id' => $this->server->project_id, 'user_id' => $this->user->id]);
     $this->application->update(['source_control_id' => $source->id]);
     Http::fake(['https://api.github.com/repos/*/commits/*' => Http::response(['sha' => str_repeat('a', 40), 'commit' => ['message' => 'Pinned']])]);
     $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
     app(SyncEnvironmentResourceAccess::class)->sync($attachment);
     $run = app(DeployEnvironment::class)->run($this->environment);
-    app(\App\Actions\EnvironmentDeployment\StartEnvironmentDeployment::class)->start($run->id);
+    app(StartEnvironmentDeployment::class)->start($run->id);
     expect($run->fresh()->attachment_ids)->toBe([$attachment->id]);
-    $other = \App\Models\EnvironmentAttachment::factory()->for($this->environment)->create(['alias' => 'LATER']);
+    $other = EnvironmentAttachment::factory()->for($this->environment)->create(['alias' => 'LATER']);
     $uploads = [];
     $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();
     $ssh->shouldReceive('upload')->andReturnUsing(function ($local, $remote) use (&$uploads): void {
         $uploads[] = file_get_contents($local);
     });
     SSH::swap($ssh);
-    app(\App\Actions\EnvironmentDeployment\RunComponentStage::class)->run($run->deployments()->sole()->id, \App\Enums\DeploymentStage::CLONE);
+    app(RunComponentStage::class)->run($run->deployments()->sole()->id, DeploymentStage::CLONE);
     expect(implode("\n", $uploads))->toContain('DATABASE_URL=')->not->toContain('LATER_DATABASE_URL=');
     expect($other->fresh())->not->toBeNull();
 });

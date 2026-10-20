@@ -16,6 +16,7 @@ class SyncCronJobs
 {
     /**
      * @template T
+     *
      * @param  Closure(): T  $callback
      * @return T
      */

@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Component;
 use App\Models\ComponentCapability;
 use App\Models\Environment;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use App\RuntimePresets\Custom;
@@ -323,7 +324,7 @@ test('capability commands reject NUL bytes while preserving editable shell synta
 })->with([['web', 'start_command'], ['scheduler', 'command']]);
 
 test('capability validation rejects cross-project servers', function (string $capability) {
-    $this->component->environment->application->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    $this->component->environment->application->update(['project_id' => Project::factory()->create()->id]);
     $record = componentCapabilityForTest($this->component, $capability);
 
     assertCapabilityValidationError(fn () => $record->handler()->validate($this->component, $this->server), 'capabilities');

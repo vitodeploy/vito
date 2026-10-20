@@ -10,6 +10,7 @@ use App\Actions\EnvironmentDeployment\RunComponentStage;
 use App\Actions\EnvironmentDeployment\StartEnvironmentDeployment;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
+use App\DTOs\GitCloneDTO;
 use App\Enums\ComponentStatus;
 use App\Enums\DeploymentStage;
 use App\Enums\DeploymentStatus;
@@ -26,9 +27,15 @@ use App\Models\ComponentCapability;
 use App\Models\Deployment;
 use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
+use App\Models\Project;
 use App\Models\SourceControl;
 use App\Models\Worker;
+use App\SourceControlProviders\GithubApp;
+use App\SSH\OS\Git;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -59,7 +66,7 @@ test('deployment admission accepts only global or same project source controls',
         $source->update(['project_id' => match ($scope) {
             'global' => null,
             'project' => $this->application->project_id,
-            default => \App\Models\Project::factory()->create()->id,
+            default => Project::factory()->create()->id,
         }]);
     }
     if (in_array($scope, ['global', 'project'], true)) {
@@ -77,7 +84,7 @@ test('deployment admission accepts only global or same project source controls',
 
 test('queued commit resolution rechecks source control project access before provider calls', function () {
     $run = app(DeployEnvironment::class)->run($this->environment);
-    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
+    $this->application->sourceControl->update(['project_id' => Project::factory()->create()->id]);
     expect(fn () => app(StartEnvironmentDeployment::class)->start($run->id))->toThrow(ValidationException::class);
     app(StartEnvironmentDeployment::class)->failed($run->id);
     $this->assertDatabaseHas('environment_deployments', ['id' => $run->id, 'status' => EnvironmentDeploymentStatus::FAILED]);
@@ -94,13 +101,13 @@ test('clone rechecks source control access before obtaining credentials or runni
     }
     $run = app(DeployEnvironment::class)->run($this->environment);
     app(StartEnvironmentDeployment::class)->start($run->id);
-    $this->application->sourceControl->update(['project_id' => \App\Models\Project::factory()->create()->id]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    $this->application->sourceControl->update(['project_id' => Project::factory()->create()->id]);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake();
-    $this->mock(\App\SSH\OS\Git::class)->shouldNotReceive('cloneRepository');
+    $this->mock(Git::class)->shouldNotReceive('cloneRepository');
     if ($githubApp) {
-        $provider = new class($source) extends \App\SourceControlProviders\GithubApp
+        $provider = new class($source) extends GithubApp
         {
             public function installationAccessToken(): string
             {
@@ -121,7 +128,7 @@ test('github app clones receive the installation token and the pinned SHA withou
     $this->application->update(['source_control_id' => $source->id]);
     $run = app(DeployEnvironment::class)->run($this->environment);
     app(StartEnvironmentDeployment::class)->start($run->id);
-    $this->mock(\App\SSH\OS\Git::class)->shouldReceive('cloneRepository')->once()->withArgs(function (\App\DTOs\GitCloneDTO $target) use ($run): bool {
+    $this->mock(Git::class)->shouldReceive('cloneRepository')->once()->withArgs(function (GitCloneDTO $target) use ($run): bool {
         return $target->usesToken && $target->variables === ['GIT_HTTP_TOKEN' => 'installation-secret']
             && $target->commit === $run->fresh()->commit_id && $target->log->id === $run->deployments()->sole()->log_id;
     });
@@ -213,14 +220,14 @@ test('stage failures defer barrier advancement until the component mutex is free
 });
 
 test('start failures become terminal without participant side effects and duplicate starts are harmless', function () {
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake(['https://api.github.com/repos/*/commits/*' => Http::response(['sha' => 'not-a-sha'])]);
     $run = app(DeployEnvironment::class)->run($this->environment);
     expect(fn () => app(StartEnvironmentDeployment::class)->start($run->id))->toThrow(RuntimeException::class);
     $locks = [];
     foreach ([Application::class, Environment::class, EnvironmentDeployment::class] as $model) {
-        $model::addGlobalScope('verify-start-failure-locks', function (\Illuminate\Database\Eloquent\Builder $query) use (&$locks, $model): void {
+        $model::addGlobalScope('verify-start-failure-locks', function (Builder $query) use (&$locks, $model): void {
             if ($query->getQuery()->lock === true) {
                 $locks[] = $model;
             }
@@ -321,7 +328,7 @@ test('pruning retains the newest N releases plus active and does not run under a
     $lock = Cache::lock('unique-queue:component-'.$this->component->id, 60);
     $lock->get();
     try {
-        expect(fn () => app(FinishEnvironmentDeployment::class)->finish($run->id))->toThrow(\Illuminate\Contracts\Cache\LockTimeoutException::class);
+        expect(fn () => app(FinishEnvironmentDeployment::class)->finish($run->id))->toThrow(LockTimeoutException::class);
         SSH::assertNotExecutedContains('rm -rf');
     } finally {
         $lock->release();

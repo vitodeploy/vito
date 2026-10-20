@@ -23,7 +23,7 @@ class TriggerRepositoryAutoDeploy
         return Environment::query()->where('auto_deploy', true)->when($branch !== null, fn (Builder $query) => $query->where('branch', $branch))
             ->whereHas('application', fn (Builder $query) => $query->where('source_control_id', $sourceControlId)
                 ->where('repository', $repository)->whereHas('sourceControl', fn (Builder $query) => $query
-                    ->where(fn (Builder $query) => $query->whereNull('project_id')->orWhereColumn('source_controls.project_id', 'applications.project_id'))));
+                ->where(fn (Builder $query) => $query->whereNull('project_id')->orWhereColumn('source_controls.project_id', 'applications.project_id'))));
     }
 
     public function trigger(SourceControl $sourceControl, string $repository, string $branch): void

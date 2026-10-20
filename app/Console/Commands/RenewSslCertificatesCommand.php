@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Jobs\SSL\CreateLetsEncryptWildcardSslJob;
+use App\Jobs\SSL\RenewEnvironmentSslJob;
 use App\Models\Ssl;
 use Illuminate\Console\Command;
 
@@ -34,7 +35,7 @@ class RenewSslCertificatesCommand extends Command
             ->where('type', SslType::LETSENCRYPT)->where('is_wildcard', false)
             ->where('status', SslStatus::CREATED)->where('expires_at', '<=', now()->addDays(30))
             ->lazy()->each(function (Ssl $ssl): void {
-                \App\Jobs\SSL\RenewEnvironmentSslJob::dispatch($ssl->id, $ssl->server_id);
+                RenewEnvironmentSslJob::dispatch($ssl->id, $ssl->server_id);
             });
     }
 }

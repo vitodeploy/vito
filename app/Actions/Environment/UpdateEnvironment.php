@@ -3,6 +3,7 @@
 namespace App\Actions\Environment;
 
 use App\Actions\Component\BroadcastComponentUpdate;
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
@@ -10,9 +11,9 @@ use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
 use App\Enums\ServiceStatus;
 use App\Jobs\Component\SyncComponentRuntimeJob;
-use App\Models\Server;
 use App\Models\Application;
 use App\Models\Environment;
+use App\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,7 @@ class UpdateEnvironment
 
             $runtimeChanged = ($input['runtime_version'] ?? null) !== $environment->runtime_version;
             if ($runtimeChanged || $input['branch'] !== $environment->branch || (array_key_exists('primary_component_id', $input) && $input['primary_component_id'] !== $environment->primary_component_id)) {
-                app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, $runtimeChanged ? 'runtime_version' : 'branch');
+                app(AssertEnvironmentIdle::class)->validate($environment, $runtimeChanged ? 'runtime_version' : 'branch');
             }
             if ($runtimeChanged && $environment->components()->where('type', ComponentType::APP)->where('status', '!=', ComponentStatus::READY)->exists()) {
                 throw ValidationException::withMessages(['runtime_version' => 'All components must be ready before changing the runtime version.']);

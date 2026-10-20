@@ -71,7 +71,7 @@ class GetEnvironmentTopology
     }
 
     /**
-     * @param list<string> $capabilities
+     * @param  list<string>  $capabilities
      * @return TopologyNode
      */
     private function node(string $id, string $type, string $name, ?int $serverId, ?VitoEnum $status, string $url, array $capabilities = [], bool $needsRedeploy = false): array

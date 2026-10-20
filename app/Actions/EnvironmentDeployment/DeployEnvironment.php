@@ -2,6 +2,8 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Actions\Application\GetApplicationSourceControl;
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
@@ -64,7 +66,7 @@ class DeployEnvironment
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
                 || ! $environment->liveRun || $environment->deployments()->blocking()->exists()
-                || ! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)
+                || ! app(ValidateEnvironmentResource::class)->ready($environment)
                 || ($environment->liveRun->attachment_ids ?? []) !== $environment->attachments()->orderBy('id')->pluck('id')->all()
                 || ! $environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->exists()) {
                 return null;
@@ -98,9 +100,9 @@ class DeployEnvironment
         if (! $environment->components()->whereKey($environment->primary_component_id)->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->exists()) {
             throw ValidationException::withMessages(['deployment' => 'Select a ready app component as the primary before deploying.']);
         }
-        if (! app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->ready($environment)) {
+        if (! app(ValidateEnvironmentResource::class)->ready($environment)) {
             throw ValidationException::withMessages(['deployment' => 'Wait for all resources to finish synchronizing or detaching before deploying.']);
         }
-        app(\App\Actions\Application\GetApplicationSourceControl::class)->get($environment->application);
+        app(GetApplicationSourceControl::class)->get($environment->application);
     }
 }

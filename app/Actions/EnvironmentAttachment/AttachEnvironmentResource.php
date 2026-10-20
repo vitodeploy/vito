@@ -22,8 +22,8 @@ use Illuminate\Validation\ValidationException;
 class AttachEnvironmentResource
 {
     /**
-     * @param array<string, mixed> $input
-     * @param Closure(): (Database|Service) $resolve
+     * @param  array<string, mixed>  $input
+     * @param  Closure(): (Database|Service)  $resolve
      */
     public function attach(Environment $environment, Service $service, array $input, Closure $resolve): EnvironmentAttachment
     {

@@ -7,6 +7,7 @@ use App\Actions\EnvironmentDeployment\DeployEnvironment;
 use App\Actions\EnvironmentDeployment\RollbackEnvironment;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
+use App\Enums\ComponentType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\EnvironmentDeploymentResource;
@@ -85,7 +86,7 @@ class EnvironmentDeploymentController extends Controller
 
         return Inertia::render('applications/environments/deployment-settings', [
             'scripts' => DeploymentScriptResource::collection($environment->deploymentScripts()->get()),
-            'scriptComponents' => $environment->components()->where('type', \App\Enums\ComponentType::APP)->get(['id', 'name'])->map(fn (Component $component): array => ['id' => $component->id, 'name' => $component->name]),
+            'scriptComponents' => $environment->components()->where('type', ComponentType::APP)->get(['id', 'name'])->map(fn (Component $component): array => ['id' => $component->id, 'name' => $component->name]),
             'canUpdate' => user()->can('update', [$environment, $application]),
             'deploymentActive' => $environment->deployments()->blocking()->exists(),
         ]);

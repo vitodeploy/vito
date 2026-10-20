@@ -201,7 +201,7 @@ class EnvParser
     }
 
     /**
-     * @param array<int, array{key: string, value: string}> $variables
+     * @param  array<int, array{key: string, value: string}>  $variables
      */
     public static function stringifyLiteral(array $variables): string
     {

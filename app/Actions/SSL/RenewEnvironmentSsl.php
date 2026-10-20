@@ -4,8 +4,10 @@ namespace App\Actions\SSL;
 
 use App\Actions\EnvironmentDomain\ActivateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\BroadcastEnvironmentDomainUpdate;
+use App\Enums\ApplicationStatus;
 use App\Enums\EnvironmentStatus;
 use App\Enums\SslStatus;
+use App\Enums\SslType;
 use App\Models\Ssl;
 
 class RenewEnvironmentSsl
@@ -14,8 +16,8 @@ class RenewEnvironmentSsl
     {
         $ssl = Ssl::query()->find($sslId);
         if (! $ssl || $ssl->environment?->status !== EnvironmentStatus::READY
-            || $ssl->environment->application->status !== \App\Enums\ApplicationStatus::READY || ! $ssl->environmentDomains()->exists()
-            || $ssl->type !== \App\Enums\SslType::LETSENCRYPT->value || $ssl->status !== SslStatus::CREATED
+            || $ssl->environment->application->status !== ApplicationStatus::READY || ! $ssl->environmentDomains()->exists()
+            || $ssl->type !== SslType::LETSENCRYPT->value || $ssl->status !== SslStatus::CREATED
             || $ssl->is_wildcard || $ssl->expires_at?->isAfter(now()->addDays(30))) {
             return;
         }

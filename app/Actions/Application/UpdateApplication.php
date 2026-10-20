@@ -2,9 +2,12 @@
 
 namespace App\Actions\Application;
 
+use App\Actions\Component\BroadcastComponentUpdate;
+use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Jobs\Component\SyncComponentDeployKeysJob;
 use App\Models\Application;
 use App\Models\Component;
@@ -32,7 +35,7 @@ class UpdateApplication
             $changed = $application->source_control_id !== (int) $input['source_control_id'] || $application->repository !== $input['repository'];
             if ($changed) {
                 foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
-                    app(\App\Actions\EnvironmentDeployment\AssertEnvironmentIdle::class)->validate($environment, 'repository');
+                    app(AssertEnvironmentIdle::class)->validate($environment, 'repository');
                 }
             }
             $application->update([
@@ -44,11 +47,11 @@ class UpdateApplication
             $application->unsetRelation('sourceControl');
             if ($changed) {
                 Component::query()->whereHas('environment', fn ($query) => $query->where('application_id', $application->id))
-                    ->where('type', \App\Enums\ComponentType::APP)->where('status', ComponentStatus::READY)->each(function (Component $component): void {
+                    ->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->each(function (Component $component): void {
                         $component->status = ComponentStatus::PENDING;
                         $component->needs_redeploy = true;
                         $component->save();
-                        DB::afterCommit(fn () => app(\App\Actions\Component\BroadcastComponentUpdate::class)->broadcast($component));
+                        DB::afterCommit(fn () => app(BroadcastComponentUpdate::class)->broadcast($component));
                         SyncComponentDeployKeysJob::dispatch($component->id, $component->server_id)->afterCommit();
                     });
             }

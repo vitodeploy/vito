@@ -1,5 +1,7 @@
 <?php
 
+use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\FailedToDestroyGitHook;
 use App\Models\Application;
 use App\Models\SourceControl;
 use App\Models\User;
@@ -9,7 +11,9 @@ use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -492,7 +496,7 @@ test('hook deletion accepts already absent hooks and propagates other provider f
     if (in_array($status, [204, 404], true)) {
         $source->destroyHook('owner/repository', '123');
     } else {
-        expect(fn () => $source->destroyHook('owner/repository', '123'))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
+        expect(fn () => $source->destroyHook('owner/repository', '123'))->toThrow(FailedToDestroyGitHook::class);
     }
     Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_ends_with($request->url(), '/hooks/123'));
 })->with(['github', 'gitlab', 'gitea', 'bitbucket', 'bitbucket-v2'])->with([204, 404, 403, 500]);
@@ -507,6 +511,7 @@ test('deploy key registration recovers existing keys after an ambiguous response
             return Http::response(['message' => 'already registered'], 422);
         }
         $keys = [['id' => 321, 'key' => 'ssh-rsa unique-public-key existing-comment']];
+
         return Http::response(str_starts_with($provider, 'bitbucket') ? ['values' => $keys] : $keys);
     });
     $sourceControl = SourceControl::factory()->create(['provider' => $provider]);
@@ -521,7 +526,7 @@ test('deploy key registration sanitizes errors and does not accept empty key ids
     ]);
     $sourceControl = SourceControl::factory()->create(['provider' => $provider]);
     expect(fn () => $sourceControl->provider()->deployKey('component_123', 'owner/repository', 'ssh-rsa unique-public-key'))
-        ->toThrow(\App\Exceptions\FailedToDeployGitKey::class, 'Unable to register the source-control deploy key.');
+        ->toThrow(FailedToDeployGitKey::class, 'Unable to register the source-control deploy key.');
 })->with(['github', 'gitlab', 'gitea', 'bitbucket', 'bitbucket-v2']);
 
 test('deploy key recovery scans capped pages and fails safely if no key matches', function (bool $match, string $providerId) {
@@ -532,6 +537,7 @@ test('deploy key recovery scans capped pages and fails safely if no key matches'
         if ($request['page'] === 1) {
             return Http::response(array_fill(0, $providerId === 'gitea' ? 50 : 100, ['id' => 1, 'key' => 'ssh-rsa another-key']));
         }
+
         return Http::response($match ? [['id' => 321, 'key' => 'ssh-rsa unique-public-key']] : []);
     });
     $provider = SourceControl::factory()->create(['provider' => $providerId])->provider();
@@ -539,7 +545,7 @@ test('deploy key recovery scans capped pages and fails safely if no key matches'
         expect($provider->deployKey('component_123', 'owner/repository', 'ssh-rsa unique-public-key'))->toBe('321');
     } else {
         expect(fn () => $provider->deployKey('component_123', 'owner/repository', 'ssh-rsa unique-public-key'))
-            ->toThrow(\App\Exceptions\FailedToDeployGitKey::class);
+            ->toThrow(FailedToDeployGitKey::class);
     }
     Http::assertSentCount(3);
 })->with([false, true])->with(['github', 'gitea']);
@@ -550,7 +556,7 @@ test('deploy key registration reconciles lost post responses', function (string 
             return Http::response(['access_token' => 'token']);
         }
         if ($request->method() === 'POST') {
-            throw new \Illuminate\Http\Client\ConnectionException('SECRET');
+            throw new ConnectionException('SECRET');
         }
         $keys = [['id' => 987, 'key' => 'ssh-rsa lost-response-key']];
 
@@ -568,17 +574,17 @@ test('component keys are read only while legacy site key permissions are preserv
 })->with(['github', 'gitlab'])->with([false, true]);
 
 test('bitbucket oauth errors cannot escape deploy key sanitization or enter logs', function () {
-    \Illuminate\Support\Facades\Log::spy();
+    Log::spy();
     Http::fake(['*' => Http::response(['error_description' => 'SECRET'], 401)]);
     expect(fn () => SourceControl::factory()->create(['provider' => 'bitbucket-v2'])->provider()->deployKey('test', 'owner/repository', 'ssh-rsa key'))
-        ->toThrow(\App\Exceptions\FailedToDeployGitKey::class, 'Unable to register the source-control deploy key.');
-    \Illuminate\Support\Facades\Log::shouldHaveReceived('error')->once()->with('Failed to get Bitbucket access token with client credentials', ['status' => 401]);
+        ->toThrow(FailedToDeployGitKey::class, 'Unable to register the source-control deploy key.');
+    Log::shouldHaveReceived('error')->once()->with('Failed to get Bitbucket access token with client credentials', ['status' => 401]);
 });
 
 test('deploy key lookup never treats malformed responses as confirmed absence', function (mixed $body) {
     Http::fake(['*' => Http::response($body)]);
     expect(fn () => SourceControl::factory()->create()->provider()->findDeployKey('owner/repository', 'ssh-rsa public-key'))
-        ->toThrow(\App\Exceptions\FailedToDeployGitKey::class, 'Unable to look up the source-control deploy key.');
+        ->toThrow(FailedToDeployGitKey::class, 'Unable to look up the source-control deploy key.');
 })->with([
     'invalid JSON' => ['invalid JSON'],
     'missing id' => [[['key' => 'ssh-rsa public-key']]],
@@ -588,6 +594,6 @@ test('deploy key lookup never treats malformed responses as confirmed absence', 
 test('deploy key lookup rejects missing public keys before any request', function () {
     Http::fake();
     expect(fn () => SourceControl::factory()->create()->provider()->findDeployKey('owner/repository', ''))
-        ->toThrow(\App\Exceptions\FailedToDeployGitKey::class);
+        ->toThrow(FailedToDeployGitKey::class);
     Http::assertNothingSent();
 });

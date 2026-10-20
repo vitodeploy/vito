@@ -3,9 +3,9 @@
 namespace App\Actions\Worker;
 
 use App\Actions\Component\ValidateComponentProcess;
-use App\Models\Component;
 use App\Enums\WorkerStatus;
 use App\Jobs\Worker\EditJob;
+use App\Models\Component;
 use App\Models\Site;
 use App\Models\Worker;
 use Illuminate\Support\Facades\Validator;

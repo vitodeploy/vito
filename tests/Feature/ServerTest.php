@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
 use App\Enums\NetworkServerStatus;
 use App\Enums\OperatingSystem;
@@ -27,6 +28,8 @@ use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -664,17 +667,17 @@ test('server transfer refreshes placement under a transaction before saving', fu
     $project = Project::factory()->create();
     $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
     Server::query()->whereKey($this->server->id)->update(['name' => 'Fresh server']);
-    $depth = \Illuminate\Support\Facades\DB::transactionLevel();
+    $depth = DB::transactionLevel();
     $retrieved = false;
-    \Illuminate\Support\Facades\Event::listen('eloquent.retrieved: '.Server::class, function () use ($depth, &$retrieved): void {
+    Event::listen('eloquent.retrieved: '.Server::class, function () use ($depth, &$retrieved): void {
         $retrieved = true;
-        expect(\Illuminate\Support\Facades\DB::transactionLevel())->toBeGreaterThan($depth);
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
     });
-    \Illuminate\Support\Facades\Event::listen('eloquent.updating: '.Server::class, function () use ($depth): void {
-        expect(\Illuminate\Support\Facades\DB::transactionLevel())->toBeGreaterThan($depth);
+    Event::listen('eloquent.updating: '.Server::class, function () use ($depth): void {
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
     });
 
-    $server = app(\App\Actions\Server\TransferServer::class)->transfer($this->user, $this->server, ['project_id' => $project->id]);
+    $server = app(TransferServer::class)->transfer($this->user, $this->server, ['project_id' => $project->id]);
 
     expect($retrieved)->toBeTrue()->and($server->name)->toBe('Fresh server');
     $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $project->id]);

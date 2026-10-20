@@ -58,7 +58,7 @@ class UpdateLoadBalancerBackends
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      * @return list<array<string, mixed>>
      */
     private function validate(Component $component, array $input): array

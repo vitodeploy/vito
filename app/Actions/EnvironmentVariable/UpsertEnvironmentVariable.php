@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class UpsertEnvironmentVariable
 {
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     public function upsert(Environment $environment, array $input, ?EnvironmentVariable $variable = null, bool $markForRedeploy = true): EnvironmentVariable
     {
@@ -47,7 +47,7 @@ class UpsertEnvironmentVariable
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     private function validate(Environment $environment, array $input, ?EnvironmentVariable $variable): void
     {

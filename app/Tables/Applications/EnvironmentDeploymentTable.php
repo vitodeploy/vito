@@ -2,9 +2,9 @@
 
 namespace App\Tables\Applications;
 
+use App\Models\EnvironmentDeployment;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
-use App\Models\EnvironmentDeployment;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
 use Forjed\InertiaTable\Columns\TextColumn;

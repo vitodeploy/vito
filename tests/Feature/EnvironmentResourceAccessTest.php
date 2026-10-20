@@ -12,9 +12,11 @@ use App\Actions\EnvironmentAttachment\AttachRedis;
 use App\Actions\EnvironmentAttachment\DetachEnvironmentResource;
 use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
 use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
+use App\Actions\Network\CheckEnvironmentResourceNetwork;
 use App\Actions\Network\RemoveServerFromNetwork;
 use App\Actions\Service\ManageNetworkingSecret;
 use App\Actions\Service\ToggleNetworking;
+use App\Actions\Service\UpdateConfigFile;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentAttachmentStatus;
 use App\Enums\NetworkServerStatus;
@@ -30,7 +32,6 @@ use App\Models\Component;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Environment;
-use App\Models\EnvironmentAttachment;
 use App\Models\FirewallRule;
 use App\Models\Network;
 use App\Models\NetworkServer;
@@ -38,6 +39,7 @@ use App\Models\Server;
 use App\Support\Testing\SSHFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -299,10 +301,10 @@ test('cleanup keeps departed component network memberships protected without blo
     $this->sync->sync($attachment);
     $this->component->delete();
     $unrelated = NetworkServer::factory()->for($member->network)->create(['ip' => '10.50.0.9']);
-    app(\App\Actions\Network\CheckEnvironmentResourceNetwork::class)->validate($unrelated);
+    app(CheckEnvironmentResourceNetwork::class)->validate($unrelated);
     expect(fn () => app(RemoveServerFromNetwork::class)->remove($member))->toThrow(ValidationException::class);
     $this->sync->sync($attachment);
-    app(\App\Actions\Network\CheckEnvironmentResourceNetwork::class)->validate($member);
+    app(CheckEnvironmentResourceNetwork::class)->validate($member);
     expect($attachment->fresh()->access)->toBe([]);
 });
 
@@ -358,13 +360,13 @@ test('a failure in the final firewall cleanup preserves the attachment and rule 
 
 test('attached service configuration cannot bypass managed networking or password guards', function () {
     app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
-    expect(fn () => app(\App\Actions\Service\UpdateConfigFile::class)->update($this->server->database(), ['config_name' => 'mysql', 'content' => 'bind-address=0.0.0.0']))->toThrow(ValidationException::class);
+    expect(fn () => app(UpdateConfigFile::class)->update($this->server->database(), ['config_name' => 'mysql', 'content' => 'bind-address=0.0.0.0']))->toThrow(ValidationException::class);
     SSH::assertNotExecutedContains('systemctl restart');
 });
 
 test('resource jobs release on lock contention and while a service networking restart is pending', function () {
     $attachment = app(AttachRedis::class)->attach($this->environment, ['service_id' => $this->server->memoryDatabase()->id]);
-    $lock = \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$this->server->id, 600);
+    $lock = Cache::lock('unique-queue:server-'.$this->server->id, 600);
     $lock->get();
     $job = (new SyncEnvironmentResourceAccessJob($attachment->id, $this->server->id))->withFakeQueueInteractions();
     $job->handle();
@@ -455,7 +457,7 @@ test('database deletion and configuration uploads hold the attachment admission 
     $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();
     $key = 'unique-queue:server-'.$this->server->id;
     $assertLocked = function () use ($key): void {
-        expect(\Illuminate\Support\Facades\Cache::lock($key, 600)->get())->toBeFalse();
+        expect(Cache::lock($key, 600)->get())->toBeFalse();
     };
     $ssh->shouldReceive('exec')->withArgs(fn ($command, $log = '') => $log === 'delete-database')->once()->andReturnUsing(function () use ($assertLocked): string {
         $assertLocked();
@@ -467,8 +469,8 @@ test('database deletion and configuration uploads hold the attachment admission 
     app(DeleteDatabase::class)->delete($this->server, $this->database);
     $service = $this->server->database();
     $configName = config('service.services.mysql.config_paths.0.name');
-    app(\App\Actions\Service\UpdateConfigFile::class)->update($service, ['config_name' => $configName, 'content' => 'bind-address=127.0.0.1']);
-    $lock = \Illuminate\Support\Facades\Cache::lock($key, 600);
+    app(UpdateConfigFile::class)->update($service, ['config_name' => $configName, 'content' => 'bind-address=127.0.0.1']);
+    $lock = Cache::lock($key, 600);
     expect($lock->get())->toBeTrue();
     $lock->release();
 });

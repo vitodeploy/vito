@@ -3,6 +3,8 @@
 namespace App\Services\PHP;
 
 use App\DTOs\ServiceLog;
+use App\Enums\ComponentType;
+use App\Enums\WebMode;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
@@ -224,9 +226,9 @@ class PHP extends AbstractService implements HasLogs
 
         $this->service->server->loadMissing('components.environment.application');
         foreach ($this->service->server->components->sortBy('id') as $component) {
-            if ($component->type !== \App\Enums\ComponentType::APP
+            if ($component->type !== ComponentType::APP
                 || ! in_array($version, [$component->environment->runtime_version, $component->installed_runtime_version], true)
-                || $component->environment->application->preset()->webMode() !== \App\Enums\WebMode::FPM) {
+                || $component->environment->application->preset()->webMode() !== WebMode::FPM) {
                 continue;
             }
             $domainsByUser[$component->user][] = $component->name.' (component #'.$component->id.')';

@@ -3,6 +3,8 @@
 namespace App\RuntimePresets;
 
 use App\Models\Environment;
+use App\Models\EnvironmentAttachment;
+use Illuminate\Support\Str;
 
 class Laravel extends PHP
 {
@@ -31,11 +33,11 @@ class Laravel extends PHP
         return ['storage'];
     }
 
-    public function attachmentAliases(\App\Models\EnvironmentAttachment $attachment, array $generic): array
+    public function attachmentAliases(EnvironmentAttachment $attachment, array $generic): array
     {
         $prefix = $attachment->alias !== null ? $attachment->alias.'_' : '';
         if ($attachment->kind() === 'redis') {
-            return [$prefix.'REDIS_PREFIX' => \Illuminate\Support\Str::slug($attachment->environment->application->name, '_').'_'.$attachment->environment->slug.'_'];
+            return [$prefix.'REDIS_PREFIX' => Str::slug($attachment->environment->application->name, '_').'_'.$attachment->environment->slug.'_'];
         }
 
         return [

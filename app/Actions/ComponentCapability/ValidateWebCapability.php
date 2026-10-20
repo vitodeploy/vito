@@ -5,6 +5,7 @@ namespace App\Actions\ComponentCapability;
 use App\Enums\ServiceStatus;
 use App\Enums\WebMode;
 use App\Models\Component;
+use App\Models\ComponentBackend;
 use App\Models\ComponentCapability;
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;
@@ -72,7 +73,7 @@ class ValidateWebCapability
             ->map(fn (?array $config): int => (int) ($config['port'] ?? 0))
             ->merge($server->sites()->whereNotNull('port')->pluck('port'))
             ->merge([2019, 3306, 5432, 6379, (int) $server->port])
-            ->merge(\App\Models\ComponentBackend::query()->whereHas('targetComponent', fn ($query) => $query->where('server_id', $server->id))->pluck('port'))
+            ->merge(ComponentBackend::query()->whereHas('targetComponent', fn ($query) => $query->where('server_id', $server->id))->pluck('port'))
             ->map(fn ($port): int => (int) $port)
             ->all();
 

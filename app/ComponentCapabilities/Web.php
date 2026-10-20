@@ -2,11 +2,14 @@
 
 namespace App\ComponentCapabilities;
 
+use App\Actions\Component\RestartComponentWorkers;
+use App\Actions\ComponentCapability\InstallWebCapability;
 use App\Actions\ComponentCapability\ValidateWebCapability;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\WebMode;
 use App\Models\Component;
+use App\Models\Deployment;
 use App\Models\Server;
 use App\RuntimePresets\AbstractRuntimePreset;
 
@@ -45,18 +48,18 @@ class Web extends AbstractComponentCapability
 
     public function install(Component $component): void
     {
-        app(\App\Actions\ComponentCapability\InstallWebCapability::class)->install($this->capability, $component);
+        app(InstallWebCapability::class)->install($this->capability, $component);
     }
 
     public function uninstall(Component $component): void
     {
-        app(\App\Actions\ComponentCapability\InstallWebCapability::class)->uninstall($this->capability, $component);
+        app(InstallWebCapability::class)->uninstall($this->capability, $component);
     }
 
-    public function afterRelease(Component $component, \App\Models\Deployment $deployment): void
+    public function afterRelease(Component $component, Deployment $deployment): void
     {
         if ($component->environment->application->preset()->webMode() === WebMode::PROXY && ! $component->hasCapability('worker')) {
-            app(\App\Actions\Component\RestartComponentWorkers::class)->restart($component);
+            app(RestartComponentWorkers::class)->restart($component);
         }
     }
 

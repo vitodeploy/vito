@@ -4,22 +4,40 @@ use App\Actions\Application\DeleteApplication;
 use App\Actions\Application\UpdateApplication;
 use App\Actions\Environment\DeleteEnvironment;
 use App\Actions\Environment\UpdateEnvironment;
+use App\Actions\EnvironmentDeployment\DeployEnvironment;
 use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Actions\GithubApp\HandlePushWebhook;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\FailedToDeployGitHook;
+use App\Exceptions\FailedToDestroyGitHook;
 use App\Facades\SSH;
+use App\Jobs\Application\DeleteApplicationJob;
+use App\Jobs\Component\DeleteComponentJob;
+use App\Jobs\Component\SyncComponentDeployKeysJob;
+use App\Jobs\Environment\DeleteEnvironmentJob;
 use App\Jobs\EnvironmentDeployment\TriggerEnvironmentDeployFromWebhookJob;
+use App\Jobs\GitHook\SyncRepositoryGitHookJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
 use App\Models\GitHook;
+use App\Models\Project;
 use App\Models\SourceControl;
+use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\BitbucketV2;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -65,7 +83,7 @@ test('repository hook reconciliation removes local custody when the remote hook 
     setEnvironmentAutoDeploy($this->environment, true);
     $hook = GitHook::query()->whereNotNull('repository')->sole();
     $this->environment->forceFill(['auto_deploy' => false])->save();
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::preventStrayRequests();
     Http::fake(['https://api.github.com/repos/owner/shared/hooks/123' => Http::response([], 404)]);
 
@@ -168,11 +186,11 @@ test('webhook admission failures are recorded safely on an environment run', fun
 test('shared hook destruction errors bubble and retain the hook for retry', function () {
     setEnvironmentAutoDeploy($this->environment, true);
     $hook = GitHook::query()->whereNotNull('repository')->sole();
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 500)]);
-    expect(fn () => setEnvironmentAutoDeploy($this->environment, false))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
+    expect(fn () => setEnvironmentAutoDeploy($this->environment, false))->toThrow(FailedToDestroyGitHook::class);
     $this->assertDatabaseHas('git_hooks', ['id' => $hook->id]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 204)]);
     app(SyncRepositoryGitHook::class)->sync($this->source, $this->application->repository);
     $this->assertDatabaseMissing('git_hooks', ['id' => $hook->id]);
@@ -181,7 +199,7 @@ test('shared hook destruction errors bubble and retain the hook for retry', func
 test('hook failures do not strand queued component key synchronization', function () {
     $component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
     setEnvironmentAutoDeploy($this->environment, true);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake([
         'https://api.github.com/repos/owner/shared/hooks/*' => Http::response([], 500),
         'https://api.github.com/repos/owner/changed/hooks' => Http::response(['id' => 456], 201),
@@ -189,25 +207,25 @@ test('hook failures do not strand queued component key synchronization', functio
     ]);
     expect(fn () => app(UpdateApplication::class)->update($this->application, [
         'name' => $this->application->name, 'repository' => 'owner/changed', 'source_control_id' => $this->source->id,
-    ], $this->user))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
-    Queue::assertPushed(\App\Jobs\Component\SyncComponentDeployKeysJob::class);
+    ], $this->user))->toThrow(FailedToDestroyGitHook::class);
+    Queue::assertPushed(SyncComponentDeployKeysJob::class);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => ComponentStatus::PENDING]);
     $this->assertDatabaseHas('git_hooks', ['repository' => 'owner/changed', 'hook_id' => '456']);
 });
 
 test('hook failures do not prevent component teardown dispatch', function (bool $application) {
-    \Illuminate\Support\Facades\Bus::fake();
+    Bus::fake();
     $component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
     setEnvironmentAutoDeploy($this->environment, true);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 500)]);
     expect(fn () => $application
         ? app(DeleteApplication::class)->delete($this->application, ['name' => $this->application->name])
-        : app(DeleteEnvironment::class)->delete($this->environment, ['name' => $this->environment->name]))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
-    \Illuminate\Support\Facades\Bus::assertChained([
-        new \App\Jobs\Component\DeleteComponentJob($component->id, $this->server->id),
-        new \App\Jobs\Environment\DeleteEnvironmentJob($this->environment->id),
-        ...($application ? [new \App\Jobs\Application\DeleteApplicationJob($this->application->id)] : []),
+        : app(DeleteEnvironment::class)->delete($this->environment, ['name' => $this->environment->name]))->toThrow(FailedToDestroyGitHook::class);
+    Bus::assertChained([
+        new DeleteComponentJob($component->id, $this->server->id),
+        new DeleteEnvironmentJob($this->environment->id),
+        ...($application ? [new DeleteApplicationJob($this->application->id)] : []),
     ]);
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'auto_deploy' => false]);
 })->with([false, true]);
@@ -218,7 +236,7 @@ test('shared hooks ignore pushes after source control removal and toggles valida
     $this->source->delete();
     $this->postJson('/api/git-hooks?secret='.$hook->secret, ['ref' => 'refs/heads/main'])->assertOk();
     Queue::assertNotPushed(TriggerEnvironmentDeployFromWebhookJob::class);
-    expect(fn () => setEnvironmentAutoDeploy($this->environment, true))->toThrow(\Illuminate\Validation\ValidationException::class);
+    expect(fn () => setEnvironmentAutoDeploy($this->environment, true))->toThrow(ValidationException::class);
     expect(fn () => $hook->fresh()->deployHook())->toThrow(RuntimeException::class);
     $hook->fresh()->destroyHook();
     $this->assertDatabaseMissing('git_hooks', ['id' => $hook->id]);
@@ -227,7 +245,7 @@ test('shared hooks ignore pushes after source control removal and toggles valida
 test('admission errors pass through the queue failure callback into a safe failed run', function () {
     setEnvironmentAutoDeploy($this->environment, true);
     $job = new TriggerEnvironmentDeployFromWebhookJob($this->environment->id, $this->source->id, $this->application->repository, 'main');
-    $queueJob = Mockery::mock(\Illuminate\Contracts\Queue\Job::class);
+    $queueJob = Mockery::mock(Job::class);
     $queueJob->shouldReceive('fail')->once()->andReturnUsing(fn ($error) => $job->failed($error));
     $job->setJob($queueJob);
     $job->handle();
@@ -243,11 +261,11 @@ test('deploy operations migration round trips and preserves site hooks', functio
     $migration->down();
     $this->assertDatabaseHas('git_hooks', ['id' => $siteHook->id, 'site_id' => $this->site->id]);
     $this->assertDatabaseMissing('git_hooks', ['id' => $hook->id]);
-    expect(collect(\Illuminate\Support\Facades\Schema::getColumns('git_hooks'))->firstWhere('name', 'site_id')['nullable'])->toBeFalse();
+    expect(collect(Schema::getColumns('git_hooks'))->firstWhere('name', 'site_id')['nullable'])->toBeFalse();
     $migration->up();
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'auto_deploy' => false]);
-    expect(\Illuminate\Support\Facades\Schema::hasColumn('environment_deployments', 'rollback_of_id'))->toBeTrue()
-        ->and(\Illuminate\Support\Facades\Schema::hasColumn('environment_deployments', 'last_error'))->toBeTrue();
+    expect(Schema::hasColumn('environment_deployments', 'rollback_of_id'))->toBeTrue()
+        ->and(Schema::hasColumn('environment_deployments', 'last_error'))->toBeTrue();
     Http::assertNothingSent();
 });
 
@@ -256,7 +274,7 @@ test('browser shaped settings can disable auto deploy during an active deploymen
     $this->environment->primary_component_id = $component->id;
     $this->environment->save();
     setEnvironmentAutoDeploy($this->environment, true);
-    $run = app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->run($this->environment);
+    $run = app(DeployEnvironment::class)->run($this->environment);
     $this->actingAs($this->user)->put('/applications/'.$this->application->id.'/environments/'.$this->environment->id, [
         'name' => $this->environment->name, 'branch' => 'main', 'runtime_version' => null,
         'primary_component_id' => (string) $component->id, 'auto_deploy' => false,
@@ -268,14 +286,14 @@ test('browser shaped settings can disable auto deploy during an active deploymen
 test('identical application updates and reconciliation recover failed hook moves', function (bool $destroyFails) {
     setEnvironmentAutoDeploy($this->environment, true);
     $input = ['name' => $this->application->name, 'repository' => 'owner/changed', 'source_control_id' => $this->source->id];
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake([
         'https://api.github.com/repos/owner/shared/hooks/*' => Http::response([], $destroyFails ? 500 : 204),
         'https://api.github.com/repos/owner/changed/hooks' => Http::response(['id' => 456], $destroyFails ? 201 : 500),
         'https://api.github.com/repos/*' => Http::response([]),
     ]);
-    expect(fn () => app(UpdateApplication::class)->update($this->application, $input, $this->user))->toThrow($destroyFails ? \App\Exceptions\FailedToDestroyGitHook::class : \App\Exceptions\FailedToDeployGitHook::class);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    expect(fn () => app(UpdateApplication::class)->update($this->application, $input, $this->user))->toThrow($destroyFails ? FailedToDestroyGitHook::class : FailedToDeployGitHook::class);
+    Http::swap(new Factory);
     Http::fake([
         'https://api.github.com/repos/*/hooks/*' => Http::response([], 204),
         'https://api.github.com/repos/*/hooks' => Http::response(['id' => 456], 201),
@@ -283,7 +301,7 @@ test('identical application updates and reconciliation recover failed hook moves
     ]);
     app(UpdateApplication::class)->update($this->application, $input, $this->user);
     $this->artisan('git-hooks:sync-repositories')->assertSuccessful();
-    foreach (Queue::pushed(\App\Jobs\GitHook\SyncRepositoryGitHookJob::class) as $job) {
+    foreach (Queue::pushed(SyncRepositoryGitHookJob::class) as $job) {
         $job->handle();
     }
     $this->assertDatabaseCount('git_hooks', 1);
@@ -292,30 +310,30 @@ test('identical application updates and reconciliation recover failed hook moves
 
 test('reconciliation retries revocation after the original owner was deleted', function (bool $application) {
     setEnvironmentAutoDeploy($this->environment, true);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 500)]);
     expect(fn () => $application
         ? app(DeleteApplication::class)->delete($this->application, ['name' => $this->application->name])
-        : app(DeleteEnvironment::class)->delete($this->environment, ['name' => $this->environment->name]))->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
+        : app(DeleteEnvironment::class)->delete($this->environment, ['name' => $this->environment->name]))->toThrow(FailedToDestroyGitHook::class);
     $this->assertDatabaseMissing('environments', ['id' => $this->environment->id]);
     $this->assertDatabaseCount('git_hooks', 1);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 204)]);
     $this->artisan('git-hooks:sync-repositories')->assertSuccessful();
-    Queue::assertPushed(\App\Jobs\GitHook\SyncRepositoryGitHookJob::class, 1);
-    Queue::pushed(\App\Jobs\GitHook\SyncRepositoryGitHookJob::class)->sole()->handle();
+    Queue::assertPushed(SyncRepositoryGitHookJob::class, 1);
+    Queue::pushed(SyncRepositoryGitHookJob::class)->sole()->handle();
     $this->assertDatabaseCount('git_hooks', 0);
 })->with([false, true]);
 
 test('retrying project deletion reconciles hooks even after its environments were disabled', function () {
     setEnvironmentAutoDeploy($this->environment, true);
     $project = $this->application->project;
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 500)]);
-    expect(fn () => $project->delete())->toThrow(\App\Exceptions\FailedToDestroyGitHook::class);
+    expect(fn () => $project->delete())->toThrow(FailedToDestroyGitHook::class);
     $this->assertDatabaseHas('projects', ['id' => $project->id]);
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'auto_deploy' => false]);
-    Http::swap(new \Illuminate\Http\Client\Factory);
+    Http::swap(new Factory);
     Http::fake(['https://api.github.com/repos/*/hooks/*' => Http::response([], 204)]);
     $project->delete();
     $this->assertDatabaseMissing('projects', ['id' => $project->id]);
@@ -327,17 +345,17 @@ test('repository reconciliation deduplicates missing hooks and safely handles re
     $this->environment->save();
     Environment::factory()->for($this->application)->create(['auto_deploy' => true]);
     $this->artisan('git-hooks:sync-repositories')->assertSuccessful();
-    Queue::assertPushed(\App\Jobs\GitHook\SyncRepositoryGitHookJob::class, 1);
-    $job = Queue::pushed(\App\Jobs\GitHook\SyncRepositoryGitHookJob::class)->sole();
+    Queue::assertPushed(SyncRepositoryGitHookJob::class, 1);
+    $job = Queue::pushed(SyncRepositoryGitHookJob::class)->sole();
     $job->handle();
     $this->assertDatabaseCount('git_hooks', 1);
     $this->source->delete();
     Http::fake();
     $job->handle();
     Http::assertNothingSent();
-    \Illuminate\Support\Facades\Log::shouldReceive('error')->once()->with('Repository hook synchronization failed; scheduled reconciliation will retry.', ['source_control_id' => $this->source->id]);
+    Log::shouldReceive('error')->once()->with('Repository hook synchronization failed; scheduled reconciliation will retry.', ['source_control_id' => $this->source->id]);
     $job->failed(new Exception('private-token'));
-    $event = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())->first(fn ($event): bool => str_contains($event->command ?? '', 'git-hooks:sync-repositories'));
+    $event = collect(app(Schedule::class)->events())->first(fn ($event): bool => str_contains($event->command ?? '', 'git-hooks:sync-repositories'));
     expect($event->expression)->toBe('*/5 * * * *')->and($event->expiresAt)->toBe(5);
 });
 
@@ -345,7 +363,7 @@ test('repository push admission rechecks the source project scope and removes un
     setEnvironmentAutoDeploy($this->environment, true);
     $hook = GitHook::query()->whereNotNull('repository')->sole();
     $job = new TriggerEnvironmentDeployFromWebhookJob($this->environment->id, $this->source->id, 'owner/shared', 'main');
-    $this->source->project_id = \App\Models\Project::factory()->create()->id;
+    $this->source->project_id = Project::factory()->create()->id;
     $this->source->save();
     $this->postJson('/api/git-hooks?secret='.$hook->secret, ['ref' => 'refs/heads/main'])->assertOk();
     Queue::assertNotPushed(TriggerEnvironmentDeployFromWebhookJob::class);
@@ -381,4 +399,4 @@ test('bitbucket repository pushes fan out all changed branches but not tags or d
     ]]])->assertOk();
     Queue::assertPushed(TriggerEnvironmentDeployFromWebhookJob::class, 2);
     Http::assertNothingSent();
-})->with([\App\SourceControlProviders\Bitbucket::id(), \App\SourceControlProviders\BitbucketV2::id()]);
+})->with([Bitbucket::id(), BitbucketV2::id()]);

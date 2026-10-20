@@ -8,16 +8,22 @@ use App\Actions\EnvironmentDomain\CheckEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\Actions\EnvironmentDomain\UpdateEnvironmentDomain;
 use App\Actions\SSL\DeleteSsl;
+use App\Actions\SSL\RenewEnvironmentSsl;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
+use App\Enums\ServerStatus;
 use App\Enums\SslMethod;
 use App\Enums\SslStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\SSHCommandError;
+use App\Exceptions\SSLCreationException;
 use App\Facades\SSH;
+use App\Jobs\Application\DeleteApplicationJob;
 use App\Jobs\Component\DeleteComponentJob;
+use App\Jobs\Environment\DeleteEnvironmentJob;
 use App\Jobs\EnvironmentDomain\CheckEnvironmentDomainJob;
 use App\Jobs\EnvironmentDomain\DeleteEnvironmentDomainsJob;
 use App\Jobs\SSL\CheckSslExpiryJob;
@@ -26,15 +32,20 @@ use App\Jobs\SSL\DeleteServerSslJob;
 use App\Jobs\SSL\RenewEnvironmentSslJob;
 use App\Models\Application;
 use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\DNSProvider;
 use App\Models\Domain;
 use App\Models\Environment;
 use App\Models\EnvironmentDomain;
+use App\Models\HostedDomain;
 use App\Models\Server;
 use App\Models\Ssl;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -51,7 +62,7 @@ beforeEach(function () {
     $this->application = Application::factory()->create(['project_id' => $this->server->project_id]);
     $this->environment = Environment::factory()->for($this->application)->create(['runtime_version' => '8.2']);
     $this->component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
-    \App\Models\ComponentCapability::factory()->for($this->component)->create(['capability' => 'web', 'status' => ComponentStatus::READY, 'config' => ['port' => 10000, 'web_directory' => 'public']]);
+    ComponentCapability::factory()->for($this->component)->create(['capability' => 'web', 'status' => ComponentStatus::READY, 'config' => ['port' => 10000, 'web_directory' => 'public']]);
     $this->domain = EnvironmentDomain::factory()->for($this->component)->create(['host' => 'app.example.com']);
     $this->verify = function (bool $success = true): void {
         Http::fake(function (Request $request) use ($success) {
@@ -121,7 +132,7 @@ test('caddy component routes deny hidden files without changing site verificatio
         expect(preg_match('~'.$match[1].'~', $path))->toBe(1);
     }
     expect(strpos($vhost, 'handle_path /.well-known/vito/'))->toBeLessThan(strpos($vhost, '@hidden'));
-    \App\Models\HostedDomain::factory()->primary()->create(['site_id' => $this->site->id, 'domain' => $this->site->domain]);
+    HostedDomain::factory()->primary()->create(['site_id' => $this->site->id, 'domain' => $this->site->domain]);
     expect($this->site->fresh()->webserver()->generateVhost($this->site->fresh()))->not->toContain('@hidden');
 });
 
@@ -221,7 +232,7 @@ test('custom certificate activation checks coverage expiry and server ownership 
 test('certificate failures preserve ownership for retry and last use cleanup', function () {
     $this->domain->forceFill(['ssl_method' => SslMethod::LETSENCRYPT])->save();
     ($this->verify)();
-    expect(fn () => app(CheckEnvironmentDomain::class)->check($this->domain->id, $this->server->id))->toThrow(\App\Exceptions\SSLCreationException::class);
+    expect(fn () => app(CheckEnvironmentDomain::class)->check($this->domain->id, $this->server->id))->toThrow(SSLCreationException::class);
     $ssl = $this->domain->fresh()->ssl;
     expect($ssl)->not->toBeNull()->and($ssl->status)->toBe(SslStatus::FAILED)->and($this->domain->fresh()->status)->toBe(HostedDomainStatus::PENDING);
     SSH::fake(vitoEnvironmentDomainTestCertificate()."\nSuccessfully received certificate");
@@ -251,12 +262,12 @@ test('issued certificates remain retryable while the target is temporarily unava
     if ($target === 'component') {
         $this->component->forceFill(['status' => ComponentStatus::PENDING])->save();
     } else {
-        $this->server->update(['status' => \App\Enums\ServerStatus::INSTALLING]);
+        $this->server->update(['status' => ServerStatus::INSTALLING]);
     }
     app(ActivateEnvironmentDomain::class)->complete($ssl);
     expect($this->domain->fresh()->status)->toBe(HostedDomainStatus::PENDING)->and($this->domain->fresh()->error)->toContain('will retry');
     $this->component->forceFill(['status' => ComponentStatus::READY])->save();
-    $this->server->update(['status' => \App\Enums\ServerStatus::READY]);
+    $this->server->update(['status' => ServerStatus::READY]);
     ($this->verify)();
     $this->artisan('domains:check-pending')->assertSuccessful();
     Queue::assertPushed(CheckEnvironmentDomainJob::class);
@@ -329,7 +340,7 @@ test('certificate cleanup failures cannot restore removed routing and are reconc
     SSH::fake()->execWillFail();
     $job = (new DeleteServerSslJob($this->server, $ssl))->withFakeQueueInteractions();
     $job->handle();
-    $job->assertFailedWith(\App\Exceptions\SSHCommandError::class);
+    $job->assertFailedWith(SSHCommandError::class);
     $job->failed(new Exception('cleanup failed'));
     $this->assertDatabaseMissing('environment_domains', ['id' => $this->domain->id]);
     $this->assertDatabaseHas('ssls', ['id' => $ssl->id, 'environment_id' => $this->environment->id]);
@@ -354,9 +365,9 @@ test('certificate deletion jobs protect certificates attached after they were qu
 
 test('certificate deletion shares the domain attachment server lock', function () {
     $ssl = ($this->certificate)(['environment_id' => null]);
-    $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
-    $lock->shouldReceive('block')->once()->with(10, Mockery::type(Closure::class))->andThrow(new \Illuminate\Contracts\Cache\LockTimeoutException);
-    \Illuminate\Support\Facades\Cache::shouldReceive('lock')->once()->with('unique-queue:server-'.$this->server->id, 600)->andReturn($lock);
+    $lock = Mockery::mock(Lock::class);
+    $lock->shouldReceive('block')->once()->with(10, Mockery::type(Closure::class))->andThrow(new LockTimeoutException);
+    Cache::shouldReceive('lock')->once()->with('unique-queue:server-'.$this->server->id, 600)->andReturn($lock);
     expect(fn () => app(DeleteSsl::class)->delete($ssl))->toThrow(ValidationException::class);
     $this->assertDatabaseHas('ssls', ['id' => $ssl->id, 'status' => 'created']);
     Queue::assertNothingPushed();
@@ -368,10 +379,10 @@ test('teardown cleans orphaned certificates even after the last component was re
     $this->component->delete();
     if ($application) {
         app(DeleteApplication::class)->delete($this->application, ['name' => $this->application->name]);
-        Bus::assertChained([DeleteEnvironmentDomainsJob::class, \App\Jobs\Environment\DeleteEnvironmentJob::class, \App\Jobs\Application\DeleteApplicationJob::class]);
+        Bus::assertChained([DeleteEnvironmentDomainsJob::class, DeleteEnvironmentJob::class, DeleteApplicationJob::class]);
     } else {
         app(DeleteEnvironment::class)->delete($this->environment, ['name' => $this->environment->name]);
-        Bus::assertChained([DeleteEnvironmentDomainsJob::class, \App\Jobs\Environment\DeleteEnvironmentJob::class]);
+        Bus::assertChained([DeleteEnvironmentDomainsJob::class, DeleteEnvironmentJob::class]);
     }
     expect(fn () => app(DeleteEnvironment::class)->handle($this->environment->id))->toThrow(RuntimeException::class);
     app(DeleteEnvironmentDomain::class)->removeForServer($this->environment->id, $this->server->id);
@@ -400,7 +411,7 @@ test('environment teardown removes domains before components and is retry safe',
 test('application teardown also chains domain cleanup first', function () {
     Bus::fake();
     app(DeleteApplication::class)->delete($this->application, ['name' => $this->application->name]);
-    Bus::assertChained([DeleteEnvironmentDomainsJob::class, DeleteComponentJob::class, \App\Jobs\Environment\DeleteEnvironmentJob::class, \App\Jobs\Application\DeleteApplicationJob::class]);
+    Bus::assertChained([DeleteEnvironmentDomainsJob::class, DeleteComponentJob::class, DeleteEnvironmentJob::class, DeleteApplicationJob::class]);
 });
 
 test('server purge cascades environment domains and owned certificates without remote calls', function () {
@@ -471,7 +482,7 @@ test('certificate completion rejects invalid certificates and skips tearing down
     $this->environment->forceFill(['status' => EnvironmentStatus::DELETING])->save();
     SSH::fake();
     app(ActivateEnvironmentDomain::class)->complete($ssl);
-    app(\App\Actions\SSL\RenewEnvironmentSsl::class)->renew($ssl->id);
+    app(RenewEnvironmentSsl::class)->renew($ssl->id);
     expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
@@ -495,7 +506,7 @@ test('vhost errors roll back domain mutations and do not enqueue verification', 
     SSH::execWillFail();
     expect(fn () => app(UpdateEnvironmentDomain::class)->update($this->domain, [
         'host' => 'new.example.com', 'type' => 'alias', 'component_id' => $this->component->id, 'ssl_method' => 'none', 'force_ssl' => false,
-    ]))->toThrow(\App\Exceptions\SSHCommandError::class);
+    ]))->toThrow(SSHCommandError::class);
     $this->assertDatabaseHas('environment_domains', ['id' => $this->domain->id, 'host' => 'app.example.com']);
     Queue::assertNothingPushed();
 });
@@ -504,19 +515,20 @@ test('failed retargeting restores the original route after rolling back the doma
     $server = Server::factory()->create(['project_id' => $this->server->project_id]);
     $server->services()->create(['name' => 'nginx', 'type' => 'webserver', 'version' => 'latest', 'status' => 'ready']);
     $component = Component::factory()->for($server)->for($this->environment)->create(['status' => ComponentStatus::READY]);
-    \App\Models\ComponentCapability::factory()->for($component)->create(['status' => ComponentStatus::READY, 'config' => ['port' => 10001]]);
+    ComponentCapability::factory()->for($component)->create(['status' => ComponentStatus::READY, 'config' => ['port' => 10001]]);
     $this->domain->forceFill(['status' => HostedDomainStatus::ACTIVE])->save();
     $sync = Mockery::mock(SyncComponentVhost::class)->makePartial();
     $sync->shouldReceive('sync')->once()->ordered()->withArgs(fn (Component $target) => $target->id === $this->component->id)->andReturnNull();
-    $sync->shouldReceive('sync')->once()->ordered()->withArgs(fn (Component $target) => $target->id === $component->id)->andThrow(new \App\Exceptions\SSHCommandError);
+    $sync->shouldReceive('sync')->once()->ordered()->withArgs(fn (Component $target) => $target->id === $component->id)->andThrow(new SSHCommandError);
     $sync->shouldReceive('sync')->once()->ordered()->withArgs(function (Component $target) use ($sync): bool {
         expect($sync->generate($target))->toContain('app.example.com');
+
         return $target->id === $this->component->id;
     })->andReturnNull();
     app()->instance(SyncComponentVhost::class, $sync);
     expect(fn () => app(UpdateEnvironmentDomain::class)->update($this->domain, [
         'host' => 'app.example.com', 'type' => 'alias', 'component_id' => $component->id, 'ssl_method' => 'none', 'force_ssl' => false,
-    ]))->toThrow(\App\Exceptions\SSHCommandError::class);
+    ]))->toThrow(SSHCommandError::class);
     $this->assertDatabaseHas('environment_domains', ['id' => $this->domain->id, 'status' => 'active', 'component_id' => $this->component->id]);
     Queue::assertNothingPushed();
 });
@@ -525,7 +537,7 @@ test('retargeting domains resynchronizes both servers and resets verification', 
     $server = Server::factory()->create(['project_id' => $this->server->project_id]);
     $server->services()->create(['name' => 'nginx', 'type' => 'webserver', 'version' => 'latest', 'status' => 'ready']);
     $component = Component::factory()->for($server)->for($this->environment)->create(['status' => ComponentStatus::READY]);
-    \App\Models\ComponentCapability::factory()->for($component)->create(['status' => ComponentStatus::READY, 'config' => ['port' => 10001]]);
+    ComponentCapability::factory()->for($component)->create(['status' => ComponentStatus::READY, 'config' => ['port' => 10001]]);
     $this->domain->forceFill(['status' => HostedDomainStatus::ACTIVE])->save();
     app(UpdateEnvironmentDomain::class)->update($this->domain, [
         'host' => 'app.example.com', 'type' => 'alias', 'component_id' => $component->id, 'ssl_method' => 'none', 'force_ssl' => false,

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Actions\Component\PurgeServerComponents;
 use App\Actions\Network\ResyncNetworkSiblings;
 use App\Actions\Server\CheckConnection;
+use App\Enums\ComponentType;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
@@ -261,7 +262,7 @@ class Server extends AbstractModel
     {
         return $this->components()->with(['environment.application', 'capabilities'])->withExists('loadBalancerBackends')->get()
             ->filter(function (Component $component) use ($service): bool {
-                if ($component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+                if ($component->type === ComponentType::LOAD_BALANCER) {
                     return $service->type === 'webserver';
                 }
                 if ($service->type === 'firewall' && $component->load_balancer_backends_exists) {

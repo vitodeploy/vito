@@ -13,6 +13,7 @@ use App\Http\Resources\FirewallRuleResource;
 use App\Jobs\Component\SyncLoadBalancerServerJob;
 use App\Models\Component;
 use App\Models\ComponentBackend;
+use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Services\Firewall\Firewall;
 use App\Support\Cidr;
@@ -33,7 +34,7 @@ class SyncLoadBalancerBackends
         }
     }
 
-    public function membershipChanged(\App\Models\NetworkServer $member): void
+    public function membershipChanged(NetworkServer $member): void
     {
         if ($member->wasRecentlyCreated || $member->wasChanged(['ip', 'server_ip_address_id', 'status'])) {
             DB::afterCommit(fn () => $this->changedServer($member->server_id));
@@ -52,7 +53,7 @@ class SyncLoadBalancerBackends
     }
 
     /**
-     * @param Collection<int, ComponentBackend> $backends
+     * @param  Collection<int, ComponentBackend>  $backends
      * @return list<int>
      */
     public function servers(Collection $backends): array

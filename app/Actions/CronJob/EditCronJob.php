@@ -3,9 +3,9 @@
 namespace App\Actions\CronJob;
 
 use App\Actions\Component\ValidateComponentProcess;
-use App\Models\Component;
 use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
+use App\Models\Component;
 use App\Models\CronJob;
 use App\Models\Server;
 use App\Models\Site;
@@ -23,6 +23,7 @@ class EditCronJob
     public function edit(Server $server, CronJob $cronJob, array $input, ?Site $site = null, ?Component $component = null): CronJob
     {
         $component ??= $cronJob->component;
+
         return app(SyncCronJobs::class)->run($server, fn () => app(ValidateComponentProcess::class)->run($component, function () use ($server, $cronJob, $input, $site, $component): CronJob {
             $cronJob->refresh();
             app(ValidateComponentProcess::class)->validate($server, $input, $component, 'scheduler', $cronJob);

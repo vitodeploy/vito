@@ -4,6 +4,7 @@ namespace App\Actions\EnvironmentDeployment;
 
 use App\Actions\Environment\MarkEnvironmentForRedeploy;
 use App\Enums\ApplicationStatus;
+use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
 use App\Models\Application;
 use App\Models\Component;
@@ -30,7 +31,7 @@ class UpdateEnvironmentDeploymentScript
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             app(AssertEnvironmentIdle::class)->validate($environment, 'content');
             if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
-                || ($component && ($component->environment_id !== $environment->id || $component->type !== \App\Enums\ComponentType::APP))) {
+                || ($component && ($component->environment_id !== $environment->id || $component->type !== ComponentType::APP))) {
                 throw ValidationException::withMessages(['content' => 'This deployment script cannot be changed.']);
             }
             $scripts = ($component ?? $environment)->deploymentScripts();

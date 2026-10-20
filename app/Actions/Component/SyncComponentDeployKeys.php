@@ -2,6 +2,7 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\Application\GetApplicationSourceControl;
 use App\Actions\SourceControl\SetupDeployKey;
 use App\Enums\ComponentStatus;
 use App\Models\Application;
@@ -48,7 +49,7 @@ class SyncComponentDeployKeys
     public function sync(Component $component): void
     {
         $application = $component->environment->application;
-        $sourceControl = app(\App\Actions\Application\GetApplicationSourceControl::class)->get($application);
+        $sourceControl = app(GetApplicationSourceControl::class)->get($application);
 
         if ($component->deploy_key_source_control_id === $sourceControl->id
             && $component->deploy_key_repository === $application->repository) {

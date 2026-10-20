@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Actions\Component\SyncLoadBalancerBackends;
+use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
+use App\Actions\Network\CheckEnvironmentResourceNetwork;
+use App\Actions\Network\CheckLoadBalancerNetwork;
 use App\Actions\Network\RemoveMembershipsForAddress;
 use App\Enums\IpAddressFamily;
 use App\Enums\IpAddressStatus;
@@ -9,6 +13,7 @@ use App\Enums\IpAddressType;
 use Database\Factories\ServerIpAddressFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $server_id
@@ -58,25 +63,25 @@ class ServerIpAddress extends AbstractModel
     {
         static::updated(function (ServerIpAddress $address): void {
             if ($address->wasChanged(['ip', 'status'])) {
-                \Illuminate\Support\Facades\DB::afterCommit(function () use ($address): void {
-                    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id);
-                    app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
+                DB::afterCommit(function () use ($address): void {
+                    app(SyncLoadBalancerBackends::class)->changedServer($address->server_id);
+                    app(SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
                 });
             }
         });
         static::deleting(function (ServerIpAddress $address): void {
             if ($address->is_managed) {
-                app(\App\Actions\Network\CheckLoadBalancerNetwork::class)->address($address);
-                app(\App\Actions\Network\CheckEnvironmentResourceNetwork::class)->address($address);
+                app(CheckLoadBalancerNetwork::class)->address($address);
+                app(CheckEnvironmentResourceNetwork::class)->address($address);
             }
             $address->reapplyNetworkIds = app(RemoveMembershipsForAddress::class)->capture($address);
         });
 
         static::deleted(function (ServerIpAddress $address): void {
             app(RemoveMembershipsForAddress::class)->handle($address->server_id, $address->reapplyNetworkIds);
-            \Illuminate\Support\Facades\DB::afterCommit(function () use ($address): void {
-                app(\App\Actions\Component\SyncLoadBalancerBackends::class)->changedServer($address->server_id);
-                app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
+            DB::afterCommit(function () use ($address): void {
+                app(SyncLoadBalancerBackends::class)->changedServer($address->server_id);
+                app(SyncEnvironmentResourceAccess::class)->changedServer($address->server_id);
             });
         });
     }

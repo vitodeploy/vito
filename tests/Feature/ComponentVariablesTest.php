@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Component\WriteComponentEnv;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Helpers\ComponentVariables;
 use App\Models\Application;
@@ -11,6 +12,7 @@ use App\Models\EnvironmentVariable;
 use App\Models\ServerLog;
 use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
+use App\Support\Testing\SSHFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
@@ -63,7 +65,7 @@ test('computed port is absent for non proxy presets and components without web',
 test('component env is uploaded privately with an atomic executable loader and never enters commands or logs', function () {
     EnvironmentVariable::factory()->for($this->environment)->create(['key' => 'PASSWORD', 'value' => 'never-log-this-secret', 'is_secret' => true]);
     $uploads = [];
-    $ssh = Mockery::mock(\App\Support\Testing\SSHFake::class, [''])->makePartial();
+    $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();
     $ssh->shouldReceive('upload')->twice()->withArgs(function (string $local, string $remote, ?string $owner, ?string $log, ?int $siteId, string $permission) use (&$uploads): bool {
         $uploads[] = file_get_contents($local);
 
@@ -90,10 +92,10 @@ test('component env is uploaded privately with an atomic executable loader and n
 
 test('component env staging files are cleaned after failure without hiding the original error', function (string $stage, bool $cleanupFails) {
     EnvironmentVariable::factory()->for($this->environment)->create(['key' => 'PASSWORD', 'value' => 'never-log-this-secret', 'is_secret' => true]);
-    $failure = new \App\Exceptions\SSHCommandError(message: 'Original write failed');
+    $failure = new SSHCommandError(message: 'Original write failed');
     $data = [];
     $uploads = 0;
-    $ssh = Mockery::mock(\App\Support\Testing\SSHFake::class, [''])->makePartial();
+    $ssh = Mockery::mock(SSHFake::class, [''])->makePartial();
     $ssh->shouldReceive('exec')->once()->withArgs(function ($view) use (&$data): bool {
         if ($view->getData()['operation'] !== 'prepare') {
             return false;
@@ -121,7 +123,7 @@ test('component env staging files are cleaned after failure without hiding the o
         return true;
     })->andReturnUsing(function () use ($cleanupFails): string {
         if ($cleanupFails) {
-            throw new \App\Exceptions\SSHCommandError(message: 'Cleanup failed');
+            throw new SSHCommandError(message: 'Cleanup failed');
         }
 
         return '';
@@ -131,14 +133,14 @@ test('component env staging files are cleaned after failure without hiding the o
     try {
         app(WriteComponentEnv::class)->write($this->component, $this->component->envPath());
         $this->fail('The write must fail.');
-    } catch (\App\Exceptions\SSHCommandError $e) {
+    } catch (SSHCommandError $e) {
         expect($e)->toBe($failure);
     }
 })->with(['upload', 'install'])->with([false, true]);
 
 test('component env loader decodes literal records without evaluating the file', function () {
     $loader = view('ssh.applications.env-exec')->render();
-    expect($loader)->toContain("#!/bin/bash -p", "/usr/bin/awk", "read -r -d ''", 'export "$kv"', 'exec "$@"', 'Invalid env file at line %d.', "|| exit 1", 'if (key ~ /'.EnvironmentVariable::RESERVED_KEY_PATTERN.'/) invalid()')
+    expect($loader)->toContain('#!/bin/bash -p', '/usr/bin/awk', "read -r -d ''", 'export "$kv"', 'exec "$@"', 'Invalid env file at line %d.', '|| exit 1', 'if (key ~ /'.EnvironmentVariable::RESERVED_KEY_PATTERN.'/) invalid()')
         ->not->toMatch('/\b(?:source|eval)\s|(?:^|\n)\s*\.\s/');
 });
 

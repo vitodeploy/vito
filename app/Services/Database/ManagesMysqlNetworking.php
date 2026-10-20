@@ -4,6 +4,7 @@ namespace App\Services\Database;
 
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
+use App\Models\EnvironmentAttachment;
 
 trait ManagesMysqlNetworking
 {
@@ -29,7 +30,7 @@ trait ManagesMysqlNetworking
                 ...$this->networkingScriptData(),
                 'address' => $enable ? '*' : '127.0.0.1',
                 'managesXPlugin' => $this->networkingManagesXPlugin(),
-                'xAddress' => $enable && ! \App\Models\EnvironmentAttachment::forService($this->service)->exists() ? '*' : '127.0.0.1',
+                'xAddress' => $enable && ! EnvironmentAttachment::forService($this->service)->exists() ? '*' : '127.0.0.1',
             ]),
             ($enable ? 'enable' : 'disable').'-'.static::id().'-networking'
         );
@@ -57,7 +58,7 @@ trait ManagesMysqlNetworking
             throw new SSHCommandError("{$this->service->name} is not bound to {$expected} after the restart.");
         }
 
-        $this->verifyXPluginNetworking(\App\Models\EnvironmentAttachment::forService($this->service)->exists() ? '127.0.0.1' : $expected);
+        $this->verifyXPluginNetworking(EnvironmentAttachment::forService($this->service)->exists() ? '127.0.0.1' : $expected);
     }
 
     public function networkingProbeCommand(): string

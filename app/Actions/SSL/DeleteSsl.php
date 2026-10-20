@@ -8,6 +8,8 @@ use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Ssl;
 use App\Services\Webserver\Webserver;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class DeleteSsl
@@ -26,11 +28,11 @@ class DeleteSsl
         $serverId = $ssl->server_id ?? $ssl->site?->server_id;
         try {
             if ($serverId) {
-                \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$serverId, 600)->block(10, $markDeleting);
+                Cache::lock('unique-queue:server-'.$serverId, 600)->block(10, $markDeleting);
             } else {
                 $markDeleting();
             }
-        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+        } catch (LockTimeoutException) {
             throw ValidationException::withMessages(['ssl' => 'Another operation on this server is in progress. Please retry.']);
         }
 

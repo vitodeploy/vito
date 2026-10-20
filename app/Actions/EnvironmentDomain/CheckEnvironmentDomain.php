@@ -6,6 +6,7 @@ use App\Actions\Component\SyncComponentVhost;
 use App\Actions\HostedDomain\VerifyDomain;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
@@ -28,7 +29,7 @@ class CheckEnvironmentDomain
             $domain->refresh();
             if ($domain->status !== HostedDomainStatus::PENDING || $domain->component->server_id !== $serverId
                 || $domain->component->status !== ComponentStatus::READY || ! $domain->component->server->isReady()
-                || ($domain->component->type !== \App\Enums\ComponentType::LOAD_BALANCER && ! $domain->component->capabilities()->where('capability', 'web')->where('status', ComponentStatus::READY)->exists())
+                || ($domain->component->type !== ComponentType::LOAD_BALANCER && ! $domain->component->capabilities()->where('capability', 'web')->where('status', ComponentStatus::READY)->exists())
                 || $domain->environment->status !== EnvironmentStatus::READY || $domain->environment->application->status !== ApplicationStatus::READY) {
                 return null;
             }

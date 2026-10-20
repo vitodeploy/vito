@@ -5,8 +5,12 @@ use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
+use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
 use App\Actions\EnvironmentDomain\UpdateEnvironmentDomain;
 use App\Actions\HostedDomain\AssertHostAvailable;
+use App\Actions\HostedDomain\CreateHostedDomain;
+use App\Actions\HostedDomain\UpdateHostedDomain;
+use App\Actions\Site\CreateSite;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
@@ -21,6 +25,7 @@ use App\Facades\SSH;
 use App\Jobs\EnvironmentDomain\CheckEnvironmentDomainJob;
 use App\Models\Application;
 use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\DNSProvider;
 use App\Models\Domain;
 use App\Models\Environment;
@@ -49,7 +54,7 @@ beforeEach(function () {
     $this->application = Application::factory()->create(['project_id' => $this->server->project_id]);
     $this->environment = Environment::factory()->for($this->application)->create();
     $this->component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
-    \App\Models\ComponentCapability::factory()->for($this->component)->create(['capability' => 'web', 'status' => ComponentStatus::READY, 'config' => ['port' => 10000]]);
+    ComponentCapability::factory()->for($this->component)->create(['capability' => 'web', 'status' => ComponentStatus::READY, 'config' => ['port' => 10000]]);
     $this->input = ['host' => 'app.example.com', 'type' => 'alias', 'component_id' => $this->component->id, 'ssl_method' => 'none', 'force_ssl' => false];
 });
 
@@ -211,9 +216,9 @@ test('site hosted and environment writers share the server host reservation lock
     }
     Cache::shouldReceive('lock')->once()->with('host-reservations:server-'.$this->server->id, 600)->andReturn($lock);
     $write = fn () => match ($writer) {
-        'site' => app(\App\Actions\Site\CreateSite::class)->create($this->server, [], $this->user),
-        'hosted-create' => app(\App\Actions\HostedDomain\CreateHostedDomain::class)->create($this->site, []),
-        'hosted-update' => app(\App\Actions\HostedDomain\UpdateHostedDomain::class)->update($hosted, $this->site, []),
+        'site' => app(CreateSite::class)->create($this->server, [], $this->user),
+        'hosted-create' => app(CreateHostedDomain::class)->create($this->site, []),
+        'hosted-update' => app(UpdateHostedDomain::class)->update($hosted, $this->site, []),
         'environment' => app(CreateEnvironmentDomain::class)->create($this->environment, $this->input),
     };
     expect($write)->toThrow(ValidationException::class, 'Another domain operation');
@@ -231,7 +236,7 @@ test('certificate options exclude expired unknown and environment certificates',
     Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'environment_id' => $this->environment->id]);
     $server = Server::factory()->create(['project_id' => $this->server->project_id]);
     $component = Component::factory()->for($this->environment)->for($server)->create(['status' => ComponentStatus::READY]);
-    \App\Models\ComponentCapability::factory()->for($component)->create(['capability' => 'web', 'status' => ComponentStatus::READY]);
+    ComponentCapability::factory()->for($component)->create(['capability' => 'web', 'status' => ComponentStatus::READY]);
     $other = Ssl::factory()->create(array_replace($attributes, ['server_id' => $server->id, 'expires_at' => now()->addDay()]));
     Ssl::factory()->create(array_replace($attributes, ['server_id' => Server::factory()->create()->id, 'expires_at' => now()->addDay()]));
     Ssl::factory()->create($attributes + ['expires_at' => now()->addDay(), 'status' => SslStatus::FAILED]);
@@ -242,7 +247,7 @@ test('certificate options exclude expired unknown and environment certificates',
     $connection = (new Ssl)->getConnection();
     $connection->enableQueryLog();
     try {
-        $options = app(\App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions::class)->get($this->environment);
+        $options = app(GetEnvironmentDomainOptions::class)->get($this->environment);
         expect(collect($connection->getQueryLog())->filter(fn (array $query): bool => str_contains($query['query'], 'from "ssls"')))->toHaveCount(1);
     } finally {
         $connection->disableQueryLog();
@@ -285,7 +290,9 @@ test('domain endpoints enforce authentication project roles and parent scoping',
     if ($access === 'wrong-parent') {
         $parents[1] = Environment::factory()->for($this->application)->create();
     }
-    $status = match ($access) { 'guest' => 401, 'wrong-parent' => 404, default => 403 };
+    $status = match ($access) {
+        'guest' => 401, 'wrong-parent' => 404, default => 403
+    };
     if ($access === 'reader') {
         $this->get(route('environments.domains', $parents))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->where('canUpdate', false));
     } elseif ($access !== 'wrong-parent') {

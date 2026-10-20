@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Service;
 
+use App\Actions\Service\Uninstall;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
@@ -12,6 +13,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Validation\ValidationException;
 
 class UninstallJob implements ShouldQueue
 {
@@ -26,7 +28,7 @@ class UninstallJob implements ShouldQueue
         $this->run("server-{$this->service->server_id}", function () use (&$succeeded) {
             $projectId = $this->service->server->project_id;
             $serviceId = $this->service->id;
-            app(\App\Actions\Service\Uninstall::class)->validate($this->service);
+            app(Uninstall::class)->validate($this->service);
             $this->service->handler()->uninstall();
             $this->service->delete();
 
@@ -45,7 +47,7 @@ class UninstallJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
-        if ($this->previousStatus === ServiceStatus::FAILED && ! $e instanceof \Illuminate\Validation\ValidationException) {
+        if ($this->previousStatus === ServiceStatus::FAILED && ! $e instanceof ValidationException) {
             $this->service->delete();
 
             return;

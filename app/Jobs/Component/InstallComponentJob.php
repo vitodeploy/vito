@@ -3,6 +3,11 @@
 namespace App\Jobs\Component;
 
 use App\Actions\Component\InstallComponent;
+use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
+use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
+use App\Models\Component;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,10 +26,10 @@ class InstallComponentJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->serverId}", fn () => app(InstallComponent::class)->install($this->componentId));
-        $component = \App\Models\Component::query()->find($this->componentId);
-        if ($component?->status === \App\Enums\ComponentStatus::READY && $component->type === \App\Enums\ComponentType::APP) {
-            app(\App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
-            app(\App\Actions\EnvironmentDeployment\DeployEnvironment::class)->join($component->environment);
+        $component = Component::query()->find($this->componentId);
+        if ($component?->status === ComponentStatus::READY && $component->type === ComponentType::APP) {
+            app(SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
+            app(DeployEnvironment::class)->join($component->environment);
         }
     }
 

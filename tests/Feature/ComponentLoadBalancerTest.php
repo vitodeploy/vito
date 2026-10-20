@@ -3,37 +3,62 @@
 use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\InstallComponent;
+use App\Actions\Component\SyncComponentRuntime;
 use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\SyncLoadBalancerBackends;
 use App\Actions\Component\UpdateLoadBalancerBackends;
+use App\Actions\ComponentCapability\InstallWebCapability;
+use App\Actions\Environment\DeleteEnvironment;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
+use App\Actions\FirewallRule\ManageRule;
+use App\Actions\Network\DeleteNetwork;
 use App\Actions\Network\RemoveServerFromNetwork;
 use App\Actions\Network\ResolveServerAddress;
+use App\Actions\PHP\EnsureFpmPool;
+use App\Actions\ServerIp\ManageServerIp;
+use App\Actions\Service\Manage;
+use App\Actions\Service\Uninstall;
+use App\Actions\Site\UpdatePort;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
+use App\Enums\EnvironmentDeploymentStatus;
+use App\Enums\EnvironmentStatus;
 use App\Enums\FirewallRuleStatus;
 use App\Enums\HostedDomainStatus;
+use App\Enums\IpAddressStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\NetworkServerStatus;
+use App\Enums\NetworkType;
 use App\Enums\ServiceStatus;
+use App\Enums\SslMethod;
+use App\Enums\SslStatus;
+use App\Enums\UserRole;
 use App\Events\SocketEvent;
+use App\Exceptions\SSHError;
 use App\Facades\SSH;
 use App\Jobs\Component\SyncLoadBalancerServerJob;
+use App\Jobs\FirewallRule\ApplyRulesJob;
+use App\Jobs\ServerIp\PersistServerIpsJob;
+use App\Jobs\Service\ManageJob;
+use App\Jobs\Service\UninstallJob;
 use App\Models\Application;
 use App\Models\Component;
-use App\Models\ComponentBackend;
 use App\Models\ComponentCapability;
 use App\Models\Environment;
+use App\Models\EnvironmentDeployment;
 use App\Models\EnvironmentDomain;
 use App\Models\FirewallRule;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Server;
+use App\Models\ServerIpAddress;
+use App\Models\Ssl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
@@ -227,15 +252,15 @@ test('backend rows require exactly one target', function () {
 test('backend editor is scoped policy protected and whitelists backend fields', function () {
     $url = '/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/components/'.$this->lb->id;
     $this->actingAs($this->user)->put($url.'/backends', $this->input)->assertRedirect()->assertSessionHasNoErrors();
-    $this->get($url)->assertOk()->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+    $this->get($url)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
         ->where('component.type', 'load_balancer')->where('component.load_balancer_method', 'round-robin')
         ->where('component.backends.0.target_component_id', $this->target->id)->missing('component.backends.0.firewall_rule_id')
         ->where('backendTargets.0.id', $this->target->id)->where('can.update', true));
     $foreign = Environment::factory()->for($this->application)->create();
     $this->putJson(str_replace('/environments/'.$this->environment->id, '/environments/'.$foreign->id, $url).'/backends', $this->input)->assertNotFound();
     $this->putJson($url.'/backends', ['method' => 'bad', 'backends' => []])->assertUnprocessable();
-    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => \App\Enums\UserRole::USER]);
-    $this->get($url)->assertOk()->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('can.update', false));
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    $this->get($url)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false));
     $this->putJson($url.'/backends', $this->input)->assertForbidden();
 });
 
@@ -265,7 +290,7 @@ test('web removal and target deletion detach backends and preserve unrelated fir
         $capability = $this->target->capabilities()->sole();
         $capability->status = ComponentStatus::DELETING;
         $capability->save();
-        app(\App\Actions\ComponentCapability\InstallWebCapability::class)->uninstall($capability, $this->target->fresh());
+        app(InstallWebCapability::class)->uninstall($capability, $this->target->fresh());
         $capability->delete();
     } else {
         app(DeleteComponent::class)->delete($this->target, []);
@@ -282,7 +307,7 @@ test('firewall failure retains cleanup custody and a retried sync converges', fu
     app(SyncLoadBalancerBackends::class)->sync($this->server);
     app(UpdateLoadBalancerBackends::class)->update($this->lb, ['method' => 'round-robin', 'backends' => []]);
     SSH::fake()->execWillFail();
-    expect(fn () => app(SyncLoadBalancerBackends::class)->sync($this->server))->toThrow(\App\Exceptions\SSHError::class);
+    expect(fn () => app(SyncLoadBalancerBackends::class)->sync($this->server))->toThrow(SSHError::class);
     $this->assertDatabaseHas('firewall_rules', ['component_managed' => true, 'status' => FirewallRuleStatus::DELETING]);
     (new SyncLoadBalancerServerJob($this->server->id))->failed(new Exception('sensitive-internal-detail'));
     expect($this->lb->fresh()->last_error)->toContain('synchronization failed')->not->toContain('sensitive-internal-detail');
@@ -294,7 +319,7 @@ test('firewall failure retains cleanup custody and a retried sync converges', fu
 
 test('linked private addresses are preferred and required addresses cannot be removed', function () {
     $member = placeLoadBalancerTargetOnNetwork($this->target, $this->server);
-    $address = \App\Models\ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8']);
+    $address = ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8']);
     $member->update(['server_ip_address_id' => $address->id]);
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     expect(app(ResolveServerAddress::class)->between($this->server, $member->server))->toBe('10.40.0.8');
@@ -302,13 +327,13 @@ test('linked private addresses are preferred and required addresses cannot be re
     expect(app(ResolveServerAddress::class)->between($this->server, $member->server))->toBe('10.40.0.9');
     Queue::assertPushed(SyncLoadBalancerServerJob::class, fn ($job): bool => $job->serverId === $this->server->id);
     expect(fn () => $address->delete())->toThrow(ValidationException::class);
-    expect(fn () => app(\App\Actions\Network\DeleteNetwork::class)->delete($member->network))->toThrow(ValidationException::class);
+    expect(fn () => app(DeleteNetwork::class)->delete($member->network))->toThrow(ValidationException::class);
 });
 
 test('backend editing is blocked during deployment teardown or app capability updates', function (string $state) {
     match ($state) {
-        'deployment' => \App\Models\EnvironmentDeployment::factory()->for($this->environment)->create(['status' => \App\Enums\EnvironmentDeploymentStatus::RUNNING]),
-        'teardown' => $this->environment->forceFill(['status' => \App\Enums\EnvironmentStatus::DELETING])->save(),
+        'deployment' => EnvironmentDeployment::factory()->for($this->environment)->create(['status' => EnvironmentDeploymentStatus::RUNNING]),
+        'teardown' => $this->environment->forceFill(['status' => EnvironmentStatus::DELETING])->save(),
         'not-lb' => $this->lb = $this->target,
     };
     expect(fn () => app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input))->toThrow(ValidationException::class);
@@ -339,7 +364,7 @@ test('empty load balancer upstreams fail closed on both webservers', function (s
 test('backend firewalls cannot be stopped disabled or uninstalled while needed', function (string $operation) {
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     $service = $this->server->firewall();
-    $action = $operation === 'uninstall' ? app(\App\Actions\Service\Uninstall::class) : app(\App\Actions\Service\Manage::class);
+    $action = $operation === 'uninstall' ? app(Uninstall::class) : app(Manage::class);
     expect(fn () => $action->{$operation}($service))->toThrow(ValidationException::class);
     expect($service->fresh()->status)->toBe(ServiceStatus::READY);
 })->with(['stop', 'disable', 'uninstall']);
@@ -351,12 +376,12 @@ test('load balancer TLS belongs only to its server and backend PHP honors forwar
     $this->application->update(['runtime' => 'php']);
     $this->environment->update(['runtime_version' => '8.2']);
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
-    $ssl = \App\Models\Ssl::factory()->create([
+    $ssl = Ssl::factory()->create([
         'site_id' => null, 'server_id' => $this->server->id, 'environment_id' => $this->environment->id,
-        'domains' => ['edge.example.com'], 'status' => \App\Enums\SslStatus::CREATED, 'expires_at' => now()->addDay(),
+        'domains' => ['edge.example.com'], 'status' => SslStatus::CREATED, 'expires_at' => now()->addDay(),
     ]);
     EnvironmentDomain::factory()->for($this->lb)->create([
-        'host' => 'edge.example.com', 'status' => HostedDomainStatus::ACTIVE, 'ssl_method' => \App\Enums\SslMethod::LETSENCRYPT, 'ssl_id' => $ssl->id,
+        'host' => 'edge.example.com', 'status' => HostedDomainStatus::ACTIVE, 'ssl_method' => SslMethod::LETSENCRYPT, 'ssl_id' => $ssl->id,
     ]);
     $config = app(SyncComponentVhost::class)->generate($this->lb->fresh());
     expect($config)->toContain($ssl->certificate_path);
@@ -385,7 +410,7 @@ test('domainless fpm backends reload their socket before old pool removal', func
     $this->environment->update(['runtime_version' => '8.3']);
     $this->target->forceFill(['user' => 'runtime', 'installed_runtime_version' => '8.2'])->save();
     $this->server->services()->create(['type' => 'php', 'name' => 'php', 'version' => '8.3', 'status' => ServiceStatus::READY]);
-    $this->mock(\App\Actions\PHP\EnsureFpmPool::class)->shouldReceive('ensure')->once();
+    $this->mock(EnsureFpmPool::class)->shouldReceive('ensure')->once();
     $synced = false;
     $this->mock(SyncComponentVhost::class)->shouldReceive('sync')->once()->andReturnUsing(function (Component $component) use ($fails, &$synced): void {
         expect($component->domains()->exists())->toBeFalse();
@@ -395,15 +420,15 @@ test('domainless fpm backends reload their socket before old pool removal', func
         }
         $synced = true;
     });
-    $cleanup = $this->mock(\App\Actions\ComponentCapability\InstallWebCapability::class);
+    $cleanup = $this->mock(InstallWebCapability::class);
     if ($fails) {
         $cleanup->shouldNotReceive('removePool');
-        expect(fn () => app(\App\Actions\Component\SyncComponentRuntime::class)->sync($this->target->fresh()))->toThrow(RuntimeException::class);
+        expect(fn () => app(SyncComponentRuntime::class)->sync($this->target->fresh()))->toThrow(RuntimeException::class);
     } else {
         $cleanup->shouldReceive('removePool')->once()->withArgs(function (Component $component, string $version) use (&$synced): bool {
             return $synced && $version === '8.2';
         });
-        app(\App\Actions\Component\SyncComponentRuntime::class)->sync($this->target->fresh());
+        app(SyncComponentRuntime::class)->sync($this->target->fresh());
     }
     $this->assertDatabaseHas('components', ['id' => $this->target->id, 'installed_runtime_version' => $fails ? '8.2' : '8.3']);
 })->with([false, true]);
@@ -428,27 +453,27 @@ test('new or changed memberships resync both ends without allowing removal of th
 
 test('managed address removal is rejected before admission and before remote netplan work', function (bool $queued) {
     $member = placeLoadBalancerTargetOnNetwork($this->target, $this->server);
-    $address = \App\Models\ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8']);
+    $address = ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8']);
     $member->update(['server_ip_address_id' => $address->id]);
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     if ($queued) {
-        $address->forceFill(['status' => \App\Enums\IpAddressStatus::DELETING])->saveQuietly();
-        $job = (new \App\Jobs\ServerIp\PersistServerIpsJob($member->server))->withFakeQueueInteractions();
+        $address->forceFill(['status' => IpAddressStatus::DELETING])->saveQuietly();
+        $job = (new PersistServerIpsJob($member->server))->withFakeQueueInteractions();
         $job->handle();
         $job->assertFailedWith(ValidationException::class);
         expect(app(ResolveServerAddress::class)->connection($this->server, $member->server))->toBeNull();
     } else {
-        expect(fn () => app(\App\Actions\ServerIp\ManageServerIp::class)->delete($address))->toThrow(ValidationException::class);
+        expect(fn () => app(ManageServerIp::class)->delete($address))->toThrow(ValidationException::class);
         $this->assertDatabaseHas('server_ip_addresses', ['id' => $address->id, 'status' => 'configured']);
-        Queue::assertNotPushed(\App\Jobs\ServerIp\PersistServerIpsJob::class);
+        Queue::assertNotPushed(PersistServerIpsJob::class);
     }
     expect(SSH::getExecutedCommands())->toBe([]);
 })->with([false, true]);
 
 test('observed custom address disappearance withdraws backends instead of vetoing discovery', function () {
     $member = placeLoadBalancerTargetOnNetwork($this->target, $this->server);
-    $member->network->update(['type' => \App\Enums\NetworkType::CUSTOM]);
-    $address = \App\Models\ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8', 'is_managed' => false]);
+    $member->network->update(['type' => NetworkType::CUSTOM]);
+    $address = ServerIpAddress::factory()->for($member->server)->create(['ip' => '10.40.0.8', 'is_managed' => false]);
     $member->update(['server_ip_address_id' => $address->id, 'ip' => null]);
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     $address->delete();
@@ -470,7 +495,7 @@ test('listener removal failure retains a deny tombstone ahead of broad network r
     $script = implode("\n", SSH::getExecutedCommands());
     expect($script)->toContain('ufw deny from any to any proto tcp port 8080')->not->toContain('ufw allow from 127.0.0.1/32');
     expect(strpos($script, 'ufw deny from any'))->toBeLessThan(strpos($script, 'ufw allow from 10.40.0.0/24'));
-    expect(fn () => app(\App\Actions\Service\Manage::class)->stop($this->server->firewall()))->toThrow(ValidationException::class);
+    expect(fn () => app(Manage::class)->stop($this->server->firewall()))->toThrow(ValidationException::class);
     app()->forgetInstance(SyncComponentVhost::class);
     app(SyncLoadBalancerBackends::class)->sync($this->server);
     $this->assertDatabaseMissing('firewall_rules', ['id' => $rule->id]);
@@ -484,7 +509,7 @@ test('failed final firewall cleanup rolls custody back after listeners have been
     $this->mock(SyncComponentVhost::class)->shouldReceive('sync')->twice()->andReturnUsing(function (): void {
         SSH::fake()->execWillFail();
     });
-    expect(fn () => app(SyncLoadBalancerBackends::class)->sync($this->server))->toThrow(\App\Exceptions\SSHError::class);
+    expect(fn () => app(SyncLoadBalancerBackends::class)->sync($this->server))->toThrow(SSHError::class);
     $this->assertDatabaseHas('firewall_rules', ['id' => $rule->id, 'status' => FirewallRuleStatus::DELETING]);
 });
 
@@ -492,10 +517,10 @@ test('ordinary firewall failure cannot reactivate managed cleanup and managed mu
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     app(SyncLoadBalancerBackends::class)->sync($this->server);
     $managed = $this->lb->backends()->sole()->firewallRule;
-    app(\App\Actions\FirewallRule\ManageRule::class)->delete($managed);
-    Queue::assertNotPushed(\App\Jobs\FirewallRule\ApplyRulesJob::class);
+    app(ManageRule::class)->delete($managed);
+    Queue::assertNotPushed(ApplyRulesJob::class);
     $ordinary = FirewallRule::factory()->for($this->server)->create(['status' => FirewallRuleStatus::UPDATING]);
-    (new \App\Jobs\FirewallRule\ApplyRulesJob($ordinary))->failed(new Exception('Failed'));
+    (new ApplyRulesJob($ordinary))->failed(new Exception('Failed'));
     $this->assertDatabaseHas('firewall_rules', ['id' => $managed->id, 'status' => FirewallRuleStatus::DELETING]);
     $this->assertDatabaseHas('firewall_rules', ['id' => $ordinary->id, 'status' => FirewallRuleStatus::FAILED]);
 });
@@ -515,8 +540,8 @@ test('queued firewall shutdown rechecks newly added dependencies before touching
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     $service = $this->server->firewall();
     $job = $operation === 'uninstall'
-        ? new \App\Jobs\Service\UninstallJob($service, ServiceStatus::FAILED)
-        : new \App\Jobs\Service\ManageJob($service, $operation, ServiceStatus::STOPPED);
+        ? new UninstallJob($service, ServiceStatus::FAILED)
+        : new ManageJob($service, $operation, ServiceStatus::STOPPED);
     $job->withFakeQueueInteractions()->handle();
     $job->assertFailedWith(ValidationException::class);
     $job->failed(ValidationException::withMessages(['service' => 'Required firewall']));
@@ -525,7 +550,7 @@ test('queued firewall shutdown rechecks newly added dependencies before touching
 })->with(['stop', 'disable', 'uninstall']);
 
 test('admitted firewall shutdown prevents later backend admission', function (string $operation) {
-    $action = $operation === 'uninstall' ? app(\App\Actions\Service\Uninstall::class) : app(\App\Actions\Service\Manage::class);
+    $action = $operation === 'uninstall' ? app(Uninstall::class) : app(Manage::class);
     $action->{$operation}($this->server->firewall());
     expect(fn () => app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input))->toThrow(ValidationException::class);
     $this->assertDatabaseCount('component_backends', 0);
@@ -534,7 +559,7 @@ test('admitted firewall shutdown prevents later backend admission', function (st
 test('sites cannot take a managed backend listener port', function () {
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     $port = $this->site->port;
-    expect(fn () => app(\App\Actions\Site\UpdatePort::class)->update($this->site, ['port' => 8080]))->toThrow(ValidationException::class);
+    expect(fn () => app(UpdatePort::class)->update($this->site, ['port' => 8080]))->toThrow(ValidationException::class);
     $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'port' => $port]);
     expect(SSH::getExecutedCommands())->toBe([]);
 });
@@ -542,11 +567,11 @@ test('sites cannot take a managed backend listener port', function () {
 test('environment teardown removes load balancer vhosts listeners and managed rules', function () {
     app(UpdateLoadBalancerBackends::class)->update($this->lb, $this->input);
     app(SyncLoadBalancerBackends::class)->sync($this->server);
-    app(\App\Actions\Environment\DeleteEnvironment::class)->jobs($this->environment);
+    app(DeleteEnvironment::class)->jobs($this->environment);
     app(DeleteComponent::class)->handle($this->lb->id);
     app(DeleteComponent::class)->handle($this->target->id);
     app(SyncLoadBalancerBackends::class)->sync($this->server);
-    app(\App\Actions\Environment\DeleteEnvironment::class)->handle($this->environment->id);
+    app(DeleteEnvironment::class)->handle($this->environment->id);
     $this->assertDatabaseCount('component_backends', 0);
     $this->assertDatabaseCount('firewall_rules', 0);
     $this->assertDatabaseMissing('environments', ['id' => $this->environment->id]);

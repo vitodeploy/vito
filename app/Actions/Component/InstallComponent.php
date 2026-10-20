@@ -5,6 +5,7 @@ namespace App\Actions\Component;
 use App\Actions\IsolatedUser\EnsureIsolatedUser;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
 use App\Models\Application;
 use App\Models\Component;
@@ -40,7 +41,7 @@ class InstallComponent
         }
         app(BroadcastComponentUpdate::class)->broadcast($component);
 
-        if ($component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+        if ($component->type === ComponentType::LOAD_BALANCER) {
             app(SyncComponentVhost::class)->sync($component);
             DB::transaction(function () use ($component): void {
                 Application::query()->lockForUpdate()->findOrFail($component->environment->application_id);

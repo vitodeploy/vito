@@ -3,10 +3,10 @@
 namespace App\Actions\Worker;
 
 use App\Actions\Component\ValidateComponentProcess;
-use App\Models\Component;
-use App\Models\ComponentCapability;
 use App\Enums\WorkerStatus;
 use App\Jobs\Worker\CreateJob;
+use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;

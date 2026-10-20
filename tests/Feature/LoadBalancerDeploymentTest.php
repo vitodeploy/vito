@@ -10,6 +10,7 @@ use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
 use App\Enums\EnvironmentDeploymentStatus;
+use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\Application;
@@ -21,6 +22,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
@@ -83,7 +85,7 @@ test('load balancers participate only in release without app scripts releases or
     app(FinishEnvironmentDeployment::class)->finish($run->id);
     SSH::assertNotExecutedContains("'/releases'");
     $this->actingAs($this->user)->get('/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/deployments/'.$run->id)
-        ->assertOk()->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('deployment.deployments.1.component_type', 'load_balancer'));
+        ->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('deployment.deployments.1.component_type', 'load_balancer'));
 });
 
 test('load balancer release failure waits for app settlement then joins recovery', function (bool $recoveryFails) {
@@ -112,7 +114,7 @@ test('manual rollback reloads new load balancers but live joins never include th
         advanceLoadBalancerRun($run);
     }
     $new = Component::factory()->for($this->environment)->create(['type' => ComponentType::LOAD_BALANCER, 'status' => ComponentStatus::READY]);
-    $new->server->services()->create(['name' => 'nginx', 'type' => 'webserver', 'version' => 'latest', 'status' => \App\Enums\ServiceStatus::READY]);
+    $new->server->services()->create(['name' => 'nginx', 'type' => 'webserver', 'version' => 'latest', 'status' => ServiceStatus::READY]);
     expect(app(DeployEnvironment::class)->join($this->environment))->toBeNull();
     $rollback = app(RollbackEnvironment::class)->run($this->environment->fresh(), $run);
     app(StartEnvironmentDeployment::class)->start($rollback->id);

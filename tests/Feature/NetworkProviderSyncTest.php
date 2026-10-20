@@ -1,18 +1,33 @@
 <?php
 
+use App\Actions\Component\SyncComponentVhost;
+use App\Actions\Component\SyncLoadBalancerBackends;
+use App\Actions\Component\UpdateLoadBalancerBackends;
+use App\Actions\Network\DispatchNetworkServerSync;
 use App\Actions\Network\RecomputeNetworkStatus;
+use App\Actions\Network\ResolveServerAddress;
 use App\Actions\Network\SyncProviderNetworks;
+use App\Enums\HostedDomainStatus;
 use App\Enums\NetworkServerStatus;
 use App\Enums\NetworkStatus;
 use App\Enums\NetworkType;
 use App\Enums\ServerStatus;
+use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Events\SocketEvent;
 use App\Exceptions\PrivateNetworkPersistError;
 use App\Exceptions\PrivateNetworkSyncError;
 use App\Facades\SSH;
+use App\Jobs\Component\SyncLoadBalancerServerJob;
+use App\Jobs\Network\SyncNetworkServerJob;
 use App\Jobs\Network\SyncProviderNetworksJob;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\ComponentCapability;
+use App\Models\Environment;
+use App\Models\EnvironmentDomain;
 use App\Models\Network;
+use App\Models\NetworkServer;
 use App\Models\Server;
 use App\Models\ServerNetworkRule;
 use App\Models\ServerProvider;
@@ -111,7 +126,7 @@ test('provider backend network loss fails closed and recovers without blocking a
     Event::fake([SocketEvent::class]);
     $peer = vitoPestFeatureNetworkProviderSyncTestOtherServer();
     foreach (['webserver' => 'nginx', 'firewall' => 'ufw'] as $type => $name) {
-        $peer->services()->create(['type' => $type, 'name' => $name, 'version' => 'latest', 'status' => \App\Enums\ServiceStatus::READY]);
+        $peer->services()->create(['type' => $type, 'name' => $name, 'version' => 'latest', 'status' => ServiceStatus::READY]);
     }
     $networkPayload = [['id' => 4711, 'name' => 'prod', 'ip_range' => '10.0.0.0/16', 'servers' => [101, 102]]];
     $serverPayload = [
@@ -120,43 +135,43 @@ test('provider backend network loss fails closed and recovers without blocking a
     ];
     vitoPestFeatureNetworkProviderSyncTestFakeProvider($networkPayload, $serverPayload);
     vitoPestFeatureNetworkProviderSyncTestSync();
-    $application = \App\Models\Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'custom']);
-    $environment = \App\Models\Environment::factory()->for($application)->create();
-    $lb = \App\Models\Component::factory()->for($environment)->for($this->server)->create(['type' => 'load_balancer', 'status' => 'ready']);
-    $target = \App\Models\Component::factory()->for($environment)->for($peer)->create(['status' => 'ready']);
-    \App\Models\ComponentCapability::factory()->for($target)->create(['capability' => 'web', 'status' => 'ready', 'config' => ['port' => 10000]]);
-    \App\Models\EnvironmentDomain::factory()->for($lb)->create(['status' => \App\Enums\HostedDomainStatus::ACTIVE]);
-    app(\App\Actions\Component\UpdateLoadBalancerBackends::class)->update($lb, ['method' => 'round-robin', 'backends' => [
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'custom']);
+    $environment = Environment::factory()->for($application)->create();
+    $lb = Component::factory()->for($environment)->for($this->server)->create(['type' => 'load_balancer', 'status' => 'ready']);
+    $target = Component::factory()->for($environment)->for($peer)->create(['status' => 'ready']);
+    ComponentCapability::factory()->for($target)->create(['capability' => 'web', 'status' => 'ready', 'config' => ['port' => 10000]]);
+    EnvironmentDomain::factory()->for($lb)->create(['status' => HostedDomainStatus::ACTIVE]);
+    app(UpdateLoadBalancerBackends::class)->update($lb, ['method' => 'round-robin', 'backends' => [
         ['target_component_id' => $target->id, 'port' => 8080, 'backup' => false],
     ]]);
-    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->sync($peer);
+    app(SyncLoadBalancerBackends::class)->sync($peer);
     $this->assertDatabaseHas('firewall_rules', ['server_id' => $peer->id, 'component_managed' => true, 'source' => '10.0.0.2']);
 
     vitoPestFeatureNetworkProviderSyncTestFakeProvider($loss === 'network' ? [] : $networkPayload, $loss === 'address' ? [
         $serverPayload[0], ['id' => 102, 'private_net' => [['network' => 4711, 'ip' => null]]],
     ] : [$serverPayload[0]]);
     vitoPestFeatureNetworkProviderSyncTestSync();
-    expect(app(\App\Actions\Network\ResolveServerAddress::class)->connection($this->server, $peer))->toBeNull();
-    Queue::assertPushed(\App\Jobs\Component\SyncLoadBalancerServerJob::class, fn ($job): bool => $job->serverId === $this->server->id);
-    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->sync($peer);
-    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->sync($this->server);
-    expect(app(\App\Actions\Component\SyncComponentVhost::class)->generate($lb->fresh()))->toContain('server 127.0.0.1:9 down;')->not->toContain('10.0.0.3:8080');
-    expect(app(\App\Actions\Component\SyncComponentVhost::class)->generate($target->fresh()))->toBe('');
+    expect(app(ResolveServerAddress::class)->connection($this->server, $peer))->toBeNull();
+    Queue::assertPushed(SyncLoadBalancerServerJob::class, fn ($job): bool => $job->serverId === $this->server->id);
+    app(SyncLoadBalancerBackends::class)->sync($peer);
+    app(SyncLoadBalancerBackends::class)->sync($this->server);
+    expect(app(SyncComponentVhost::class)->generate($lb->fresh()))->toContain('server 127.0.0.1:9 down;')->not->toContain('10.0.0.3:8080');
+    expect(app(SyncComponentVhost::class)->generate($target->fresh()))->toBe('');
     expect($lb->fresh()->last_error)->toContain('no available private network');
     $this->assertDatabaseMissing('firewall_rules', ['server_id' => $peer->id, 'component_managed' => true]);
 
     vitoPestFeatureNetworkProviderSyncTestFakeProvider($networkPayload, $serverPayload);
     vitoPestFeatureNetworkProviderSyncTestSync();
-    foreach (\App\Models\NetworkServer::query()->where('status', NetworkServerStatus::PENDING)->get() as $member) {
-        app(\App\Actions\Network\DispatchNetworkServerSync::class)->toPresent($member);
-        $job = (new \App\Jobs\Network\SyncNetworkServerJob($member))->withFakeQueueInteractions();
+    foreach (NetworkServer::query()->where('status', NetworkServerStatus::PENDING)->get() as $member) {
+        app(DispatchNetworkServerSync::class)->toPresent($member);
+        $job = (new SyncNetworkServerJob($member))->withFakeQueueInteractions();
         $job->handle();
         $job->assertNotFailed();
     }
-    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->sync($peer);
-    app(\App\Actions\Component\SyncLoadBalancerBackends::class)->sync($this->server);
+    app(SyncLoadBalancerBackends::class)->sync($peer);
+    app(SyncLoadBalancerBackends::class)->sync($this->server);
     expect($lb->fresh()->last_error)->toBeNull();
-    expect(app(\App\Actions\Component\SyncComponentVhost::class)->generate($lb->fresh()))->toContain('10.0.0.3:8080');
+    expect(app(SyncComponentVhost::class)->generate($lb->fresh()))->toContain('10.0.0.3:8080');
     $this->assertDatabaseHas('firewall_rules', ['server_id' => $peer->id, 'component_managed' => true, 'source' => '10.0.0.2']);
 })->with(['member', 'network', 'address']);
 

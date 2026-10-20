@@ -4,6 +4,7 @@ namespace App\Actions\Database;
 
 use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
+use App\Models\EnvironmentAttachment;
 use App\Models\Server;
 use App\Models\Service;
 use App\Services\Database\Database;
@@ -20,7 +21,7 @@ class CreateDatabaseUser
      *
      * @throws ValidationException
      */
-    public function create(Server $server, array $input, array $links = [], ?\App\Models\EnvironmentAttachment $attachment = null): DatabaseUser
+    public function create(Server $server, array $input, array $links = [], ?EnvironmentAttachment $attachment = null): DatabaseUser
     {
         /** @var Service $service */
         $service = $server->database();

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
@@ -142,7 +143,7 @@ class CreateComponent
             throw ValidationException::withMessages(['name' => 'Connect a source control before adding components.']);
         }
 
-        app(\App\Actions\EnvironmentAttachment\ValidateEnvironmentResource::class)->component($environment, $server);
+        app(ValidateEnvironmentResource::class)->component($environment, $server);
 
         $preset = $environment->application->preset();
         foreach ($preset->requiredServices($environment->runtime_version ?? '') as $type => $version) {

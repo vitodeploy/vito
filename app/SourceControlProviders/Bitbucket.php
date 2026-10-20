@@ -7,7 +7,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -174,7 +173,7 @@ class Bitbucket extends AbstractSourceControlProvider
             if (! $response->successful() && $response->status() !== 404) {
                 throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }

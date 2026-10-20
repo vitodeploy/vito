@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Enums\ComponentType;
 use App\Enums\WebMode;
 use App\Models\Component;
 
@@ -31,7 +32,7 @@ class ComponentVariables
      */
     protected static function resources(Component $component): array
     {
-        if ($component->type !== \App\Enums\ComponentType::APP) {
+        if ($component->type !== ComponentType::APP) {
             return [];
         }
         $component->loadMissing('server', 'environment.attachments.server', 'environment.attachments.attachable');

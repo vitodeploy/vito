@@ -4,6 +4,8 @@ namespace App\Actions\Network;
 
 use App\Enums\NetworkType;
 use App\Models\NetworkServer;
+use App\Models\Server;
+use Illuminate\Support\Facades\DB;
 
 class RemoveServerFromNetwork
 {
@@ -15,8 +17,8 @@ class RemoveServerFromNetwork
 
     public function remove(NetworkServer $member, bool $observed = false): void
     {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($member, $observed): void {
-            \App\Models\Server::query()->lockForUpdate()->findOrFail($member->server_id);
+        DB::transaction(function () use ($member, $observed): void {
+            Server::query()->lockForUpdate()->findOrFail($member->server_id);
             $member->refresh();
             $network = $member->network;
             if (! $observed || ($network->type !== NetworkType::PROVIDER

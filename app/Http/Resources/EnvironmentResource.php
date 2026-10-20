@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Environment;
+use App\Models\EnvironmentDeployment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,7 +29,7 @@ class EnvironmentResource extends JsonResource
             'live_run_id' => $this->live_run_id,
             'shared_paths' => $this->shared_paths ?? [],
             'keep_releases' => $this->keep_releases,
-            'can_deploy' => $request->user()?->can('create', [\App\Models\EnvironmentDeployment::class, $this->resource, $this->application]) ?? false,
+            'can_deploy' => $request->user()?->can('create', [EnvironmentDeployment::class, $this->resource, $this->application]) ?? false,
             'last_error' => $this->last_error,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),

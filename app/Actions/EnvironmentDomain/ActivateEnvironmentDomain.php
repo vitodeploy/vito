@@ -5,6 +5,8 @@ namespace App\Actions\EnvironmentDomain;
 use App\Actions\Component\SyncComponentVhost;
 use App\Actions\SSL\CheckSslExpiry;
 use App\Actions\SSL\CreateLetsEncryptWildcardSsl;
+use App\Enums\ApplicationStatus;
+use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslMethod;
@@ -96,16 +98,17 @@ class ActivateEnvironmentDomain
     {
         foreach ($ssl->environmentDomains()->with('ssl', 'environment.application', 'component.server')->get() as $domain) {
             if ($domain->environment->status !== EnvironmentStatus::READY
-                || $domain->environment->application->status !== \App\Enums\ApplicationStatus::READY) {
+                || $domain->environment->application->status !== ApplicationStatus::READY) {
                 continue;
             }
-            if ($domain->component->status !== \App\Enums\ComponentStatus::READY || ! $domain->component->server->isReady()) {
+            if ($domain->component->status !== ComponentStatus::READY || ! $domain->component->server->isReady()) {
                 if ($domain->status === HostedDomainStatus::UPDATING) {
                     $domain->status = HostedDomainStatus::PENDING;
                     $domain->error = 'Certificate issued. Activation will retry when the target is ready.';
                     $domain->save();
                     app(BroadcastEnvironmentDomainUpdate::class)->broadcast($domain);
                 }
+
                 continue;
             }
             if (app(SyncComponentVhost::class)->hasCertificate($domain)) {

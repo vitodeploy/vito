@@ -6,6 +6,7 @@ use App\Actions\ComponentCapability\ValidateCapabilityServices;
 use App\DTOs\DynamicForm;
 use App\Models\Component;
 use App\Models\ComponentCapability;
+use App\Models\Deployment;
 use App\Models\Server;
 use App\RuntimePresets\AbstractRuntimePreset;
 use Illuminate\Validation\ValidationException;
@@ -43,7 +44,7 @@ abstract class AbstractComponentCapability
 
     public function uninstall(Component $component): void {}
 
-    public function afterRelease(Component $component, \App\Models\Deployment $deployment): void {}
+    public function afterRelease(Component $component, Deployment $deployment): void {}
 
     /**
      * @return list<string>

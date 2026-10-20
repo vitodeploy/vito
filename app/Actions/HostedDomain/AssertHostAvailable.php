@@ -16,7 +16,8 @@ class AssertHostAvailable
 {
     /**
      * @template T
-     * @param Closure(): T $callback
+     *
+     * @param  Closure(): T  $callback
      * @return T
      */
     public function run(int $serverId, string $field, Closure $callback): mixed
@@ -42,8 +43,8 @@ class AssertHostAvailable
 
                 return $hosts;
             })->merge(HostedDomain::query()
-                ->whereHas('site', fn ($query) => $query->where('server_id', $server->id))
-                ->when($ignore instanceof HostedDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('domain'))
+            ->whereHas('site', fn ($query) => $query->where('server_id', $server->id))
+            ->when($ignore instanceof HostedDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('domain'))
             ->merge(EnvironmentDomain::query()
                 ->whereHas('component', fn ($query) => $query->where('server_id', $server->id))
                 ->when($ignore instanceof EnvironmentDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('host'));

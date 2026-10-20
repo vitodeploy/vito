@@ -2,6 +2,7 @@
 
 use App\Actions\Bootstrap\GetBootstrap;
 use App\ComponentCapabilities\AbstractComponentCapability;
+use App\ComponentCapabilities\Worker;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\WebMode;
@@ -162,7 +163,7 @@ test('registration can override labels and serialized forms', function () {
     $form = DynamicForm::make([DynamicField::make('command')->text()->default('run')]);
 
     RegisterRuntimePreset::make('custom')->handler(Custom::class)->label('Custom runtime')->form($form)->register();
-    RegisterComponentCapability::make('worker')->handler(\App\ComponentCapabilities\Worker::class)->label('Jobs')->form($form)->register();
+    RegisterComponentCapability::make('worker')->handler(Worker::class)->label('Jobs')->form($form)->register();
 
     expect(config('component.runtimes.custom.label'))->toBe('Custom runtime')
         ->and(config('component.runtimes.custom.form'))->toBe($form->toArray())
@@ -189,10 +190,10 @@ test('registration rejects handlers outside the extension contracts', function (
 
 test('runtime and capability registries resolve dotted identifiers literally', function () {
     RegisterRuntimePreset::make('acme.custom')->handler(Custom::class)->register();
-    RegisterComponentCapability::make('acme.worker')->handler(\App\ComponentCapabilities\Worker::class)->register();
+    RegisterComponentCapability::make('acme.worker')->handler(Worker::class)->register();
 
     expect((new Application(['runtime' => 'acme.custom']))->preset())->toBeInstanceOf(Custom::class)
-        ->and((new ComponentCapability(['capability' => 'acme.worker']))->handler())->toBeInstanceOf(\App\ComponentCapabilities\Worker::class);
+        ->and((new ComponentCapability(['capability' => 'acme.worker']))->handler())->toBeInstanceOf(Worker::class);
 
     $configs = $this->actingAs($this->user)->getJson('/bootstrap')->assertSuccessful()->json('configs.application');
 
@@ -216,4 +217,4 @@ test('registration rejects abstract component capabilities before changing the r
 
 abstract class AbstractRuntimePresetForRegistrationTest extends Custom {}
 
-abstract class AbstractComponentCapabilityForRegistrationTest extends \App\ComponentCapabilities\Worker {}
+abstract class AbstractComponentCapabilityForRegistrationTest extends Worker {}

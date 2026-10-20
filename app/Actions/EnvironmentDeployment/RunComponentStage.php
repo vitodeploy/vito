@@ -2,8 +2,11 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Actions\Application\GetApplicationSourceControl;
+use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\WriteComponentEnv;
 use App\DTOs\GitCloneDTO;
+use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
 use App\Enums\DeploymentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
@@ -13,6 +16,7 @@ use App\Models\Environment;
 use App\Models\EnvironmentVariable;
 use App\SSH\OS\Git;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -30,12 +34,12 @@ class RunComponentStage
             return;
         }
         $deployment->log?->write($recovering ? 'Restoring previous release.' : 'Starting '.$stage->getText().'.');
-        if ($deployment->component->type === \App\Enums\ComponentType::LOAD_BALANCER) {
+        if ($deployment->component->type === ComponentType::LOAD_BALANCER) {
             if ($stage !== DeploymentStage::RELEASE || $deployment->environmentDeployment->is_join) {
                 throw new RuntimeException('Load balancers only participate in the release stage.');
             }
-            \Illuminate\Support\Facades\Cache::lock('unique-queue:server-'.$deployment->component->server_id, $stage->timeout() + 60)
-                ->block(10, fn () => app(\App\Actions\Component\SyncComponentVhost::class)->sync($deployment->component));
+            Cache::lock('unique-queue:server-'.$deployment->component->server_id, $stage->timeout() + 60)
+                ->block(10, fn () => app(SyncComponentVhost::class)->sync($deployment->component));
         } elseif ($recovering) {
             app(RollbackComponentRelease::class)->rollback($deployment);
         } else {
@@ -47,7 +51,7 @@ class RunComponentStage
         }
         $deployment->status = DeploymentStatus::FINISHED;
         $deployment->save();
-        if ($deployment->component->type === \App\Enums\ComponentType::APP && $deployment->environmentDeployment->fresh()->status === EnvironmentDeploymentStatus::CANCELLED) {
+        if ($deployment->component->type === ComponentType::APP && $deployment->environmentDeployment->fresh()->status === EnvironmentDeploymentStatus::CANCELLED) {
             $deployment->component->needs_redeploy = true;
             $deployment->component->save();
         }
@@ -82,7 +86,7 @@ class RunComponentStage
         $component = $deployment->component;
         $run = $deployment->environmentDeployment;
         $application = $component->environment->application;
-        $source = app(\App\Actions\Application\GetApplicationSourceControl::class)->get($application);
+        $source = app(GetApplicationSourceControl::class)->get($application);
         $provider = $source->provider();
         $key = 'component_'.$component->id;
         $url = $provider->fullRepoUrl($application->repository, $key);

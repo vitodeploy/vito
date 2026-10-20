@@ -5,6 +5,7 @@ namespace App\Actions\Worker;
 use App\Actions\Component\ValidateComponentProcess;
 use App\Models\Component;
 use App\Models\Worker;
+use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\ValidationException;
 
 class DeleteWorker
@@ -38,7 +39,7 @@ class DeleteWorker
     public function remove(Worker $worker): void
     {
         if ($worker->component_id !== null) {
-            /** @var \App\Services\ProcessManager\ProcessManager $handler */
+            /** @var ProcessManager $handler */
             $handler = $worker->server->processManager()->handler();
             $handler->delete($worker->id);
         }

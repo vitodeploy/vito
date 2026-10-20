@@ -2,6 +2,7 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
 use App\Enums\EnvironmentDeploymentStatus;
 use App\Jobs\EnvironmentDeployment\StartEnvironmentDeploymentJob;
@@ -21,7 +22,7 @@ class FinishEnvironmentDeployment
             return;
         }
         try {
-            foreach ($run->deployments()->whereHas('component', fn ($query) => $query->where('type', \App\Enums\ComponentType::APP))->with('component.environment', 'component.server')->get() as $deployment) {
+            foreach ($run->deployments()->whereHas('component', fn ($query) => $query->where('type', ComponentType::APP))->with('component.environment', 'component.server')->get() as $deployment) {
                 if (Cache::lock('unique-queue:component-'.$deployment->component_id, 1260)->get(fn () => DB::transaction(function () use ($run, $deployment): void {
                     Application::query()->lockForUpdate()->findOrFail($run->environment->application_id);
                     Environment::query()->lockForUpdate()->findOrFail($run->environment_id);

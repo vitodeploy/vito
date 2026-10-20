@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ComponentStatus;
+use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
+use App\Enums\DeploymentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
 use Carbon\Carbon;
 use Database\Factories\EnvironmentDeploymentFactory;
@@ -84,10 +87,10 @@ class EnvironmentDeployment extends AbstractModel
         if ($this->is_join || $this->status !== EnvironmentDeploymentStatus::FINISHED) {
             return false;
         }
-        $components = $this->environment->components()->where('type', \App\Enums\ComponentType::APP)->has('deployments');
+        $components = $this->environment->components()->where('type', ComponentType::APP)->has('deployments');
 
-        return $components->exists() && ! $components->where(fn (Builder $query) => $query->where('status', '!=', \App\Enums\ComponentStatus::READY)
-            ->orWhereDoesntHave('deployments', fn (Builder $query) => $query->where('release', $this->release)->where('status', \App\Enums\DeploymentStatus::FINISHED)))->exists();
+        return $components->exists() && ! $components->where(fn (Builder $query) => $query->where('status', '!=', ComponentStatus::READY)
+            ->orWhereDoesntHave('deployments', fn (Builder $query) => $query->where('release', $this->release)->where('status', DeploymentStatus::FINISHED)))->exists();
     }
 
     /** @return BelongsTo<self, covariant $this> */
