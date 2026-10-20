@@ -180,7 +180,7 @@ class Github extends AbstractSourceControlProvider
                 'error' => $e->getMessage(),
             ]);
 
-            throw new Exception('Failed to fetch last commit: '.$e->getMessage());
+            throw $e;
         }
     }
 

@@ -135,6 +135,54 @@ By default, Vito will read the `.env` file from your site's root directory. Howe
 This button appears when there is a deployment script! So you need to first write your deployment script and then this
 button will appear, and you will be able to click on it an execute the deployment script on the server.
 
+
+## Deploying a specific commit through the API
+
+Both `POST /api/projects/{project}/servers/{server}/sites/{site}/deploy` and
+`POST /api/projects/{project}/servers/{server}/sites/{site}/deployments` accept an
+optional JSON `commit_hash` field containing a full 40-character commit SHA:
+
+```shell
+curl --request POST \
+    --url "https://vito.example.com/api/projects/1/servers/1/sites/1/deployments" \
+    --header "Authorization: Bearer $VITO_API_TOKEN" \
+    --header "Accept: application/json" \
+    --header "Content-Type: application/json" \
+    --data '{"commit_hash":"0123456789abcdef0123456789abcdef01234567"}'
+```
+
+Use a project-scoped token with write access. The site must have a source control
+connection that can resolve the commit in its configured repository. Invalid input
+or an unknown/mismatched commit is rejected before creating a deployment;
+source control connection errors still propagate. Branch names, tags, and shortened
+SHAs are not accepted: resolve a release tag to its full commit SHA in CI first.
+Omitting `commit_hash` keeps the existing configured-branch behavior. The site's
+branch setting is never changed by this request.
+
+The deployment records the resolved commit and metadata and exports it as
+`COMMIT_ID`. When `commit_hash` is supplied, modern deployments fetch and check out this commit
+before running the build.
+For classic deployments, update the Git section of your deployment script to honor
+`COMMIT_ID` instead of always pulling the branch head:
+
+```bash
+set -e
+cd "$SITE_PATH"
+: "${COMMIT_ID:?A resolved deployment commit is required}"
+git fetch origin "$COMMIT_ID"
+git reset --hard "$COMMIT_ID"
+```
+
+Keep the application's install, migration, cache, and worker commands after this
+Git section. Fetching must succeed before resetting or running application commands.
+This replaces tracked files; preserve runtime files such as `.env` outside Git.
+Existing custom scripts are not rewritten automatically.
+
+For release-based deployment, disable push auto deployment and have your CI call
+this endpoint when publishing a release, passing the release's resolved commit SHA.
+Vito must be reachable from the CI runner. Use the normal deployment status endpoint
+to track completion; accepting a deployment does not mean it has succeeded.
+
 ## Auto Deployment
 
 You can enable auto deployment for your application by setting up git hooks.

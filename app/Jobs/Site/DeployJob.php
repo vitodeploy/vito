@@ -25,7 +25,8 @@ class DeployJob implements ShouldQueue
 
     public function __construct(
         protected Deployment $deployment,
-        protected bool $isModern = true
+        protected bool $isModern = true,
+        protected bool $checkoutCommit = false
     ) {
         $this->onQueue('ssh');
     }
@@ -111,6 +112,11 @@ class DeployJob implements ShouldQueue
     private function handleModernDeployment($site, $log): void
     {
         app(Git::class)->clone($site, $this->deployment->path());
+
+        if (($this->checkoutCommit ?? false) && $this->deployment->commit_id) {
+            app(Git::class)->fetchOrigin($site, $this->deployment->path(), $this->deployment->commit_id);
+            app(Git::class)->checkout($site, $this->deployment->path(), $this->deployment->commit_id);
+        }
 
         // build
         $site->server->os()->runScript(
