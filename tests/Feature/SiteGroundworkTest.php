@@ -258,7 +258,7 @@ test('ssh clones keep hyphenated self hosted hosts intact', function () {
         "alias_name='git.my-company.example-component_7'",
         "ssh-keygen -F '[git.my-company.example]:2222'",
         'host_keys=$(ssh-keyscan -T 5 -p 2222 -H git.my-company.example 2> /dev/null)',
-        "VITO_SSH_ERROR: could not read the SSH host key of git.my-company.example:2222",
+        'VITO_SSH_ERROR: could not read the SSH host key of git.my-company.example:2222',
     );
 });
 
