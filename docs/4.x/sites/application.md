@@ -156,8 +156,9 @@ connection that can resolve the commit in its configured repository. Invalid inp
 or an unknown/mismatched commit is rejected before creating a deployment;
 source control connection errors still propagate. Branch names, tags, and shortened
 SHAs are not accepted: resolve a release tag to its full commit SHA in CI first.
-Omitting `commit_hash` keeps the existing configured-branch behavior. The site's
-branch setting is never changed by this request.
+Omitting `commit_hash` keeps the existing configured-branch behavior. Branch heads
+are resolved afresh for each deployment, without reusing cached commit metadata.
+The site's branch setting is never changed by this request.
 
 The deployment records the resolved commit and metadata and exports it as
 `COMMIT_ID`. When `commit_hash` is supplied, modern deployments fetch and check out this commit

@@ -430,7 +430,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                anyOf:
+                  - $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'Deployment script is empty'
 
@@ -1412,7 +1414,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                anyOf:
+                  - $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'Deployment script is empty'
 

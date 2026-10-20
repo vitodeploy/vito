@@ -131,25 +131,26 @@ test('deployment API resolves the requested commit without changing the site bra
     Queue::assertPushed(DeployJob::class);
 })->with(['api.projects.servers.sites.deploy', 'api.projects.servers.sites.deployments.store']);
 
-test('deployment API still resolves the configured branch when no commit is supplied', function () {
+test('deployment API resolves a fresh branch head for each deployment without a supplied commit', function () {
     Queue::fake();
     Sanctum::actingAs($this->user, ['read', 'write']);
-    $commit = str_repeat('b', 40);
+    $commits = [str_repeat('a', 40), str_repeat('b', 40)];
     Http::fake([
-        'https://api.github.com/repos/organization/repository/commits/main' => Http::response([
-            'sha' => $commit,
-            'commit' => ['message' => 'Branch head'],
-        ]),
+        'https://api.github.com/repos/organization/repository/commits/main' => Http::sequence()
+            ->push(['sha' => $commits[0], 'commit' => ['message' => 'First push']])
+            ->push(['sha' => $commits[1], 'commit' => ['message' => 'Second push']]),
         'https://api.github.com/repos/organization/repository' => Http::response([]),
     ]);
 
-    $this->postJson(route('api.projects.servers.sites.deployments.store', [
-        'project' => $this->server->project,
-        'server' => $this->server,
-        'site' => $this->site,
-    ]))->assertSuccessful()->assertJsonPath('commit_id', $commit);
+    foreach ($commits as $commit) {
+        $this->postJson(route('api.projects.servers.sites.deployments.store', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertSuccessful()->assertJsonPath('commit_id', $commit);
+    }
 
-    Queue::assertPushed(DeployJob::class);
+    Queue::assertPushed(DeployJob::class, 2);
 });
 
 test('deployment API rejects invalid commit input before creating a deployment', function (mixed $commit) {
@@ -195,7 +196,12 @@ test('deployment API distinguishes unknown commits from provider failures', func
     Queue::fake();
     Sanctum::actingAs($this->user, ['read', 'write']);
     Http::fake([
-        'https://api.github.com/repos/organization/repository/commits/*' => Http::response([], $providerStatus),
+        'https://api.github.com/repos/organization/repository/commits/*' => Http::response(
+            $providerStatus === 422
+                ? ['message' => 'No commit found for SHA: '.str_repeat('a', 40)]
+                : [],
+            $providerStatus,
+        ),
         'https://api.github.com/repos/organization/repository' => Http::response([]),
     ]);
 
@@ -205,14 +211,18 @@ test('deployment API distinguishes unknown commits from provider failures', func
         'site' => $this->site,
     ]), ['commit_hash' => str_repeat('a', 40)]);
     $response->assertStatus($expectedStatus);
-    if ($providerStatus === 404) {
+    if (in_array($providerStatus, [404, 422], true)) {
         $response->assertJsonValidationErrors('commit_hash');
     }
 
     $this->assertDatabaseCount('deployments', 0);
     $this->assertDatabaseCount('server_logs', 0);
     Queue::assertNothingPushed();
-})->with(['unknown commit' => [404, 422], 'provider permission denied' => [403, 500]]);
+})->with([
+    'unknown commit' => [404, 422],
+    'github unknown sha' => [422, 422],
+    'provider permission denied' => [403, 500],
+]);
 
 test('deployment API requires source control for an explicit commit', function () {
     Queue::fake();
