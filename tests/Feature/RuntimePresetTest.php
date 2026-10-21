@@ -43,16 +43,18 @@ test('built-in runtime presets resolve and expose public bootstrap descriptors',
 
     if ($tooling !== null) {
         $tool = ToolingRegistry::find($tooling);
-        expect($tool)->not->toBeNull()
-            ->and($preset->versions())->toBe($tool::supportedVersions());
+        expect($tool)->not->toBeNull();
+        foreach ($preset->versions() as $version) {
+            expect($tool::supportedVersions())->toContain($preset->toolingVersion($version));
+        }
     }
 })->with([
-    ['php', PHP::class, WebMode::FPM, null],
+    ['php', PHP::class, WebMode::FPM, 'composer'],
     ['node', NodeJS::class, WebMode::PROXY, 'node'],
     ['bun', Bun::class, WebMode::PROXY, 'bun'],
     ['static', StaticSite::class, WebMode::STATIC, null],
     ['custom', Custom::class, WebMode::PROXY, null],
-    ['laravel', Laravel::class, WebMode::FPM, null],
+    ['laravel', Laravel::class, WebMode::FPM, 'composer'],
 ]);
 
 test('runtime requirements use the selected version without imposing server-wide mise services', function (string $id, array $services) {

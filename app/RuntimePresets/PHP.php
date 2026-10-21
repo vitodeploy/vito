@@ -3,6 +3,7 @@
 namespace App\RuntimePresets;
 
 use App\Enums\WebMode;
+use App\Tooling\ComposerTooling;
 
 class PHP extends AbstractRuntimePreset
 {
@@ -24,6 +25,26 @@ class PHP extends AbstractRuntimePreset
     public function requiredServices(string $version): array
     {
         return ['php' => $version];
+    }
+
+    public function tooling(): ?string
+    {
+        return ComposerTooling::id();
+    }
+
+    public function sharedTooling(): bool
+    {
+        return false;
+    }
+
+    public function toolingVersion(string $version): string
+    {
+        return '2';
+    }
+
+    public function executables(string $version): array
+    {
+        return ['php' => '/usr/bin/php'.$version];
     }
 
     public function webMode(): WebMode

@@ -44,6 +44,7 @@ class ComposerTooling extends AbstractTooling
                 'phpVersion' => $target->phpVersion,
                 'majorVersion' => $version,
                 'installDir' => self::INSTALL_DIR,
+                'configDir' => $target->configDir,
             ]),
             'install-composer',
             $target->siteId
@@ -58,6 +59,7 @@ class ComposerTooling extends AbstractTooling
         $target->server->ssh($target->user)->exec(
             view('ssh.composer.uninstall', [
                 'installDir' => self::INSTALL_DIR,
+                'configDir' => $target->configDir,
             ]),
             'uninstall-composer',
             $target->siteId
@@ -66,6 +68,6 @@ class ComposerTooling extends AbstractTooling
 
     public function pathContributions(ToolingTargetDTO $target): array
     {
-        return ['/home/'.$target->user.'/'.self::INSTALL_DIR];
+        return [($target->configDir ?? '/home/'.$target->user).'/'.self::INSTALL_DIR];
     }
 }

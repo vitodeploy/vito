@@ -36,6 +36,10 @@ class UpdateApplication
             if ($changed) {
                 foreach ($application->environments()->orderBy('id')->lockForUpdate()->get() as $environment) {
                     app(AssertEnvironmentIdle::class)->validate($environment, 'repository');
+                    if ($environment->components()->where('type', ComponentType::APP)
+                        ->whereIn('status', [ComponentStatus::PENDING, ComponentStatus::INSTALLING])->exists()) {
+                        throw ValidationException::withMessages(['repository' => 'Wait for component installation or synchronization to finish before changing the repository or source control.']);
+                    }
                 }
             }
             $application->update([

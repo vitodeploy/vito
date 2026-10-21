@@ -57,6 +57,24 @@ abstract class AbstractRuntimePreset
         return null;
     }
 
+    public function sharedTooling(): bool
+    {
+        return true;
+    }
+
+    public function toolingVersion(string $version): string
+    {
+        return $version;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function executables(string $version): array
+    {
+        return [];
+    }
+
     public function webRoot(): ?string
     {
         return null;

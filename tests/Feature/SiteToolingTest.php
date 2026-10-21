@@ -193,6 +193,25 @@ test('component tooling prevents uninstall but allows changing the site global v
     ['bun', 'bun', '1.1', '1.2'],
 ]);
 
+test('site Composer removal leaves component-local installations intact', function (string $runtime) {
+    SSH::fake();
+    $this->isolatedSite->update(['type' => NodeSite::id()]);
+    $this->sibling->update(['type' => NodeSite::id()]);
+    $iuser = vitoPestFeatureSiteToolingTestIuser();
+    $iuser->setToolingVersion('composer', '2');
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => $runtime]);
+    $environment = Environment::factory()->for($application)->create(['runtime_version' => '8.2']);
+    $component = Component::factory()->for($environment)->for($this->server)->create(['isolated_user_id' => $iuser->id, 'user' => $iuser->username]);
+
+    $this->actingAs($this->user)->deleteJson(route('site-tooling.uninstall', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'composer',
+    ]))->assertRedirect()->assertSessionHasNoErrors();
+
+    SSH::assertExecutedContains('rm -f "$HOME/.local/vito/bin/composer"');
+    SSH::assertNotExecutedContains($component->basePath());
+    expect($iuser->fresh()->toolingVersion('composer'))->toBeNull();
+})->with(['php', 'laravel']);
+
 test('uninstall is not blocked by components using another tool or isolated user', function (bool $sameUser) {
     SSH::fake();
     $iuser = vitoPestFeatureSiteToolingTestIuser();

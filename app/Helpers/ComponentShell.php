@@ -11,10 +11,10 @@ final class ComponentShell
     public static function wrap(Component $component, string $command, ?string $envFile = null, ?string $cwd = null): string
     {
         $target = ToolingTargetDTO::forComponent($component);
-        $environment = SiteShellEnvironment::collect($target);
+        $environment = SiteShellEnvironment::collect(new ToolingTargetDTO($target->server, $target->user, $target->isolatedUser, $target->phpVersion));
         $toolId = $component->environment->application->preset()->tooling();
         $paths = $toolId === null ? [] : (ToolingRegistry::find($toolId)?->pathContributions($target) ?? []);
-        $environment['PATH'] = implode(':', [...$paths, $environment['PATH'] ?? "/usr/local/bin:/usr/bin:/bin:/home/{$component->user}/.local/bin"]);
+        $environment['PATH'] = implode(':', [$component->basePath().'/bin', ...$paths, $environment['PATH'] ?? "/usr/local/bin:/usr/bin:/bin:/home/{$component->user}/.local/bin"]);
 
         $script = '';
         foreach ($environment as $key => $value) {

@@ -11,6 +11,7 @@ use App\Actions\ComponentCapability\InstallWebCapability;
 use App\Actions\Environment\UpdateEnvironment;
 use App\Actions\PHP\EnsureFpmPool;
 use App\Actions\Worker\CreateWorker;
+use App\DTOs\ToolingTargetDTO;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
@@ -33,6 +34,7 @@ use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
 use App\Models\SourceControl;
 use App\Support\Testing\SSHFake;
+use App\Tooling\ComposerTooling;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -102,6 +104,59 @@ test('fpm capability skips the default user and provisions only the requested ve
     }
     $capability->handler()->install($component);
 })->with([false, true]);
+
+test('php components provision Composer and the selected CLI before becoming ready', function (string $runtime, bool $defaultUser) {
+    $this->application->update(['runtime' => $runtime]);
+    $this->environment->update(['runtime_version' => '8.2']);
+    $component = installCapabilityComponent([], $defaultUser ? $this->server->getSshUser() : 'runtime');
+
+    app(InstallComponent::class)->install($component->id);
+
+    SSH::assertExecutedContains('php8.2 composer-setup.php --2');
+    SSH::assertExecutedContains('php8.2 "$INSTALL_DIR/composer" --version');
+    SSH::assertExecutedContains("ln -sfn -- '/usr/bin/php8.2' ".escapeshellarg($component->basePath().'/bin/php'));
+    SSH::assertNotExecutedContains('sudo ln -s /usr/bin/php');
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'ready', 'installed_runtime_version' => '8.2']);
+})->with(['php', 'laravel'])->with([false, true]);
+
+test('shared linux users retain independent PHP and Composer installations per component', function (string $firstVersion, string $secondVersion) {
+    $this->application->update(['runtime' => 'php']);
+    foreach ([$firstVersion, $secondVersion] as $version) {
+        $this->server->services()->firstOrCreate(['type' => 'php', 'name' => 'php', 'version' => $version], ['status' => ServiceStatus::READY]);
+    }
+    $this->environment->update(['runtime_version' => $firstVersion]);
+    $component = installCapabilityComponent();
+    $environment = Environment::factory()->for($this->application)->create(['runtime_version' => $secondVersion]);
+    $other = app(CreateComponent::class)->create($environment, ['name' => 'Other', 'server_id' => $this->server->id, 'user' => 'runtime', 'type' => 'app']);
+
+    app(InstallComponent::class)->install($component->id);
+    app(InstallComponent::class)->install($other->id);
+
+    expect($other->isolated_user_id)->toBe($component->isolated_user_id);
+    SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg('/usr/bin/php'.$firstVersion).' '.escapeshellarg($component->basePath().'/bin/php'));
+    SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg('/usr/bin/php'.$secondVersion).' '.escapeshellarg($other->basePath().'/bin/php'));
+    SSH::assertExecutedContains('INSTALL_DIR='.escapeshellarg($component->basePath().'/.local/vito/bin'));
+    SSH::assertExecutedContains('INSTALL_DIR='.escapeshellarg($other->basePath().'/.local/vito/bin'));
+    SSH::assertNotExecutedContains('INSTALL_DIR="$HOME/.local/vito/bin"');
+    SSH::assertNotExecutedContains('ACTIVATION_LINE=');
+    SSH::assertNotExecutedContains('/home/runtime/bin/php');
+    SSH::assertNotExecutedContains('update-alternatives');
+})->with([['8.2', '8.3'], ['5.6', '8.2'], ['8.2', '5.6']]);
+
+test('component Composer removal targets only its own quoted path', function () {
+    $this->application->update(['runtime' => 'php']);
+    $this->environment->update(['runtime_version' => '8.2']);
+    $component = installCapabilityComponent();
+    $component->path = "/home/runtime/component's directory";
+    $target = ToolingTargetDTO::forComponent($component);
+
+    new ComposerTooling()->uninstall($target);
+
+    SSH::assertExecutedContains('rm -f -- '.escapeshellarg($component->basePath().'/.local/vito/bin/composer'));
+    SSH::assertNotExecutedContains('$HOME/.local/vito/bin');
+    SSH::assertNotExecutedContains('ACTIVATION_LINE=');
+    expect(new ComposerTooling()->pathContributions($target))->toBe([$component->basePath().'/.local/vito/bin']);
+});
 
 test('fpm uninstall retains pools used by Sites or another components installed runtime', function (string $shared) {
     $this->application->update(['runtime' => 'php']);
@@ -252,8 +307,9 @@ test('runtime changes re-pin components and retain the old checkpoint on failure
 test('fpm runtime resync provisions new pool before removing unused old pool', function () {
     $this->application->update(['runtime' => 'php']);
     $this->environment->update(['runtime_version' => '8.2']);
-    $component = installCapabilityComponent([['capability' => 'web']]);
+    $component = installCapabilityComponent([['capability' => 'web'], ['capability' => 'scheduler', 'config' => ['command' => 'php schedule.php']]]);
     app(InstallComponent::class)->install($component->id);
+    $crontab = CronJob::crontab($this->server, 'runtime');
     $this->server->services()->create(['type' => 'php', 'name' => 'php', 'version' => '8.3', 'status' => ServiceStatus::READY]);
     app(UpdateEnvironment::class)->update($this->environment, ['name' => $this->environment->name, 'branch' => 'main', 'runtime_version' => '8.3']);
     $pool = $this->mock(EnsureFpmPool::class);
@@ -267,6 +323,9 @@ test('fpm runtime resync provisions new pool before removing unused old pool', f
     (new SyncComponentRuntimeJob($component->id, $component->server_id))->handle();
     $this->assertDatabaseHas('components', ['id' => $component->id, 'installed_runtime_version' => '8.3', 'status' => 'ready']);
     SSH::assertExecutedContains('/etc/php/8.2/fpm/pool.d/runtime.conf');
+    SSH::assertExecutedContains("ln -sfn -- '/usr/bin/php8.3' ".escapeshellarg($component->basePath().'/bin/php'));
+    SSH::assertExecutedContains('php8.3 "$INSTALL_DIR/composer" --version');
+    expect(CronJob::crontab($this->server, 'runtime'))->toBe($crontab);
 });
 
 test('runtime change rejects missing services and nonready components atomically', function (bool $nonready) {

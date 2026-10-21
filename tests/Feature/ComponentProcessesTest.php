@@ -34,6 +34,7 @@ use App\Models\ComponentCapability;
 use App\Models\CronJob;
 use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
+use App\Models\IsolatedUser;
 use App\Models\Worker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -79,6 +80,32 @@ test('component shell quotes commands and paths without interpolating variables 
         ->not->toContain('source ', 'set -a');
     $explicit = componentProcessScript(ComponentShell::wrap($this->component, $command, '/tmp/env', '/tmp/staged release'));
     expect($explicit)->toContain("cd -- '/tmp/staged release' || exit 1;", "'/tmp/env' /bin/bash -p -c ")->not->toContain('exit 0');
+});
+
+test('php component commands prefer component executables and Composer over server defaults', function (bool $staged) {
+    $this->application->update(['runtime' => 'laravel']);
+    $this->environment->update(['runtime_version' => '8.4']);
+    $this->component->refresh();
+    $this->component->path = "/home/runtime/component's directory";
+    $command = 'composer install && php artisan schedule:run';
+    $script = componentProcessScript(ComponentShell::wrap(
+        $this->component, $command, $staged ? '/tmp/staged.env' : null, $staged ? '/tmp/release' : null,
+    ));
+
+    expect($script)->toContain('export PATH='.escapeshellarg($this->component->basePath().'/bin:'.$this->component->basePath().'/.local/vito/bin:/usr/local/bin:/usr/bin:/bin:/home/'.$this->component->user.'/.local/bin').'; ')
+        ->toContain('/bin/bash -p -c '.escapeshellarg($command));
+})->with([false, true]);
+
+test('component commands retain optional tooling installed for their shared linux user', function () {
+    $isolatedUser = IsolatedUser::factory()->create(['server_id' => $this->server->id, 'username' => $this->component->user]);
+    $isolatedUser->setToolingVersion('composer', '2');
+    $this->component->isolated_user_id = $isolatedUser->id;
+    $this->component->save();
+
+    $script = componentProcessScript(ComponentShell::wrap($this->component->fresh(), 'composer --version'));
+
+    expect($script)->toContain('/home/'.$this->component->user.'/.local/vito/bin')
+        ->not->toContain($this->component->basePath().'/.local/vito/bin');
 });
 
 test('manual component process mutations reject pending and running deployments', function (string $operation, EnvironmentDeploymentStatus $status) {

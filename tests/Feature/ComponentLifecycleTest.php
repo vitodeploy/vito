@@ -9,7 +9,9 @@ use App\Actions\Component\InstallComponent;
 use App\Actions\Component\PurgeServerComponents;
 use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\SyncComponentDeployKeys;
+use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\Environment\DeleteEnvironment;
+use App\Actions\Environment\UpdateEnvironment;
 use App\Actions\EnvironmentDeployment\DeployEnvironment;
 use App\Actions\Site\Tooling\UninstallSiteTooling;
 use App\Actions\SourceControl\SetupDeployKey;
@@ -22,7 +24,9 @@ use App\Jobs\Application\DeleteApplicationJob;
 use App\Jobs\Component\DeleteComponentJob;
 use App\Jobs\Component\DeletePurgedComponentDeployKeyJob;
 use App\Jobs\Component\InstallComponentJob;
+use App\Jobs\Component\SyncComponentCapabilitiesJob;
 use App\Jobs\Component\SyncComponentDeployKeysJob;
+use App\Jobs\Component\SyncComponentRuntimeJob;
 use App\Jobs\Environment\DeleteEnvironmentJob;
 use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
 use App\Models\Application;
@@ -208,6 +212,50 @@ test('repository changes remove keys from their original source and register the
     Http::assertSent(fn ($request) => $request->method() === 'DELETE' && str_contains($request->url(), '/organization/repository/keys/123'));
     Http::assertSent(fn ($request) => $request->method() === 'POST' && str_contains($request->url(), '/other/repo/keys'));
 });
+
+test('repository and source changes wait for component synchronization', function (string $operation, bool $changeSource) {
+    $this->site->sourceControl->update(['user_id' => $this->user->id, 'project_id' => $this->server->project_id]);
+    app(InstallComponent::class)->install($this->component->id);
+    if ($operation === 'runtime') {
+        app(UpdateEnvironment::class)->update($this->environment, ['name' => $this->environment->name, 'branch' => 'main', 'runtime_version' => '24']);
+        $job = new SyncComponentRuntimeJob($this->component->id, $this->server->id);
+    } elseif ($operation === 'capabilities') {
+        app(UpdateComponentCapabilities::class)->update($this->component, ['capabilities' => [['capability' => 'worker']]]);
+        $job = new SyncComponentCapabilitiesJob($this->component->id, $this->server->id);
+    } else {
+        $this->component->status = ComponentStatus::INSTALLING;
+        $this->component->save();
+        $job = new InstallComponentJob($this->component->id, $this->server->id);
+    }
+    $source = $changeSource ? SourceControl::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->server->project_id]) : $this->application->sourceControl;
+    $input = ['name' => 'Changed', 'source_control_id' => $source->id, 'repository' => $changeSource ? $this->application->repository : 'other/repo'];
+
+    $this->actingAs($this->user)->putJson('/applications/'.$this->application->id, $input)
+        ->assertUnprocessable()->assertJsonValidationErrors('repository');
+
+    $this->assertDatabaseHas('applications', [
+        'id' => $this->application->id, 'name' => $this->application->name,
+        'source_control_id' => $this->application->source_control_id, 'repository' => $this->application->repository,
+    ]);
+    $this->assertDatabaseHas('components', [
+        'id' => $this->component->id, 'status' => $operation === 'installing' ? ComponentStatus::INSTALLING : ComponentStatus::PENDING,
+        'deploy_key_source_control_id' => $this->application->source_control_id, 'deploy_key_repository' => $this->application->repository,
+    ]);
+    Queue::assertNotPushed(SyncComponentDeployKeysJob::class);
+    app(UpdateApplication::class)->update($this->application, [
+        'name' => 'Renamed', 'source_control_id' => $this->application->source_control_id, 'repository' => $this->application->repository,
+    ], $this->user);
+    $this->assertDatabaseHas('applications', ['id' => $this->application->id, 'name' => 'Renamed']);
+
+    $job->handle();
+    app(UpdateApplication::class)->update($this->application, $input, $this->user);
+    Queue::assertPushed(SyncComponentDeployKeysJob::class);
+    (new SyncComponentDeployKeysJob($this->component->id, $this->server->id))->handle();
+    $this->assertDatabaseHas('components', [
+        'id' => $this->component->id, 'status' => ComponentStatus::READY,
+        'deploy_key_source_control_id' => $source->id, 'deploy_key_repository' => $input['repository'],
+    ]);
+})->with(['runtime', 'capabilities', 'installing'])->with([false, true]);
 
 test('changing to github app removes old provider and local keys', function () {
     app(InstallComponent::class)->install($this->component->id);

@@ -40,7 +40,13 @@ class SyncComponentRuntime
         $toolId = $preset->tooling();
         if ($toolId !== null) {
             $tool = ToolingRegistry::find($toolId) ?? throw new RuntimeException('The runtime tooling is unavailable.');
-            $tool->install(ToolingTargetDTO::forComponent($component), $version ?? '');
+            $tool->install(ToolingTargetDTO::forComponent($component), $preset->toolingVersion($version ?? ''));
+        }
+        $executables = $preset->executables($version ?? '');
+        if ($executables !== []) {
+            $component->server->ssh($component->user)->exec(view('ssh.components.sync-executables', [
+                'component' => $component, 'executables' => $executables,
+            ]), 'component-executables');
         }
 
         if ($preset->webMode() === WebMode::FPM && $component->hasCapability('web')) {

@@ -6,7 +6,9 @@ A component places an [environment](concepts.md) on a server in the same project
 
 Choose a ready server, Linux user and capabilities. Required server services must already be installed. Installation prepares component directories, per-component runtime tooling where supported, and repository access. GitHub App sources use installation tokens; SSH-key sources use a component-owned deploy key.
 
-Runtime versions managed through Mise are selected per component directory, not globally for the Linux user. Two environments can share a Linux user without forcing the same Node version. For stronger filesystem isolation, use separate users. A user's PHP-FPM pools and Site tooling may still be shared; Vito prevents removing infrastructure that another owner needs.
+Runtime versions managed through Mise are selected per component directory, not globally for the Linux user. PHP and Laravel components install their own compatible Composer 2 executable and select the environment's PHP CLI through a component-local executable path for deployments, workers and cron jobs. Two environments can share a Linux user without forcing the same Node or PHP CLI version, or replacing each other's Composer installation. For stronger filesystem isolation, use separate users. A user's PHP-FPM pools and Site tooling may still be shared; Vito prevents removing infrastructure that another owner needs.
+
+Repository and source control changes must wait until app components finish installation or synchronization, including runtime and capability changes. Application renames remain available while this work is pending.
 
 | Capability | What it does | Requirements |
 | --- | --- | --- |

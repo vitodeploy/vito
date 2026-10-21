@@ -256,8 +256,13 @@ Register it in your plugin's `boot()`:
 
 The builder takes optional `label()` and `form(DynamicForm)` overrides; otherwise it uses the preset's
 label and form. The registry is `component.runtimes`. `Application::preset()` resolves a stateless
-handler. PHP and Laravel declare `requiredServices($version)` as `['php' => $version]`; Mise runtimes
-return their `ToolingRegistry` tool id from `tooling()` rather than requiring a server-wide Node service.
+handler. PHP and Laravel declare `requiredServices($version)` as `['php' => $version]` and `tooling()`
+as `composer`; Mise runtimes return their `ToolingRegistry` tool id rather than requiring a server-wide
+Node service. `toolingVersion($version)` defaults to the selected runtime version; PHP and Laravel
+return `2` to install Composer 2 independently of the PHP version. `executables($version)` optionally
+maps command names to absolute executable paths. Runtime synchronization links these into the component's
+`bin` directory, which takes priority in deployment, worker and cron command paths. PHP maps `php` to
+`/usr/bin/php<version>` without changing the server default or another component's CLI.
 Other optional suggestions are `webRoot()`, `startCommand()`, `schedulerCommand()`, `sharedPaths()` and
 `form()`. Defaults are empty/null.
 
@@ -278,8 +283,12 @@ Additional extension points:
   These aliases have lower priority than explicit environment variables and are conservatively masked in UI
   responses. Never expose credentials through warnings, catalogue descriptors or dynamic-form defaults.
 
-Runtime tooling is installed per component directory through `ToolingTargetDTO::forComponent()`, not globally
-for its Linux user. See [Applications](applications/concepts.md) for the deployment and environment-file contracts.
+Runtime tooling receives `ToolingTargetDTO::forComponent()`. Mise runtime versions and executable links
+are selected per component directory. Composer installs under the component's `.local/vito/bin`, without
+changing the user's shell profiles or shared Site installation. `sharedTooling()` defaults to `true`,
+protecting shared runtime installations from Site tooling removal; PHP and Laravel return `false` because
+their Composer installation is component-local. See [Applications](applications/concepts.md) for the
+deployment and environment-file contracts.
 
 ### Component capabilities (Beta)
 
