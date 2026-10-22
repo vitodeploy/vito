@@ -149,7 +149,9 @@ export default function DeploymentPanel({
                         {component.component_name}
                       </Link>
                     ) : (
-                      <span className="text-muted-foreground">{component.component_name ? `${component.component_name} (removed)` : 'Removed component'}</span>
+                      <span className="text-muted-foreground">
+                        {component.component_name ? `${component.component_name} (removed)` : 'Removed component'}
+                      </span>
                     )}
                     {component.server_name && component.server_name !== component.component_name && (
                       <span className="text-muted-foreground font-normal"> on {component.server_name}</span>
