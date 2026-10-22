@@ -76,7 +76,7 @@ export default function ResourcePanel({
         description="Vito manages a dedicated user and firewall access for every app component, and injects the connection variables on the next deploy."
         action={
           <Button variant="outline" size="sm" asChild>
-            <Link href={`${baseUrl}/variables`} preserveState preserveScroll only={panelProps}>
+            <Link href={`${baseUrl}/variables?resource=${resource.id}`} preserveState preserveScroll only={panelProps}>
               View variables
             </Link>
           </Button>

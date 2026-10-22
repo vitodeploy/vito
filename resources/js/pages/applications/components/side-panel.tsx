@@ -1,4 +1,4 @@
-import { ComponentType, ReactNode, useEffect } from 'react';
+import { ComponentType, ReactNode, useEffect, useState } from 'react';
 import { XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -27,6 +27,8 @@ export default function SidePanel({
   sheet?: boolean;
 }) {
   const Title = sheet ? SheetTitle : 'h2';
+  const [open, setOpen] = useState(true);
+  const dismiss = sheet ? () => setOpen(false) : onClose;
 
   useEffect(() => {
     if (sheet) return;
@@ -52,7 +54,7 @@ export default function SidePanel({
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {actions}
-            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close panel">
+            <Button variant="ghost" size="icon" onClick={dismiss} aria-label="Close panel">
               <XIcon />
             </Button>
           </div>
@@ -80,13 +82,16 @@ export default function SidePanel({
   );
 
   return sheet ? (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
         showClose={false}
         className="w-full gap-0 sm:max-w-3xl"
         aria-describedby={undefined}
         onEscapeKeyDown={(event) => editing(event.target) && event.preventDefault()}
-        onCloseAutoFocus={(event) => event.preventDefault()}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (!open) onClose();
+        }}
       >
         {content}
       </SheetContent>

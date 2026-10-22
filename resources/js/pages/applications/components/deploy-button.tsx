@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { usePage } from '@inertiajs/react';
 import { RocketIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -8,6 +9,7 @@ import { Application, Environment } from '@/types/application';
 export default function DeployButton({ application, environment }: { application: Application; environment: Environment }) {
   const dialog = useDialog();
   const blockerId = useId();
+  const query = usePage().url.split('?')[1];
   if (!environment.can_deploy) return null;
   const blocker =
     application.status !== 'ready' || environment.status !== 'ready'
@@ -26,7 +28,7 @@ export default function DeployButton({ application, environment }: { application
       description: `Builds the latest commit on ${environment.branch} and releases it to every component in ${environment.name}.`,
       confirmLabel: 'Deploy',
       method: 'post',
-      url: `/applications/${application.id}/environments/${environment.id}/deployments`,
+      url: `/applications/${application.id}/environments/${environment.id}/deployments${query ? `?${query}` : ''}`,
     });
   };
 

@@ -107,7 +107,9 @@ export default function ShowEnvironment() {
   const dialog = useDialog();
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
   const ready = application.status === 'ready' && environment.status === 'ready';
+  const selection = component ? `?component=${component.id}` : resource ? `?resource=${resource.id}` : '';
   const close = useCallback(() => router.visit(baseUrl, { preserveState: true, preserveScroll: true, only: panelProps }), [baseUrl]);
+  const closeSheet = () => router.visit(`${baseUrl}${selection}`, { preserveState: true, preserveScroll: true, only: panelProps });
   const withProp = <K extends 'options' | 'resourceOptions'>(prop: K, open: (value: NonNullable<Page[K]>) => void) =>
     router.reload({
       only: [prop],
@@ -150,7 +152,7 @@ export default function ShowEnvironment() {
             ))}
             {lastDeployment && (
               <Link
-                href={`${baseUrl}/deployments/${lastDeployment.id}`}
+                href={`${baseUrl}/deployments/${lastDeployment.id}${selection}`}
                 preserveState
                 preserveScroll
                 only={panelProps}
@@ -174,7 +176,7 @@ export default function ShowEnvironment() {
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="sm" asChild>
                     <Link
-                      href={`${baseUrl}/${item.path}`}
+                      href={`${baseUrl}/${item.path}${selection}`}
                       preserveState
                       preserveScroll
                       only={panelProps}
@@ -256,7 +258,7 @@ export default function ShowEnvironment() {
             sourceControls={props.sourceControls}
             deploymentActive={props.deploymentActive}
             can={can}
-            onClose={close}
+            onClose={closeSheet}
           />
         )}
         {props.sheet === 'variables' && (
@@ -266,7 +268,7 @@ export default function ShowEnvironment() {
             variables={props.variables}
             warnings={warnings}
             canUpdate={can.update}
-            onClose={close}
+            onClose={closeSheet}
           />
         )}
         {props.sheet === 'deployments' && props.deployments && (
@@ -275,7 +277,7 @@ export default function ShowEnvironment() {
             environment={environment}
             deployments={props.deployments}
             deployment={props.deployment}
-            onClose={close}
+            onClose={closeSheet}
           />
         )}
       </div>

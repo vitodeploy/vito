@@ -26,12 +26,12 @@ use Spatie\RouteAttributes\Attributes\ScopeBindings;
 class EnvironmentDeploymentController extends Controller
 {
     #[Post('/deployments', name: 'environment-deployments.store')]
-    public function store(Application $application, Environment $environment): RedirectResponse
+    public function store(Request $request, Application $application, Environment $environment): RedirectResponse
     {
         $this->authorize('create', [EnvironmentDeployment::class, $environment, $application]);
         $deployment = app(DeployEnvironment::class)->run($environment, user());
 
-        return to_route('environment-deployments.show', [$application, $environment, $deployment]);
+        return to_route('environment-deployments.show', [$application, $environment, $deployment, ...$request->only('component', 'resource')]);
     }
 
     #[Post('/deployments/{deployment}/cancel', name: 'environment-deployments.cancel')]
@@ -44,12 +44,12 @@ class EnvironmentDeploymentController extends Controller
     }
 
     #[Post('/deployments/{deployment}/rollback', name: 'environment-deployments.rollback')]
-    public function rollback(Application $application, Environment $environment, EnvironmentDeployment $deployment): RedirectResponse
+    public function rollback(Request $request, Application $application, Environment $environment, EnvironmentDeployment $deployment): RedirectResponse
     {
         $this->authorize('update', [$deployment, $environment, $application]);
         $run = app(RollbackEnvironment::class)->run($environment, $deployment, user());
 
-        return to_route('environment-deployments.show', [$application, $environment, $run]);
+        return to_route('environment-deployments.show', [$application, $environment, $run, ...$request->only('component', 'resource')]);
     }
 
     #[Put('/deployment-settings', name: 'environment-deployments.settings.update')]

@@ -283,8 +283,9 @@ test('deployment pages expose stages and safe script metadata with scoped permis
         ->has('componentScripts', 1)->where('componentScripts.0.content', 'echo override')
         ->has('inheritedScripts', 1)->where('inheritedScripts.0.content', 'echo build')
         ->where('can.updateComponent', true)->where('deploymentActive', false));
-    $this->post($base.'/deployments')->assertRedirect();
+    $deploy = $this->post($base.'/deployments?page=2&component='.$this->component->id);
     $run = $this->environment->deployments()->sole();
+    $deploy->assertRedirect(route('environment-deployments.show', [$this->application, $this->environment, $run, 'component' => $this->component->id]));
     app(StartEnvironmentDeployment::class)->start($run->id);
     $this->get($base.'/deployments')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/show')->where('sheet', 'deployments')->where('deployment', null)->has('deployments.data', 1)->missing('deployments.data.0.variables')->where('environment.can_deploy', true)

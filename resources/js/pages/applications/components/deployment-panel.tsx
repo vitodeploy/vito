@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { CheckIcon, FileTextIcon, GitCommitHorizontalIcon, LoaderCircleIcon, MinusIcon, RocketIcon, XIcon } from 'lucide-react';
 import DateTime from '@/components/date-time';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -88,6 +88,7 @@ export default function DeploymentPanel({
 }) {
   const dialog = useDialog();
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
+  const query = usePage().url.split('?')[1];
   const live = environment.live_run_id === deployment.id;
   const canRollback = environment.can_deploy && deployment.status === 'finished' && !deployment.is_join && !live;
   const message = deployment.commit_data?.message?.split('\n')[0];
@@ -138,15 +139,19 @@ export default function DeploymentPanel({
               <Row
                 className="min-h-0 p-0"
                 label={
-                  component.component_id ? (
-                    <Link href={`${baseUrl}?component=${component.component_id}`} className="hover:underline">
-                      {component.component_name}
-                    </Link>
-                  ) : (
-                    <span className="text-muted-foreground">Removed component</span>
-                  )
+                  <>
+                    {component.component_id ? (
+                      <Link href={`${baseUrl}?component=${component.component_id}`} className="hover:underline">
+                        {component.component_name}
+                      </Link>
+                    ) : (
+                      <span className="text-muted-foreground">Removed component</span>
+                    )}
+                    {component.server_name && component.server_name !== component.component_name && (
+                      <span className="text-muted-foreground font-normal"> on {component.server_name}</span>
+                    )}
+                  </>
                 }
-                description={component.server_name}
               >
                 <Status status={component.status} color={component.status_color} />
                 {component.server_id && component.log_id && (
@@ -222,7 +227,7 @@ export default function DeploymentPanel({
                           'Switches every component back to this release and restarts processes. Variables stay as they are, release-command effects (like migrations) are not undone, and any pending deployment is replaced.',
                         confirmLabel: 'Roll back',
                         method: 'post',
-                        url: `${baseUrl}/deployments/${deployment.id}/rollback`,
+                        url: `${baseUrl}/deployments/${deployment.id}/rollback${query ? `?${query}` : ''}`,
                       })
                     }
                   >
