@@ -2,18 +2,23 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
-import { BoxIcon, DatabaseIcon, LayersIcon, NetworkIcon, PlusIcon, RocketIcon, TriangleAlertIcon, ZapIcon } from 'lucide-react';
+import { BoxIcon, DatabaseIcon, HistoryIcon, KeyRoundIcon, LayersIcon, NetworkIcon, PlusIcon, RocketIcon, SettingsIcon, TriangleAlertIcon, ZapIcon } from 'lucide-react';
 import DateTime from '@/components/date-time';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDialog } from '@/hooks/use-dialog';
 import ApplicationLayout from '@/layouts/application/layout';
 import Canvas, { panelProps } from '@/pages/applications/components/canvas';
 import ComponentPanel from '@/pages/applications/components/component-panel';
+import DeployButton from '@/pages/applications/components/deploy-button';
+import DeploymentsSheet from '@/pages/applications/components/deployments-sheet';
 import DocsLink from '@/pages/applications/components/docs-link';
 import ResourcePanel from '@/pages/applications/components/resource-panel';
+import SettingsSheet from '@/pages/applications/components/settings-sheet';
 import Status from '@/pages/applications/components/status';
+import VariablesSheet from '@/pages/applications/components/variables-sheet';
 import {
   Application,
   BackendTarget,
@@ -21,14 +26,17 @@ import {
   ComponentOptions,
   Environment,
   EnvironmentAttachment,
+  EnvironmentDeployment,
   EnvironmentDeploymentSummary,
   EnvironmentDomain,
   EnvironmentDomainOptions,
   EnvironmentResourceOptions,
   EnvironmentTopology,
+  EnvironmentVariable,
   PrimaryCandidate,
 } from '@/types/application';
 import { DeploymentScript } from '@/types/deployment-script';
+import { SourceControl } from '@/types/source-control';
 
 type Page = {
   application: Application;
@@ -50,10 +58,29 @@ type Page = {
   cronjobs: InertiaTableData | null;
   backendTargets: BackendTarget[];
   resource: EnvironmentAttachment | null;
-  can: { update: boolean; delete: boolean; createComponent: boolean; updateComponent: boolean; deleteComponent: boolean };
+  sheet: 'settings' | 'variables' | 'deployments' | null;
+  scripts: DeploymentScript[];
+  sourceControls: SourceControl[];
+  variables: EnvironmentVariable[];
+  deployments: InertiaTableData | null;
+  deployment: EnvironmentDeployment | null;
+  can: {
+    update: boolean;
+    delete: boolean;
+    updateApplication: boolean;
+    deleteApplication: boolean;
+    createComponent: boolean;
+    updateComponent: boolean;
+    deleteComponent: boolean;
+  };
 };
 
 const chip = 'bg-background flex min-h-9 items-center gap-2 rounded-md border px-3 py-1.5 text-sm shadow-xs';
+const sheets = [
+  { path: 'variables', label: 'Variables', icon: KeyRoundIcon },
+  { path: 'deployments', label: 'Deployments', icon: HistoryIcon },
+  { path: 'settings', label: 'Settings', icon: SettingsIcon },
+];
 
 export default function ShowEnvironment() {
   const props = usePage<Page>().props;
@@ -90,14 +117,11 @@ export default function ShowEnvironment() {
 
         <div className={cn('pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between gap-4', (component || resource) && 'lg:right-[43rem]')}>
           <div className="pointer-events-auto flex max-w-sm flex-col items-start gap-2">
-            {environment.last_error && (
-              <div role="alert" className={cn(chip, 'text-destructive')}><TriangleAlertIcon className="size-4 shrink-0" />{environment.last_error}</div>
-            )}
             {warnings.map((warning, index) => (
               <div key={`${index}-${warning}`} className={chip}><TriangleAlertIcon className="text-warning size-4 shrink-0" />{warning}</div>
             ))}
             {lastDeployment && (
-              <Link href={`${baseUrl}/deployments/${lastDeployment.id}`} className={cn(chip, 'hover:bg-muted')}>
+              <Link href={`${baseUrl}/deployments/${lastDeployment.id}`} preserveState preserveScroll only={panelProps} className={cn(chip, 'hover:bg-muted')}>
                 <RocketIcon className="text-muted-foreground size-4 shrink-0" />
                 <Status status={lastDeployment.status} color={lastDeployment.status_color} className="font-medium" />
                 <span className="text-muted-foreground font-mono text-xs">{lastDeployment.commit_id?.slice(0, 7) ?? 'Resolving'}</span>
@@ -105,12 +129,29 @@ export default function ShowEnvironment() {
               </Link>
             )}
           </div>
-          {(can.createComponent || can.update) && topology.nodes.length > 0 && (
-            <div className="pointer-events-auto">
-              <CreateMenu disabled={!ready} create={create} can={can} />
-            </div>
-          )}
+          <nav aria-label="Environment" className="bg-background pointer-events-auto flex shrink-0 items-center gap-1 rounded-lg border p-1 shadow-xs">
+            {sheets.map((item) => (
+              <Tooltip key={item.path}>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`${baseUrl}/${item.path}`} preserveState preserveScroll only={panelProps} aria-current={props.sheet === item.path ? 'page' : undefined}>
+                      <item.icon /><span className={cn('sr-only', !(component || resource) && 'md:not-sr-only')}>{item.label}</span>
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent aria-hidden="true">{item.label}</TooltipContent>
+              </Tooltip>
+            ))}
+            {(can.createComponent || can.update) && topology.nodes.length > 0 && <CreateMenu disabled={!ready} create={create} can={can} />}
+            <DeployButton application={application} environment={environment} />
+          </nav>
         </div>
+
+        {environment.last_error && (
+          <div className={cn('pointer-events-none absolute inset-x-14 bottom-4 flex justify-center', (component || resource) && 'lg:right-[43rem]')}>
+            <div role="alert" className={cn(chip, 'text-destructive pointer-events-auto max-w-xl')}><TriangleAlertIcon className="size-4 shrink-0" />{environment.last_error}</div>
+          </div>
+        )}
 
         {topology.nodes.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
@@ -150,6 +191,22 @@ export default function ShowEnvironment() {
           />
         )}
         {resource && <ResourcePanel application={application} environment={environment} resource={resource} editable={can.update && ready} onClose={close} />}
+        {props.sheet === 'settings' && (
+          <SettingsSheet
+            application={application}
+            environment={environment}
+            scripts={props.scripts}
+            primaryCandidates={props.primaryCandidates}
+            sourceControls={props.sourceControls}
+            deploymentActive={props.deploymentActive}
+            can={can}
+            onClose={close}
+          />
+        )}
+        {props.sheet === 'variables' && <VariablesSheet application={application} environment={environment} variables={props.variables} warnings={warnings} canUpdate={can.update} onClose={close} />}
+        {props.sheet === 'deployments' && props.deployments && (
+          <DeploymentsSheet application={application} environment={environment} deployments={props.deployments} deployment={props.deployment} onClose={close} />
+        )}
       </div>
     </ApplicationLayout>
   );
@@ -163,7 +220,7 @@ function CreateMenu({ disabled, create, can }: {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" disabled={disabled}><PlusIcon />Create</Button>
+        <Button variant="ghost" size="sm" disabled={disabled}><PlusIcon />Create</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         {can.createComponent && (

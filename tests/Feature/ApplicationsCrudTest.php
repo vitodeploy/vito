@@ -282,7 +282,7 @@ test('application pages share whitelisted resources and only authorized source c
             ->where('id', $environment->id)->where('name', 'production')->where('branch', 'main')
             ->where('status', 'ready')->where('status_color', 'success')));
     $this->get(route('environments.settings', [$application, $environment]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/settings')->has('sourceControls', 1)
+        ->component('applications/environments/show')->where('sheet', 'settings')->has('sourceControls', 1)
         ->where('sourceControls.0.id', $this->sourceControl->id)->missing('sourceControls.0.provider_data')
         ->missing('sourceControls.0.access_token')->where('can.updateApplication', true)->where('can.deleteApplication', true));
 });
@@ -314,12 +314,14 @@ test('shared environments prop lists only the routed application environments in
         ]));
 });
 
-test('shared project applications prop lists only applications of the routed project by name', function () {
+test('shared project applications prop lists only current project applications by name on application pages', function () {
     $zeta = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'zeta']);
     $alpha = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'alpha']);
     Application::factory()->create(['project_id' => Project::factory()->create()->id, 'name' => 'other']);
 
-    $this->get(route('applications'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->missing('projectApplications'));
+    $this->get(route('servers'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->missing('projectApplications'));
+    $this->get(route('applications'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('projectApplications', [['id' => $alpha->id, 'name' => 'alpha'], ['id' => $zeta->id, 'name' => 'zeta']]));
     $this->get(route('applications.show', $zeta))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->where('projectApplications', [['id' => $alpha->id, 'name' => 'alpha'], ['id' => $zeta->id, 'name' => 'zeta']]));
 });

@@ -158,11 +158,11 @@ test('variables page masks secrets and exposes readonly computed values and rede
     $this->component->save();
 
     $response = $this->get($this->url)->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/variables')->has('variables', 3)
+        ->component('applications/environments/show')->where('sheet', 'variables')->has('variables', 3)
         ->where('variables.0.key', 'API_SECRET')->where('variables.0.value', null)->where('variables.0.has_value', true)
         ->where('variables.1.value', 'public')->where('variables.2.source', 'vito')->where('variables.2.value', '12345')
         ->where('variables.2.id', null)->where('variables.2.component_name', $this->component->name)
-        ->where('environment.needs_redeploy', true)->where('warnings', [])->where('canUpdate', true));
+        ->where('environment.needs_redeploy', true)->where('warnings', [])->where('can.update', true));
     expect($response->getContent())->not->toContain('never-return-this');
 });
 
@@ -260,7 +260,7 @@ test('variable endpoints reject guests other projects and readonly mutations', f
         $this->application->update(['project_id' => Project::factory()->create()->id]);
     } else {
         $this->user->currentProject->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
-        $this->get($this->url)->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->where('canUpdate', false));
+        $this->get($this->url)->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false));
     }
     $status = $access === 'guest' ? 401 : 403;
     if ($access !== 'readonly') {

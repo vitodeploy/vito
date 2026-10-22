@@ -69,7 +69,7 @@ function Switcher({ icon, label, items, current, search, footer }: {
 
 export function ApplicationSwitch() {
   const { application, environment, environments, projectApplications, applicationCan } = usePage<{
-    application: Application;
+    application?: Application;
     environment?: Environment;
     environments: EnvironmentSummary[];
     projectApplications: { id: number; name: string }[];
@@ -81,14 +81,14 @@ export function ApplicationSwitch() {
   return (
     <>
       <Switcher
-        icon={<Avatar className="size-6 rounded-sm"><AvatarFallback className="rounded-sm">{initials(application.name)}</AvatarFallback></Avatar>}
-        label={application.name}
+        icon={<Avatar className="size-6 rounded-sm"><AvatarFallback className="rounded-sm">{application ? initials(application.name) : 'A'}</AvatarFallback></Avatar>}
+        label={application?.name ?? 'Select an application'}
         items={projectApplications.map((item) => ({ ...item, href: `/applications/${item.id}` }))}
-        current={application.id}
+        current={application?.id}
         search="Search applications..."
         footer={[{ icon: <LayoutGridIcon />, label: 'All applications', onSelect: () => router.visit('/applications') }]}
       />
-      {environment && (
+      {application && environment && (
         <>
           <SlashIcon className="size-3" />
           <Switcher

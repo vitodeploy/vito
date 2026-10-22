@@ -8,17 +8,12 @@ use App\Actions\EnvironmentDeployment\RollbackEnvironment;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\EnvironmentDeploymentResource;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
-use App\Tables\Applications\EnvironmentDeploymentTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
@@ -30,14 +25,6 @@ use Spatie\RouteAttributes\Attributes\ScopeBindings;
 #[ScopeBindings]
 class EnvironmentDeploymentController extends Controller
 {
-    #[Get('/deployments', name: 'environment-deployments.index')]
-    public function index(Application $application, Environment $environment): Response
-    {
-        $this->authorize('viewAny', [EnvironmentDeployment::class, $environment, $application]);
-
-        return $this->deployments($environment, null);
-    }
-
     #[Post('/deployments', name: 'environment-deployments.store')]
     public function store(Application $application, Environment $environment): RedirectResponse
     {
@@ -45,14 +32,6 @@ class EnvironmentDeploymentController extends Controller
         $deployment = app(DeployEnvironment::class)->run($environment, user());
 
         return to_route('environment-deployments.show', [$application, $environment, $deployment]);
-    }
-
-    #[Get('/deployments/{deployment}', name: 'environment-deployments.show')]
-    public function show(Application $application, Environment $environment, EnvironmentDeployment $deployment): Response
-    {
-        $this->authorize('view', [$deployment, $environment, $application]);
-
-        return $this->deployments($environment, new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'triggeredBy')));
     }
 
     #[Post('/deployments/{deployment}/cancel', name: 'environment-deployments.cancel')]
@@ -98,13 +77,5 @@ class EnvironmentDeploymentController extends Controller
         app(UpdateEnvironmentDeploymentScript::class)->update($environment, $request->all(), $component);
 
         return back()->with('success', 'Component deployment script updated.');
-    }
-
-    private function deployments(Environment $environment, ?EnvironmentDeploymentResource $deployment): Response
-    {
-        return Inertia::render('applications/environments/deployments', [
-            'deployments' => EnvironmentDeploymentTable::make($environment->deployments())->simplePaginate(),
-            'deployment' => $deployment,
-        ]);
     }
 }

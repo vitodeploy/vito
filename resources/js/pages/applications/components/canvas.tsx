@@ -12,7 +12,10 @@ import '@xyflow/react/dist/style.css';
 
 type CanvasNode = Node<{ node: TopologyNode; selected: boolean }, 'card'>;
 
-export const panelProps = ['component', 'capabilities', 'domainOptions', 'componentDomains', 'componentScripts', 'inheritedScripts', 'workers', 'cronjobs', 'backendTargets', 'resource', 'can'];
+export const panelProps = [
+  'component', 'capabilities', 'domainOptions', 'componentDomains', 'componentScripts', 'inheritedScripts', 'workers', 'cronjobs', 'backendTargets', 'resource', 'can',
+  'sheet', 'scripts', 'sourceControls', 'variables', 'deployments', 'deployment',
+];
 
 const icons = { load_balancer: NetworkIcon, app: BoxIcon, external: ServerIcon, database: DatabaseIcon, redis: ZapIcon };
 const kinds = { load_balancer: 'Load balancer', app: 'App', external: 'External backend', database: 'Database', redis: 'Redis / Valkey' };

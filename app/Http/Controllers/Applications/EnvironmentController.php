@@ -9,12 +9,10 @@ use App\Actions\Environment\DeleteEnvironment;
 use App\Actions\Environment\GetEnvironmentOverview;
 use App\Actions\Environment\UpdateEnvironment;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\DeploymentScriptResource;
-use App\Http\Resources\SourceControlResource;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
-use App\Models\SourceControl;
+use App\Models\EnvironmentDeployment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,46 +45,39 @@ class EnvironmentController extends Controller
     {
         $this->authorize('view', [$environment, $application]);
 
-        $overview = app(GetEnvironmentOverview::class);
-        $component = $overview->component($environment, $request->integer('component') ?: null);
-        $attachment = $overview->attachment($environment, $request->integer('resource') ?: null);
-        if ($component) {
-            $this->authorize('view', [$component, $environment, $application]);
-        }
-        $canCreateComponent = user()->can('create', [Component::class, $environment, $application]);
-        $canUpdate = user()->can('update', [$environment, $application]);
-
-        return Inertia::render('applications/environments/show', [
-            ...$overview->props($environment, $component, $attachment),
-            'options' => Inertia::optional(fn () => $canCreateComponent ? app(GetComponentOptions::class)->get($environment) : null),
-            'resourceOptions' => Inertia::optional(fn () => $canUpdate ? app(GetEnvironmentResourceOptions::class)->get($environment) : null),
-            'can' => fn () => [
-                'update' => $canUpdate,
-                'delete' => user()->can('delete', [$environment, $application]),
-                'createComponent' => $canCreateComponent,
-                'updateComponent' => $component && user()->can('update', [$component, $environment, $application]),
-                'deleteComponent' => $component && user()->can('delete', [$component, $environment, $application]),
-            ],
-        ]);
+        return $this->render($request, $application, $environment);
     }
 
     #[Get('/{environment}/settings', name: 'environments.settings')]
-    public function settings(Application $application, Environment $environment): Response
+    public function settings(Request $request, Application $application, Environment $environment): Response
     {
         $this->authorize('view', [$environment, $application]);
 
-        return Inertia::render('applications/environments/settings', [
-            'scripts' => DeploymentScriptResource::collection($environment->deploymentScripts()->get()),
-            'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
-            'sourceControls' => user()->can('update', $application) ? SourceControlResource::collection(SourceControl::getByProjectId($application->project_id, user())->get()) : [],
-            'deploymentActive' => $environment->deployments()->blocking()->exists(),
-            'can' => [
-                'update' => user()->can('update', [$environment, $application]),
-                'delete' => user()->can('delete', [$environment, $application]),
-                'updateApplication' => user()->can('update', $application),
-                'deleteApplication' => user()->can('delete', $application),
-            ],
-        ]);
+        return $this->render($request, $application, $environment, 'settings');
+    }
+
+    #[Get('/{environment}/variables', name: 'environments.variables')]
+    public function variables(Request $request, Application $application, Environment $environment): Response
+    {
+        $this->authorize('view', [$environment, $application]);
+
+        return $this->render($request, $application, $environment, 'variables');
+    }
+
+    #[Get('/{environment}/deployments', name: 'environment-deployments.index')]
+    public function deployments(Request $request, Application $application, Environment $environment): Response
+    {
+        $this->authorize('viewAny', [EnvironmentDeployment::class, $environment, $application]);
+
+        return $this->render($request, $application, $environment, 'deployments');
+    }
+
+    #[Get('/{environment}/deployments/{deployment}', name: 'environment-deployments.show')]
+    public function deployment(Request $request, Application $application, Environment $environment, EnvironmentDeployment $deployment): Response
+    {
+        $this->authorize('view', [$deployment, $environment, $application]);
+
+        return $this->render($request, $application, $environment, 'deployments', $deployment);
     }
 
     #[Put('/{environment}', name: 'environments.update')]
@@ -107,5 +98,36 @@ class EnvironmentController extends Controller
         app(DeleteEnvironment::class)->delete($environment, $request->all());
 
         return to_route('applications.show', $application)->with('success', 'Environment deletion requested. Components are cleaned up before the environment is removed.');
+    }
+
+    /**
+     * Every environment URL renders the graph; sheet routes add the data for the sheet they open on top of it.
+     */
+    private function render(Request $request, Application $application, Environment $environment, ?string $sheet = null, ?EnvironmentDeployment $deployment = null): Response
+    {
+        $overview = app(GetEnvironmentOverview::class);
+        $component = $overview->component($environment, $request->integer('component') ?: null);
+        $attachment = $overview->attachment($environment, $request->integer('resource') ?: null);
+        if ($component) {
+            $this->authorize('view', [$component, $environment, $application]);
+        }
+        $canCreateComponent = user()->can('create', [Component::class, $environment, $application]);
+        $canUpdate = user()->can('update', [$environment, $application]);
+
+        return Inertia::render('applications/environments/show', [
+            ...$overview->props($environment, $component, $attachment),
+            'options' => Inertia::optional(fn () => $canCreateComponent ? app(GetComponentOptions::class)->get($environment) : null),
+            'resourceOptions' => Inertia::optional(fn () => $canUpdate ? app(GetEnvironmentResourceOptions::class)->get($environment) : null),
+            ...$overview->sheetProps($environment, user(), $sheet, $deployment),
+            'can' => fn () => [
+                'update' => $canUpdate,
+                'delete' => user()->can('delete', [$environment, $application]),
+                'updateApplication' => user()->can('update', $application),
+                'deleteApplication' => user()->can('delete', $application),
+                'createComponent' => $canCreateComponent,
+                'updateComponent' => $component && user()->can('update', [$component, $environment, $application]),
+                'deleteComponent' => $component && user()->can('delete', [$component, $environment, $application]),
+            ],
+        ]);
     }
 }

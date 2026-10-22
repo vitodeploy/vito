@@ -276,7 +276,7 @@ test('deployment pages expose stages and safe script metadata with scoped permis
     $this->put($base.'/deployment-scripts', ['stage' => 'build', 'content' => 'echo build'])->assertRedirect()->assertSessionHasNoErrors();
     $this->put($base.'/components/'.$this->component->id.'/deployment-scripts', ['stage' => 'build', 'content' => 'echo override'])->assertRedirect()->assertSessionHasNoErrors();
     $this->get(route('environments.settings', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/settings')->has('scripts', 1)->where('scripts.0.content', 'echo build')
+        ->component('applications/environments/show')->where('sheet', 'settings')->has('scripts', 1)->where('scripts.0.content', 'echo build')
         ->where('can.update', true)->where('deploymentActive', false));
     $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $this->component->id]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/show')->where('component.id', $this->component->id)
@@ -287,16 +287,17 @@ test('deployment pages expose stages and safe script metadata with scoped permis
     $run = $this->environment->deployments()->sole();
     app(StartEnvironmentDeployment::class)->start($run->id);
     $this->get($base.'/deployments')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployments')->has('deployments.data', 1)->missing('deployments.data.0.variables')->where('environment.can_deploy', true)
+        ->component('applications/environments/show')->where('sheet', 'deployments')->where('deployment', null)->has('deployments.data', 1)->missing('deployments.data.0.variables')->where('environment.can_deploy', true)
         ->where('deployments.data.0.id', $run->id)->where('deployments.data.0.number', '#'.$run->id)
         ->where('deployments.data.0.commit', substr((string) $run->fresh()->commit_id, 0, 7))->where('deployments.data.0.commit_id', $run->fresh()->commit_id)->where('deployments.data.0.release', $run->fresh()->release));
     $this->get($base.'/deployments/'.$run->id)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployments')->where('deployment.id', $run->id)->where('deployment.current_stage', 'clone')
+        ->component('applications/environments/show')->where('sheet', 'deployments')->where('deployment.id', $run->id)->where('deployment.current_stage', 'clone')
         ->has('deployment.deployments', 1)->missing('deployment.variables')
         ->has('deployments.data', 1)->where('deployments.data.0.id', $run->id)->missing('deployments.data.0.variables'));
     $this->get(route('environments.settings', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('deploymentActive', true));
     $this->get(route('environments.show', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->where('deploymentActive', true)->where('lastDeployment.id', $run->id)->missing('lastDeployment.variables'));
+        ->where('deploymentActive', true)->where('lastDeployment.id', $run->id)->missing('lastDeployment.variables')
+        ->where('sheet', null)->where('deployments', null)->where('deployment', null)->where('variables', [])->where('scripts', []));
     $foreign = Environment::factory()->for($this->application)->create();
     $this->get(str_replace('/environments/'.$this->environment->id, '/environments/'.$foreign->id, $base).'/deployments/'.$run->id)->assertNotFound();
     $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);

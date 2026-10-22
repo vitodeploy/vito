@@ -138,11 +138,11 @@ test('environment settings page exposes scoped scripts primary candidates and pe
 
     $this->get(route('environments.settings', [$this->application, $this->environment]))->assertSuccessful()
         ->assertInertia(function (AssertableInertia $page) use ($component) {
-            $page->component('applications/environments/settings')->where('environment.id', $this->environment->id)
+            $page->component('applications/environments/show')->where('sheet', 'settings')->where('environment.id', $this->environment->id)
                 ->has('scripts', 1)->where('scripts.0.content', 'echo environment')
                 ->where('primaryCandidates', [['id' => $component->id, 'name' => 'web-app']])
                 ->where('deploymentActive', false)->has('sourceControls')
-                ->where('can', ['update' => true, 'delete' => true, 'updateApplication' => true, 'deleteApplication' => true]);
+                ->where('can.update', true)->where('can.delete', true)->where('can.updateApplication', true)->where('can.deleteApplication', true);
             expect(json_encode($page->toArray()['props']))->not->toContain('component-only')->not->toContain('sibling-only');
         });
     EnvironmentDeployment::factory()->for($this->environment)->create(['status' => EnvironmentDeploymentStatus::RUNNING]);
@@ -176,7 +176,7 @@ test('read only members can view but cannot mutate environments', function () {
     $this->get(route('environments.show', [$this->application, $this->environment]))->assertSuccessful()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false)->where('can.delete', false)->where('can.createComponent', false));
     $this->get(route('environments.settings', [$this->application, $this->environment]))->assertSuccessful()
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('can', ['update' => false, 'delete' => false, 'updateApplication' => false, 'deleteApplication' => false]));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false)->where('can.delete', false)->where('can.updateApplication', false)->where('can.deleteApplication', false));
     $this->postJson(route('environments.store', $this->application), $this->environmentInput)->assertForbidden();
     $this->putJson(route('environments.update', [$this->application, $this->environment]), $this->environmentInput)->assertForbidden();
     $this->deleteJson(route('environments.destroy', [$this->application, $this->environment]), ['name' => $this->environment->name])->assertForbidden();
@@ -189,9 +189,13 @@ test('environment endpoints reject other projects and guests', function (bool $g
         $this->application->update(['project_id' => Project::factory()->create()->id]);
     }
     $status = $guest ? 401 : 403;
+    $deployment = EnvironmentDeployment::factory()->for($this->environment)->create();
 
     $this->getJson(route('environments.show', [$this->application, $this->environment]))->assertStatus($status);
     $this->getJson(route('environments.settings', [$this->application, $this->environment]))->assertStatus($status);
+    $this->getJson(route('environments.variables', [$this->application, $this->environment]))->assertStatus($status);
+    $this->getJson(route('environment-deployments.index', [$this->application, $this->environment]))->assertStatus($status);
+    $this->getJson(route('environment-deployments.show', [$this->application, $this->environment, $deployment]))->assertStatus($status);
     $this->postJson(route('environments.store', $this->application), $this->environmentInput)->assertStatus($status);
     $this->putJson(route('environments.update', [$this->application, $this->environment]), $this->environmentInput)->assertStatus($status);
     $this->deleteJson(route('environments.destroy', [$this->application, $this->environment]))->assertStatus($status);

@@ -4,15 +4,22 @@ namespace App\Actions\Environment;
 
 use App\Actions\Component\GetComponentOptions;
 use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
+use App\Actions\EnvironmentVariable\GetEnvironmentVariables;
 use App\Http\Resources\ComponentResource;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\EnvironmentAttachmentResource;
 use App\Http\Resources\EnvironmentDeploymentResource;
 use App\Http\Resources\EnvironmentDomainResource;
+use App\Http\Resources\EnvironmentVariableResource;
+use App\Http\Resources\SourceControlResource;
 use App\Models\Component;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
+use App\Models\EnvironmentDeployment;
+use App\Models\SourceControl;
+use App\Models\User;
 use App\Tables\Applications\ComponentCronJobTable;
+use App\Tables\Applications\EnvironmentDeploymentTable;
 use App\Tables\Applications\ComponentWorkerTable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,6 +65,25 @@ class GetEnvironmentOverview
             'cronjobs' => fn () => $component ? ComponentCronJobTable::make($component->cronJobs())->identifier('cronjobs')->simplePaginate() : null,
             'backendTargets' => fn () => $component ? app(GetComponentOptions::class)->backendTargets($environment) : [],
             'resource' => fn () => $attachment ? new EnvironmentAttachmentResource($attachment->load('server', 'attachable')) : null,
+        ];
+    }
+
+    /**
+     * Lazy props for the sheet opened over the graph; every sheet prop is present so partial reloads clear closed sheets.
+     *
+     * @return array<string, mixed>
+     */
+    public function sheetProps(Environment $environment, User $user, ?string $sheet, ?EnvironmentDeployment $deployment): array
+    {
+        return [
+            'sheet' => $sheet,
+            'scripts' => fn () => $sheet === 'settings' ? DeploymentScriptResource::collection($environment->deploymentScripts()->get()) : [],
+            'sourceControls' => fn () => $sheet === 'settings' && $user->can('update', $environment->application)
+                ? SourceControlResource::collection(SourceControl::getByProjectId($environment->application->project_id, $user)->get())
+                : [],
+            'variables' => fn () => $sheet === 'variables' ? EnvironmentVariableResource::collection(app(GetEnvironmentVariables::class)->get($environment)) : [],
+            'deployments' => fn () => $sheet === 'deployments' ? EnvironmentDeploymentTable::make($environment->deployments())->simplePaginate() : null,
+            'deployment' => fn () => $deployment ? new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'triggeredBy')) : null,
         ];
     }
 

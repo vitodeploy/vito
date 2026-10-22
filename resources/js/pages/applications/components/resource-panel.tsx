@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useDialog } from '@/hooks/use-dialog';
 import { Application, Environment, EnvironmentAttachment } from '@/types/application';
+import { panelProps } from './canvas';
 import { Row, Section } from './section';
 import SidePanel from './side-panel';
 import Status from './status';
@@ -46,7 +47,7 @@ export default function ResourcePanel({ application, environment, resource, edit
       <Section
         title="Connection"
         description="Vito manages a dedicated user and firewall access for every app component, and injects the connection variables on the next deploy."
-        action={<Button variant="outline" size="sm" asChild><Link href={`${baseUrl}/variables`}>View variables</Link></Button>}
+        action={<Button variant="outline" size="sm" asChild><Link href={`${baseUrl}/variables`} preserveState preserveScroll only={panelProps}>View variables</Link></Button>}
       />
       {editable && !['deleting', 'deletion_failed'].includes(resource.status) && (
         <Section destructive title="Danger zone">

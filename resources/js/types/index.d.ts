@@ -163,6 +163,7 @@ export interface SharedData {
   server?: Server;
   site?: Site;
   application?: Application;
+  projectApplications?: { id: number; name: string }[];
   environment?: Environment;
   csrf_token: string;
   bootstrap_version: string;

@@ -1,17 +1,15 @@
 import { ReactNode, useCallback, useEffect, useRef } from 'react';
-import { Link, router, usePage, usePoll } from '@inertiajs/react';
+import { router, usePage, usePoll } from '@inertiajs/react';
 import { ReloadOptions } from '@inertiajs/core';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
-import { cn } from '@/lib/utils';
-import DeployButton from '@/pages/applications/components/deploy-button';
 import { Application, Component, Environment } from '@/types/application';
 import Layout from '@/layouts/app/layout';
 
 const reloadProps = [
   'application', 'environment', 'environments', 'applicationCan', 'topology', 'lastDeployment', 'warnings', 'primaryCandidates', 'capabilities',
   'domainOptions', 'component', 'componentDomains', 'componentScripts', 'inheritedScripts', 'workers', 'cronjobs',
-  'backendTargets', 'resource', 'deploymentActive', 'can', 'canUpdate', 'deployments', 'deployment', 'variables', 'scripts',
+  'backendTargets', 'resource', 'deploymentActive', 'can', 'sheet', 'deployments', 'deployment', 'variables', 'scripts', 'sourceControls',
 ];
 
 export default function ApplicationLayout({ children }: { children: ReactNode }) {
@@ -21,7 +19,6 @@ export default function ApplicationLayout({ children }: { children: ReactNode })
     component?: Component | null;
   }>().props;
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
-  const path = usePage().url.split('?')[0];
   const leaving = useRef(false);
   const leave = useCallback((url: string) => {
     if (leaving.current) return;
@@ -101,34 +98,5 @@ export default function ApplicationLayout({ children }: { children: ReactNode })
     }
   });
 
-  const tabs = [
-    { title: 'Graph', href: baseUrl, active: path === baseUrl },
-    { title: 'Deployments', href: `${baseUrl}/deployments`, active: path.startsWith(`${baseUrl}/deployments`) },
-    { title: 'Variables', href: `${baseUrl}/variables`, active: path.startsWith(`${baseUrl}/variables`) },
-    { title: 'Settings', href: `${baseUrl}/settings`, active: path.startsWith(`${baseUrl}/settings`) },
-  ];
-
-  return (
-    <Layout>
-      <div className="bg-background flex h-12 shrink-0 items-center justify-between gap-4 border-b px-4">
-        <nav className="-mb-px flex h-full items-stretch gap-5 overflow-x-auto" aria-label="Environment">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.title}
-              href={tab.href}
-              aria-current={tab.active ? 'page' : undefined}
-              className={cn(
-                'text-muted-foreground hover:text-foreground flex items-center border-b-2 border-transparent text-sm font-medium whitespace-nowrap transition-colors',
-                tab.active && 'border-foreground text-foreground',
-              )}
-            >
-              {tab.title}
-            </Link>
-          ))}
-        </nav>
-        <DeployButton application={application} environment={environment} />
-      </div>
-      {children}
-    </Layout>
-  );
+  return <Layout>{children}</Layout>;
 }

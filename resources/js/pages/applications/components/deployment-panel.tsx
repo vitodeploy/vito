@@ -159,6 +159,7 @@ export default function DeploymentPanel({ application, environment, deployment, 
       </>}
       tabs={[{ value: 'overview', label: 'Overview', content: overview }]}
       onClose={onClose}
+      sheet
     />
   );
 }

@@ -21,7 +21,7 @@ export function AppHeader({ socketStatus, socketReconnect }: { socketStatus: Soc
         <div className="flex items-center space-x-2 text-xs">
           <ProjectSwitch />
           <SlashIcon className="size-3" />
-          {page.props.application ? (
+          {page.props.projectApplications ? (
             <ApplicationSwitch />
           ) : (
             <>
