@@ -1,0 +1,1 @@
+import{f as e}from"./utils-BBU8IDFl.js";import{o as t}from"./app-BtsrVd3K.js";var n=e();function r({server:e}){return(0,n.jsx)(t,{variant:e.status_color,children:e.status})}export{r as default};
