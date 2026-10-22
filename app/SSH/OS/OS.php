@@ -263,12 +263,13 @@ class OS
     /**
      * @throws SSHError
      */
-    public function tail(string $path, int $lines): string
+    public function tail(string $path, int $lines, ?string $user = null): string
     {
         return $this->server->ssh()->exec(
             view('ssh.os.tail', [
                 'path' => $path,
                 'lines' => $lines,
+                'user' => $user,
             ])
         );
     }
@@ -480,11 +481,12 @@ class OS
      *
      * @throws SSHError
      */
-    public function clearFile(string $path): void
+    public function clearFile(string $path, ?string $user = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.clear-file', [
                 'path' => $path,
+                'user' => $user,
             ]),
             'clear-file'
         );

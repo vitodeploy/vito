@@ -8,6 +8,10 @@ if ! sudo rm -rf ~/.logs/workers/{{ $id }}.log; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
+if ! sudo sh -c 'rm -f /var/log/vito/workers/*/{{ (int) $id }}.log /var/log/vito/workers/*/{{ (int) $id }}.log.*'; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
+
 if ! sudo rm -rf /etc/supervisor/conf.d/{{ $id }}.conf; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

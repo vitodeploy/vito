@@ -139,11 +139,7 @@ class Worker extends AbstractModel
 
     public function getLogDirectory(): string
     {
-        if ($this->user === 'root') {
-            return '/root/.logs/workers';
-        }
-
-        return '/home/'.$this->user.'/.logs/workers';
+        return '/var/log/vito/workers/'.$this->user;
     }
 
     public function getLogFile(): string

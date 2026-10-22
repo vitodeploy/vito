@@ -241,6 +241,7 @@ class PHP extends AbstractService implements HasLogs
                 label: 'FPM pool '.$user.' ('.implode(', ', $domains).')',
                 source: ServiceLog::SOURCE_FILE,
                 target: '/home/'.$user.'/.logs/php_errors.log',
+                user: $user,
             );
         }
 

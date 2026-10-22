@@ -76,6 +76,13 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function writeConfig(Worker $worker): void
     {
+        $this->service->server->ssh()->exec(
+            view('ssh.services.process-manager.supervisor.prepare-log', [
+                'logFile' => $worker->getLogFile(),
+                'user' => $worker->user,
+            ])
+        );
+
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/{$worker->id}.conf",
             view('ssh.services.process-manager.supervisor.worker', [
@@ -104,8 +111,6 @@ class Supervisor extends AbstractProcessManager implements HasLogs
             view('ssh.services.process-manager.supervisor.create-worker', [
                 'id' => $worker->id,
                 'start' => $worker->component_id === null || $worker->auto_start,
-                'logFile' => $worker->getLogFile(),
-                'user' => $worker->user,
             ]),
             'create-worker',
             $worker->site_id

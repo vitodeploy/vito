@@ -181,6 +181,31 @@ test('clear truncates file source', function () {
     SSH::assertExecutedContains('/var/log/nginx/error.log');
 });
 
+test('user owned log files are read and cleared as their owner', function () {
+    $this->actingAs($this->user);
+    SSH::fake('php-error-output');
+
+    $this->postJson(route('logs.services.read', $this->server), [
+        'key' => 'php:8.2:user:vito',
+    ])->assertSuccessful();
+
+    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100 '/home/vito/.logs/php_errors.log'");
+
+    $this->postJson(route('logs.services.read', $this->server), [
+        'key' => 'php:8.2:user:vito',
+        'search' => 'error',
+    ])->assertSuccessful();
+
+    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100000 '/home/vito/.logs/php_errors.log'");
+
+    $this->post(route('logs.services.clear', $this->server), [
+        'key' => 'php:8.2:user:vito',
+    ])->assertRedirect();
+
+    SSH::assertExecutedContains("sudo -u 'vito' truncate -s 0");
+    SSH::assertNotExecutedContains('sudo chown');
+});
+
 test('clear rejects journal source', function () {
     $this->actingAs($this->user);
     SSH::fake();

@@ -29,6 +29,6 @@ class ClearServiceLog
             throw ValidationException::withMessages(['key' => 'Journal logs cannot be cleared.']);
         }
 
-        $server->os()->clearFile($log->target);
+        $server->os()->clearFile($log->target, $log->user);
     }
 }

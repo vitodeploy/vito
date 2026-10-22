@@ -51,6 +51,8 @@ test('delete worker', function () {
     $this->assertDatabaseMissing('workers', [
         'id' => $worker->id,
     ]);
+
+    SSH::assertExecutedContains("sudo sh -c 'rm -f /var/log/vito/workers/*/{$worker->id}.log");
 });
 
 test('create worker', function () {
@@ -113,6 +115,9 @@ test('create worker as isolated user', function () {
         'numprocs' => 1,
         'status' => WorkerStatus::RUNNING,
     ]);
+
+    SSH::assertExecutedContains("install -d -o root -g 'example' -m 750 '/var/log/vito/workers/example'");
+    SSH::assertNotExecutedContains('/home/example/.logs/workers');
 });
 
 test('cannot create worker as invalid user', function () {
