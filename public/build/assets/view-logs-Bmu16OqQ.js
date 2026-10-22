@@ -1,0 +1,1 @@
+import{f as e,h as t}from"./utils-Dq9i4Qe8.js";import{a as n}from"./dropdown-menu-lssbklVy.js";import{t as r}from"./use-dialog-abggKyFj.js";var i=t({default:()=>o}),a=e();function o({plugin:e}){let t=r();return(0,a.jsx)(n,{onSelect:()=>t.pluginLogs.open({name:e.name??e.folder,errors:e.errors}),children:`View Logs`})}export{i as n,o as t};

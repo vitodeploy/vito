@@ -1,1 +1,0 @@
-import{f as e}from"./utils-BBU8IDFl.js";import{a as t}from"./dropdown-menu-CrOj48JB.js";import{t as n}from"./use-dialog-DYXmnamI.js";var r=e();function i({storageProvider:e}){let i=n();return(0,r.jsx)(t,{onSelect:()=>i.storageProviderEdit.open({storageProvider:e}),children:`Edit`})}export{i as default};

@@ -1,0 +1,1 @@
+import{_ as e}from"./app-BqRO_OPV.js";var t=e(e=>({isFocused:!1,setFocused:t=>e({isFocused:t})}));export{t};

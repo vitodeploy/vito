@@ -1,0 +1,1 @@
+import{f as e,h as t}from"./utils-Dq9i4Qe8.js";import{a as n}from"./dropdown-menu-lssbklVy.js";import{t as r}from"./use-dialog-abggKyFj.js";var i=t({default:()=>o}),a=e();function o({ssl:e}){let t=r();return(0,a.jsx)(n,{onSelect:()=>t.activateServerSsl.open({serverId:e.server_id,sslId:e.id}),children:`Activate`})}export{i as n,o as t};

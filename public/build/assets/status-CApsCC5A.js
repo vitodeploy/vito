@@ -1,0 +1,1 @@
+import{f as e}from"./utils-Dq9i4Qe8.js";import{o as t}from"./app-BqRO_OPV.js";var n=e();function r({server:e}){return(0,n.jsx)(t,{variant:e.status_color,children:e.status})}export{r as default};

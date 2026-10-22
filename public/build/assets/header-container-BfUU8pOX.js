@@ -1,0 +1,1 @@
+import{f as e}from"./utils-Dq9i4Qe8.js";var t=e();function n({children:e}){return(0,t.jsx)(`div`,{className:`flex items-start justify-between gap-2`,children:e})}export{n as t};
