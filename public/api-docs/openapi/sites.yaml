@@ -388,6 +388,18 @@ paths:
           schema:
             type: integer
             example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commit_hash:
+                  type: string
+                  pattern: '^[a-fA-F0-9]{40}$'
+                  description: Optional full commit SHA resolved through the site's source control provider. Omit to deploy the configured branch. Classic deployment scripts must fetch and check out COMMIT_ID; modern deployments check it out before building.
+                  example: '0123456789abcdef0123456789abcdef01234567'
       responses:
         '200':
           description: Deployment started successfully
@@ -418,7 +430,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                anyOf:
+                  - $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'Deployment script is empty'
 
@@ -1358,6 +1372,18 @@ paths:
           schema:
             type: integer
             example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commit_hash:
+                  type: string
+                  pattern: '^[a-fA-F0-9]{40}$'
+                  description: Optional full commit SHA resolved through the site's source control provider. Omit to deploy the configured branch. Classic deployment scripts must fetch and check out COMMIT_ID; modern deployments check it out before building.
+                  example: '0123456789abcdef0123456789abcdef01234567'
       responses:
         '200':
           description: Deployment created successfully
@@ -1388,7 +1414,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                anyOf:
+                  - $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'Deployment script is empty'
 
