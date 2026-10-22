@@ -4,20 +4,15 @@ namespace App\Http\Controllers\Applications;
 
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
-use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
 use App\Actions\EnvironmentDomain\RequestEnvironmentDomainVerification;
 use App\Actions\EnvironmentDomain\UpdateEnvironmentDomain;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Environment;
 use App\Models\EnvironmentDomain;
-use App\Tables\Applications\EnvironmentDomainTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
-use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
@@ -29,18 +24,6 @@ use Spatie\RouteAttributes\Attributes\ScopeBindings;
 #[ScopeBindings]
 class EnvironmentDomainController extends Controller
 {
-    #[Get('/', name: 'environments.domains')]
-    public function index(Application $application, Environment $environment): Response
-    {
-        $this->authorize('viewAny', [EnvironmentDomain::class, $environment, $application]);
-
-        return Inertia::render('applications/environments/domains', [
-            'domains' => EnvironmentDomainTable::make($environment->domains())->simplePaginate(),
-            'domainOptions' => app(GetEnvironmentDomainOptions::class)->get($environment),
-            'canUpdate' => user()->can('create', [EnvironmentDomain::class, $environment, $application]),
-        ]);
-    }
-
     #[Post('/', name: 'environments.domains.store')]
     public function store(Request $request, Application $application, Environment $environment): RedirectResponse
     {

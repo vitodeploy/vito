@@ -3,6 +3,7 @@
 namespace App\Tables;
 
 use App\Models\Application;
+use App\Http\Resources\EnvironmentSummaryResource;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
@@ -14,7 +15,7 @@ class ApplicationTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->withCount('environments')->latest();
+        $this->query->withCount('environments')->with(['environments' => fn ($query) => $query->orderBy('id')])->latest();
     }
 
     protected function columns(): array
@@ -27,6 +28,7 @@ class ApplicationTable extends Table
             TextColumn::make('environments_count', 'Environments'),
             EnumColumn::make('status', 'Status'),
             Column::data('id'),
+            Column::data('environments', fn (Application $application): array => EnvironmentSummaryResource::collection($application->environments)->resolve()),
             ActionsColumn::make(),
         ];
     }

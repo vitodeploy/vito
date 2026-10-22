@@ -12,11 +12,6 @@ class EnvironmentDomainPolicy
 {
     use HasRolePolicies;
 
-    public function viewAny(User $user, Environment $environment, Application $application): bool
-    {
-        return $environment->application_id === $application->id && $this->hasReadAccess($user, $application->project);
-    }
-
     public function create(User $user, Environment $environment, Application $application): bool
     {
         return $environment->application_id === $application->id && $this->hasWriteAccess($user, $application->project);

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Actions\Bootstrap\GetBootstrap;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\EnvironmentResource;
+use App\Http\Resources\EnvironmentSummaryResource;
 use App\Http\Resources\NetworkResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
@@ -110,6 +111,13 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 $data['application'] = fn () => ApplicationResource::make($application);
+                $data['environments'] = fn () => EnvironmentSummaryResource::collection($application->environments()->orderBy('id')->get());
+                $data['projectApplications'] = fn () => Application::query()->where('project_id', $application->project_id)->orderBy('name')->get(['id', 'name'])
+                    ->map(fn (Application $item): array => ['id' => $item->id, 'name' => $item->name]);
+                $data['applicationCan'] = fn () => [
+                    'update' => $user->can('update', $application),
+                    'createEnvironment' => $user->can('create', [Environment::class, $application]),
+                ];
 
                 if ($request->route('environment')) {
                     /** @var Environment $environment */

@@ -125,7 +125,8 @@ test('resource endpoints enforce project boundaries read roles and scoped bindin
     $this->postJson($base.'/'.$attachment->id.'/retry')->assertNotFound();
     $this->user->currentProject->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
     $this->user->refresh();
-    $this->get($this->url)->assertSuccessful();
+    $this->get(route('environments.show', [$this->application, $this->environment, 'resource' => $attachment->id]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('resource.id', $attachment->id)->where('can.update', false));
     $this->postJson($this->url.'/database', $this->input)->assertForbidden();
     $this->deleteJson($this->url.'/'.$attachment->id)->assertForbidden();
     $this->postJson($this->url.'/'.$attachment->id.'/retry')->assertForbidden();
@@ -133,13 +134,32 @@ test('resource endpoints enforce project boundaries read roles and scoped bindin
 
 test('resource pages expose status and safe catalogues without credentials or access bookkeeping', function () {
     $attachment = app(AttachDatabase::class)->attach($this->environment, $this->input);
-    $this->get($this->url)->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/resources')->has('attachments.data', 1)
-        ->where('attachments.data.0.attachment.status', 'pending')->where('attachments.data.0.attachment.name', $this->database->name)
-        ->missing('attachments.data.0.attachment.credentials')->missing('attachments.data.0.attachment.access')
-        ->has('resourceOptions.services', 2)->where('canUpdate', true));
+    $this->get(route('environments.show', [$this->application, $this->environment, 'resource' => $attachment->id]))->assertSuccessful()
+        ->assertInertia(function (AssertableInertia $page) use ($attachment) {
+            $page->component('applications/environments/show')
+                ->where('resource.id', $attachment->id)->where('resource.status', 'pending')->where('resource.name', $this->database->name)
+                ->where('resource.server_name', $this->server->name)->missing('resource.credentials')->missing('resource.access')
+                ->where('topology.nodes.1.record_id', $attachment->id)->where('topology.nodes.1.status', 'pending')
+                ->missing('resourceOptions')->where('can.update', true)
+                ->reloadOnly('resourceOptions', fn (AssertableInertia $reload) => $reload->has('resourceOptions.services', 2));
+            expect(json_encode($page->toArray()['props']))->not->toContain($attachment->credentials['password']);
+        });
     $this->postJson($this->url.'/'.$attachment->id.'/retry')->assertUnprocessable();
     app(SyncEnvironmentResourceAccess::class)->failed($attachment->id);
     $this->post($this->url.'/'.$attachment->id.'/retry')->assertSessionHasNoErrors();
     $this->assertDatabaseHas('environment_attachments', ['id' => $attachment->id, 'status' => 'pending', 'last_error' => null]);
+});
+
+test('resource panel only resolves attachments of the routed environment', function () {
+    $attachment = app(AttachDatabase::class)->attach($this->environment, [...$this->input, 'alias' => 'HIDDENALIAS']);
+    $other = Environment::factory()->for($this->application)->create();
+
+    $this->get(route('environments.show', [$this->application, $other, 'resource' => $attachment->id]))->assertSuccessful()
+        ->assertInertia(function (AssertableInertia $page) use ($attachment) {
+            $page->where('resource', null)->where('topology.nodes', []);
+            expect(json_encode($page->toArray()['props']))->not->toContain($attachment->credentials['password'])->not->toContain('HIDDENALIAS');
+        });
+    $this->get(route('environments.show', [$this->application, $this->environment]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('resource', null));
+    $this->getJson(route('environments.show', [Application::factory()->create(), $this->environment, 'resource' => $attachment->id]))->assertNotFound();
 });

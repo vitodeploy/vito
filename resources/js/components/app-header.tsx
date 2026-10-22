@@ -9,6 +9,7 @@ import { SharedData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { type SocketStatus } from '@/hooks/use-socket-events';
+import { ApplicationSwitch } from '@/components/application-switch';
 
 export function AppHeader({ socketStatus, socketReconnect }: { socketStatus: SocketStatus; socketReconnect: () => void }) {
   const page = usePage<SharedData>();
@@ -20,11 +21,17 @@ export function AppHeader({ socketStatus, socketReconnect }: { socketStatus: Soc
         <div className="flex items-center space-x-2 text-xs">
           <ProjectSwitch />
           <SlashIcon className="size-3" />
-          <ServerSwitch />
-          {page.props.server && page.props.server.services['webserver'] && (
+          {page.props.application ? (
+            <ApplicationSwitch />
+          ) : (
             <>
-              <SlashIcon className="size-3" />
-              <SiteSwitch />
+              <ServerSwitch />
+              {page.props.server && page.props.server.services['webserver'] && (
+                <>
+                  <SlashIcon className="size-3" />
+                  <SiteSwitch />
+                </>
+              )}
             </>
           )}
         </div>

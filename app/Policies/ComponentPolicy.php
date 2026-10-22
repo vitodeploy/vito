@@ -12,12 +12,6 @@ class ComponentPolicy
 {
     use HasRolePolicies;
 
-    public function viewAny(User $user, Environment $environment, Application $application): bool
-    {
-        return $environment->application_id === $application->id
-            && $this->hasReadAccess($user, $application->project);
-    }
-
     public function view(User $user, Component $component, Environment $environment, Application $application): bool
     {
         return $component->environment_id === $environment->id

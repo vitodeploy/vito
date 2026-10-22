@@ -9,7 +9,7 @@ export interface Application {
   repository: string;
   runtime: string;
   status: string;
-  status_color: 'success' | 'danger';
+  status_color: 'success' | 'danger' | 'warning' | 'gray';
   created_at: string;
   updated_at: string;
 }
@@ -31,22 +31,29 @@ export interface Environment {
   auto_deploy: boolean;
   last_error: string | null;
   status: string;
-  status_color: 'success' | 'danger';
+  status_color: 'success' | 'danger' | 'warning' | 'gray';
   created_at: string;
   updated_at: string;
 }
 
 export interface TopologyNode {
   id: string;
-  type: 'server' | 'domain' | 'load_balancer' | 'app' | 'external' | 'database' | 'redis';
+  type: 'load_balancer' | 'app' | 'external' | 'database' | 'redis';
   name: string;
+  record_id: number | null;
   server_id: number | null;
+  server_name: string | null;
   status: string;
   status_color: 'default' | 'success' | 'danger' | 'warning' | 'gray' | 'info';
   url: string;
   capabilities: string[];
+  domains: string[];
   needs_redeploy: boolean;
 }
+
+export type EnvironmentSummary = Pick<Environment, 'id' | 'name' | 'branch' | 'status' | 'status_color'>;
+
+export type ApplicationPermissions = { update: boolean; createEnvironment: boolean };
 
 export interface EnvironmentTopology {
   nodes: TopologyNode[];

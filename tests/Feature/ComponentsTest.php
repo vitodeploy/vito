@@ -154,19 +154,21 @@ test('primary selection rejects other environments load balancers and deleting c
 test('component endpoints create show retry and queue deletion with scoped resource fields', function () {
     $this->actingAs($this->user);
     $parents = [$this->application, $this->environment];
-    $this->post(route('components.store', $parents), $this->input)->assertSessionDoesntHaveErrors();
+    $response = $this->post(route('components.store', $parents), $this->input)->assertSessionDoesntHaveErrors();
     $component = $this->environment->components()->sole();
-    $this->get(route('components.show', [...$parents, $component]))->assertSuccessful()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/component')
+    $response->assertRedirect(route('environments.show', [...$parents, 'component' => $component->id]));
+    $this->get(route('components.show', [...$parents, $component]))->assertRedirect(route('environments.show', [...$parents, 'component' => $component->id]));
+    $this->get(route('environments.show', [...$parents, 'component' => $component->id]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/show')
             ->where('component.id', $component->id)->where('component.status', 'pending')->where('component.status_color', 'gray')
             ->where('component.server_name', $this->server->name)->where('component.capabilities', ['web'])
             ->where('environment.primary_component_id', $component->id)->where('environment.components_count', 1)
             ->missing('component.deploy_key_id')->missing('component.deploy_key_source_control_id')->missing('component.server')
-            ->where('can.update', true)->where('can.delete', true));
+            ->where('can.updateComponent', true)->where('can.deleteComponent', true));
     $component->forceFill(['status' => ComponentStatus::INSTALLATION_FAILED])->save();
     $this->post(route('components.retry', [...$parents, $component]))->assertSessionDoesntHaveErrors();
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending']);
-    $this->delete(route('components.destroy', [...$parents, $component]))->assertRedirect(route('components.index', $parents));
+    $this->delete(route('components.destroy', [...$parents, $component]))->assertRedirect(route('environments.show', $parents));
     Queue::assertPushed(DeleteComponentJob::class);
     $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'deleting']);
 });
@@ -176,12 +178,16 @@ test('component listing scopes tables ready servers and dynamic capability forms
     $component = app(CreateComponent::class)->create($this->environment, $this->input);
     Component::factory()->create();
     Server::factory()->create(['project_id' => $this->server->project_id, 'status' => ServerStatus::INSTALLING]);
-    $this->get(route('components.index', [$this->application, $this->environment]))->assertSuccessful()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/components')
-            ->has('components.data', 1)->where('components.data.0.id', $component->id)
-            ->has('options.servers', 1)->where('options.servers.0.id', $this->server->id)
-            ->has('options.capabilities', 3)->where('options.capabilities.0.id', 'web')
-            ->where('options.capabilities.0.form.0.name', 'web_directory')->where('canCreate', true));
+    $this->get(route('environments.show', [$this->application, $this->environment]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('applications/environments/show')
+            ->has('topology.nodes', 1)->where('topology.nodes.0.record_id', $component->id)->missing('options')->where('capabilities', [])
+            ->where('can.createComponent', true)->where('component', null)->where('can.updateComponent', false)->where('can.deleteComponent', false)
+            ->reloadOnly('options', fn (AssertableInertia $reload) => $reload
+                ->has('options.servers', 1)->where('options.servers.0.id', $this->server->id)
+                ->has('options.capabilities', 3)->where('options.capabilities.0.id', 'web')
+                ->where('options.capabilities.0.form.0.name', 'web_directory')));
+    $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $component->id]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('capabilities', 3)->where('capabilities.0.id', 'web')->missing('options'));
 });
 
 test('component routes reject mismatched parents before exposing data', function () {
@@ -193,8 +199,36 @@ test('component routes reject mismatched parents before exposing data', function
     $this->postJson(route('components.retry', $parents))->assertNotFound();
     $this->deleteJson(route('components.destroy', $parents))->assertNotFound();
     $otherApplication = Application::factory()->create();
-    $this->getJson(route('components.index', [$otherApplication, $this->environment]))->assertNotFound();
+    $this->getJson(route('environments.show', [$otherApplication, $this->environment, 'component' => $component->id]))->assertNotFound();
     $this->postJson(route('components.store', [$otherApplication, $this->environment]), $this->input)->assertNotFound();
+});
+
+test('component panel only resolves components of the routed environment', function () {
+    $this->actingAs($this->user);
+    $own = Component::factory()->for($this->environment)->for($this->server)->create(['name' => 'own-component']);
+    $sibling = Environment::factory()->for($this->application)->create();
+    $foreign = Component::factory()->for($sibling)->for($this->server)->create(['name' => 'sibling-secret-component', 'path' => '/home/vito/sibling-secret-path']);
+    $foreign->deploymentScripts()->create(['name' => 'deploy', 'content' => 'echo sibling-secret-script']);
+    $parents = [$this->application, $this->environment];
+
+    $this->get(route('environments.show', [...$parents, 'component' => $foreign->id]))->assertSuccessful()
+        ->assertInertia(function (AssertableInertia $page) use ($own) {
+            $page->where('component', null)->where('componentDomains', [])->where('componentScripts', [])->where('inheritedScripts', [])
+                ->where('workers', null)->where('cronjobs', null)->where('backendTargets', [])
+                ->where('can.updateComponent', false)->where('can.deleteComponent', false)
+                ->has('topology.nodes', 1)->where('topology.nodes.0.record_id', $own->id);
+            expect(json_encode($page->toArray()['props']))->not->toContain('sibling-secret');
+        });
+    $this->get(route('environments.show', [$this->application, $sibling, 'component' => $own->id]))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('component', null)->where('can.updateComponent', false));
+    $this->get(route('environments.show', [...$parents, 'component' => 'not-a-number']))->assertSuccessful()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('component', null));
+    $outside = Component::factory()->for($this->environment)->for(Server::factory()->create(['name' => 'outside-secret-server', 'project_id' => Project::factory()->create()->id]))->create(['name' => 'outside-secret-component']);
+    $this->get(route('environments.show', [...$parents, 'component' => $outside->id]))->assertSuccessful()
+        ->assertInertia(function (AssertableInertia $page) {
+            $page->where('component', null)->where('capabilities', [])->where('domainOptions', null)->where('can.updateComponent', false);
+            expect(json_encode($page->toArray()['props']))->not->toContain('outside-secret');
+        });
 });
 
 test('component endpoints enforce project membership authentication and write access', function (string $access) {
@@ -210,12 +244,16 @@ test('component endpoints enforce project membership authentication and write ac
     $parents = [$this->application, $this->environment];
     $status = $access === 'guest' ? 401 : 403;
     if ($access === 'reader') {
-        $this->get(route('components.index', $parents))->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->where('canCreate', false));
-        $this->get(route('components.show', [...$parents, $component]))->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false)->where('can.delete', false));
+        $this->get(route('environments.show', $parents))->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('can.createComponent', false)
+                ->reloadOnly(['options', 'resourceOptions'], fn (AssertableInertia $reload) => $reload->where('options', null)->where('resourceOptions', null)));
+        $this->get(route('components.show', [...$parents, $component]))->assertRedirect(route('environments.show', [...$parents, 'component' => $component->id]));
+        $this->get(route('environments.show', [...$parents, 'component' => $component->id]))->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('component.id', $component->id)
+                ->where('can.updateComponent', false)->where('can.deleteComponent', false));
     } else {
-        $this->getJson(route('components.index', $parents))->assertStatus($status);
+        $this->getJson(route('environments.show', $parents))->assertStatus($status);
+        $this->getJson(route('environments.show', [...$parents, 'component' => $component->id]))->assertStatus($status);
         $this->getJson(route('components.show', [...$parents, $component]))->assertStatus($status);
     }
     $this->postJson(route('components.store', $parents), $this->input)->assertStatus($status);

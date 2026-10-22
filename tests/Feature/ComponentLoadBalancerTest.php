@@ -251,16 +251,18 @@ test('backend rows require exactly one target', function () {
 
 test('backend editor is scoped policy protected and whitelists backend fields', function () {
     $url = '/applications/'.$this->application->id.'/environments/'.$this->environment->id.'/components/'.$this->lb->id;
+    $panel = route('environments.show', [$this->application, $this->environment, 'component' => $this->lb->id]);
     $this->actingAs($this->user)->put($url.'/backends', $this->input)->assertRedirect()->assertSessionHasNoErrors();
-    $this->get($url)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+    $this->get($url)->assertRedirect($panel);
+    $this->get($panel)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
         ->where('component.type', 'load_balancer')->where('component.load_balancer_method', 'round-robin')
         ->where('component.backends.0.target_component_id', $this->target->id)->missing('component.backends.0.firewall_rule_id')
-        ->where('backendTargets.0.id', $this->target->id)->where('can.update', true));
+        ->where('backendTargets.0.id', $this->target->id)->where('can.updateComponent', true));
     $foreign = Environment::factory()->for($this->application)->create();
     $this->putJson(str_replace('/environments/'.$this->environment->id, '/environments/'.$foreign->id, $url).'/backends', $this->input)->assertNotFound();
     $this->putJson($url.'/backends', ['method' => 'bad', 'backends' => []])->assertUnprocessable();
     $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
-    $this->get($url)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('can.update', false));
+    $this->get($panel)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('can.updateComponent', false));
     $this->putJson($url.'/backends', $this->input)->assertForbidden();
 });
 

@@ -5,19 +5,14 @@ namespace App\Http\Controllers\Applications;
 use App\Actions\EnvironmentAttachment\AttachDatabase;
 use App\Actions\EnvironmentAttachment\AttachRedis;
 use App\Actions\EnvironmentAttachment\DetachEnvironmentResource;
-use App\Actions\EnvironmentAttachment\GetEnvironmentResourceOptions;
 use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
-use App\Tables\Applications\EnvironmentAttachmentTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
-use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
@@ -28,18 +23,6 @@ use Spatie\RouteAttributes\Attributes\ScopeBindings;
 #[ScopeBindings]
 class EnvironmentAttachmentController extends Controller
 {
-    #[Get('/', name: 'environments.resources')]
-    public function index(Application $application, Environment $environment): Response
-    {
-        $this->authorize('view', [$environment, $application]);
-
-        return Inertia::render('applications/environments/resources', [
-            'attachments' => EnvironmentAttachmentTable::make($environment->attachments()->getQuery())->paginate(),
-            'resourceOptions' => app(GetEnvironmentResourceOptions::class)->get($environment),
-            'canUpdate' => user()->can('update', [$environment, $application]),
-        ]);
-    }
-
     #[Post('/database', name: 'environments.resources.database')]
     public function database(Request $request, Application $application, Environment $environment): RedirectResponse
     {

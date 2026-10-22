@@ -46,12 +46,10 @@ import EnvironmentForm from '@/pages/applications/components/environment-form';
 import DeleteApplicationResource from '@/pages/applications/components/delete-dialog';
 import AddComponent from '@/pages/applications/components/add-component';
 import DeleteComponent from '@/pages/applications/components/delete-component';
-import CapabilitiesDialog from '@/pages/applications/components/capabilities-dialog';
 import VariableForm from '@/pages/applications/components/variable-form';
 import ImportEnv from '@/pages/applications/components/import-env';
 import DeploymentScriptEditor from '@/pages/applications/components/deployment-script';
 import DomainForm from '@/pages/applications/components/domain-form';
-import LoadBalancerBackends from '@/pages/applications/components/load-balancer-backends';
 import AttachResource from '@/pages/applications/components/attach-resource';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
@@ -113,16 +111,13 @@ export const dialogs = {
   networkPeerConfig: PeerConfigDialog,
   createApplication: CreateApplication,
   createEnvironment: EnvironmentForm,
-  editEnvironment: EnvironmentForm,
   deleteApplicationResource: DeleteApplicationResource,
   addComponent: AddComponent,
   deleteComponent: DeleteComponent,
-  componentCapabilities: CapabilitiesDialog,
   variableForm: VariableForm,
   importEnv: ImportEnv,
   environmentDeploymentScript: DeploymentScriptEditor,
   environmentDomainForm: DomainForm,
-  loadBalancerBackends: LoadBalancerBackends,
   attachResource: AttachResource,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;

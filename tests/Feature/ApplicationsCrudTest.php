@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -254,32 +255,73 @@ test('delete application requires its name and cascades environments', function 
 test('application index is project scoped searchable and sortable', function () {
     $alpha = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'Alpha']);
     $beta = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'Beta']);
-    Environment::factory()->for($alpha)->create();
+    $environment = Environment::factory()->for($alpha)->create();
     Application::factory()->create(['name' => 'Foreign']);
 
     $this->get(route('applications', ['sort' => 'name']))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/index')->has('applications.columns')->has('applications.meta')
         ->has('applications.data', 2)->where('applications.data.0.id', $alpha->id)
         ->where('applications.data.0._status_enum_color', 'success')
-        ->where('applications.data.0.environments_count', 1)->where('canCreate', true));
+        ->where('applications.data.0.environments_count', 1)->where('canCreate', true)
+        ->where('applications.data.0.environments', [['id' => $environment->id, 'name' => $environment->name, 'branch' => 'main', 'status' => 'ready', 'status_color' => 'success']])
+        ->where('applications.data.1.environments', []));
     $this->get(route('applications', ['search' => 'Beta']))->assertInertia(fn (AssertableInertia $page) => $page
         ->has('applications.data', 1)->where('applications.data.0.id', $beta->id));
 });
 
 test('application pages share whitelisted resources and only authorized source controls', function () {
     $application = Application::factory()->create(['project_id' => $this->user->current_project_id]);
-    $environment = Environment::factory()->for($application)->create();
+    $environment = Environment::factory()->for($application)->create(['name' => 'production', 'branch' => 'main']);
     SourceControl::factory()->github()->create(['user_id' => $this->user->id, 'project_id' => Project::factory()->create()->id]);
     SourceControl::factory()->github()->create(['project_id' => $this->user->current_project_id]);
 
-    $this->get(route('applications.show', $application))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/show')->where('application.id', $application->id)
+    $this->get(route('environments.show', [$application, $environment]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/environments/show')->where('application.id', $application->id)
         ->where('application.source_control_id', null)->missing('application.sourceControl')
-        ->has('environments', 1)->where('environments.0.id', $environment->id)
-        ->where('environments.0.status', 'ready')->where('environments.0.status_color', 'success')
-        ->where('environments.0.primary_component_id', null)->where('environments.0.components_count', 0)->has('sourceControls', 1)
+        ->has('environments', 1)->has('environments.0', fn (AssertableJson $json) => $json
+            ->where('id', $environment->id)->where('name', 'production')->where('branch', 'main')
+            ->where('status', 'ready')->where('status_color', 'success')));
+    $this->get(route('environments.settings', [$application, $environment]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/environments/settings')->has('sourceControls', 1)
         ->where('sourceControls.0.id', $this->sourceControl->id)->missing('sourceControls.0.provider_data')
-        ->missing('sourceControls.0.access_token')->where('can.update', true));
+        ->missing('sourceControls.0.access_token')->where('can.updateApplication', true)->where('can.deleteApplication', true));
+});
+
+test('application show redirects to its first environment or renders the empty state', function () {
+    $application = Application::factory()->create(['project_id' => $this->user->current_project_id]);
+
+    $this->get(route('applications.show', $application))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/show')->where('application.id', $application->id)->where('environments', [])
+        ->where('can', ['delete' => true, 'createEnvironment' => true])->missing('sourceControls'));
+
+    $first = Environment::factory()->for($application)->create(['name' => 'zeta']);
+    Environment::factory()->for($application)->create(['name' => 'alpha']);
+
+    $this->get(route('applications.show', $application))->assertRedirect(route('environments.show', [$application, $first]));
+});
+
+test('shared environments prop lists only the routed application environments in id order', function () {
+    $application = Application::factory()->create(['project_id' => $this->user->current_project_id]);
+    $first = Environment::factory()->for($application)->create(['name' => 'zeta', 'branch' => 'main']);
+    $second = Environment::factory()->for($application)->create(['name' => 'alpha', 'branch' => 'develop', 'status' => EnvironmentStatus::DELETION_FAILED]);
+    Environment::factory()->create();
+
+    $this->get(route('applications'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->missing('environments'));
+    $this->get(route('environments.show', [$application, $second]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('environments', [
+            ['id' => $first->id, 'name' => 'zeta', 'branch' => 'main', 'status' => 'ready', 'status_color' => 'success'],
+            ['id' => $second->id, 'name' => 'alpha', 'branch' => 'develop', 'status' => EnvironmentStatus::DELETION_FAILED->getText(), 'status_color' => EnvironmentStatus::DELETION_FAILED->getColor()],
+        ]));
+});
+
+test('shared project applications prop lists only applications of the routed project by name', function () {
+    $zeta = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'zeta']);
+    $alpha = Application::factory()->create(['project_id' => $this->user->current_project_id, 'name' => 'alpha']);
+    Application::factory()->create(['project_id' => Project::factory()->create()->id, 'name' => 'other']);
+
+    $this->get(route('applications'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->missing('projectApplications'));
+    $this->get(route('applications.show', $zeta))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('projectApplications', [['id' => $alpha->id, 'name' => 'alpha'], ['id' => $zeta->id, 'name' => 'zeta']]));
 });
 
 test('authorized application links switch the current project consistently', function () {
@@ -299,7 +341,10 @@ test('read only members can view applications but cannot mutate them', function 
 
     $this->get(route('applications'))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->where('canCreate', false));
     $this->get(route('applications.show', $application))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->where('can.update', false)->where('can.delete', false)->where('can.createEnvironment', false));
+        ->where('can.delete', false)->where('can.createEnvironment', false));
+    $environment = Environment::factory()->for($application)->create();
+    $this->get(route('environments.settings', [$application, $environment]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('can.update', false)->where('can.delete', false)->where('can.updateApplication', false)->where('can.deleteApplication', false));
     $this->postJson(route('applications.store'), $this->applicationInput)->assertForbidden();
     $this->putJson(route('applications.update', $application), $this->applicationInput)->assertForbidden();
     $this->deleteJson(route('applications.destroy', $application), ['name' => $application->name])->assertForbidden();

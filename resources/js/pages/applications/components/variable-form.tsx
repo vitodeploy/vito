@@ -3,7 +3,6 @@ import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { DialogControlProps } from '@/components/dialogs/registry';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Application, Environment, EnvironmentVariable } from '@/types/application';
+import { SwitchField } from './section';
 
 export default function VariableForm({ open, onOpenChange, application, environment, variable }: DialogControlProps & {
   application: Application;
@@ -47,23 +47,30 @@ export default function VariableForm({ open, onOpenChange, application, environm
               <Input id="variable-key" autoComplete="off" value={form.data.key} onChange={(e) => form.setData('key', e.target.value)} />
               <InputError message={form.errors.key} />
             </FormField>
+            {variable?.is_secret && (
+              <SwitchField
+                id="variable-replace"
+                label="Replace stored secret"
+                description={form.data.value === null ? 'The stored secret will be kept.' : 'The replacement will be saved, even when empty.'}
+                checked={form.data.value !== null}
+                disabled={form.processing}
+                onCheckedChange={(checked) => form.setData({ ...form.data, value: checked ? '' : null, is_secret: checked ? form.data.is_secret : true })}
+              />
+            )}
             <FormField>
-              {variable?.is_secret && <div className="flex items-center gap-2">
-                <Checkbox id="variable-replace" checked={form.data.value !== null} disabled={form.processing} onCheckedChange={(checked) => form.setData({ ...form.data, value: checked === true ? '' : null, is_secret: checked === true ? form.data.is_secret : true })} />
-                <Label htmlFor="variable-replace">Replace stored secret</Label>
-              </div>}
               <Label htmlFor="variable-value">Value</Label>
               <Textarea id="variable-value" autoComplete="off" spellCheck={false} rows={5} disabled={form.processing || (variable?.is_secret && form.data.value === null)} value={form.data.value ?? ''} onChange={(e) => form.setData('value', e.target.value)} />
-              {variable?.is_secret && <p className="text-muted-foreground text-sm">{form.data.value === null ? 'The stored secret will be kept.' : 'The replacement will be saved, even when empty.'}</p>}
               <InputError message={form.errors.value} />
             </FormField>
-            <FormField>
-              <div className="flex items-center gap-2">
-                <Checkbox id="variable-secret" disabled={form.processing || (variable?.is_secret && form.data.value === null)} checked={form.data.is_secret} onCheckedChange={(checked) => form.setData('is_secret', checked === true)} />
-                <Label htmlFor="variable-secret">Secret (hide the saved value)</Label>
-              </div>
-              <InputError message={form.errors.is_secret} />
-            </FormField>
+            <SwitchField
+              id="variable-secret"
+              label="Secret"
+              description="The saved value can't be viewed again."
+              checked={form.data.is_secret}
+              disabled={form.processing || (variable?.is_secret && form.data.value === null)}
+              onCheckedChange={(checked) => form.setData('is_secret', checked)}
+              error={form.errors.is_secret}
+            />
           </FormFields>
         </Form>
         <DialogFooter>

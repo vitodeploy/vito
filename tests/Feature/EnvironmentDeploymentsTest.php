@@ -275,10 +275,14 @@ test('deployment pages expose stages and safe script metadata with scoped permis
     $this->actingAs($this->user)->put($base.'/deployment-settings', ['shared_paths' => ['uploads'], 'keep_releases' => 3])->assertRedirect()->assertSessionHasNoErrors();
     $this->put($base.'/deployment-scripts', ['stage' => 'build', 'content' => 'echo build'])->assertRedirect()->assertSessionHasNoErrors();
     $this->put($base.'/components/'.$this->component->id.'/deployment-scripts', ['stage' => 'build', 'content' => 'echo override'])->assertRedirect()->assertSessionHasNoErrors();
-    $this->get($base.'/deployment-settings')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployment-settings')->has('scripts', 1)->where('canUpdate', true)->where('deploymentActive', false));
-    $this->get($base.'/components/'.$this->component->id.'/deployment-scripts')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployment-settings')->has('inheritedScripts', 1)->where('scriptComponent.id', $this->component->id));
+    $this->get(route('environments.settings', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/environments/settings')->has('scripts', 1)->where('scripts.0.content', 'echo build')
+        ->where('can.update', true)->where('deploymentActive', false));
+    $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $this->component->id]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/environments/show')->where('component.id', $this->component->id)
+        ->has('componentScripts', 1)->where('componentScripts.0.content', 'echo override')
+        ->has('inheritedScripts', 1)->where('inheritedScripts.0.content', 'echo build')
+        ->where('can.updateComponent', true)->where('deploymentActive', false));
     $this->post($base.'/deployments')->assertRedirect();
     $run = $this->environment->deployments()->sole();
     app(StartEnvironmentDeployment::class)->start($run->id);
@@ -287,15 +291,40 @@ test('deployment pages expose stages and safe script metadata with scoped permis
         ->where('deployments.data.0.id', $run->id)->where('deployments.data.0.number', '#'.$run->id)
         ->where('deployments.data.0.commit', substr((string) $run->fresh()->commit_id, 0, 7))->where('deployments.data.0.commit_id', $run->fresh()->commit_id)->where('deployments.data.0.release', $run->fresh()->release));
     $this->get($base.'/deployments/'.$run->id)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/deployment')->where('deployment.current_stage', 'clone')->has('deployment.deployments', 1)->missing('deployment.variables'));
+        ->component('applications/environments/deployments')->where('deployment.id', $run->id)->where('deployment.current_stage', 'clone')
+        ->has('deployment.deployments', 1)->missing('deployment.variables')
+        ->has('deployments.data', 1)->where('deployments.data.0.id', $run->id)->missing('deployments.data.0.variables'));
+    $this->get(route('environments.settings', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('deploymentActive', true));
+    $this->get(route('environments.show', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('deploymentActive', true)->where('lastDeployment.id', $run->id)->missing('lastDeployment.variables'));
     $foreign = Environment::factory()->for($this->application)->create();
     $this->get(str_replace('/environments/'.$this->environment->id, '/environments/'.$foreign->id, $base).'/deployments/'.$run->id)->assertNotFound();
     $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
     $this->get($base.'/deployments')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('environment.can_deploy', false));
+    $this->get(route('environments.settings', [$this->application, $this->environment]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('scripts', 1)->where('can.update', false)->where('can.delete', false));
+    $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $this->component->id]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('componentScripts', 1)->where('can.updateComponent', false)->where('can.deleteComponent', false));
     $this->postJson($base.'/deployments')->assertForbidden();
     $this->putJson($base.'/deployment-settings', ['shared_paths' => [], 'keep_releases' => 1])->assertForbidden();
     $this->putJson($base.'/deployment-scripts', ['stage' => 'build', 'content' => ''])->assertForbidden();
     $this->putJson($base.'/components/'.$this->component->id.'/deployment-scripts', ['stage' => 'build', 'content' => ''])->assertForbidden();
+});
+
+test('deployment list labels runs by commit message rollback target and trigger', function () {
+    $first = EnvironmentDeployment::factory()->for($this->environment)->create(['commit_data' => ['message' => "Fix login\n\nLonger body"], 'triggered_by' => $this->user->id]);
+    $long = EnvironmentDeployment::factory()->for($this->environment)->create(['commit_data' => ['message' => str_repeat('a', 100)]]);
+    $plain = EnvironmentDeployment::factory()->for($this->environment)->create(['branch' => 'release']);
+    $rollback = EnvironmentDeployment::factory()->for($this->environment)->create(['rollback_of_id' => $first->id, 'triggered_by' => $this->user->id]);
+
+    $this->actingAs($this->user)->get(route('environment-deployments.index', [$this->application, $this->environment]))->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use ($first, $long, $plain, $rollback) {
+            $rows = collect($page->toArray()['props']['deployments']['data'])->keyBy('id');
+            expect($rows[$first->id])->toMatchArray(['message' => 'Fix login', 'triggered_by' => $this->user->name])
+                ->and($rows[$long->id])->toMatchArray(['message' => str_repeat('a', 80).'...', 'triggered_by' => 'Git push'])
+                ->and($rows[$plain->id]['message'])->toBe('Deploy release')
+                ->and($rows[$rollback->id])->toMatchArray(['message' => 'Rollback to #'.$first->id, 'triggered_by' => $this->user->name]);
+        });
 });
 
 test('nonterminal runs block conflicting mutations but permit variable edits', function (string $operation, EnvironmentDeploymentStatus $status) {

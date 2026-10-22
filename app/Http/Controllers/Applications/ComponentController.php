@@ -4,22 +4,15 @@ namespace App\Http\Controllers\Applications;
 
 use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
-use App\Actions\Component\GetComponentOptions;
 use App\Actions\Component\RetryComponentInstall;
 use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\Component\UpdateLoadBalancerBackends;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ComponentResource;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
-use App\Tables\Applications\ComponentCronJobTable;
-use App\Tables\Applications\ComponentTable;
-use App\Tables\Applications\ComponentWorkerTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -33,18 +26,6 @@ use Spatie\RouteAttributes\Attributes\ScopeBindings;
 #[ScopeBindings]
 class ComponentController extends Controller
 {
-    #[Get('/', name: 'components.index')]
-    public function index(Application $application, Environment $environment): Response
-    {
-        $this->authorize('viewAny', [Component::class, $environment, $application]);
-
-        return Inertia::render('applications/environments/components', [
-            'components' => ComponentTable::make($environment->components())->simplePaginate(),
-            'options' => app(GetComponentOptions::class)->get($environment),
-            'canCreate' => user()->can('create', [Component::class, $environment, $application]),
-        ]);
-    }
-
     #[Post('/', name: 'components.store')]
     public function store(Request $request, Application $application, Environment $environment): RedirectResponse
     {
@@ -52,26 +33,15 @@ class ComponentController extends Controller
 
         $component = app(CreateComponent::class)->create($environment, $request->all());
 
-        return to_route('components.show', [$application, $environment, $component])->with('success', 'Component installation queued.');
+        return to_route('environments.show', [$application, $environment, 'component' => $component->id])->with('success', 'Component installation queued.');
     }
 
     #[Get('/{component}', name: 'components.show')]
-    public function show(Application $application, Environment $environment, Component $component): Response
+    public function show(Application $application, Environment $environment, Component $component): RedirectResponse
     {
         $this->authorize('view', [$component, $environment, $application]);
 
-        return Inertia::render('applications/environments/component', [
-            'component' => new ComponentResource($component->load('server', 'capabilities', 'backends.targetComponent')),
-            'options' => app(GetComponentOptions::class)->get($environment),
-            'workers' => ComponentWorkerTable::make($component->workers())->identifier('workers')->simplePaginate(),
-            'cronjobs' => ComponentCronJobTable::make($component->cronJobs())->identifier('cronjobs')->simplePaginate(),
-            'backendTargets' => app(GetComponentOptions::class)->backendTargets($environment),
-            'primaryCandidates' => app(GetComponentOptions::class)->primaryCandidates($environment),
-            'can' => [
-                'update' => user()->can('update', [$component, $environment, $application]),
-                'delete' => user()->can('delete', [$component, $environment, $application]),
-            ],
-        ]);
+        return to_route('environments.show', [$application, $environment, 'component' => $component->id]);
     }
 
     #[Put('/{component}/capabilities', name: 'components.capabilities.update')]
@@ -111,6 +81,6 @@ class ComponentController extends Controller
 
         app(DeleteComponent::class)->delete($component, $request->all());
 
-        return to_route('components.index', [$application, $environment])->with('success', 'Component deletion queued.');
+        return to_route('environments.show', [$application, $environment])->with('success', 'Component deletion queued.');
     }
 }

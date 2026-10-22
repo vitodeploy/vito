@@ -7,9 +7,7 @@ use App\Actions\EnvironmentDeployment\DeployEnvironment;
 use App\Actions\EnvironmentDeployment\RollbackEnvironment;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
-use App\Enums\ComponentType;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\EnvironmentDeploymentResource;
 use App\Models\Application;
 use App\Models\Component;
@@ -37,9 +35,7 @@ class EnvironmentDeploymentController extends Controller
     {
         $this->authorize('viewAny', [EnvironmentDeployment::class, $environment, $application]);
 
-        return Inertia::render('applications/environments/deployments', [
-            'deployments' => EnvironmentDeploymentTable::make($environment->deployments())->simplePaginate(),
-        ]);
+        return $this->deployments($environment, null);
     }
 
     #[Post('/deployments', name: 'environment-deployments.store')]
@@ -56,9 +52,7 @@ class EnvironmentDeploymentController extends Controller
     {
         $this->authorize('view', [$deployment, $environment, $application]);
 
-        return Inertia::render('applications/environments/deployment', [
-            'deployment' => new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'triggeredBy')),
-        ]);
+        return $this->deployments($environment, new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'triggeredBy')));
     }
 
     #[Post('/deployments/{deployment}/cancel', name: 'environment-deployments.cancel')]
@@ -79,19 +73,6 @@ class EnvironmentDeploymentController extends Controller
         return to_route('environment-deployments.show', [$application, $environment, $run]);
     }
 
-    #[Get('/deployment-settings', name: 'environment-deployments.settings')]
-    public function settings(Application $application, Environment $environment): Response
-    {
-        $this->authorize('view', [$environment, $application]);
-
-        return Inertia::render('applications/environments/deployment-settings', [
-            'scripts' => DeploymentScriptResource::collection($environment->deploymentScripts()->get()),
-            'scriptComponents' => $environment->components()->where('type', ComponentType::APP)->get(['id', 'name'])->map(fn (Component $component): array => ['id' => $component->id, 'name' => $component->name]),
-            'canUpdate' => user()->can('update', [$environment, $application]),
-            'deploymentActive' => $environment->deployments()->blocking()->exists(),
-        ]);
-    }
-
     #[Put('/deployment-settings', name: 'environment-deployments.settings.update')]
     public function updateSettings(Request $request, Application $application, Environment $environment): RedirectResponse
     {
@@ -110,21 +91,6 @@ class EnvironmentDeploymentController extends Controller
         return back()->with('success', 'Deployment script updated.');
     }
 
-    #[Get('/components/{component}/deployment-scripts', name: 'components.deployment-scripts')]
-    public function componentScripts(Application $application, Environment $environment, Component $component): Response
-    {
-        $this->authorize('view', [$component, $environment, $application]);
-
-        return Inertia::render('applications/environments/deployment-settings', [
-            'scripts' => DeploymentScriptResource::collection($component->deploymentScripts()->get()),
-            'inheritedScripts' => DeploymentScriptResource::collection($environment->deploymentScripts()->get()),
-            'scriptComponent' => ['id' => $component->id, 'name' => $component->name],
-            'scriptComponents' => [],
-            'canUpdate' => user()->can('update', [$component, $environment, $application]),
-            'deploymentActive' => $environment->deployments()->blocking()->exists(),
-        ]);
-    }
-
     #[Put('/components/{component}/deployment-scripts', name: 'components.deployment-scripts.update')]
     public function updateComponentScript(Request $request, Application $application, Environment $environment, Component $component): RedirectResponse
     {
@@ -132,5 +98,13 @@ class EnvironmentDeploymentController extends Controller
         app(UpdateEnvironmentDeploymentScript::class)->update($environment, $request->all(), $component);
 
         return back()->with('success', 'Component deployment script updated.');
+    }
+
+    private function deployments(Environment $environment, ?EnvironmentDeploymentResource $deployment): Response
+    {
+        return Inertia::render('applications/environments/deployments', [
+            'deployments' => EnvironmentDeploymentTable::make($environment->deployments())->simplePaginate(),
+            'deployment' => $deployment,
+        ]);
     }
 }

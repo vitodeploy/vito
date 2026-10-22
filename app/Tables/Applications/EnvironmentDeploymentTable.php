@@ -4,7 +4,6 @@ namespace App\Tables\Applications;
 
 use App\Models\EnvironmentDeployment;
 use Forjed\InertiaTable\Column;
-use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
@@ -22,18 +21,16 @@ class EnvironmentDeploymentTable extends Table
     {
         return [
             TextColumn::make('number', 'Run')->value(fn (EnvironmentDeployment $run): string => '#'.$run->id),
-            TextColumn::make('commit', 'Commit')->value(fn (EnvironmentDeployment $run): ?string => $run->commit_id ? substr($run->commit_id, 0, 7) : null)->fallback('Resolving'),
             EnumColumn::make('status', 'Status'),
-            EnumColumn::make('current_stage', 'Stage'),
-            TextColumn::make('kind', 'Type')->value(fn (EnvironmentDeployment $run): string => $run->is_join
-                ? 'Join: '.$run->deployments->pluck('component.name')->filter()->implode(', ')
-                : ($run->rollback_of_id ? 'Rollback #'.$run->rollback_of_id : 'Deploy')),
-            TextColumn::make('triggeredBy.name', 'Triggered by'),
+            TextColumn::make('message', 'Commit')->value(fn (EnvironmentDeployment $run): string => $run->is_join
+                ? 'Joined '.$run->deployments->pluck('component.name')->filter()->implode(', ')
+                : ($run->rollback_of_id ? 'Rollback to #'.$run->rollback_of_id : (str($run->commit_data['message'] ?? '')->before("\n")->limit(80)->value() ?: 'Deploy '.$run->branch))),
+            TextColumn::make('commit', 'SHA')->value(fn (EnvironmentDeployment $run): ?string => $run->commit_id ? substr($run->commit_id, 0, 7) : null)->fallback('—'),
+            TextColumn::make('triggered_by', 'By')->value(fn (EnvironmentDeployment $run): string => $run->triggeredBy->name ?? ($run->is_join ? 'Vito' : 'Git push')),
             DateTimeColumn::make('created_at', 'Created')->sortable()->toLocal(),
             Column::data('id'),
             Column::data('commit_id'),
             Column::data('release'),
-            ActionsColumn::make(),
         ];
     }
 }

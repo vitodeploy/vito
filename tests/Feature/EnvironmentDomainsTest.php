@@ -262,13 +262,15 @@ test('domain endpoints list scoped options create edit verify and delete', funct
         'component_id' => (string) $this->component->id, 'redirect_to_domain_id' => '', 'ssl_id' => '',
     ]))->assertSessionDoesntHaveErrors();
     $domain = $this->environment->domains()->sole();
-    EnvironmentDomain::factory()->create();
-    $this->get(route('environments.domains', $parents))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/domains')->has('domains.data', 1)->has('domainOptions.components', 1)
-        ->where('domains.data.0.domain.id', $domain->id)->where('domains.data.0.domain.ssl_method', 'disabled')
-        ->where('domains.data.0._type_enum_color', 'default')->where('domains.data.0.target', $this->component->name.' · '.$this->server->name)
-        ->where('domainOptions.components.0.server_ip', $this->server->ip)->where('canUpdate', true)
-        ->missing('domains.data.0.domain.certificate_path'));
+    $foreign = EnvironmentDomain::factory()->create();
+    $this->get(route('environments.show', [...$parents, 'component' => $this->component->id]))->assertSuccessful()->assertInertia(function (AssertableInertia $page) use ($domain, $foreign) {
+        $page->component('applications/environments/show')->has('componentDomains', 1)->has('domainOptions.components', 1)
+            ->where('componentDomains.0.id', $domain->id)->where('componentDomains.0.ssl_method', 'disabled')
+            ->where('componentDomains.0.type_color', 'default')->where('topology.nodes.0.domains', [$domain->host])
+            ->where('domainOptions.components.0.server_ip', $this->server->ip)->where('can.update', true)
+            ->missing('componentDomains.0.certificate_path');
+        expect(json_encode($page->toArray()['props']))->not->toContain($foreign->host);
+    });
     $this->put(route('environments.domains.update', [...$parents, $domain]), array_replace($this->input, ['host' => 'new.example.com']))->assertSessionDoesntHaveErrors();
     $this->post(route('environments.domains.verify', [...$parents, $domain]))->assertSessionDoesntHaveErrors();
     $this->assertDatabaseHas('environment_domains', ['id' => $domain->id, 'host' => 'new.example.com', 'status' => 'pending']);
@@ -294,9 +296,15 @@ test('domain endpoints enforce authentication project roles and parent scoping',
         'guest' => 401, 'wrong-parent' => 404, default => 403
     };
     if ($access === 'reader') {
-        $this->get(route('environments.domains', $parents))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page->where('canUpdate', false));
-    } elseif ($access !== 'wrong-parent') {
-        $this->getJson(route('environments.domains', $parents))->assertStatus($status);
+        $this->get(route('environments.show', [...$parents, 'component' => $this->component->id]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('componentDomains', 1)->has('domainOptions.components', 1)->where('can.update', false));
+    } elseif ($access === 'wrong-parent') {
+        $this->get(route('environments.show', [...$parents, 'component' => $this->component->id]))->assertSuccessful()->assertInertia(function (AssertableInertia $page) use ($domain) {
+            $page->where('component', null)->where('componentDomains', [])->where('domainOptions', null);
+            expect(json_encode($page->toArray()['props']))->not->toContain($domain->host);
+        });
+    } else {
+        $this->getJson(route('environments.show', [...$parents, 'component' => $this->component->id]))->assertStatus($status);
     }
     if ($access !== 'wrong-parent') {
         $this->postJson(route('environments.domains.store', $parents), $this->input)->assertStatus($status);

@@ -1,45 +1,66 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { EyeIcon, SettingsIcon } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
+import { RocketIcon } from 'lucide-react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
-import { Badge } from '@/components/ui/badge';
-import DocsLink from '@/pages/applications/components/docs-link';
-import { Button } from '@/components/ui/button';
 import { VitoTable } from '@/components/vito-table';
-import EnvironmentLayout from '@/layouts/environment/layout';
-import DeployButton from '@/pages/applications/components/deploy-button';
-import { Application, Environment } from '@/types/application';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import ApplicationLayout from '@/layouts/application/layout';
+import DeploymentPanel from '@/pages/applications/components/deployment-panel';
+import { EmptyState } from '@/pages/applications/components/section';
+import Status from '@/pages/applications/components/status';
+import { Application, Environment, EnvironmentDeployment } from '@/types/application';
 
 export default function Deployments() {
-  const { application, environment, deployments } = usePage<{
+  const { application, environment, deployments, deployment } = usePage<{
     application: Application;
     environment: Environment;
     deployments: InertiaTableData;
+    deployment: EnvironmentDeployment | null;
   }>().props;
-  const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
+  const baseUrl = `/applications/${application.id}/environments/${environment.id}/deployments`;
+  const query = usePage().url.split('?')[1];
+  const url = (id?: number | string) => `${baseUrl}${id ? `/${id}` : ''}${query ? `?${query}` : ''}`;
+  const visit = (id?: number | string) => router.visit(url(id), { preserveState: true, preserveScroll: true, only: ['deployment'] });
 
   return (
-    <EnvironmentLayout>
-      <Head title={`Deployments - ${environment.name}`} />
-      <Container className="max-w-5xl">
-        <HeaderContainer>
-          <Heading title="Deployments" description="Each run deploys a pinned commit to every ready app component. Only the latest queued run is kept." badges={<Badge variant="warning">Beta</Badge>} />
-          <div className="flex items-start gap-2">
-            <Button variant="outline" asChild><Link href={`${baseUrl}/deployment-settings`}><SettingsIcon />Settings</Link></Button>
-            <DeployButton application={application} environment={environment} />
-          </div>
-        </HeaderContainer>
-        <VitoTable tableData={deployments} actions={(row) => (
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`${baseUrl}/deployments/${row.id}`} aria-label={`View deployment ${row.release}`}><EyeIcon /></Link>
-            </Button>
-          </div>
-        )} />
-        {deployments.data.length === 0 && <DocsLink page="deployments" />}
-      </Container>
-    </EnvironmentLayout>
+    <ApplicationLayout>
+      <Head title={`Deployments · ${environment.name}`} />
+      <div className={cn('relative flex-1', deployment && 'lg:pr-[42rem]')}>
+        <Container className="max-w-5xl">
+          <HeaderContainer>
+            <Heading title="Deployments" description={`Every deployment releases ${environment.branch} to all components at once.`} />
+          </HeaderContainer>
+          {deployments.data.length === 0 ? (
+            <EmptyState
+              icon={RocketIcon}
+              title="No deployments yet"
+              description="Deploy to build and release the latest commit."
+            />
+          ) : (
+            <VitoTable
+              tableData={deployments}
+              onRowClick={(row) => visit(String(row.id))}
+              rowClassName={(row) => (row.id === deployment?.id ? 'bg-muted/60' : '')}
+              cellRenderers={{
+                status: ({ row }) => <Status status={String(row.status)} color={String(row._status_enum_color)} />,
+                message: ({ row }) => (
+                  <span className="flex max-w-md items-center gap-2">
+                    <Link href={url(String(row.id))} preserveState preserveScroll only={['deployment']} onClick={(event) => event.stopPropagation()} className="truncate font-medium hover:underline">
+                      {String(row.message)}
+                    </Link>
+                    {row.id === environment.live_run_id && <Badge variant="success">Live</Badge>}
+                  </span>
+                ),
+                commit: ({ row }) => <span className="font-mono text-xs">{String(row.commit)}</span>,
+              }}
+            />
+          )}
+        </Container>
+        {deployment && <DeploymentPanel application={application} environment={environment} deployment={deployment} onClose={() => visit()} />}
+      </div>
+    </ApplicationLayout>
   );
 }

@@ -13,9 +13,23 @@ use App\Models\Server;
 class GetComponentOptions
 {
     /**
-     * @return array{servers: array, capabilities: array}
+     * @return array{servers: array, capabilities: list<array{id: string, label: string, description: string, form: array}>}
      */
     public function get(Environment $environment): array
+    {
+        return [
+            'servers' => Server::query()->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY)
+                ->orderBy('name')->get()->map(fn (Server $server): array => [
+                    'id' => $server->id, 'name' => $server->name, 'ssh_user' => $server->getSshUser(),
+                ])->all(),
+            'capabilities' => $this->capabilities($environment),
+        ];
+    }
+
+    /**
+     * @return list<array{id: string, label: string, description: string, form: array}>
+     */
+    public function capabilities(Environment $environment): array
     {
         $capabilities = [];
         if (isset(config('component.runtimes', [])[$environment->application->runtime])) {
@@ -31,13 +45,7 @@ class GetComponentOptions
             }
         }
 
-        return [
-            'servers' => Server::query()->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY)
-                ->orderBy('name')->get()->map(fn (Server $server): array => [
-                    'id' => $server->id, 'name' => $server->name, 'ssh_user' => $server->getSshUser(),
-                ])->all(),
-            'capabilities' => $capabilities,
-        ];
+        return $capabilities;
     }
 
     /** @return list<array{id: int, name: string, server_name: string}> */
@@ -56,6 +64,7 @@ class GetComponentOptions
     public function primaryCandidates(Environment $environment): array
     {
         return $environment->components()->where('type', ComponentType::APP)
+            ->whereHas('server', fn ($query) => $query->where('project_id', $environment->application->project_id))
             ->whereNotIn('status', [ComponentStatus::DELETING, ComponentStatus::DELETION_FAILED])->orderBy('id')
             ->get()->map(fn (Component $component): array => ['id' => $component->id, 'name' => $component->name])->all();
     }

@@ -6,7 +6,6 @@ use App\Actions\Application\CreateApplication;
 use App\Actions\Application\DeleteApplication;
 use App\Actions\Application\UpdateApplication;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\EnvironmentResource;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Application;
 use App\Models\Environment;
@@ -52,15 +51,17 @@ class ApplicationController extends Controller
     }
 
     #[Get('/{application}', name: 'applications.show')]
-    public function show(Application $application): Response
+    public function show(Application $application): Response|RedirectResponse
     {
         $this->authorize('view', $application);
 
+        $environment = $application->environments()->orderBy('id')->first();
+        if ($environment) {
+            return to_route('environments.show', [$application, $environment]);
+        }
+
         return Inertia::render('applications/show', [
-            'environments' => EnvironmentResource::collection($application->environments()->withCount('components')->withExists(['components as needs_redeploy' => fn ($query) => $query->where('needs_redeploy', true)])->orderBy('name')->get()),
-            'sourceControls' => SourceControlResource::collection(SourceControl::getByProjectId($application->project_id, user())->get()),
             'can' => [
-                'update' => user()->can('update', $application),
                 'delete' => user()->can('delete', $application),
                 'createEnvironment' => user()->can('create', [Environment::class, $application]),
             ],

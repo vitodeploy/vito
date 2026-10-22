@@ -305,8 +305,9 @@ test('server process lists expose component owners alongside site owners', funct
 test('component surfaces return safe backend tables and locked process metadata', function () {
     app(CreateWorker::class)->create($this->server, $this->workerInput, component: $this->component);
     app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component);
-    $this->actingAs($this->user)->get($this->url)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('applications/environments/component')
+    $this->actingAs($this->user)->get($this->url)->assertRedirect(route('environments.show', [$this->application, $this->environment, 'component' => $this->component->id]));
+    $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $this->component->id]))->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('applications/environments/show')
         ->where('component.surfaces', fn ($surfaces) => $surfaces->sort()->values()->all() === ['cron_jobs', 'workers'])
         ->has('workers.data', 1)->has('cronjobs.data', 1)
         ->where('workers.data.0.managed', 'No')->where('cronjobs.data.0.managed', 'No')
