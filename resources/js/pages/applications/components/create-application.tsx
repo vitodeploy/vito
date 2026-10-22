@@ -21,16 +21,27 @@ export default function CreateApplication({ open, onOpenChange, sourceControls }
   const available = usableSourceControls(sourceControls, configs);
   const [customize, setCustomize] = useState(false);
   const form = useForm<ApplicationFormData & { runtime: string; environment: EnvironmentFormData }>({
-    name: '', repository: '', source_control_id: available.length === 1 ? String(available[0].id) : '', runtime: '', environment: environmentDefaults(),
+    name: '',
+    repository: '',
+    source_control_id: available.length === 1 ? String(available[0].id) : '',
+    runtime: '',
+    environment: environmentDefaults(),
   });
   const preset = runtimes.find((runtime) => runtime.id === form.data.runtime);
   const environmentErrors = Object.fromEntries(
-    Object.entries(form.errors).filter(([key]) => key.startsWith('environment.')).map(([key, value]) => [key.slice('environment.'.length), value]),
+    Object.entries(form.errors)
+      .filter(([key]) => key.startsWith('environment.'))
+      .map(([key, value]) => [key.slice('environment.'.length), value]),
   );
-  const change = (name: keyof ApplicationFormData, value: string) => form.setData((data) => {
-    const derived = data.repository.split('/').pop() ?? '';
-    return { ...data, [name]: value, ...(name === 'repository' && (!data.name || data.name === derived) ? { name: value.split('/').pop() ?? '' } : {}) };
-  });
+  const change = (name: keyof ApplicationFormData, value: string) =>
+    form.setData((data) => {
+      const derived = data.repository.split('/').pop() ?? '';
+      return {
+        ...data,
+        [name]: value,
+        ...(name === 'repository' && (!data.name || data.name === derived) ? { name: value.split('/').pop() ?? '' } : {}),
+      };
+    });
   const selectRuntime = (runtime: string) => {
     const defaults = environmentDefaults(runtimes.find((item) => item.id === runtime));
     form.setData((data) => ({ ...data, runtime, environment: { ...defaults, name: data.environment.name, branch: data.environment.branch } }));
@@ -74,12 +85,24 @@ export default function CreateApplication({ open, onOpenChange, sourceControls }
               <InputError message={form.errors.runtime} />
             </FormField>
             <div className="flex flex-col gap-4 rounded-lg border p-3">
-              <button type="button" className="flex items-center justify-between gap-2 text-left text-sm" onClick={() => setCustomize((value) => !value)} aria-expanded={customize}>
+              <button
+                type="button"
+                className="flex items-center justify-between gap-2 text-left text-sm"
+                onClick={() => setCustomize((value) => !value)}
+                aria-expanded={customize}
+              >
                 <span>
                   <span className="font-medium">First environment</span>
-                  <span className="text-muted-foreground"> · {form.data.environment.name} from <span className="font-mono">{form.data.environment.branch}</span>{form.data.environment.runtime_version ? ` · ${preset?.label} ${form.data.environment.runtime_version}` : ''}</span>
+                  <span className="text-muted-foreground">
+                    {' '}
+                    · {form.data.environment.name} from <span className="font-mono">{form.data.environment.branch}</span>
+                    {form.data.environment.runtime_version ? ` · ${preset?.label} ${form.data.environment.runtime_version}` : ''}
+                  </span>
                 </span>
-                <span className="text-muted-foreground flex items-center gap-1 text-xs">Customize<ChevronRightIcon className={cn('size-4 transition-transform', customize && 'rotate-90')} /></span>
+                <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                  Customize
+                  <ChevronRightIcon className={cn('size-4 transition-transform', customize && 'rotate-90')} />
+                </span>
               </button>
               {(customize || Object.keys(environmentErrors).length > 0) && (
                 <FormFields>
@@ -96,7 +119,9 @@ export default function CreateApplication({ open, onOpenChange, sourceControls }
           </FormFields>
         </Form>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button form="create-application-form" type="submit" disabled={form.processing || !form.data.runtime || !form.data.repository}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}Create application
           </Button>

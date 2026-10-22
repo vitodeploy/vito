@@ -7,9 +7,32 @@ import { Application, Component, Environment } from '@/types/application';
 import Layout from '@/layouts/app/layout';
 
 const reloadProps = [
-  'application', 'environment', 'environments', 'applicationCan', 'topology', 'lastDeployment', 'warnings', 'primaryCandidates', 'capabilities',
-  'domainOptions', 'component', 'componentDomains', 'componentScripts', 'inheritedScripts', 'workers', 'cronjobs',
-  'backendTargets', 'resource', 'deploymentActive', 'can', 'sheet', 'deployments', 'deployment', 'variables', 'scripts', 'sourceControls',
+  'application',
+  'environment',
+  'environments',
+  'applicationCan',
+  'topology',
+  'lastDeployment',
+  'warnings',
+  'primaryCandidates',
+  'capabilities',
+  'domainOptions',
+  'component',
+  'componentDomains',
+  'componentScripts',
+  'inheritedScripts',
+  'workers',
+  'cronjobs',
+  'backendTargets',
+  'resource',
+  'deploymentActive',
+  'can',
+  'sheet',
+  'deployments',
+  'deployment',
+  'variables',
+  'scripts',
+  'sourceControls',
 ];
 
 export default function ApplicationLayout({ children }: { children: ReactNode }) {
@@ -81,7 +104,10 @@ export default function ApplicationLayout({ children }: { children: ReactNode })
       } else {
         router.reload(reloadOptions);
       }
-    } else if (['environment-domain.updated', 'environment-deployment.updated'].includes(event.type) && event.data?.environment_id === environment.id) {
+    } else if (
+      ['environment-domain.updated', 'environment-deployment.updated'].includes(event.type) &&
+      event.data?.environment_id === environment.id
+    ) {
       router.reload(reloadOptions);
     } else if (event.type?.startsWith('worker.') && component && event.data?.component_id === component.id) {
       router.reload(reloadOptions);

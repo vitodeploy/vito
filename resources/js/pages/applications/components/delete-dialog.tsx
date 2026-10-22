@@ -10,7 +10,12 @@ import InputError from '@/components/ui/input-error';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Application, Environment } from '@/types/application';
 
-export default function DeleteDialog({ open, onOpenChange, application, environment }: DialogControlProps & {
+export default function DeleteDialog({
+  open,
+  onOpenChange,
+  application,
+  environment,
+}: DialogControlProps & {
   application: Application;
   environment?: Environment;
 }) {
@@ -27,7 +32,10 @@ export default function DeleteDialog({ open, onOpenChange, application, environm
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Delete {target.name}</DialogTitle>
-          <DialogDescription>This tears down all components before permanently deleting the {environment ? 'environment' : 'application and its environments'}. Failed cleanup can be retried. This cannot be undone.</DialogDescription>
+          <DialogDescription>
+            This tears down all components before permanently deleting the {environment ? 'environment' : 'application and its environments'}. Failed
+            cleanup can be retried. This cannot be undone.
+          </DialogDescription>
         </DialogHeader>
         <Form id="delete-application-resource-form" className="p-4" onSubmit={submit}>
           <FormField>
@@ -37,8 +45,15 @@ export default function DeleteDialog({ open, onOpenChange, application, environm
           </FormField>
         </Form>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-          <Button form="delete-application-resource-form" type="submit" variant="destructive" disabled={form.processing || form.data.name !== target.name}>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button
+            form="delete-application-resource-form"
+            type="submit"
+            variant="destructive"
+            disabled={form.processing || form.data.name !== target.name}
+          >
             {form.processing && <LoaderCircleIcon className="animate-spin" />}Delete
           </Button>
         </DialogFooter>

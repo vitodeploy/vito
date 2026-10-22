@@ -155,7 +155,12 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       asChild
                       isActive={item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href)}
                       tooltip={{
-                        children: <span className="flex items-center gap-2">{item.title}{item.badge && <Badge variant="warning">{item.badge}</Badge>}</span>,
+                        children: (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
+                        ),
                         hidden: false,
                       }}
                       hidden={item.hidden}
@@ -168,7 +173,10 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       ) : (
                         <Link href={item.href}>
                           {item.icon && <item.icon />}
-                          <span className="flex items-center gap-2">{item.title}{item.badge && <Badge variant="warning">{item.badge}</Badge>}</span>
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
                         </Link>
                       )}
                     </SidebarMenuButton>

@@ -10,13 +10,27 @@ import SidePanel from './side-panel';
 
 function Value({ variable, revealed }: { variable: EnvironmentVariable; revealed: boolean }) {
   if (variable.is_secret) {
-    return <span className="text-muted-foreground flex items-center gap-1.5 text-xs"><LockIcon className="size-3" />Secret</span>;
+    return (
+      <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <LockIcon className="size-3" />
+        Secret
+      </span>
+    );
   }
   if (!revealed) return <span className="text-muted-foreground font-mono tracking-widest">••••••••</span>;
-  return <span className="font-mono text-sm break-all whitespace-pre-wrap">{variable.value || <span className="text-muted-foreground">empty</span>}</span>;
+  return (
+    <span className="font-mono text-sm break-all whitespace-pre-wrap">{variable.value || <span className="text-muted-foreground">empty</span>}</span>
+  );
 }
 
-export default function VariablesSheet({ application, environment, variables, warnings, canUpdate, onClose }: {
+export default function VariablesSheet({
+  application,
+  environment,
+  variables,
+  warnings,
+  canUpdate,
+  onClose,
+}: {
   application: Application;
   environment: Environment;
   variables: EnvironmentVariable[];
@@ -37,7 +51,10 @@ export default function VariablesSheet({ application, environment, variables, wa
   const content = (
     <>
       {warnings.map((warning, index) => (
-        <Alert key={`${index}-${warning}`}><TriangleAlertIcon /><AlertDescription>{warning}</AlertDescription></Alert>
+        <Alert key={`${index}-${warning}`}>
+          <TriangleAlertIcon />
+          <AlertDescription>{warning}</AlertDescription>
+        </Alert>
       ))}
       <Section title="Your variables" description="A variable you define replaces a resource variable with the same key.">
         {own.length === 0 ? (
@@ -46,37 +63,70 @@ export default function VariablesSheet({ application, environment, variables, wa
             icon={KeyRoundIcon}
             title="No variables yet"
             description="Add them one by one, or paste your .env file."
-            action={editable && <Button size="sm" variant="outline" onClick={importEnv}><UploadIcon />Import .env</Button>}
+            action={
+              editable && (
+                <Button size="sm" variant="outline" onClick={importEnv}>
+                  <UploadIcon />
+                  Import .env
+                </Button>
+              )
+            }
           />
-        ) : own.map((variable) => (
-          <div key={variable.id} className={columns}>
-            <span className="truncate font-mono font-medium" title={variable.key}>{variable.key}</span>
-            <Value variable={variable} revealed={revealed} />
-            {editable ? (
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8 justify-self-end" aria-label={`Actions for ${variable.key}`}><MoreHorizontalIcon /></Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => dialog.variableForm.open({ application, environment, variable })}>Edit</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => dialog.confirm.open({
-                    title: `Delete ${variable.key}`, description: 'It is removed from every component on the next deploy.',
-                    variant: 'destructive', confirmLabel: 'Delete', method: 'delete', url: `${baseUrl}/${variable.id}`,
-                  })}>Delete</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : <span />}
-          </div>
-        ))}
+        ) : (
+          own.map((variable) => (
+            <div key={variable.id} className={columns}>
+              <span className="truncate font-mono font-medium" title={variable.key}>
+                {variable.key}
+              </span>
+              <Value variable={variable} revealed={revealed} />
+              {editable ? (
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8 justify-self-end" aria-label={`Actions for ${variable.key}`}>
+                      <MoreHorizontalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => dialog.variableForm.open({ application, environment, variable })}>Edit</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() =>
+                        dialog.confirm.open({
+                          title: `Delete ${variable.key}`,
+                          description: 'It is removed from every component on the next deploy.',
+                          variant: 'destructive',
+                          confirmLabel: 'Delete',
+                          method: 'delete',
+                          url: `${baseUrl}/${variable.id}`,
+                        })
+                      }
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <span />
+              )}
+            </div>
+          ))
+        )}
       </Section>
       {provided.length > 0 && (
         <Section title="Provided by Vito and resources" description="Read-only. Vito's own variables are always applied.">
           {provided.map((variable) => (
             <div key={`${variable.source}-${variable.component_name}-${variable.key}`} className={columns}>
-              <span className="truncate font-mono" title={variable.key}>{variable.key}</span>
+              <span className="truncate font-mono" title={variable.key}>
+                {variable.key}
+              </span>
               <Value variable={variable} revealed={revealed} />
-              <span className="text-muted-foreground truncate text-right text-xs" title={variable.source === 'resource' ? 'Your own variable with the same key replaces this one' : 'Managed by Vito and always applied'}>
+              <span
+                className="text-muted-foreground truncate text-right text-xs"
+                title={
+                  variable.source === 'resource' ? 'Your own variable with the same key replaces this one' : 'Managed by Vito and always applied'
+                }
+              >
                 {variable.component_name} · {variable.source === 'resource' ? 'resource' : 'Vito'}
               </span>
             </div>
@@ -91,15 +141,28 @@ export default function VariablesSheet({ application, environment, variables, wa
       icon={KeyRoundIcon}
       title="Variables"
       subtitle="Shared by every component in this environment. Changes apply on the next deploy."
-      actions={<>
-        {variables.length > 0 && (
-          <Button variant="outline" size="sm" aria-pressed={revealed} onClick={() => setRevealed((value) => !value)}>
-            {revealed ? <EyeOffIcon /> : <EyeIcon />}<span className="sr-only sm:not-sr-only">{revealed ? 'Hide values' : 'Show values'}</span>
-          </Button>
-        )}
-        {editable && <Button variant="outline" size="sm" onClick={importEnv}><UploadIcon /><span className="sr-only sm:not-sr-only">Import .env</span></Button>}
-        {editable && <Button variant="outline" size="sm" onClick={add}><PlusIcon /><span className="sr-only sm:not-sr-only">New variable</span></Button>}
-      </>}
+      actions={
+        <>
+          {variables.length > 0 && (
+            <Button variant="outline" size="sm" aria-pressed={revealed} onClick={() => setRevealed((value) => !value)}>
+              {revealed ? <EyeOffIcon /> : <EyeIcon />}
+              <span className="sr-only sm:not-sr-only">{revealed ? 'Hide values' : 'Show values'}</span>
+            </Button>
+          )}
+          {editable && (
+            <Button variant="outline" size="sm" onClick={importEnv}>
+              <UploadIcon />
+              <span className="sr-only sm:not-sr-only">Import .env</span>
+            </Button>
+          )}
+          {editable && (
+            <Button variant="outline" size="sm" onClick={add}>
+              <PlusIcon />
+              <span className="sr-only sm:not-sr-only">New variable</span>
+            </Button>
+          )}
+        </>
+      }
       tabs={[{ value: 'variables', label: 'Variables', content }]}
       onClose={onClose}
       sheet

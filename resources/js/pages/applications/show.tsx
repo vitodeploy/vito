@@ -47,8 +47,10 @@ export default function ShowApplication() {
     if (leaving.current) return;
     if (event.type === 'application.deleted' && event.data?.id === application.id) {
       leave();
-    } else if ((event.type === 'application.updated' && event.data?.id === application.id)
-      || (event.type?.startsWith('environment.') && event.data?.application_id === application.id)) {
+    } else if (
+      (event.type === 'application.updated' && event.data?.id === application.id) ||
+      (event.type?.startsWith('environment.') && event.data?.application_id === application.id)
+    ) {
       router.reload(reloadOptions);
     }
   });
@@ -58,7 +60,9 @@ export default function ShowApplication() {
       <Head title={application.name} />
       <Container className="flex max-w-xl flex-col gap-6 py-16">
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Link href="/applications" className="hover:text-foreground">Applications</Link>
+          <Link href="/applications" className="hover:text-foreground">
+            Applications
+          </Link>
           <span>/</span>
           <span className="text-foreground font-medium">{application.name}</span>
           {application.status !== 'ready' && <Status status={application.status} color={application.status_color} className="text-xs" />}
@@ -67,7 +71,15 @@ export default function ShowApplication() {
           icon={LayersIcon}
           title="Create an environment"
           description={`Environments deploy a branch of ${application.repository}, such as production or staging.`}
-          action={can.createEnvironment && application.status === 'ready' && <Button onClick={() => dialog.createEnvironment.open({ application })}><PlusIcon />New environment</Button>}
+          action={
+            can.createEnvironment &&
+            application.status === 'ready' && (
+              <Button onClick={() => dialog.createEnvironment.open({ application })}>
+                <PlusIcon />
+                New environment
+              </Button>
+            )
+          }
         />
         {can.delete && application.status !== 'deleting' && (
           <Button variant="link" className="text-destructive self-center" onClick={() => dialog.deleteApplicationResource.open({ application })}>

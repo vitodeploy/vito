@@ -158,21 +158,29 @@ export default function CronJobForm({
 
             <FormField>
               <Label htmlFor="user">User</Label>
-              {componentOwned ? <Input id="user" value={componentUser} readOnly /> : <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
-                <SelectTrigger id="user">
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {sshUsers.map((user) => (
-                      <SelectItem key={`user-${user}`} value={user}>
-                        {user}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>}
-              {componentOwned && <p className="text-muted-foreground text-sm">Runs in the component’s current release as its Linux user. Variables come from the component environment, not this process.</p>}
+              {componentOwned ? (
+                <Input id="user" value={componentUser} readOnly />
+              ) : (
+                <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
+                  <SelectTrigger id="user">
+                    <SelectValue placeholder="Select a user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {sshUsers.map((user) => (
+                        <SelectItem key={`user-${user}`} value={user}>
+                          {user}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+              {componentOwned && (
+                <p className="text-muted-foreground text-sm">
+                  Runs in the component’s current release as its Linux user. Variables come from the component environment, not this process.
+                </p>
+              )}
               <InputError message={form.errors.user} />
             </FormField>
           </FormFields>

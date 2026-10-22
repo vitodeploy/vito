@@ -37,7 +37,16 @@ export default function ApplicationFields({
         label="Source control"
         inline={inline}
         error={errors.source_control_id}
-        description={available.length === 0 && <><Link href="/settings/source-controls" className="underline">Connect a source control</Link> to select a repository.</>}
+        description={
+          available.length === 0 && (
+            <>
+              <Link href="/settings/source-controls" className="underline">
+                Connect a source control
+              </Link>{' '}
+              to select a repository.
+            </>
+          )
+        }
       >
         <Select value={data.source_control_id} onValueChange={(value) => onChange('source_control_id', value)}>
           <SelectTrigger id="application-source-control">
@@ -45,13 +54,21 @@ export default function ApplicationFields({
           </SelectTrigger>
           <SelectContent>
             {available.map((source) => (
-              <SelectItem key={source.id} value={String(source.id)}>{source.name}</SelectItem>
+              <SelectItem key={source.id} value={String(source.id)}>
+                {source.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </Field>
       <Field id="application-repository" label="Repository" inline={inline} error={errors.repository}>
-        <Input id="application-repository" value={data.repository} onChange={(e) => onChange('repository', e.target.value)} placeholder="organization/repository" className="font-mono" />
+        <Input
+          id="application-repository"
+          value={data.repository}
+          onChange={(e) => onChange('repository', e.target.value)}
+          placeholder="organization/repository"
+          className="font-mono"
+        />
       </Field>
       <Field id="application-name" label="Name" inline={inline} error={errors.name}>
         <Input id="application-name" value={data.name} onChange={(e) => onChange('name', e.target.value)} />

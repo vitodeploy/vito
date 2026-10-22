@@ -2,8 +2,8 @@
 
 namespace App\Tables;
 
-use App\Models\Application;
 use App\Http\Resources\EnvironmentSummaryResource;
+use App\Models\Application;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\EnumColumn;

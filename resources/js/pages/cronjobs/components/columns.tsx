@@ -14,12 +14,16 @@ function Action({ type, cronJob, site }: { type: 'enable' | 'disable'; cronJob: 
   const dialog = useDialog();
 
   return (
-    <DropdownMenuItem onSelect={() => dialog.confirm.open({
-      title: `${type === 'enable' ? 'Enable' : 'Disable'} cron job`,
-      description: `Are you sure you want to ${type} this cron job?`,
-      method: 'post',
-      url: `${cronJob.component_url ?? `/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}`}/cronjobs/${cronJob.id}/${type}`,
-    })}>
+    <DropdownMenuItem
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `${type === 'enable' ? 'Enable' : 'Disable'} cron job`,
+          description: `Are you sure you want to ${type} this cron job?`,
+          method: 'post',
+          url: `${cronJob.component_url ?? `/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}`}/cronjobs/${cronJob.id}/${type}`,
+        })
+      }
+    >
       {type === 'enable' ? 'Enable' : 'Disable'}
     </DropdownMenuItem>
   );
@@ -50,7 +54,13 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
 export function Actions({ cronJob, site, canManage = true }: { cronJob: CronJob; site?: Site; canManage?: boolean }) {
   const dialog = useDialog();
 
-  if (cronJob.managed) return <span className="text-muted-foreground flex items-center justify-end gap-2 text-sm"><LockKeyholeIcon className="size-4" />Capability managed</span>;
+  if (cronJob.managed)
+    return (
+      <span className="text-muted-foreground flex items-center justify-end gap-2 text-sm">
+        <LockKeyholeIcon className="size-4" />
+        Capability managed
+      </span>
+    );
   if (!canManage) return null;
 
   return (
@@ -119,9 +129,14 @@ function getColumns(site?: Site, sites?: Array<{ id: number; domain: string }>):
       header: 'Component',
       enableColumnFilter: true,
       enableSorting: true,
-      cell: ({ row }) => row.original.component_url
-        ? <Link href={row.original.component_url} className="hover:underline">{row.original.component_name ?? `Component #${row.original.component_id}`}</Link>
-        : <span>-</span>,
+      cell: ({ row }) =>
+        row.original.component_url ? (
+          <Link href={row.original.component_url} className="hover:underline">
+            {row.original.component_name ?? `Component #${row.original.component_id}`}
+          </Link>
+        ) : (
+          <span>-</span>
+        ),
     },
     {
       accessorKey: 'frequency',

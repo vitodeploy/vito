@@ -12,14 +12,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Application, Environment, EnvironmentVariable } from '@/types/application';
 import { SwitchField } from './section';
 
-export default function VariableForm({ open, onOpenChange, application, environment, variable }: DialogControlProps & {
+export default function VariableForm({
+  open,
+  onOpenChange,
+  application,
+  environment,
+  variable,
+}: DialogControlProps & {
   application: Application;
   environment: Environment;
   variable?: EnvironmentVariable;
 }) {
   const form = useForm<{ key: string; value: string | null; is_secret: boolean }>({
     key: variable?.key ?? '',
-    value: variable?.is_secret ? null : variable?.value ?? '',
+    value: variable?.is_secret ? null : (variable?.value ?? ''),
     is_secret: variable?.is_secret ?? false,
   });
   const baseUrl = `/applications/${application.id}/environments/${environment.id}/variables`;
@@ -54,12 +60,22 @@ export default function VariableForm({ open, onOpenChange, application, environm
                 description={form.data.value === null ? 'The stored secret will be kept.' : 'The replacement will be saved, even when empty.'}
                 checked={form.data.value !== null}
                 disabled={form.processing}
-                onCheckedChange={(checked) => form.setData({ ...form.data, value: checked ? '' : null, is_secret: checked ? form.data.is_secret : true })}
+                onCheckedChange={(checked) =>
+                  form.setData({ ...form.data, value: checked ? '' : null, is_secret: checked ? form.data.is_secret : true })
+                }
               />
             )}
             <FormField>
               <Label htmlFor="variable-value">Value</Label>
-              <Textarea id="variable-value" autoComplete="off" spellCheck={false} rows={5} disabled={form.processing || (variable?.is_secret && form.data.value === null)} value={form.data.value ?? ''} onChange={(e) => form.setData('value', e.target.value)} />
+              <Textarea
+                id="variable-value"
+                autoComplete="off"
+                spellCheck={false}
+                rows={5}
+                disabled={form.processing || (variable?.is_secret && form.data.value === null)}
+                value={form.data.value ?? ''}
+                onChange={(e) => form.setData('value', e.target.value)}
+              />
               <InputError message={form.errors.value} />
             </FormField>
             <SwitchField
@@ -74,8 +90,12 @@ export default function VariableForm({ open, onOpenChange, application, environm
           </FormFields>
         </Form>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-          <Button form="variable-form" type="submit" disabled={form.processing}>{form.processing && <LoaderCircleIcon className="animate-spin" />}Save</Button>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button form="variable-form" type="submit" disabled={form.processing}>
+            {form.processing && <LoaderCircleIcon className="animate-spin" />}Save
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

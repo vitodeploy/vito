@@ -16,11 +16,12 @@ use App\Models\Component;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
 use App\Models\EnvironmentDeployment;
+use App\Models\Server;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\Tables\Applications\ComponentCronJobTable;
-use App\Tables\Applications\EnvironmentDeploymentTable;
 use App\Tables\Applications\ComponentWorkerTable;
+use App\Tables\Applications\EnvironmentDeploymentTable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -88,7 +89,7 @@ class GetEnvironmentOverview
     }
 
     /**
-     * @return Closure(Builder<\App\Models\Server>): Builder<\App\Models\Server>
+     * @return Closure(Builder<Server>): Builder<Server>
      */
     private function inProject(Environment $environment): Closure
     {

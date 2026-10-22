@@ -63,14 +63,19 @@ export function Actions({ worker, canManage = true }: { worker: Worker; canManag
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {canManage && (locked ? (
-            <BootstrapLockedItem label="Edit" />
-          ) : (
-            <DropdownMenuItem onSelect={() => dialog.workerForm.open({ serverId: worker.server_id, worker })}>Edit</DropdownMenuItem>
-          ))}
-          {canManage && !worker.managed && <><WorkerAction type="start" worker={worker} />
-          <WorkerAction type="stop" worker={worker} />
-          <WorkerAction type="restart" worker={worker} /></>}
+          {canManage &&
+            (locked ? (
+              <BootstrapLockedItem label="Edit" />
+            ) : (
+              <DropdownMenuItem onSelect={() => dialog.workerForm.open({ serverId: worker.server_id, worker })}>Edit</DropdownMenuItem>
+            ))}
+          {canManage && !worker.managed && (
+            <>
+              <WorkerAction type="start" worker={worker} />
+              <WorkerAction type="stop" worker={worker} />
+              <WorkerAction type="restart" worker={worker} />
+            </>
+          )}
           <WorkerLogs worker={worker} />
           {canManage && !worker.component_id && <WorkerEnvironment worker={worker} />}
           <DropdownMenuSeparator />
@@ -123,9 +128,14 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
       header: 'Component',
       enableColumnFilter: true,
       enableSorting: true,
-      cell: ({ row }) => row.original.component_url
-        ? <Link href={row.original.component_url} className="hover:underline">{row.original.component_name ?? `Component #${row.original.component_id}`}</Link>
-        : <span>-</span>,
+      cell: ({ row }) =>
+        row.original.component_url ? (
+          <Link href={row.original.component_url} className="hover:underline">
+            {row.original.component_name ?? `Component #${row.original.component_id}`}
+          </Link>
+        ) : (
+          <span>-</span>
+        ),
     },
     {
       accessorKey: 'numprocs',

@@ -9,13 +9,14 @@ export default function DeployButton({ application, environment }: { application
   const dialog = useDialog();
   const blockerId = useId();
   if (!environment.can_deploy) return null;
-  const blocker = application.status !== 'ready' || environment.status !== 'ready'
-    ? 'Available when the environment is ready'
-    : (environment.components_count ?? 0) === 0
-      ? 'Add a component first'
-      : !environment.primary_component_id
-        ? 'Choose a primary component in Settings'
-        : null;
+  const blocker =
+    application.status !== 'ready' || environment.status !== 'ready'
+      ? 'Available when the environment is ready'
+      : (environment.components_count ?? 0) === 0
+        ? 'Add a component first'
+        : !environment.primary_component_id
+          ? 'Choose a primary component in Settings'
+          : null;
   const ready = blocker === null;
 
   const deploy = () => {
@@ -42,12 +43,22 @@ export default function DeployButton({ application, environment }: { application
           >
             <RocketIcon />
             Deploy
-            {environment.needs_redeploy && ready && <span className="bg-warning ring-background absolute -top-1 -right-1 size-2.5 rounded-full ring-2"><span className="sr-only">Changes waiting to be deployed</span></span>}
+            {environment.needs_redeploy && ready && (
+              <span className="bg-warning ring-background absolute -top-1 -right-1 size-2.5 rounded-full ring-2">
+                <span className="sr-only">Changes waiting to be deployed</span>
+              </span>
+            )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{blocker ?? (environment.needs_redeploy ? 'Changes are waiting to be deployed' : `Deploy ${environment.branch}`)}</TooltipContent>
+        <TooltipContent>
+          {blocker ?? (environment.needs_redeploy ? 'Changes are waiting to be deployed' : `Deploy ${environment.branch}`)}
+        </TooltipContent>
       </Tooltip>
-      {blocker && <span id={blockerId} className="sr-only">{blocker}</span>}
+      {blocker && (
+        <span id={blockerId} className="sr-only">
+          {blocker}
+        </span>
+      )}
     </>
   );
 }

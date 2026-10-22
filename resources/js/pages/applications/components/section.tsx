@@ -9,7 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
-export function Section({ title, description, action, footer, destructive, children }: {
+export function Section({
+  title,
+  description,
+  action,
+  footer,
+  destructive,
+  children,
+}: {
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
@@ -32,19 +39,38 @@ export function Section({ title, description, action, footer, destructive, child
   );
 }
 
-export function Row({ label, description, children, className }: { label: ReactNode; description?: ReactNode; children?: ReactNode; className?: string }) {
+export function Row({
+  label,
+  description,
+  children,
+  className,
+}: {
+  label: ReactNode;
+  description?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={cn('flex min-h-15 items-center justify-between gap-4 px-4 py-3 text-sm', className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium">{label}</span>
         {description && <span className="text-muted-foreground">{description}</span>}
       </div>
-      {children !== undefined && <div className="text-muted-foreground flex max-w-[60%] min-w-0 items-center justify-end gap-2 [&>span]:truncate">{children}</div>}
+      {children !== undefined && (
+        <div className="text-muted-foreground flex max-w-[60%] min-w-0 items-center justify-end gap-2 [&>span]:truncate">{children}</div>
+      )}
     </div>
   );
 }
 
-export function Field({ id, label, description, error, inline, children }: {
+export function Field({
+  id,
+  label,
+  description,
+  error,
+  inline,
+  children,
+}: {
   id: string;
   label: string;
   description?: ReactNode;
@@ -77,7 +103,15 @@ export function Field({ id, label, description, error, inline, children }: {
   );
 }
 
-export function SwitchField({ id, label, description, checked, onCheckedChange, disabled, error }: {
+export function SwitchField({
+  id,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+  disabled,
+  error,
+}: {
   id: string;
   label: string;
   description?: ReactNode;
@@ -117,13 +151,32 @@ export function useSyncedDefaults<T extends Record<string, unknown>>(form: Inert
 export function SaveActions({ form }: { form: { processing: boolean; isDirty: boolean; reset: () => void; clearErrors: () => void } }) {
   return (
     <>
-      {form.isDirty && <Button type="button" variant="ghost" onClick={() => { form.reset(); form.clearErrors(); }}>Discard</Button>}
-      <Button type="submit" disabled={form.processing || !form.isDirty}>{form.processing && <LoaderCircleIcon className="animate-spin" />}Save</Button>
+      {form.isDirty && (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            form.reset();
+            form.clearErrors();
+          }}
+        >
+          Discard
+        </Button>
+      )}
+      <Button type="submit" disabled={form.processing || !form.isDirty}>
+        {form.processing && <LoaderCircleIcon className="animate-spin" />}Save
+      </Button>
     </>
   );
 }
 
-export function EmptyState({ icon: Icon, title, description, action, className }: {
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+  className,
+}: {
   icon: ComponentType<{ className?: string }>;
   title: string;
   description?: string;
@@ -132,7 +185,9 @@ export function EmptyState({ icon: Icon, title, description, action, className }
 }) {
   return (
     <div className={cn('flex flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-10 text-center', className)}>
-      <span className="bg-muted flex size-10 items-center justify-center rounded-lg"><Icon className="text-muted-foreground size-5" /></span>
+      <span className="bg-muted flex size-10 items-center justify-center rounded-lg">
+        <Icon className="text-muted-foreground size-5" />
+      </span>
       <div className="flex flex-col gap-1">
         <p className="font-medium">{title}</p>
         {description && <p className="text-muted-foreground max-w-sm text-sm">{description}</p>}

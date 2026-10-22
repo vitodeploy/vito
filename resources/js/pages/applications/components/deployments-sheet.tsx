@@ -11,7 +11,13 @@ import { EmptyState } from './section';
 import SidePanel from './side-panel';
 import Status from './status';
 
-export default function DeploymentsSheet({ application, environment, deployments, deployment, onClose }: {
+export default function DeploymentsSheet({
+  application,
+  environment,
+  deployments,
+  deployment,
+  onClose,
+}: {
   application: Application;
   environment: Environment;
   deployments: InertiaTableData;
@@ -25,27 +31,35 @@ export default function DeploymentsSheet({ application, environment, deployments
   const [listOpen, setListOpen] = useState(!deployment);
   if (!deployment && !listOpen) setListOpen(true);
 
-  const content = deployments.data.length === 0 ? (
-    <EmptyState icon={RocketIcon} title="No deployments yet" description="Deploy to build and release the latest commit." />
-  ) : (
-    <VitoTable
-      tableData={deployments}
-      onRowClick={(row) => visit(String(row.id))}
-      rowClassName={(row) => (row.id === deployment?.id ? 'bg-muted/60' : '')}
-      cellRenderers={{
-        status: ({ row }) => <Status status={String(row.status)} color={String(row._status_enum_color)} />,
-        message: ({ row }) => (
-          <span className="flex max-w-md items-center gap-2">
-            <Link href={url(String(row.id))} preserveState preserveScroll only={panelProps} onClick={(event) => event.stopPropagation()} className="truncate font-medium hover:underline">
-              {String(row.message)}
-            </Link>
-            {row.id === environment.live_run_id && <Badge variant="success">Live</Badge>}
-          </span>
-        ),
-        commit: ({ row }) => <span className="font-mono text-xs">{String(row.commit)}</span>,
-      }}
-    />
-  );
+  const content =
+    deployments.data.length === 0 ? (
+      <EmptyState icon={RocketIcon} title="No deployments yet" description="Deploy to build and release the latest commit." />
+    ) : (
+      <VitoTable
+        tableData={deployments}
+        onRowClick={(row) => visit(String(row.id))}
+        rowClassName={(row) => (row.id === deployment?.id ? 'bg-muted/60' : '')}
+        cellRenderers={{
+          status: ({ row }) => <Status status={String(row.status)} color={String(row._status_enum_color)} />,
+          message: ({ row }) => (
+            <span className="flex max-w-md items-center gap-2">
+              <Link
+                href={url(String(row.id))}
+                preserveState
+                preserveScroll
+                only={panelProps}
+                onClick={(event) => event.stopPropagation()}
+                className="truncate font-medium hover:underline"
+              >
+                {String(row.message)}
+              </Link>
+              {row.id === environment.live_run_id && <Badge variant="success">Live</Badge>}
+            </span>
+          ),
+          commit: ({ row }) => <span className="font-mono text-xs">{String(row.commit)}</span>,
+        }}
+      />
+    );
 
   return (
     <>
@@ -59,7 +73,9 @@ export default function DeploymentsSheet({ application, environment, deployments
           sheet
         />
       )}
-      {deployment && <DeploymentPanel application={application} environment={environment} deployment={deployment} onClose={listOpen ? () => visit() : onClose} />}
+      {deployment && (
+        <DeploymentPanel application={application} environment={environment} deployment={deployment} onClose={listOpen ? () => visit() : onClose} />
+      )}
     </>
   );
 }

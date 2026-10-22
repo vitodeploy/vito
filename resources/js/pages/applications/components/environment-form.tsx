@@ -28,13 +28,21 @@ export default function EnvironmentForm({ open, onOpenChange, application }: Dia
         </DialogHeader>
         <Form id="environment-form" className="p-4" onSubmit={submit}>
           <FormFields>
-            {!preset && <p className="text-destructive text-sm">The {application.runtime} runtime plugin is missing. Restore it to create environments.</p>}
+            {!preset && (
+              <p className="text-destructive text-sm">The {application.runtime} runtime plugin is missing. Restore it to create environments.</p>
+            )}
             <EnvironmentFields preset={preset} data={form.data} errors={form.errors} onChange={(name, value) => form.setData(name, value)} />
-            {Object.entries(form.errors).filter(([key]) => !known.includes(key)).map(([key, message]) => <InputError key={key} message={message} />)}
+            {Object.entries(form.errors)
+              .filter(([key]) => !known.includes(key))
+              .map(([key, message]) => (
+                <InputError key={key} message={message} />
+              ))}
           </FormFields>
         </Form>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button form="environment-form" type="submit" disabled={form.processing || !preset}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}Create environment
           </Button>

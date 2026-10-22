@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Applications;
 
 use App\Actions\Component\GetComponentOptions;
-use App\Actions\EnvironmentAttachment\GetEnvironmentResourceOptions;
 use App\Actions\Environment\CreateEnvironment;
 use App\Actions\Environment\DeleteEnvironment;
 use App\Actions\Environment\GetEnvironmentOverview;
 use App\Actions\Environment\UpdateEnvironment;
+use App\Actions\EnvironmentAttachment\GetEnvironmentResourceOptions;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Component;

@@ -40,9 +40,15 @@ export default function EnvironmentFields({
       {preset && preset.versions.length > 0 && !fields.some((field) => field.name === 'runtime_version') && (
         <Field id="environment-runtime-version" label="Runtime version" inline={inline} error={errors.runtime_version}>
           <Select value={String(data.runtime_version ?? '')} onValueChange={(value) => onChange('runtime_version', value)}>
-            <SelectTrigger id="environment-runtime-version"><SelectValue placeholder="Select a version" /></SelectTrigger>
+            <SelectTrigger id="environment-runtime-version">
+              <SelectValue placeholder="Select a version" />
+            </SelectTrigger>
             <SelectContent>
-              {preset.versions.map((version) => <SelectItem key={version} value={version}>{version}</SelectItem>)}
+              {preset.versions.map((version) => (
+                <SelectItem key={version} value={version}>
+                  {version}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Field>

@@ -279,8 +279,8 @@ test('application pages share whitelisted resources and only authorized source c
         ->component('applications/environments/show')->where('application.id', $application->id)
         ->where('application.source_control_id', null)->missing('application.sourceControl')
         ->has('environments', 1)->has('environments.0', fn (AssertableJson $json) => $json
-            ->where('id', $environment->id)->where('name', 'production')->where('branch', 'main')
-            ->where('status', 'ready')->where('status_color', 'success')));
+        ->where('id', $environment->id)->where('name', 'production')->where('branch', 'main')
+        ->where('status', 'ready')->where('status_color', 'success')));
     $this->get(route('environments.settings', [$application, $environment]))->assertSuccessful()->assertInertia(fn (AssertableInertia $page) => $page
         ->component('applications/environments/show')->where('sheet', 'settings')->has('sourceControls', 1)
         ->where('sourceControls.0.id', $this->sourceControl->id)->missing('sourceControls.0.provider_data')

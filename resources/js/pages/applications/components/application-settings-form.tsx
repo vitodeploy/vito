@@ -5,7 +5,12 @@ import { SourceControl } from '@/types/source-control';
 import ApplicationFields from './application-fields';
 import { Row, SaveActions, Section, useSyncedDefaults } from './section';
 
-export default function ApplicationSettingsForm({ application, runtime, sourceControls, disabled }: {
+export default function ApplicationSettingsForm({
+  application,
+  runtime,
+  sourceControls,
+  disabled,
+}: {
   application: Application;
   runtime: string;
   sourceControls: SourceControl[];
@@ -31,8 +36,16 @@ export default function ApplicationSettingsForm({ application, runtime, sourceCo
           description="Shared by every environment. Changing the repository re-registers deploy keys on every component right away; the running release changes on the next deploy."
           footer={!disabled && <SaveActions form={form} />}
         >
-          <ApplicationFields inline data={form.data} errors={form.errors} onChange={(name, value) => form.setData(name, value)} sourceControls={sourceControls} />
-          <Row label="Runtime" description="Can't be changed after creation.">{runtime}</Row>
+          <ApplicationFields
+            inline
+            data={form.data}
+            errors={form.errors}
+            onChange={(name, value) => form.setData(name, value)}
+            sourceControls={sourceControls}
+          />
+          <Row label="Runtime" description="Can't be changed after creation.">
+            {runtime}
+          </Row>
         </Section>
       </fieldset>
     </form>

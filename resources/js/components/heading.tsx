@@ -5,7 +5,14 @@ export default function Heading({ title, description, badges }: { title: string;
 
   return (
     <div className="space-y-0.5">
-      {badges ? <div className="flex flex-wrap items-center gap-2">{heading}{badges}</div> : heading}
+      {badges ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {heading}
+          {badges}
+        </div>
+      ) : (
+        heading
+      )}
       {description && <p className="text-muted-foreground text-sm">{description}</p>}
     </div>
   );

@@ -13,7 +13,14 @@ import { Application, ApplicationPermissions, Environment, EnvironmentSummary } 
 
 type Item = { id: number; name: string; hint?: string; href: string };
 
-function Switcher({ icon, label, items, current, search, footer }: {
+function Switcher({
+  icon,
+  label,
+  items,
+  current,
+  search,
+  footer,
+}: {
   icon: ReactNode;
   label: string;
   items: Item[];
@@ -43,7 +50,12 @@ function Switcher({ icon, label, items, current, search, footer }: {
             <CommandEmpty>No results.</CommandEmpty>
             <CommandGroup>
               {items.map((item) => (
-                <CommandItem key={item.id} value={`${item.name} ${item.id}`} onSelect={() => select(() => router.visit(item.href))} className="truncate">
+                <CommandItem
+                  key={item.id}
+                  value={`${item.name} ${item.id}`}
+                  onSelect={() => select(() => router.visit(item.href))}
+                  className="truncate"
+                >
                   <span className="truncate">{item.name}</span>
                   {item.hint && <span className="text-muted-foreground truncate font-mono text-xs">{item.hint}</span>}
                   <CheckIcon className={cn('ml-auto', item.id === current ? 'opacity-100' : 'opacity-0')} />
@@ -81,7 +93,11 @@ export function ApplicationSwitch() {
   return (
     <>
       <Switcher
-        icon={<Avatar className="size-6 rounded-sm"><AvatarFallback className="rounded-sm">{application ? initials(application.name) : 'A'}</AvatarFallback></Avatar>}
+        icon={
+          <Avatar className="size-6 rounded-sm">
+            <AvatarFallback className="rounded-sm">{application ? initials(application.name) : 'A'}</AvatarFallback>
+          </Avatar>
+        }
         label={application?.name ?? 'Select an application'}
         items={projectApplications.map((item) => ({ ...item, href: `/applications/${item.id}` }))}
         current={application?.id}
@@ -94,12 +110,19 @@ export function ApplicationSwitch() {
           <Switcher
             icon={<Status status={environment.status} color={environment.status_color} label="" className="size-6 justify-center" />}
             label={environment.name}
-            items={environments.map((item) => ({ id: item.id, name: item.name, hint: item.branch, href: `/applications/${application.id}/environments/${item.id}` }))}
+            items={environments.map((item) => ({
+              id: item.id,
+              name: item.name,
+              hint: item.branch,
+              href: `/applications/${application.id}/environments/${item.id}`,
+            }))}
             current={environment.id}
             search="Search environments..."
-            footer={applicationCan.createEnvironment && application.status === 'ready'
-              ? [{ icon: <PlusIcon />, label: 'New environment', onSelect: () => dialog.createEnvironment.open({ application }) }]
-              : []}
+            footer={
+              applicationCan.createEnvironment && application.status === 'ready'
+                ? [{ icon: <PlusIcon />, label: 'New environment', onSelect: () => dialog.createEnvironment.open({ application }) }]
+                : []
+            }
           />
         </>
       )}

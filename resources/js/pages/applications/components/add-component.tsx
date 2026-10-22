@@ -13,7 +13,14 @@ import { Application, CapabilityConfiguration, ComponentOptions, Environment } f
 import CapabilityFields from './capability-fields';
 import { Field } from './section';
 
-export default function AddComponent({ open, onOpenChange, application, environment, options, type }: DialogControlProps & {
+export default function AddComponent({
+  open,
+  onOpenChange,
+  application,
+  environment,
+  options,
+  type,
+}: DialogControlProps & {
   application: Application;
   environment: Environment;
   options: ComponentOptions;
@@ -27,7 +34,9 @@ export default function AddComponent({ open, onOpenChange, application, environm
     server_id: server ? String(server.id) : '',
     user: server?.ssh_user ?? '',
     type,
-    capabilities: (!loadBalancer && web ? [{ capability: web.id, config: Object.fromEntries(web.form.map((field) => [field.name, field.default ?? ''])) }] : []) as CapabilityConfiguration[],
+    capabilities: (!loadBalancer && web
+      ? [{ capability: web.id, config: Object.fromEntries(web.form.map((field) => [field.name, field.default ?? ''])) }]
+      : []) as CapabilityConfiguration[],
   });
   const sshUser = (id: string) => options.servers.find((item) => String(item.id) === id)?.ssh_user ?? '';
   const submit = (e: FormEvent) => {
@@ -41,7 +50,9 @@ export default function AddComponent({ open, onOpenChange, application, environm
         <DialogHeader>
           <DialogTitle>{loadBalancer ? 'Add load balancer' : 'Add app component'}</DialogTitle>
           <DialogDescription>
-            {loadBalancer ? 'Spreads traffic across your app components. Needs a server with a webserver.' : `Runs ${application.name} on a server. It joins the live release once installed.`}
+            {loadBalancer
+              ? 'Spreads traffic across your app components. Needs a server with a webserver.'
+              : `Runs ${application.name} on a server. It joins the live release once installed.`}
           </DialogDescription>
         </DialogHeader>
         <Form id="add-component-form" className="p-4" onSubmit={submit}>
@@ -50,26 +61,69 @@ export default function AddComponent({ open, onOpenChange, application, environm
               id="component-server"
               label="Server"
               error={form.errors.server_id}
-              description={options.servers.length === 0 && <>No ready servers. <Link href="/servers" className="underline">Add a server</Link> first.</>}
+              description={
+                options.servers.length === 0 && (
+                  <>
+                    No ready servers.{' '}
+                    <Link href="/servers" className="underline">
+                      Add a server
+                    </Link>{' '}
+                    first.
+                  </>
+                )
+              }
             >
-              <Select value={form.data.server_id} onValueChange={(value) => form.setData((data) => ({ ...data, server_id: value, user: loadBalancer || !data.user || data.user === sshUser(data.server_id) ? sshUser(value) : data.user }))}>
-                <SelectTrigger id="component-server"><SelectValue placeholder="Select a server" /></SelectTrigger>
-                <SelectContent>{options.servers.map((item) => <SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>)}</SelectContent>
+              <Select
+                value={form.data.server_id}
+                onValueChange={(value) =>
+                  form.setData((data) => ({
+                    ...data,
+                    server_id: value,
+                    user: loadBalancer || !data.user || data.user === sshUser(data.server_id) ? sshUser(value) : data.user,
+                  }))
+                }
+              >
+                <SelectTrigger id="component-server">
+                  <SelectValue placeholder="Select a server" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.servers.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </Field>
             <Field id="component-name" label="Name" error={form.errors.name}>
               <Input id="component-name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             </Field>
             {!loadBalancer && (
-              <Field id="component-user" label="Run as" description="The server's SSH user, or a new name to create an isolated user." error={form.errors.user}>
-                <Input id="component-user" value={form.data.user} onChange={(e) => form.setData('user', e.target.value)} autoComplete="off" className="font-mono" />
+              <Field
+                id="component-user"
+                label="Run as"
+                description="The server's SSH user, or a new name to create an isolated user."
+                error={form.errors.user}
+              >
+                <Input
+                  id="component-user"
+                  value={form.data.user}
+                  onChange={(e) => form.setData('user', e.target.value)}
+                  autoComplete="off"
+                  className="font-mono"
+                />
               </Field>
             )}
             {!loadBalancer && (
               <FormField>
                 <Label>Capabilities</Label>
                 <div className="divide-y rounded-lg border">
-                  <CapabilityFields options={options.capabilities} value={form.data.capabilities} onChange={(value) => form.setData('capabilities', value)} errors={form.errors} />
+                  <CapabilityFields
+                    options={options.capabilities}
+                    value={form.data.capabilities}
+                    onChange={(value) => form.setData('capabilities', value)}
+                    errors={form.errors}
+                  />
                 </div>
               </FormField>
             )}
@@ -77,9 +131,12 @@ export default function AddComponent({ open, onOpenChange, application, environm
           </FormFields>
         </Form>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button form="add-component-form" type="submit" disabled={form.processing || !form.data.server_id}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}{loadBalancer ? 'Add load balancer' : 'Add component'}
+            {form.processing && <LoaderCircleIcon className="animate-spin" />}
+            {loadBalancer ? 'Add load balancer' : 'Add component'}
           </Button>
         </DialogFooter>
       </DialogContent>

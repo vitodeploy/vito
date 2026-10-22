@@ -4,7 +4,12 @@ import DynamicField from '@/components/ui/dynamic-field';
 import InputError from '@/components/ui/input-error';
 import { CapabilityConfiguration, ComponentOptions } from '@/types/application';
 
-export default function CapabilityFields({ options, value, onChange, errors }: {
+export default function CapabilityFields({
+  options,
+  value,
+  onChange,
+  errors,
+}: {
   options: ComponentOptions['capabilities'];
   value: CapabilityConfiguration[];
   onChange: (value: CapabilityConfiguration[]) => void;
@@ -25,9 +30,16 @@ export default function CapabilityFields({ options, value, onChange, errors }: {
               <Switch
                 id={`capability-${option.id}`}
                 checked={!!selected}
-                onCheckedChange={(checked) => onChange(checked
-                  ? [...value, { capability: option.id, config: Object.fromEntries(option.form.map((field) => [field.name, field.default ?? ''])) }]
-                  : value.filter((capability) => capability.capability !== option.id))}
+                onCheckedChange={(checked) =>
+                  onChange(
+                    checked
+                      ? [
+                          ...value,
+                          { capability: option.id, config: Object.fromEntries(option.form.map((field) => [field.name, field.default ?? ''])) },
+                        ]
+                      : value.filter((capability) => capability.capability !== option.id),
+                  )
+                }
               />
             </div>
             {selected && option.form.length > 0 && (
@@ -38,8 +50,15 @@ export default function CapabilityFields({ options, value, onChange, errors }: {
                     config={field}
                     idPrefix={option.id}
                     value={selected.config[field.name]}
-                    onChange={(fieldValue) => onChange(value.map((capability) => capability.capability === option.id
-                      ? { ...capability, config: { ...capability.config, [field.name]: fieldValue } } : capability))}
+                    onChange={(fieldValue) =>
+                      onChange(
+                        value.map((capability) =>
+                          capability.capability === option.id
+                            ? { ...capability, config: { ...capability.config, [field.name]: fieldValue } }
+                            : capability,
+                        ),
+                      )
+                    }
                     error={errors[`capabilities.${index}.config.${field.name}`]}
                   />
                 ))}
@@ -49,7 +68,11 @@ export default function CapabilityFields({ options, value, onChange, errors }: {
           </div>
         );
       })}
-      {errors.capabilities && <div className="px-4 py-3"><InputError message={errors.capabilities} /></div>}
+      {errors.capabilities && (
+        <div className="px-4 py-3">
+          <InputError message={errors.capabilities} />
+        </div>
+      )}
     </>
   );
 }

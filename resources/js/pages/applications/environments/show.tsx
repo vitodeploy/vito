@@ -2,12 +2,31 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
-import { BoxIcon, DatabaseIcon, HistoryIcon, KeyRoundIcon, LayersIcon, NetworkIcon, PlusIcon, RocketIcon, SettingsIcon, TriangleAlertIcon, ZapIcon } from 'lucide-react';
+import {
+  BoxIcon,
+  DatabaseIcon,
+  HistoryIcon,
+  KeyRoundIcon,
+  LayersIcon,
+  NetworkIcon,
+  PlusIcon,
+  RocketIcon,
+  SettingsIcon,
+  TriangleAlertIcon,
+  ZapIcon,
+} from 'lucide-react';
 import DateTime from '@/components/date-time';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useDialog } from '@/hooks/use-dialog';
 import ApplicationLayout from '@/layouts/application/layout';
 import Canvas, { panelProps } from '@/pages/applications/components/canvas';
@@ -89,17 +108,18 @@ export default function ShowEnvironment() {
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
   const ready = application.status === 'ready' && environment.status === 'ready';
   const close = useCallback(() => router.visit(baseUrl, { preserveState: true, preserveScroll: true, only: panelProps }), [baseUrl]);
-  const withProp = <K extends 'options' | 'resourceOptions'>(prop: K, open: (value: NonNullable<Page[K]>) => void) => router.reload({
-    only: [prop],
-    onSuccess: (page) => {
-      const value = (page.props as unknown as Page)[prop];
-      if (value) open(value);
-    },
-    onNetworkError: () => {
-      toast.error('Unable to load the form. Check your connection and try again.');
-      return false;
-    },
-  });
+  const withProp = <K extends 'options' | 'resourceOptions'>(prop: K, open: (value: NonNullable<Page[K]>) => void) =>
+    router.reload({
+      only: [prop],
+      onSuccess: (page) => {
+        const value = (page.props as unknown as Page)[prop];
+        if (value) open(value);
+      },
+      onNetworkError: () => {
+        toast.error('Unable to load the form. Check your connection and try again.');
+        return false;
+      },
+    });
   const create = {
     app: () => withProp('options', (options) => dialog.addComponent.open({ application, environment, options, type: 'app' })),
     loadBalancer: () => withProp('options', (options) => dialog.addComponent.open({ application, environment, options, type: 'load_balancer' })),
@@ -115,27 +135,53 @@ export default function ShowEnvironment() {
           <Canvas topology={topology} selected={component ? `component-${component.id}` : resource ? `resource-${resource.id}` : undefined} />
         </div>
 
-        <div className={cn('pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between gap-4', (component || resource) && 'lg:right-[43rem]')}>
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between gap-4',
+            (component || resource) && 'lg:right-[43rem]',
+          )}
+        >
           <div className="pointer-events-auto flex max-w-sm flex-col items-start gap-2">
             {warnings.map((warning, index) => (
-              <div key={`${index}-${warning}`} className={chip}><TriangleAlertIcon className="text-warning size-4 shrink-0" />{warning}</div>
+              <div key={`${index}-${warning}`} className={chip}>
+                <TriangleAlertIcon className="text-warning size-4 shrink-0" />
+                {warning}
+              </div>
             ))}
             {lastDeployment && (
-              <Link href={`${baseUrl}/deployments/${lastDeployment.id}`} preserveState preserveScroll only={panelProps} className={cn(chip, 'hover:bg-muted')}>
+              <Link
+                href={`${baseUrl}/deployments/${lastDeployment.id}`}
+                preserveState
+                preserveScroll
+                only={panelProps}
+                className={cn(chip, 'hover:bg-muted')}
+              >
                 <RocketIcon className="text-muted-foreground size-4 shrink-0" />
                 <Status status={lastDeployment.status} color={lastDeployment.status_color} className="font-medium" />
                 <span className="text-muted-foreground font-mono text-xs">{lastDeployment.commit_id?.slice(0, 7) ?? 'Resolving'}</span>
-                <span className="text-muted-foreground text-xs"><DateTime date={lastDeployment.created_at} relative /></span>
+                <span className="text-muted-foreground text-xs">
+                  <DateTime date={lastDeployment.created_at} relative />
+                </span>
               </Link>
             )}
           </div>
-          <nav aria-label="Environment" className="bg-background pointer-events-auto flex shrink-0 items-center gap-1 rounded-lg border p-1 shadow-xs">
+          <nav
+            aria-label="Environment"
+            className="bg-background pointer-events-auto flex shrink-0 items-center gap-1 rounded-lg border p-1 shadow-xs"
+          >
             {sheets.map((item) => (
               <Tooltip key={item.path}>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`${baseUrl}/${item.path}`} preserveState preserveScroll only={panelProps} aria-current={props.sheet === item.path ? 'page' : undefined}>
-                      <item.icon /><span className={cn('sr-only', !(component || resource) && 'md:not-sr-only')}>{item.label}</span>
+                    <Link
+                      href={`${baseUrl}/${item.path}`}
+                      preserveState
+                      preserveScroll
+                      only={panelProps}
+                      aria-current={props.sheet === item.path ? 'page' : undefined}
+                    >
+                      <item.icon />
+                      <span className={cn('sr-only', !(component || resource) && 'md:not-sr-only')}>{item.label}</span>
                     </Link>
                   </Button>
                 </TooltipTrigger>
@@ -149,20 +195,28 @@ export default function ShowEnvironment() {
 
         {environment.last_error && (
           <div className={cn('pointer-events-none absolute inset-x-14 bottom-4 flex justify-center', (component || resource) && 'lg:right-[43rem]')}>
-            <div role="alert" className={cn(chip, 'text-destructive pointer-events-auto max-w-xl')}><TriangleAlertIcon className="size-4 shrink-0" />{environment.last_error}</div>
+            <div role="alert" className={cn(chip, 'text-destructive pointer-events-auto max-w-xl')}>
+              <TriangleAlertIcon className="size-4 shrink-0" />
+              {environment.last_error}
+            </div>
           </div>
         )}
 
         {topology.nodes.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
             <div className="bg-background pointer-events-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border p-8 text-center shadow-lg">
-              <span className="bg-muted flex size-12 items-center justify-center rounded-xl"><LayersIcon className="size-6" /></span>
+              <span className="bg-muted flex size-12 items-center justify-center rounded-xl">
+                <LayersIcon className="size-6" />
+              </span>
               <div className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold">Add your first component</h2>
                 <p className="text-muted-foreground text-sm">A component runs {application.name} on one of your servers. Add one, then deploy.</p>
               </div>
               {can.createComponent ? (
-                <Button disabled={!ready} onClick={create.app}><PlusIcon />Add component</Button>
+                <Button disabled={!ready} onClick={create.app}>
+                  <PlusIcon />
+                  Add component
+                </Button>
               ) : (
                 <p className="text-muted-foreground text-sm">You don't have permission to add components.</p>
               )}
@@ -190,7 +244,9 @@ export default function ShowEnvironment() {
             onClose={close}
           />
         )}
-        {resource && <ResourcePanel application={application} environment={environment} resource={resource} editable={can.update && ready} onClose={close} />}
+        {resource && (
+          <ResourcePanel application={application} environment={environment} resource={resource} editable={can.update && ready} onClose={close} />
+        )}
         {props.sheet === 'settings' && (
           <SettingsSheet
             application={application}
@@ -203,16 +259,35 @@ export default function ShowEnvironment() {
             onClose={close}
           />
         )}
-        {props.sheet === 'variables' && <VariablesSheet application={application} environment={environment} variables={props.variables} warnings={warnings} canUpdate={can.update} onClose={close} />}
+        {props.sheet === 'variables' && (
+          <VariablesSheet
+            application={application}
+            environment={environment}
+            variables={props.variables}
+            warnings={warnings}
+            canUpdate={can.update}
+            onClose={close}
+          />
+        )}
         {props.sheet === 'deployments' && props.deployments && (
-          <DeploymentsSheet application={application} environment={environment} deployments={props.deployments} deployment={props.deployment} onClose={close} />
+          <DeploymentsSheet
+            application={application}
+            environment={environment}
+            deployments={props.deployments}
+            deployment={props.deployment}
+            onClose={close}
+          />
         )}
       </div>
     </ApplicationLayout>
   );
 }
 
-function CreateMenu({ disabled, create, can }: {
+function CreateMenu({
+  disabled,
+  create,
+  can,
+}: {
   disabled: boolean;
   create: Record<'app' | 'loadBalancer' | 'database' | 'redis', () => void>;
   can: Page['can'];
@@ -220,22 +295,37 @@ function CreateMenu({ disabled, create, can }: {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" disabled={disabled}><PlusIcon />Create</Button>
+        <Button variant="ghost" size="sm" disabled={disabled}>
+          <PlusIcon />
+          Create
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         {can.createComponent && (
           <>
             <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Components</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={create.app}><BoxIcon />App</DropdownMenuItem>
-            <DropdownMenuItem onSelect={create.loadBalancer}><NetworkIcon />Load balancer</DropdownMenuItem>
+            <DropdownMenuItem onSelect={create.app}>
+              <BoxIcon />
+              App
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={create.loadBalancer}>
+              <NetworkIcon />
+              Load balancer
+            </DropdownMenuItem>
           </>
         )}
         {can.createComponent && can.update && <DropdownMenuSeparator />}
         {can.update && (
           <>
             <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Resources</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={create.database}><DatabaseIcon />Database</DropdownMenuItem>
-            <DropdownMenuItem onSelect={create.redis}><ZapIcon />Redis / Valkey</DropdownMenuItem>
+            <DropdownMenuItem onSelect={create.database}>
+              <DatabaseIcon />
+              Database
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={create.redis}>
+              <ZapIcon />
+              Redis / Valkey
+            </DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
