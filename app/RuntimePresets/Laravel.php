@@ -4,6 +4,7 @@ namespace App\RuntimePresets;
 
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
+use App\Models\EnvironmentVariable;
 use Illuminate\Support\Str;
 
 class Laravel extends PHP
@@ -56,9 +57,16 @@ class Laravel extends PHP
             return [];
         }
 
-        return [
-            'File sessions are local to each web component. Use a shared session driver when serving traffic from multiple components.',
-            'Files on the local disk are not shared between web components. Use shared storage for uploads.',
-        ];
+        $variables = $environment->variables()->whereIn('key', ['SESSION_DRIVER', 'FILESYSTEM_DISK'])->get()
+            ->mapWithKeys(fn (EnvironmentVariable $variable): array => [$variable->key => strtolower(trim($variable->value))]);
+        $warnings = [];
+        if (! in_array($variables->get('SESSION_DRIVER'), ['redis', 'database', 'memcached', 'dynamodb', 'cookie'], true)) {
+            $warnings[] = 'Sessions may be local to each web component. Set SESSION_DRIVER to a shared driver such as redis or database when serving traffic from multiple components.';
+        }
+        if (in_array($variables->get('FILESYSTEM_DISK'), [null, '', 'local', 'public'], true)) {
+            $warnings[] = 'Files on the local disk are not shared between web components. Set FILESYSTEM_DISK to shared storage such as s3 for uploads.';
+        }
+
+        return $warnings;
     }
 }

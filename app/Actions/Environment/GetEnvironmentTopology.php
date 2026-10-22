@@ -28,7 +28,7 @@ class GetEnvironmentTopology
         foreach ($components as $component) {
             $id = 'component-'.$component->id;
             $url = $baseUrl.'?component='.$component->id;
-            $nodes[] = $this->node($id, $component->type->getText(), $component->name, $component->id, $component->server_id, $component->server?->name, $component->status, $url,
+            $nodes[] = $this->node($id, $component->type->getText(), $component->name, $component->id, $component->server_id, $component->server->name, $component->status, $url,
                 $component->capabilities->pluck('capability')->sort()->values()->all(), $domains->get($component->id)?->pluck('host')->all() ?? [], $component->needs_redeploy);
 
             foreach ($component->backends as $backend) {
@@ -49,7 +49,7 @@ class GetEnvironmentTopology
             $id = 'resource-'.$attachment->id;
             $name = $attachment->attachable->name ?? 'Unavailable resource';
             $nodes[] = $this->node($id, $attachment->kind(), $attachment->alias ? $attachment->alias.' · '.$name : $name,
-                $attachment->id, $attachment->server_id, $attachment->server?->name, $attachment->status, $baseUrl.'?resource='.$attachment->id);
+                $attachment->id, $attachment->server_id, $attachment->server->name, $attachment->status, $baseUrl.'?resource='.$attachment->id);
             foreach ($components as $component) {
                 if ($component->type === ComponentType::APP) {
                     $edges[] = ['id' => 'component-'.$component->id.'-'.$id, 'source' => 'component-'.$component->id, 'target' => $id];

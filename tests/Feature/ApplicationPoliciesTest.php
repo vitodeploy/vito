@@ -28,7 +28,6 @@ test('application policies respect project roles', function (?UserRole $role, bo
     $parents = [
         [Application::class, $this->application->project],
         [Environment::class, $this->application],
-        [Component::class, $this->environment, $this->application],
     ];
     $models = [
         [$this->application],
@@ -40,6 +39,7 @@ test('application policies respect project roles', function (?UserRole $role, bo
         expect($gate->allows('viewAny', $arguments))->toBe($read)
             ->and($gate->allows('create', $arguments))->toBe($write);
     }
+    expect($gate->allows('create', [Component::class, $this->environment, $this->application]))->toBe($write);
     foreach ($models as $arguments) {
         expect($gate->allows('view', $arguments))->toBe($read)
             ->and($gate->allows('update', $arguments))->toBe($write)

@@ -156,3 +156,19 @@ test('Laravel warnings apply only with multiple web components and other presets
     expect($preset->warnings($this->environment))->toHaveCount(2)
         ->and((new NodeJS)->warnings($this->environment))->toBe([]);
 });
+
+test('Laravel warnings respect shared session and filesystem variables', function () {
+    $preset = new Laravel;
+    ComponentCapability::factory()->for($this->component)->create(['capability' => 'web']);
+    ComponentCapability::factory()->for(Component::factory()->for($this->environment)->create())->create(['capability' => 'web']);
+    $session = EnvironmentVariable::factory()->for($this->environment)->create(['key' => 'SESSION_DRIVER', 'value' => 'file', 'is_secret' => false]);
+    $disk = EnvironmentVariable::factory()->for($this->environment)->create(['key' => 'FILESYSTEM_DISK', 'value' => 'local', 'is_secret' => false]);
+    expect($preset->warnings($this->environment))->toHaveCount(2);
+
+    $session->update(['value' => ' Redis ']);
+    expect($preset->warnings($this->environment))->toHaveCount(1)
+        ->and($preset->warnings($this->environment)[0])->toContain('FILESYSTEM_DISK');
+
+    $disk->update(['value' => 's3']);
+    expect($preset->warnings($this->environment))->toBe([]);
+});
