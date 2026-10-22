@@ -82,6 +82,8 @@ class StartEnvironmentDeployment
                     'status' => $component->type === ComponentType::APP ? DeploymentStatus::DEPLOYING : DeploymentStatus::FINISHED,
                 ]);
                 $deployment->component_id = $component->id;
+                $deployment->component_name = $component->name;
+                $deployment->server_name = $component->server->name;
                 $deployment->environment_deployment_id = $run->id;
                 $deployment->previous_deployment_id = $component->deployments()->where('active', true)->value('id');
                 $deployment->save();

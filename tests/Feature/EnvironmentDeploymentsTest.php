@@ -23,6 +23,7 @@ use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentScript;
 use App\Actions\EnvironmentDeployment\UpdateEnvironmentDeploymentSettings;
 use App\Actions\EnvironmentVariable\UpsertEnvironmentVariable;
 use App\Enums\ComponentStatus;
+use App\Http\Resources\EnvironmentDeploymentResource;
 use App\Enums\DeploymentStage;
 use App\Enums\DeploymentStatus;
 use App\Enums\EnvironmentDeploymentStatus;
@@ -510,6 +511,8 @@ test('rollback activates only retained code and keeps live variables for later j
     $rollback->refresh();
     expect($rollback->current_stage)->toBe(DeploymentStage::RELEASE)->and($rollback->deployments->pluck('component_id')->all())->toBe([$this->component->id]);
     finishEnvironmentStage($rollback);
+    expect($rollback->current_stage)->toBe(DeploymentStage::POST_RELEASE)->and($this->environment->fresh()->live_run_id)->toBe($rollback->id);
+    finishEnvironmentStage($rollback);
     expect($rollback->status)->toBe(EnvironmentDeploymentStatus::FINISHED)->and($rollback->rollback_of_id)->toBe($target->id)
         ->and($rollback->variables)->toBe($live->variables)->and($this->environment->fresh()->live_run_id)->toBe($rollback->id);
     SSH::assertExecutedContains('ln -sfn -- '.escapeshellarg($this->component->releasesPath().'/'.$target->release));
@@ -705,4 +708,19 @@ test('release activation fails closed when its release identifier is missing', f
     expect(fn () => app(RunComponentStage::class)->run($deployment->id, DeploymentStage::RELEASE))->toThrow(RuntimeException::class, 'The deployment release is unavailable.');
     $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'active' => false, 'release_started' => false]);
     expect(SSH::getExecutedCommands())->toBeEmpty();
+});
+
+test('deleted components keep their deployment history', function () {
+    $run = startEnvironmentRun($this->environment);
+    while (! $run->status->isTerminal()) {
+        finishEnvironmentStage($run);
+    }
+    $deployment = $run->deployments()->sole();
+    $this->component->status = ComponentStatus::DELETING;
+    $this->component->save();
+    app(DeleteComponent::class)->handle($this->component->id);
+    $this->assertDatabaseMissing('components', ['id' => $this->component->id]);
+    $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'component_id' => null, 'component_name' => $this->component->name, 'server_name' => $this->server->name]);
+    $row = EnvironmentDeploymentResource::make($run->fresh()->load('deployments.component.server', 'deployments.log'))->resolve()['deployments'][0];
+    expect($row)->toMatchArray(['component_id' => null, 'component_name' => $this->component->name, 'server_id' => $this->server->id, 'server_name' => $this->server->name]);
 });

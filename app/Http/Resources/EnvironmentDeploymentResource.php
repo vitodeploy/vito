@@ -38,10 +38,10 @@ class EnvironmentDeploymentResource extends JsonResource
             'deployments' => $this->whenLoaded('deployments', fn () => $this->deployments->map(fn (Deployment $deployment): array => [
                 'id' => $deployment->id,
                 'component_id' => $deployment->component_id,
-                'component_name' => $deployment->component?->name,
+                'component_name' => $deployment->component->name ?? $deployment->component_name,
                 'component_type' => $deployment->component?->type->getText(),
-                'server_id' => $deployment->component?->server_id,
-                'server_name' => $deployment->component?->server->name,
+                'server_id' => $deployment->component->server_id ?? $deployment->log?->server_id,
+                'server_name' => $deployment->component->server->name ?? $deployment->server_name,
                 'log_id' => $deployment->log_id,
                 'current_stage' => $deployment->current_stage?->getText(),
                 'status' => $deployment->status->getText(),

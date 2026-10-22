@@ -12,6 +12,7 @@ use App\Models\CronJob;
 use App\Models\Deployment;
 use App\Models\DeploymentScript;
 use App\Models\Environment;
+use App\Models\EnvironmentDeployment;
 use App\Models\EnvironmentDomain;
 use App\Models\IsolatedUser;
 use App\Models\Server;
@@ -190,7 +191,8 @@ test('application ownership cascades without invoking remote model events', func
     $capability = ComponentCapability::factory()->for($component)->create();
     $worker = Worker::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
     $cron = CronJob::factory()->create(['server_id' => $component->server_id, 'component_id' => $component->id]);
-    $deployment = Deployment::factory()->create(['site_id' => null, 'component_id' => $component->id, 'deployment_script_id' => null]);
+    $run = EnvironmentDeployment::factory()->for($environment)->create();
+    $deployment = Deployment::factory()->create(['site_id' => null, 'component_id' => $component->id, 'deployment_script_id' => null, 'environment_deployment_id' => $run->id]);
     $script = DeploymentScript::factory()->create(['site_id' => null, 'component_id' => $component->id]);
     $environmentScript = DeploymentScript::factory()->create(['site_id' => null, 'environment_id' => $environment->id]);
     $owner = match ($parent) {
@@ -202,10 +204,13 @@ test('application ownership cascades without invoking remote model events', func
 
     $owner->newQuery()->whereKey($owner->id)->delete();
 
-    foreach ([$component, $capability, $worker, $cron, $deployment, $script] as $deleted) {
+    foreach ([$component, $capability, $worker, $cron, $script] as $deleted) {
         $this->assertDatabaseMissing($deleted->getTable(), ['id' => $deleted->id]);
     }
-    if ($parent !== 'component') {
+    if ($parent === 'component') {
+        $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'component_id' => null]);
+    } else {
+        $this->assertDatabaseMissing('deployments', ['id' => $deployment->id]);
         $this->assertDatabaseMissing('environments', ['id' => $environment->id]);
         $this->assertDatabaseMissing('deployment_scripts', ['id' => $environmentScript->id]);
     }

@@ -252,6 +252,22 @@ test('resource access follows membership changes and withdraws access when a pri
     expect($attachment->firewallRules()->where('type', 'allow')->count())->toBe(0);
 });
 
+test('routine member resyncs do not mark the environment for redeploy', function () {
+    $member = resourcePrivateClient($this->component, $this->server);
+    $this->server->database()->jsonUpdate('type_data', 'networking', true);
+    $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
+    $this->sync->sync($attachment);
+    $version = $this->environment->fresh()->variables_version;
+    Queue::fake();
+    $member->update(['status' => NetworkServerStatus::UPDATING]);
+    $member->update(['status' => NetworkServerStatus::ACTIVE]);
+    expect($this->environment->fresh()->variables_version)->toBe($version);
+    Queue::assertNotPushed(SyncEnvironmentResourceAccessJob::class);
+    $member->update(['status' => NetworkServerStatus::FAILED]);
+    expect($this->environment->fresh()->variables_version)->toBe($version + 1);
+    Queue::assertPushed(SyncEnvironmentResourceAccessJob::class);
+});
+
 test('component removal and server purge dispatch cleanup on the resource server', function (bool $purge) {
     $member = resourcePrivateClient($this->component, $this->server);
     $this->server->database()->jsonUpdate('type_data', 'networking', true);

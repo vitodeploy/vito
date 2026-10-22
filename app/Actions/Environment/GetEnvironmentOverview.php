@@ -84,7 +84,7 @@ class GetEnvironmentOverview
                 : [],
             'variables' => fn () => $sheet === 'variables' ? EnvironmentVariableResource::collection(app(GetEnvironmentVariables::class)->get($environment)) : [],
             'deployments' => fn () => $sheet === 'deployments' ? EnvironmentDeploymentTable::make($environment->deployments())->simplePaginate() : null,
-            'deployment' => fn () => $deployment ? new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'triggeredBy')) : null,
+            'deployment' => fn () => $deployment ? new EnvironmentDeploymentResource($deployment->load('deployments.component.server', 'deployments.log', 'triggeredBy')) : null,
         ];
     }
 

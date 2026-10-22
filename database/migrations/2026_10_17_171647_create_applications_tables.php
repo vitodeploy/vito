@@ -73,7 +73,7 @@ return new class extends Migration
         Schema::table('deployments', function (Blueprint $table): void {
             $table->unsignedBigInteger('site_id')->nullable()->change();
             $table->unsignedBigInteger('deployment_script_id')->nullable()->change();
-            $table->foreignId('component_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('component_id')->nullable()->constrained()->nullOnDelete();
         });
 
         Schema::table('deployment_scripts', function (Blueprint $table): void {
@@ -94,6 +94,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::table('applications')->delete();
+        DB::table('deployments')->whereNull('site_id')->delete();
 
         Schema::table('cron_jobs', function (Blueprint $table): void {
             $table->dropConstrainedForeignId('component_id');

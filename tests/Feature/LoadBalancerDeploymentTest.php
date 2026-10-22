@@ -122,6 +122,8 @@ test('manual rollback reloads new load balancers but live joins never include th
     expect($rollback->deployments->pluck('component_id')->all())->toContain($this->lb->id, $new->id);
     expect($rollback->current_stage)->toBe(DeploymentStage::RELEASE);
     advanceLoadBalancerRun($rollback);
+    expect($rollback->current_stage)->toBe(DeploymentStage::POST_RELEASE);
+    advanceLoadBalancerRun($rollback);
     expect($rollback->status)->toBe(EnvironmentDeploymentStatus::FINISHED);
     $app = Component::factory()->for($this->environment)->create(['status' => ComponentStatus::READY]);
     $join = app(DeployEnvironment::class)->join($this->environment->fresh());

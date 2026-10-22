@@ -9,6 +9,7 @@ use App\Actions\Component\SyncLoadBalancerBackends;
 use App\Actions\Component\UpdateLoadBalancerBackends;
 use App\Actions\ComponentCapability\InstallWebCapability;
 use App\Actions\Environment\DeleteEnvironment;
+use App\Actions\Environment\MarkEnvironmentForRedeploy;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\FirewallRule\ManageRule;
 use App\Actions\Network\DeleteNetwork;
@@ -172,7 +173,7 @@ test('external backends get no managed firewall and ipv6 upstreams are bracketed
     app(SyncLoadBalancerBackends::class)->sync($this->server);
     $this->assertDatabaseCount('firewall_rules', 0);
     $config = app(SyncComponentVhost::class)->generate($this->lb->fresh());
-    expect($config)->toContain('least_conn;', 'server [2001:db8::2]:8080 weight=3 max_fails=3 fail_timeout=10s;', 'server 192.0.2.2:8080 backup', 'X-Forwarded-Host', 'X-Forwarded-For', 'X-Forwarded-Proto');
+    expect($config)->toContain('least_conn;', 'server [2001:db8::2]:8080 weight=3 max_fails=3 fail_timeout=10s;', 'server 192.0.2.2:8080 backup', 'X-Forwarded-Host', 'X-Forwarded-For', 'X-Forwarded-Proto', 'proxy_connect_timeout 5s;');
 });
 
 test('backend vhosts bind private addresses and trust only load balancer sources', function (string $webserver) {
@@ -186,7 +187,20 @@ test('backend vhosts bind private addresses and trust only load balancer sources
         expect($config)->toContain('http://:8080', 'bind 10.40.0.2', 'route {', 'not remote_ip 10.40.0.1', 'trusted_proxies 10.40.0.1', 'X-Forwarded-Proto');
     }
     expect($config)->not->toContain($member->server->local_ip);
+    app(SyncComponentVhost::class)->sync($this->target->fresh());
+    SSH::assertExecutedContains('net.ipv4.ip_nonlocal_bind = 1');
 })->with(['nginx', 'caddy']);
+
+test('only backend vhosts allow binding private addresses before the network is up', function () {
+    EnvironmentDomain::factory()->for($this->lb)->create(['status' => HostedDomainStatus::ACTIVE]);
+    app(SyncComponentVhost::class)->sync($this->lb->fresh());
+    SSH::assertNotExecutedContains('ip_nonlocal_bind');
+});
+
+test('redeploy markers flag app components but not load balancers', function () {
+    app(MarkEnvironmentForRedeploy::class)->mark($this->environment);
+    expect($this->lb->fresh()->needs_redeploy)->toBeFalse()->and($this->target->fresh()->needs_redeploy)->toBeTrue();
+});
 
 test('caddy load balancers render policy and passive checks and reject ignored settings', function (string $method, string $policy) {
     $this->server->webserver()->update(['name' => 'caddy']);

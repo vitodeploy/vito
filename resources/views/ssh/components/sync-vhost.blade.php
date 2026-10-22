@@ -18,6 +18,10 @@ rollback() {
     exit 1
 }
 trap rollback ERR
+@if($nonlocalBind)
+printf 'net.ipv4.ip_nonlocal_bind = 1\nnet.ipv6.ip_nonlocal_bind = 1\n' | sudo tee /etc/sysctl.d/99-vito-nonlocal-bind.conf >/dev/null
+sudo sysctl -q -p /etc/sysctl.d/99-vito-nonlocal-bind.conf
+@endif
 @if($remove)
 sudo rm -f "$enabled" "$available"
 @else

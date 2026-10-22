@@ -33,6 +33,7 @@ class SyncComponentVhost
         }
         $component->server->ssh()->exec(view('ssh.components.sync-vhost', [
             'name' => $service->name, 'file' => 'component-'.$component->id, 'remove' => $content === '',
+            'nonlocalBind' => $content !== '' && $component->loadBalancerBackends()->exists(),
         ]), 'sync-component-vhost');
     }
 

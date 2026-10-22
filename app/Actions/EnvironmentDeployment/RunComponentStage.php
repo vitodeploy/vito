@@ -72,7 +72,7 @@ class RunComponentStage
     private function pending(int $deploymentId, DeploymentStage $stage, bool $recovering): ?Deployment
     {
         $deployment = Deployment::query()->with('environmentDeployment', 'component.environment.application.sourceControl', 'component.server', 'component.capabilities', 'log')->find($deploymentId);
-        if (! $deployment || ! in_array($deployment->environmentDeployment?->status, [EnvironmentDeploymentStatus::RUNNING, EnvironmentDeploymentStatus::CANCELLED], true)
+        if (! $deployment?->component || ! in_array($deployment->environmentDeployment?->status, [EnvironmentDeploymentStatus::RUNNING, EnvironmentDeploymentStatus::CANCELLED], true)
             || $deployment->environmentDeployment->current_stage !== $stage || $deployment->environmentDeployment->is_recovering !== $recovering
             || $deployment->current_stage !== $stage || $deployment->status !== DeploymentStatus::DEPLOYING) {
             return null;

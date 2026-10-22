@@ -326,9 +326,10 @@ test('server deletion purges only its components and their owned rows without re
     $this->actingAs($this->user)->delete(route('servers.destroy', $this->server), ['name' => $this->server->name])
         ->assertSessionDoesntHaveErrors();
 
-    foreach ([$this->component, $capability, $worker, $cron, $deployment, $script] as $deleted) {
+    foreach ([$this->component, $capability, $worker, $cron, $script] as $deleted) {
         $this->assertDatabaseMissing($deleted->getTable(), ['id' => $deleted->id]);
     }
+    $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'component_id' => null]);
     foreach ([$survivor, $survivorWorker, $environmentScript] as $remaining) {
         $this->assertDatabaseHas($remaining->getTable(), ['id' => $remaining->id]);
     }

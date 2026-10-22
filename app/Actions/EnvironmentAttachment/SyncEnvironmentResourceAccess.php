@@ -70,7 +70,7 @@ class SyncEnvironmentResourceAccess
 
     public function membershipChanged(NetworkServer $member): void
     {
-        if ($member->wasRecentlyCreated || $member->wasChanged(['ip', 'server_ip_address_id', 'status'])) {
+        if ($member->routingChanged()) {
             DB::afterCommit(fn () => $this->changedServer($member->server_id));
         }
     }

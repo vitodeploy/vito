@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $release_started
  * @property ?int $site_id
  * @property ?int $component_id
+ * @property ?string $component_name
+ * @property ?string $server_name
  * @property ?int $deployment_script_id
  * @property int $log_id
  * @property string $commit_id

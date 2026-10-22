@@ -196,7 +196,8 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        {{#is_component}}proxy_set_header X-Forwarded-Host $host;{{/is_component}}
+        {{#is_component}}proxy_set_header X-Forwarded-Host $host;
+        proxy_connect_timeout 5s;{{/is_component}}
     }
 
     error_page 404 /index.html;

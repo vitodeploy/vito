@@ -33,6 +33,8 @@ return new class extends Migration
             $table->string('current_stage')->nullable();
             $table->foreignId('previous_deployment_id')->nullable()->constrained('deployments')->nullOnDelete();
             $table->boolean('release_started')->default(false);
+            $table->string('component_name')->nullable();
+            $table->string('server_name')->nullable();
             $table->unique(['environment_deployment_id', 'component_id']);
         });
         Schema::table('environments', function (Blueprint $table): void {
@@ -53,7 +55,7 @@ return new class extends Migration
             $table->dropUnique(['environment_deployment_id', 'component_id']);
             $table->dropConstrainedForeignId('environment_deployment_id');
             $table->dropConstrainedForeignId('previous_deployment_id');
-            $table->dropColumn(['current_stage', 'release_started']);
+            $table->dropColumn(['current_stage', 'release_started', 'component_name', 'server_name']);
         });
         Schema::dropIfExists('environment_deployments');
     }

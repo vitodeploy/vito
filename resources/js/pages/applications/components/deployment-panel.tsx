@@ -23,7 +23,8 @@ const steps: { stage: DeploymentStage; label: string }[] = [
 type StepState = 'done' | 'running' | 'failed' | 'waiting' | 'skipped';
 
 function stepState(run: EnvironmentDeployment, component: ComponentDeployment, stage: DeploymentStage): StepState {
-  if ((run.rollback_of_id || component.component_type === 'load_balancer') && stage !== 'release') return 'skipped';
+  if (component.component_type === 'load_balancer' && stage !== 'release') return 'skipped';
+  if (run.rollback_of_id && stage !== 'release' && stage !== 'post-release') return 'skipped';
   if (stage === 'Release command' && (run.is_join || component.component_id !== run.primary_component_id)) return 'skipped';
   const current = component.current_stage ? steps.findIndex((step) => step.stage === component.current_stage) : -1;
   const index = steps.findIndex((step) => step.stage === stage);
@@ -108,7 +109,10 @@ export default function DeploymentPanel({
       {deployment.is_recovering && (
         <Alert>
           <AlertDescription>
-            A release failed, so Vito is restoring the previous release on these components. Check the results before deploying again.
+            {deployment.status === 'running' && 'A release failed, so Vito is restoring the previous release on these components.'}
+            {deployment.status === 'rolled_back' && 'A release failed, so Vito restored the previous release on every component.'}
+            {deployment.status === 'partial' &&
+              'A release failed and Vito could not restore the previous release on every component. Check the failed components before deploying again.'}
           </AlertDescription>
         </Alert>
       )}
@@ -145,7 +149,7 @@ export default function DeploymentPanel({
                         {component.component_name}
                       </Link>
                     ) : (
-                      <span className="text-muted-foreground">Removed component</span>
+                      <span className="text-muted-foreground">{component.component_name ? `${component.component_name} (removed)` : 'Removed component'}</span>
                     )}
                     {component.server_name && component.server_name !== component.component_name && (
                       <span className="text-muted-foreground font-normal"> on {component.server_name}</span>
@@ -224,7 +228,7 @@ export default function DeploymentPanel({
                       dialog.confirm.open({
                         title: `Roll back to #${deployment.id}`,
                         description:
-                          'Switches every component back to this release and restarts processes. Variables stay as they are, release-command effects (like migrations) are not undone, and any pending deployment is replaced.',
+                          'Switches every component back to this release, runs the post-release script and restarts processes. Variables stay as they are, release-command effects (like migrations) are not undone, and any pending deployment is replaced.',
                         confirmLabel: 'Roll back',
                         method: 'post',
                         url: `${baseUrl}/deployments/${deployment.id}/rollback${query ? `?${query}` : ''}`,

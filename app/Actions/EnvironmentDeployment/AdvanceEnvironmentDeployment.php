@@ -64,7 +64,7 @@ class AdvanceEnvironmentDeployment
                 $environment->live_run_id = $run->id;
                 $environment->save();
             }
-            $next = $run->rollback_of_id ? null : $stage->next();
+            $next = $stage->next();
             if ($run->is_join && $next === DeploymentStage::PRE_RELEASE) {
                 $next = DeploymentStage::RELEASE;
             }
@@ -112,12 +112,14 @@ class AdvanceEnvironmentDeployment
     public function finish(EnvironmentDeployment $run, EnvironmentDeploymentStatus $status): void
     {
         if ($run->is_join && ! $run->deployments()->exists()) {
-            foreach ($run->environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->get() as $component) {
+            foreach ($run->environment->components()->where('type', ComponentType::APP)->where('status', ComponentStatus::READY)->doesntHave('deployments')->with('server')->get() as $component) {
                 $deployment = $run->deployments()->make([
                     'commit_id' => $run->commit_id,
                     'commit_data' => $run->commit_data, 'status' => DeploymentStatus::FAILED,
                 ]);
                 $deployment->component_id = $component->id;
+                $deployment->component_name = $component->name;
+                $deployment->server_name = $component->server->name;
                 $deployment->save();
             }
         }
