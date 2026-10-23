@@ -35,8 +35,8 @@ class AssertHostAvailable
             ->when($ignore instanceof HostedDomain && $ignore->type === HostedDomainType::PRIMARY, fn ($query) => $query->whereKeyNot($ignore->site_id))
             ->pluck('domain')
             ->merge(HostedDomain::query()
-            ->whereHas('site', fn ($query) => $query->where('server_id', $server->id))
-            ->when($ignore instanceof HostedDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('domain'))
+                ->whereHas('site', fn ($query) => $query->where('server_id', $server->id))
+                ->when($ignore instanceof HostedDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('domain'))
             ->merge(EnvironmentDomain::query()
                 ->whereHas('component', fn ($query) => $query->where('server_id', $server->id))
                 ->when($ignore instanceof EnvironmentDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('host'));
