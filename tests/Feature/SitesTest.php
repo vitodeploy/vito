@@ -1,10 +1,12 @@
 <?php
 
+use App\Actions\Site\DeleteSite;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Enums\UserRole;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Jobs\Site\CreateJob;
 use App\Models\Database;
@@ -24,6 +26,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
@@ -648,6 +651,59 @@ test('delete site', function () {
     $this->assertDatabaseMissing('sites', [
         'id' => $site->id,
     ]);
+});
+
+test('site deletion continues when deploy key cleanup fails without logging credentials', function (?int $status) {
+    SSH::fake();
+    Http::fake([
+        'https://api.github.com/repos/*' => $status === null
+            ? Http::failedConnection()
+            : Http::response(['message' => 'provider-response-secret'], $status),
+    ]);
+    Log::spy();
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+
+    $this->actingAs($this->user)->delete(route('site-settings.destroy', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]), ['domain' => $this->site->domain])
+        ->assertRedirect()
+        ->assertSessionDoesntHaveErrors()
+        ->assertSessionHas('warning', 'Site deleted, but its deploy key could not be removed from the repository. Remove it manually.')
+        ->assertSessionMissing('success');
+
+    $this->assertDatabaseMissing('sites', ['id' => $this->site->id]);
+    SSH::assertExecutedContains('rm -rf '.$this->site->path);
+    Log::shouldHaveReceived('warning')->once()->with('Site deploy key cleanup failed; continuing site deletion.', [
+        'site_id' => $this->site->id,
+        'source_control_id' => $this->site->source_control_id,
+        'deploy_key_id' => '123',
+        'exception' => RuntimeException::class,
+    ]);
+})->with([401, 403, 503, null]);
+
+test('site deletion still removes deploy keys when the provider accepts cleanup', function (int $status) {
+    SSH::fake();
+    Http::fake(['https://api.github.com/repos/*' => Http::response([], $status)]);
+    Log::spy();
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+
+    expect(app(DeleteSite::class)->delete($this->site, ['domain' => $this->site->domain]))->toBeTrue();
+
+    $this->assertDatabaseMissing('sites', ['id' => $this->site->id]);
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE'
+        && $request->url() === 'https://api.github.com/repos/organization/repository/keys/123');
+    Log::shouldNotHaveReceived('warning');
+})->with([204, 404]);
+
+test('site deletion still fails when remote teardown fails', function () {
+    SSH::fake()->execWillFail();
+    Http::fake();
+
+    expect(fn () => app(DeleteSite::class)->delete($this->site, ['domain' => $this->site->domain]))
+        ->toThrow(SSHCommandError::class);
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id]);
 });
 
 test('change php version', function () {

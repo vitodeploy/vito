@@ -9,6 +9,7 @@ use App\Helpers\ComponentShell;
 use App\Models\Worker;
 use App\Services\HasLogs;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager implements HasLogs
@@ -76,12 +77,22 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function writeConfig(Worker $worker): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.process-manager.supervisor.prepare-log', [
-                'logFile' => $worker->getLogFile(),
-                'user' => $worker->user,
-            ])
-        );
+        $logFile = $worker->getLogFile();
+        $previousLogFile = null;
+        if (! $this->isRootSafeLogPath($logFile)) {
+            $previousLogFile = $logFile;
+            $logFile = $worker->defaultLogFile();
+        }
+
+        if ($logFile === $worker->defaultLogFile()) {
+            $this->service->server->ssh()->exec(
+                view('ssh.services.process-manager.supervisor.prepare-log', [
+                    'logFile' => $logFile,
+                    'previousLogFile' => $previousLogFile,
+                    'user' => $worker->user,
+                ])
+            );
+        }
 
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/{$worker->id}.conf",
@@ -93,11 +104,17 @@ class Supervisor extends AbstractProcessManager implements HasLogs
                 'autoStart' => var_export($worker->auto_start, true),
                 'autoRestart' => var_export($worker->auto_restart, true),
                 'numprocs' => (string) $worker->numprocs,
-                'logFile' => $worker->getLogFile(),
+                'logFile' => new HtmlString($logFile),
                 'environment' => $worker->component_id === null ? self::formatEnvironment($worker->effectiveEnvironment()) : '',
             ]),
             'root'
         );
+
+        if ($worker->getOriginal('stdout_logfile') !== $logFile) {
+            Worker::query()->whereKey($worker->id)->update(['stdout_logfile' => $logFile]);
+            $worker->stdout_logfile = $logFile;
+            $worker->syncOriginalAttribute('stdout_logfile');
+        }
     }
 
     /**
@@ -105,6 +122,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function create(Worker $worker): void
     {
+        $worker->stdout_logfile = $worker->defaultLogFile();
         $this->writeConfig($worker);
 
         $this->service->server->ssh()->exec(
@@ -122,14 +140,30 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function delete(int $id, ?int $siteId = null): void
     {
+        $worker = Worker::query()->find($id);
+        $logFile = $worker?->getLogFile();
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.delete-worker', [
                 'id' => $id,
-                'component' => $this->service->server->workers()->whereKey($id)->whereNotNull('component_id')->exists(),
+                'component' => $worker?->component_id !== null,
+                'logFile' => $logFile !== null && $this->isRootSafeLogPath($logFile) ? $logFile : null,
             ]),
             'delete-worker',
             $siteId
         );
+    }
+
+    /**
+     * Whether root can open or remove the path without following symlinks an unprivileged user planted.
+     * Legacy logs inside an isolated user's home are not safe: that user owns the directory.
+     */
+    private function isRootSafeLogPath(string $logFile): bool
+    {
+        return Str::startsWith($logFile, [
+            '/var/log/vito/workers/',
+            '/root/',
+            '/home/'.$this->service->server->getSshUser().'/',
+        ]);
     }
 
     /**
@@ -263,7 +297,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
     public function getLogs(string $user, string $logPath): string
     {
         return $this->service->server->ssh($user)->exec(
-            "tail -100 $logPath"
+            'tail -100 -- '.escapeshellarg($logPath)
         );
     }
 

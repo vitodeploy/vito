@@ -166,7 +166,7 @@ test('component workers are installed stopped with a wrapped command and no per-
     $worker->save();
     (new CreateJob($worker))->handle();
 
-    $this->assertDatabaseHas('workers', ['id' => $worker->id, 'component_id' => $this->component->id, 'site_id' => null, 'user' => $this->component->user, 'status' => 'stopped', 'auto_start' => true]);
+    $this->assertDatabaseHas('workers', ['id' => $worker->id, 'component_id' => $this->component->id, 'site_id' => null, 'user' => $this->component->user, 'status' => 'stopped', 'auto_start' => true, 'stdout_logfile' => '/var/log/vito/workers/'.$this->component->user.'/'.$worker->id.'.log']);
     SSH::assertExecutedContains(" > '/etc/supervisor/conf.d/".$worker->id.".conf'");
     expect(SSH::getUploadedContent())->toContain('command='.ComponentShell::wrap($this->component, $worker->command), 'autostart=false')
         ->not->toContain('environment=', 'never-in-process-config', 'directory=');

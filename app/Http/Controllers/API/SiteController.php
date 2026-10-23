@@ -70,13 +70,16 @@ class SiteController extends Controller
     }
 
     #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, Site $site): Response
+    public function delete(Request $request, Project $project, Server $server, Site $site): Response
     {
         $this->authorize('delete', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
 
-        app(DeleteSite::class)->delete($site, ['domain' => $site->domain]);
+        app(DeleteSite::class)->delete($site, [
+            'domain' => $site->domain,
+            'cleanup' => $request->input('cleanup', false),
+        ]);
 
         return response()->noContent();
     }

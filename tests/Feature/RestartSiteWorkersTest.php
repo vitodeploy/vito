@@ -29,6 +29,27 @@ test('failed worker restart is non fatal and records error', function () {
     expect($worker->error)->toBe("{$worker->id}:{$worker->id}_00: ERROR (no such file)");
 });
 
+test('a worker that has not been installed yet does not fail the restart of its siblings', function () {
+    $installed = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+        'stdout_logfile' => '/home/vito/.logs/workers/legacy.log',
+    ]);
+    $pending = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::CREATING,
+    ]);
+    SSH::fake("{$installed->id}:{$installed->id}_00: started\n{$pending->id}:{$pending->id}_00: started");
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $this->assertDatabaseHas('workers', ['id' => $installed->id, 'status' => WorkerStatus::RUNNING, 'error' => null]);
+    SSH::assertExecutedContains('supervisorctl');
+    SSH::assertExecutedContains("install -d -o root -g 'vito' -m 750 '/var/log/vito/workers/vito'");
+});
+
 test('successful restart marks running and clears error', function () {
     $worker = Worker::factory()->create([
         'server_id' => $this->server->id,

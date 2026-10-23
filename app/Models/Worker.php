@@ -25,7 +25,7 @@ use Throwable;
  * @property int $numprocs
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $environment
  * @property int $redirect_stderr
- * @property string $stdout_logfile
+ * @property ?string $stdout_logfile
  * @property WorkerStatus $status
  * @property ?string $error
  * @property string $name
@@ -50,7 +50,6 @@ class Worker extends AbstractModel
         'numprocs',
         'environment',
         'redirect_stderr',
-        'stdout_logfile',
         'status',
         'name',
     ];
@@ -139,12 +138,20 @@ class Worker extends AbstractModel
 
     public function getLogDirectory(): string
     {
-        return '/var/log/vito/workers/'.$this->user;
+        return dirname($this->getLogFile());
     }
 
+    /**
+     * The recorded log path, or the default one for a worker that has not been installed yet.
+     */
     public function getLogFile(): string
     {
-        return $this->getLogDirectory().'/'.$this->id.'.log';
+        return $this->stdout_logfile ?? $this->defaultLogFile();
+    }
+
+    public function defaultLogFile(): string
+    {
+        return "/var/log/vito/workers/{$this->user}/{$this->id}.log";
     }
 
     /**
