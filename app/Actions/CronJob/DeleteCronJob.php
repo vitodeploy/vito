@@ -21,13 +21,13 @@ class DeleteCronJob
             $cronJob->refresh();
             app(ValidateComponentProcess::class)->validate($server, [], $component, 'scheduler', $cronJob);
             $this->remove($server, $cronJob, locked: true);
-        }));
+        }), atomic: $component !== null);
     }
 
     public function remove(Server $server, CronJob $cronJob, bool $locked = false): void
     {
         if (! $locked) {
-            app(SyncCronJobs::class)->run($server, fn () => $this->remove($server, $cronJob, locked: true), background: true);
+            app(SyncCronJobs::class)->run($server, fn () => $this->remove($server, $cronJob, locked: true), background: true, atomic: $cronJob->component_id !== null);
 
             return;
         }

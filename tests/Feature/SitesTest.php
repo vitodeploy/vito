@@ -78,6 +78,22 @@ test('site creation rejects domains and aliases already served on the server', f
     expect(SSH::getExecutedCommands())->toBe([]);
 })->with(['domain', 'aliases.0'])->with([false, true]);
 
+test('site creation ignores the legacy aliases column left behind by the hosted domains migration', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $this->site->update(['aliases' => ['stale.example.com']]);
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), [
+        'type' => Blank::id(),
+        'domain' => 'stale.example.com',
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['domain' => 'stale.example.com', 'user' => 'newruntime']);
+});
+
 test('site creation rejects null aliases before checking hosts', function () {
     SSH::fake();
     Http::fake();

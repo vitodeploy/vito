@@ -32,17 +32,9 @@ class AssertHostAvailable
     public function assert(Server $server, string $host, string $field, HostedDomain|EnvironmentDomain|null $ignore = null): void
     {
         $hosts = Site::query()->where('server_id', $server->id)
-            ->get(['id', 'domain', 'aliases'])->flatMap(function (Site $site) use ($ignore): array {
-                $hosts = $ignore instanceof HostedDomain && $ignore->type === HostedDomainType::PRIMARY && $ignore->site_id === $site->id
-                    ? [] : [$site->domain];
-                foreach ($site->aliases ?? [] as $alias) {
-                    if (! ($ignore instanceof HostedDomain && $ignore->site_id === $site->id && $ignore->domain === $alias)) {
-                        $hosts[] = $alias;
-                    }
-                }
-
-                return $hosts;
-            })->merge(HostedDomain::query()
+            ->when($ignore instanceof HostedDomain && $ignore->type === HostedDomainType::PRIMARY, fn ($query) => $query->whereKeyNot($ignore->site_id))
+            ->pluck('domain')
+            ->merge(HostedDomain::query()
             ->whereHas('site', fn ($query) => $query->where('server_id', $server->id))
             ->when($ignore instanceof HostedDomain, fn ($query) => $query->whereKeyNot($ignore->id))->pluck('domain'))
             ->merge(EnvironmentDomain::query()

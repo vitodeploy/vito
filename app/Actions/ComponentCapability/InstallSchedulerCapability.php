@@ -32,7 +32,7 @@ class InstallSchedulerCapability
             $component->server->cron()->update($component->user, CronJob::crontab($component->server, $component->user));
             $cronJob->status = CronjobStatus::READY;
             $cronJob->save();
-        }, background: true);
+        }, background: true, atomic: true);
     }
 
     public function uninstall(ComponentCapability $capability, Component $component): void

@@ -18,4 +18,14 @@ printf 'requirepass "%s"\n' "$VITO_MEMDB_PASSWORD" | sudo tee {{ $include }} > /
 
 sudo sed -i '/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d' {{ $conf }}
 
-printf '# BEGIN VITO NETWORKING\nbind 0.0.0.0 -::\ninclude %s\n# END VITO NETWORKING\n' '{{ $include }}' | sudo tee -a {{ $conf }} > /dev/null
+bind='bind 0.0.0.0'
+version="$({{ $owner }}-server --version 2>/dev/null | sed -nE 's/.*v=([0-9]+)\.([0-9]+).*/\1 \2/p')"
+if [ -n "$version" ]; then
+    major="${version%% *}"
+    minor="${version##* }"
+    if [ "$major" -gt 6 ] || { [ "$major" -eq 6 ] && [ "$minor" -ge 2 ]; }; then
+        bind='bind 0.0.0.0 -::'
+    fi
+fi
+
+printf '# BEGIN VITO NETWORKING\n%s\ninclude %s\n# END VITO NETWORKING\n' "$bind" '{{ $include }}' | sudo tee -a {{ $conf }} > /dev/null

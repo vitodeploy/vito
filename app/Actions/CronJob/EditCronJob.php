@@ -62,7 +62,7 @@ class EditCronJob
             $cronJob->save();
 
             return $cronJob;
-        }));
+        }), atomic: $component !== null);
     }
 
     private function validate(array $input, Server $server, ?Site $site = null, ?Component $component = null): void

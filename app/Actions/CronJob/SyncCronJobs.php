@@ -15,15 +15,18 @@ use Illuminate\Validation\ValidationException;
 class SyncCronJobs
 {
     /**
+     * Component-owned cron jobs roll back on failure. Site and server cron jobs run their SSH
+     * work outside a transaction so the database write lock is not held for the round-trip.
+     *
      * @template T
      *
      * @param  Closure(): T  $callback
      * @return T
      */
-    public function run(Server $server, Closure $callback, bool $background = false): mixed
+    public function run(Server $server, Closure $callback, bool $background = false, bool $atomic = false): mixed
     {
         try {
-            return Cache::lock('cron-jobs:server-'.$server->id, 600)->block(0, fn () => DB::transaction($callback));
+            return Cache::lock('cron-jobs:server-'.$server->id, 600)->block(0, $atomic ? fn () => DB::transaction($callback) : $callback);
         } catch (LockTimeoutException $e) {
             if ($background) {
                 throw $e;

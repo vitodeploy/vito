@@ -33,6 +33,7 @@ use App\Models\EnvironmentDomain;
 use App\Models\HostedDomain;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -106,7 +107,7 @@ test('environment domain targets must be ready web components of the same enviro
 test('domain collisions include sites aliases hosted domains and other environments on the target server', function (string $kind) {
     match ($kind) {
         'site' => $this->site->update(['domain' => 'APP.EXAMPLE.COM']),
-        'alias' => $this->site->update(['aliases' => ['app.example.com']]),
+        'alias' => HostedDomain::factory()->create(['site_id' => Site::factory()->create(['server_id' => $this->server->id])->id, 'domain' => 'app.example.com']),
         'hosted' => HostedDomain::factory()->create(['site_id' => $this->site->id, 'domain' => 'app.example.com']),
         'environment' => EnvironmentDomain::factory()->for(Component::factory()->for($this->server))->create(['host' => 'app.example.com']),
         'wildcard' => EnvironmentDomain::factory()->for(Component::factory()->for($this->server))->create(['host' => '*.example.com']),

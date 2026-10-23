@@ -56,7 +56,7 @@ class CreateCronJob
             $cronJob->save();
 
             return $cronJob;
-        }), background: $managedBy !== null);
+        }), background: $managedBy !== null, atomic: $component !== null);
     }
 
     private function validate(array $input, Server $server, ?Site $site = null, ?Component $component = null): void

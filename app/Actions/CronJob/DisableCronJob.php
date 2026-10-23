@@ -26,6 +26,6 @@ class DisableCronJob
             $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
             $cronJob->status = CronjobStatus::DISABLED;
             $cronJob->save();
-        }));
+        }), atomic: $cronJob->component_id !== null);
     }
 }

@@ -16,6 +16,7 @@ use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
@@ -158,6 +159,28 @@ test('deploy classic', function () {
 
     Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
 });
+
+test('deploy proceeds when the source control API is temporarily unavailable', function (int $status) {
+    SSH::fake('fake output');
+    Http::fake(['github.com/*' => Http::response(['message' => 'unavailable'], $status)]);
+    Notification::fake();
+    Log::spy();
+
+    $this->site->deploymentScript->update(['content' => 'git pull']);
+
+    $this->actingAs($this->user)->post(route('application.deploy', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('deployments', [
+        'site_id' => $this->site->id,
+        'status' => DeploymentStatus::FINISHED,
+        'commit_id' => null,
+    ]);
+    SSH::assertExecutedContains('git pull');
+    Log::shouldHaveReceived('warning')->twice();
+})->with([503, 429]);
 
 test('deploy broadcasts deployment created', function () {
     vitoPestFeatureApplicationTestAssertBroadcastsDeploymentCreated(function (): void {
