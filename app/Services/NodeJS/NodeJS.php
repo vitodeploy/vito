@@ -56,6 +56,9 @@ class NodeJS extends AbstractService
                     if ($hasSite) {
                         $fail('Some sites are using this NodeJS version.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Some components are using this NodeJS version.');
+                    }
                 },
             ],
         ];

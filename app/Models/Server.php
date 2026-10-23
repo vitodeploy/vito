@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Actions\Component\PurgeServerComponents;
 use App\Actions\Network\ResyncNetworkSiblings;
 use App\Actions\Server\CheckConnection;
+use App\Enums\ComponentType;
 use App\Enums\OperatingSystem;
 use App\Enums\SecurityControlStatus;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Enums\WebMode;
 use App\Exceptions\SSHError;
 use App\Facades\SSH;
 use App\ServerFeatures\ActionInterface;
@@ -59,6 +62,7 @@ use Throwable;
  * @property ServerProvider $serverProvider
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Component> $components
  * @property Collection<int, Service> $services
  * @property Collection<int, Database> $databases
  * @property Collection<int, DatabaseUser> $databaseUsers
@@ -132,6 +136,9 @@ class Server extends AbstractModel
      */
     protected array $networkDeparture = ['members' => [], 'networks' => []];
 
+    /** @var array{load_balancer_servers: list<int>, environments: list<int>, keys: list<array{id: int, server_id: int, environment_id: int, deploy_key_source_control_id: ?int, deploy_key_repository: ?string, deploy_key_id: ?string, ssh_key: ?string}>} */
+    protected array $componentDeparture = ['environments' => [], 'keys' => [], 'load_balancer_servers' => []];
+
     public static function boot(): void
     {
         parent::boot();
@@ -142,50 +149,63 @@ class Server extends AbstractModel
 
         static::deleted(function (Server $server): void {
             app(ResyncNetworkSiblings::class)->handle($server->networkDeparture);
+            app(PurgeServerComponents::class)->handle($server->componentDeparture);
         });
 
         static::deleting(function (Server $server): void {
-            DB::beginTransaction();
-            try {
-                $server->sites()->each(function ($site): void {
-                    /** @var Site $site */
-                    $site->workers()->delete();
-                    $site->ssls()->delete();
-                    $site->deployments()->delete();
-                    $site->deploymentScript()->delete();
-                });
-                $server->sites()->delete();
-                $server->logs()->each(function ($log): void {
-                    /** @var ServerLog $log */
-                    $log->delete();
-                });
-                $server->backups()->each(function ($backup): void {
-                    /** @var Backup $backup */
-                    $backup->delete();
-                });
-                $server->services()->delete();
-                $server->databases()->delete();
-                $server->databaseUsers()->delete();
-                $server->firewallRules()->delete();
-                $server->cronJobs()->delete();
-                $server->workers()->delete();
-                $server->daemons()->delete();
-                $server->sshKeys()->detach();
-                if ($server->deleteFromProvider) {
-                    $server->provider()->delete();
-                }
-                if (File::exists($server->sshKey()['public_key_path'])) {
-                    File::delete($server->sshKey()['public_key_path']);
-                }
-                if (File::exists($server->sshKey()['private_key_path'])) {
-                    File::delete($server->sshKey()['private_key_path']);
-                }
-                DB::commit();
-            } catch (Throwable $e) {
-                DB::rollBack();
-                throw $e;
+            $server->componentDeparture = app(PurgeServerComponents::class)->purge($server);
+            $server->sites()->each(function ($site): void {
+                /** @var Site $site */
+                $site->workers()->delete();
+                $site->ssls()->delete();
+                $site->deployments()->delete();
+                $site->deploymentScript()->delete();
+            });
+            $server->sites()->delete();
+            $server->logs()->each(function ($log): void {
+                /** @var ServerLog $log */
+                $log->delete();
+            });
+            $server->backups()->each(function ($backup): void {
+                /** @var Backup $backup */
+                $backup->delete();
+            });
+            $server->services()->delete();
+            $server->databases()->delete();
+            $server->databaseUsers()->delete();
+            $server->firewallRules()->delete();
+            $server->cronJobs()->delete();
+            $server->workers()->delete();
+            $server->daemons()->delete();
+            $server->sshKeys()->detach();
+            if ($server->deleteFromProvider) {
+                $server->provider()->delete();
+            }
+            if (File::exists($server->sshKey()['public_key_path'])) {
+                File::delete($server->sshKey()['public_key_path']);
+            }
+            if (File::exists($server->sshKey()['private_key_path'])) {
+                File::delete($server->sshKey()['private_key_path']);
             }
         });
+    }
+
+    public function delete(): ?bool
+    {
+        DB::beginTransaction();
+        try {
+            $deleted = parent::delete();
+            if ($deleted) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return $deleted;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     public function isReady(): bool
@@ -225,6 +245,54 @@ class Server extends AbstractModel
     public function serverProvider(): BelongsTo
     {
         return $this->belongsTo(ServerProvider::class, 'provider_id');
+    }
+
+    /**
+     * @return HasMany<Component, covariant $this>
+     */
+    public function components(): HasMany
+    {
+        return $this->hasMany(Component::class);
+    }
+
+    /**
+     * @return Collection<int, Component>
+     */
+    public function componentsUsing(Service $service): Collection
+    {
+        return $this->components()->with(['environment.application', 'capabilities'])->withExists('loadBalancerBackends')->get()
+            ->filter(function (Component $component) use ($service): bool {
+                if ($component->type === ComponentType::LOAD_BALANCER) {
+                    return $service->type === 'webserver';
+                }
+                if ($service->type === 'firewall' && $component->load_balancer_backends_exists) {
+                    return true;
+                }
+                $preset = $component->environment->application->preset();
+                $versions = array_unique([
+                    $component->environment->runtime_version ?? '',
+                    $component->installed_runtime_version ?? $component->environment->runtime_version ?? '',
+                ]);
+                foreach ($versions as $version) {
+                    $services = $preset->requiredServices($version);
+                    if (array_key_exists($service->type, $services)
+                        && ($services[$service->type] === null || $services[$service->type] === $service->version)) {
+                        return true;
+                    }
+                }
+
+                return $component->capabilities->contains(function (ComponentCapability $capability) use ($service, $preset, $versions): bool {
+                    if (! in_array($service->type, $capability->handler()->requiredServices($preset), true)) {
+                        return false;
+                    }
+
+                    if ($capability->capability === 'web' && $service->type === 'php' && $preset->webMode() === WebMode::FPM) {
+                        return in_array($service->version, $versions, true);
+                    }
+
+                    return true;
+                });
+            });
     }
 
     /**

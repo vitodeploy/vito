@@ -6,6 +6,9 @@ use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Jobs\Site\Tooling\InstallSiteToolingJob;
 use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\Environment;
 use App\Models\IsolatedUser;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -156,6 +159,81 @@ test('uninstall removes tool entry from iuser', function () {
     expect($iuser->toolingStatus('node'))->toBeNull();
     $this->assertArrayNotHasKey('node', $iuser->installed_tooling ?? []);
 });
+
+test('component tooling prevents uninstall but allows changing the site global version', function (string $runtime, string $tool, string $pinnedVersion, string $globalVersion) {
+    SSH::fake();
+    $iuser = vitoPestFeatureSiteToolingTestIuser();
+    $iuser->setToolingVersion($tool, $pinnedVersion);
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => $runtime]);
+    $environment = Environment::factory()->for($application)->create(['runtime_version' => $pinnedVersion]);
+    $component = Component::factory()->for($environment)->for($this->server)->create([
+        'isolated_user_id' => $iuser->id,
+        'user' => $iuser->username,
+    ]);
+
+    $this->actingAs($this->user)->deleteJson(route('site-tooling.uninstall', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => $tool,
+    ]))->assertUnprocessable()->assertJsonValidationErrors([
+        'tool' => ToolingRegistry::find($tool)::label().' is required by a component sharing this isolated user and cannot be uninstalled.',
+    ]);
+
+    expect(SSH::getExecutedCommands())->toBe([])
+        ->and($iuser->fresh()->toolingStatus($tool))->toBeNull();
+
+    $this->post(route('site-tooling.install', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => $tool,
+    ]), ['version' => $globalVersion])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('mise use -g '.$tool.'@'.$globalVersion);
+    expect($iuser->fresh()->toolingVersion($tool))->toBe($globalVersion);
+    $this->assertDatabaseHas('environments', ['id' => $environment->id, 'runtime_version' => $pinnedVersion]);
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'isolated_user_id' => $iuser->id]);
+})->with([
+    ['node', 'node', '22', '24'],
+    ['bun', 'bun', '1.1', '1.2'],
+]);
+
+test('site Composer removal leaves component-local installations intact', function (string $runtime) {
+    SSH::fake();
+    $this->isolatedSite->update(['type' => NodeSite::id()]);
+    $this->sibling->update(['type' => NodeSite::id()]);
+    $iuser = vitoPestFeatureSiteToolingTestIuser();
+    $iuser->setToolingVersion('composer', '2');
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => $runtime]);
+    $environment = Environment::factory()->for($application)->create(['runtime_version' => '8.2']);
+    $component = Component::factory()->for($environment)->for($this->server)->create(['isolated_user_id' => $iuser->id, 'user' => $iuser->username]);
+
+    $this->actingAs($this->user)->deleteJson(route('site-tooling.uninstall', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'composer',
+    ]))->assertRedirect()->assertSessionHasNoErrors();
+
+    SSH::assertExecutedContains('rm -f "$HOME/.local/vito/bin/composer"');
+    SSH::assertNotExecutedContains($component->basePath());
+    expect($iuser->fresh()->toolingVersion('composer'))->toBeNull();
+})->with(['php', 'laravel']);
+
+test('uninstall is not blocked by components using another tool or isolated user', function (bool $sameUser) {
+    SSH::fake();
+    $iuser = vitoPestFeatureSiteToolingTestIuser();
+    $iuser->setToolingVersion('node', '22');
+    $componentUser = $sameUser ? $iuser : IsolatedUser::factory()->create(['server_id' => $this->server->id]);
+    $application = Application::factory()->create([
+        'project_id' => $this->server->project_id,
+        'runtime' => $sameUser ? 'bun' : 'node',
+    ]);
+    $environment = Environment::factory()->for($application)->create();
+    Component::factory()->for($environment)->for($this->server)->create([
+        'isolated_user_id' => $componentUser->id,
+        'user' => $componentUser->username,
+    ]);
+
+    $this->actingAs($this->user)->delete(route('site-tooling.uninstall', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'node',
+    ]))->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('mise uninstall node --all');
+    expect($iuser->fresh()->toolingVersion('node'))->toBeNull();
+})->with([true, false]);
 
 test('install validation rejects unsupported version', function () {
     SSH::fake();

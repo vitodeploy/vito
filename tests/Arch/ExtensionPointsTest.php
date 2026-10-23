@@ -1,7 +1,9 @@
 <?php
 
+use App\ComponentCapabilities\AbstractComponentCapability;
 use App\DNSProviders\AbstractDNSProvider;
 use App\NotificationChannels\AbstractNotificationChannel;
+use App\RuntimePresets\AbstractRuntimePreset;
 use App\ServerProviders\AbstractProvider;
 use App\Services\AbstractService;
 use App\SiteTypes\AbstractSiteType;
@@ -49,6 +51,16 @@ arch('site types extend the abstract site type')
     ->expect('App\SiteTypes')
     ->classes()
     ->toExtend(AbstractSiteType::class);
+
+arch('runtime presets extend the abstract runtime preset')
+    ->expect('App\RuntimePresets')
+    ->classes()
+    ->toExtend(AbstractRuntimePreset::class);
+
+arch('component capabilities extend the abstract component capability')
+    ->expect('App\ComponentCapabilities')
+    ->classes()
+    ->toExtend(AbstractComponentCapability::class);
 
 arch('workflow actions extend the abstract workflow action')
     ->expect('App\WorkflowActions')

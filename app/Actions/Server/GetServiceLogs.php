@@ -16,7 +16,7 @@ class GetServiceLogs
     {
         $logs = [];
 
-        $server->loadMissing('sites');
+        $server->loadMissing('sites', 'components.capabilities', 'components.environment.application');
 
         $services = $server->services()
             ->where('status', ServiceStatus::READY)

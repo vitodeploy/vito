@@ -68,17 +68,33 @@ class Ufw extends AbstractFirewall implements HasLogs
         $deletingIds = $server->networkRules()->where('status', FirewallRuleStatus::DELETING)->pluck('id')->all();
 
         $serverRules = $server->firewallRules()
-            ->where('status', '!=', FirewallRuleStatus::DELETING)
             ->orderBy('id')
             ->get();
 
-        $rules = $networkRules->concat($serverRules);
+        $managed = $serverRules->where('component_managed', true);
+        $denies = $managed->unique('port')->map(function ($rule) {
+            $deny = clone $rule;
+            $deny->type = 'deny';
+            $deny->source = null;
+            $deny->mask = null;
+
+            return $deny;
+        });
+        $managedPorts = $managed->pluck('port')->map(fn ($port): string => (string) $port);
+        $ordinary = $networkRules->concat($serverRules->where('component_managed', false)->where('status', '!=', FirewallRuleStatus::DELETING))
+            ->reject(fn ($rule): bool => $rule->protocol === 'tcp' && $managedPorts->contains((string) $rule->port)
+                && ($rule->source === null || (string) $rule->mask === '0'));
+        $rules = $managed->where('type', 'allow')->where('status', '!=', FirewallRuleStatus::DELETING)->concat($denies)->concat($ordinary);
 
         $finalize = app(FinalizeServerNetworkRules::class);
 
         try {
             $server->ssh()->exec(
-                view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),
+                view('ssh.services.firewall.ufw.apply-rules', [
+                    'rules' => $rules,
+                    'requireIpv6' => $serverRules->whereNotNull('environment_attachment_id')->isNotEmpty(),
+                    'resourceRules' => $rules->where('component_managed', true)->whereIn('port', $serverRules->whereNotNull('environment_attachment_id')->pluck('port')),
+                ]),
                 'apply-rules'
             );
         } catch (SSHError $e) {

@@ -4,9 +4,13 @@ namespace App\Jobs\SSL;
 
 use App\Actions\Domain\CreateDNSRecord;
 use App\Actions\Domain\DeleteDNSRecord;
+use App\Actions\EnvironmentDomain\ActivateEnvironmentDomain;
+use App\Actions\EnvironmentDomain\CheckEnvironmentDomain;
 use App\Actions\Site\BroadcastSiteUpdate;
 use App\Actions\SSL\CertificateParser;
+use App\Actions\SSL\RenewEnvironmentSsl;
 use App\DTOs\SocketEventDTO;
+use App\Enums\EnvironmentStatus;
 use App\Enums\SslStatus;
 use App\Events\SocketEvent;
 use App\Facades\Notifier;
@@ -37,6 +41,14 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function (): void {
+            if (! $this->ssl->fresh()) {
+                return;
+            }
+            $this->ssl->refresh();
+            if ($this->ssl->environment_id && ($this->ssl->environment?->status !== EnvironmentStatus::READY
+                || ! $this->ssl->environmentDomains()->exists())) {
+                return;
+            }
             $domain = $this->ssl->domain;
 
             if (! $domain) {
@@ -63,6 +75,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             Log::info('[Wildcard SSL] Job completed successfully', ['ssl_id' => $this->ssl->id]);
             $this->broadcastSslUpdate();
             $this->broadcastAffectedSites();
+            app(ActivateEnvironmentDomain::class)->complete($this->ssl);
         });
     }
 
@@ -79,9 +92,22 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             $this->deleteDnsRecordSafely($recordId);
         }
 
-        $this->ssl->status = SslStatus::FAILED;
+        if (! $this->ssl->fresh()) {
+            return;
+        }
+        $this->ssl->refresh();
+        $preserve = $this->isRenewal && $this->ssl->environment_id && $this->ssl->expires_at?->isFuture()
+            && $this->ssl->certificate_path && $this->ssl->pk_path;
+        $this->ssl->status = $preserve ? SslStatus::CREATED : SslStatus::FAILED;
         $this->ssl->save();
         $this->broadcastSslUpdate();
+        if ($preserve) {
+            app(RenewEnvironmentSsl::class)->failed($this->ssl->id);
+        } else {
+            foreach ($this->ssl->environmentDomains()->get() as $environmentDomain) {
+                app(CheckEnvironmentDomain::class)->failed($environmentDomain->id, $this->server->id, $this->ssl->id);
+            }
+        }
 
         ServerLog::log(
             $this->server,

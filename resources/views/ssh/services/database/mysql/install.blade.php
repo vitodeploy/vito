@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# Stop and purge any existing MySQL installation
-sudo systemctl stop mysql 2>/dev/null || true
-sudo systemctl stop mysql.service 2>/dev/null || true
-
-sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y mysql-server mysql-server-* mysql-client mysql-common mysql-community-server 2>/dev/null || true
-sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>/dev/null || true
-sudo DEBIAN_FRONTEND=noninteractive apt-get autoclean 2>/dev/null || true
-
 # Remove old repository and keys
 sudo rm -f /etc/apt/sources.list.d/mysql.list
 sudo rm -f /usr/share/keyrings/mysql-archive-keyring.gpg
@@ -52,6 +44,25 @@ CODENAME=$(lsb_release -sc)
 echo "deb [signed-by=${MYSQL_KEYRING}] http://repo.mysql.com/apt/ubuntu ${CODENAME} mysql-{{ $version }}-lts" | sudo tee /etc/apt/sources.list.d/mysql.list
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
+
+# Refuse to install a different MySQL release than the one requested, for
+# example when the MySQL repository has no packages for this architecture.
+CANDIDATE=$(apt-cache policy mysql-server | awk '/Candidate:/ { print $2 }')
+case "${CANDIDATE}" in
+    {{ $version }}.*) ;;
+    *)
+        sudo rm -f /etc/apt/sources.list.d/mysql.list "${MYSQL_KEYRING}"
+        echo "VITO_SSH_ERROR: MySQL {{ $version }} packages are not available for $(dpkg --print-architecture) on ${CODENAME} (apt candidate: ${CANDIDATE:-none}). Use MariaDB or PostgreSQL on this server." && exit 1
+        ;;
+esac
+
+# Stop and purge any existing MySQL installation
+sudo systemctl stop mysql 2>/dev/null || true
+sudo systemctl stop mysql.service 2>/dev/null || true
+
+sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y mysql-server mysql-server-* mysql-client mysql-common mysql-community-server 2>/dev/null || true
+sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>/dev/null || true
+sudo DEBIAN_FRONTEND=noninteractive apt-get autoclean 2>/dev/null || true
 
 sudo DEBIAN_FRONTEND=noninteractive \
     apt-get -o Dpkg::Options::="--force-confdef" \

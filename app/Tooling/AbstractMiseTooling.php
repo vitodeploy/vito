@@ -2,8 +2,8 @@
 
 namespace App\Tooling;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
-use App\Models\Site;
 use App\SSH\Mise\Mise;
 
 abstract class AbstractMiseTooling extends AbstractTooling
@@ -11,23 +11,23 @@ abstract class AbstractMiseTooling extends AbstractTooling
     /**
      * @throws SSHError
      */
-    public function install(Site $site, string $version): void
+    public function install(ToolingTargetDTO $target, string $version): void
     {
-        $mise = new Mise($site->server);
+        $mise = new Mise($target->server);
         $mise->ensureInstalled();
-        $mise->installRuntime($site, static::id(), $version);
+        $mise->installRuntime($target, static::id(), $version);
     }
 
     /**
      * @throws SSHError
      */
-    public function uninstall(Site $site): void
+    public function uninstall(ToolingTargetDTO $target): void
     {
-        new Mise($site->server)->uninstallRuntime($site, static::id());
+        new Mise($target->server)->uninstallRuntime($target, static::id());
     }
 
-    public function pathContributions(Site $site): array
+    public function pathContributions(ToolingTargetDTO $target): array
     {
-        return ['/home/'.$site->user.'/.local/share/mise/shims'];
+        return ['/home/'.$target->user.'/.local/share/mise/shims'];
     }
 }

@@ -6,7 +6,6 @@ use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
-use App\Models\Site;
 use RuntimeException;
 
 class OS
@@ -117,7 +116,7 @@ class OS
     /**
      * @throws SSHError
      */
-    public function createIsolatedUser(string $user, string $password, int $site_id): void
+    public function createIsolatedUser(string $user, string $password, ?int $siteId = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.create-isolated-user', [
@@ -127,7 +126,7 @@ class OS
                 'key' => escapeshellarg(trim($this->server->sshKey()['public_key'])),
             ]),
             'create-isolated-user',
-            $site_id
+            $siteId
         );
     }
 
@@ -193,27 +192,28 @@ class OS
     /**
      * @throws SSHError
      */
-    public function generateSSHKey(string $name, ?Site $site = null): void
+    public function generateSSHKey(string $name, ?string $user = null, ?int $siteId = null): void
     {
-        $this->server->ssh($site?->user)->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.generate-ssh-key', [
                 'name' => $name,
             ]),
             'generate-ssh-key',
-            $site?->id
+            $siteId
         );
     }
 
     /**
      * @throws SSHError
      */
-    public function readSSHKey(string $name, ?Site $site = null): string
+    public function readSSHKey(string $name, ?string $user = null, ?int $siteId = null): string
     {
-        return $this->server->ssh($site?->user)->exec(
+        return $this->server->ssh($user)->exec(
             view('ssh.os.read-ssh-key', [
                 'name' => $name,
             ]),
-            'read-ssh-key'
+            'read-ssh-key',
+            $siteId
         );
     }
 
@@ -263,12 +263,13 @@ class OS
     /**
      * @throws SSHError
      */
-    public function tail(string $path, int $lines): string
+    public function tail(string $path, int $lines, ?string $user = null): string
     {
         return $this->server->ssh()->exec(
             view('ssh.os.tail', [
                 'path' => $path,
                 'lines' => $lines,
+                'user' => $user,
             ])
         );
     }
@@ -480,11 +481,12 @@ class OS
      *
      * @throws SSHError
      */
-    public function clearFile(string $path): void
+    public function clearFile(string $path, ?string $user = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.clear-file', [
                 'path' => $path,
+                'user' => $user,
             ]),
             'clear-file'
         );

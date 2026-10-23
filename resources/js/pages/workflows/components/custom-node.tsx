@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { WorkflowNodeData } from '@/types/workflow-node-data';
-import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { useReactFlow } from '@xyflow/react';
+import FlowNode from '@/components/flow-node';
 import { FlagIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import { memo } from 'react';
 import ActionForm from './action-form';
@@ -74,12 +75,7 @@ function CustomNode({ id, selected, data }: { id: string; selected: boolean; dat
   };
 
   return (
-    <div
-      className={cn(
-        'bg-card hover:border-primary relative rounded-md border px-6 py-3',
-        selected ? 'border-primary' : data.action.starting ? 'border-success' : '',
-      )}
-    >
+    <FlowNode className={selected ? 'border-primary' : data.action.starting ? 'border-success' : ''}>
       {selected && (
         <div className="bg-card absolute -top-[47px] -right-[1px] rounded-md border p-1">
           <div className="flex items-center gap-2">
@@ -109,18 +105,7 @@ function CustomNode({ id, selected, data }: { id: string; selected: boolean; dat
       <div className="flex">
         <div className="text-md">{data.label}</div>
       </div>
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!border-muted hover:!bg-primary hover:!border-primary !size-2 !bg-neutral-400 dark:!bg-neutral-600"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!border-muted hover:!bg-primary hover:!border-primary !size-2 !bg-neutral-400 dark:!bg-neutral-600"
-      />
-    </div>
+    </FlowNode>
   );
 }
 

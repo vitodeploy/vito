@@ -17,5 +17,5 @@ sudo sed -i '/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d' {{ $hba }}
 
 [ -n "$(sudo tail -c1 {{ $hba }})" ] && printf '\n' | sudo tee -a {{ $hba }} > /dev/null || true
 
-printf '# BEGIN VITO NETWORKING\nhost all postgres 0.0.0.0/0 reject\nhost all all 0.0.0.0/0 scram-sha-256\n# END VITO NETWORKING\n' | sudo tee -a {{ $hba }} > /dev/null
+printf '# BEGIN VITO NETWORKING\nhost all postgres 0.0.0.0/0 reject\nhost all all 0.0.0.0/0 scram-sha-256\nhost all postgres ::/0 reject\nhost all all ::/0 scram-sha-256\n# END VITO NETWORKING\n' | sudo tee -a {{ $hba }} > /dev/null
 @endif

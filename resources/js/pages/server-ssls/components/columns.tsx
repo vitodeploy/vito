@@ -147,9 +147,7 @@ export const columns: ColumnDef<SSL>[] = [
             <DropdownMenuContent align="end">
               {row.original.has_csr && row.original.status === 'created' && (
                 <>
-                  <DropdownMenuItem
-                    onSelect={() => window.open(`/servers/${row.original.server_id}/ssl/${row.original.id}/download`, '_blank')}
-                  >
+                  <DropdownMenuItem onSelect={() => window.open(`/servers/${row.original.server_id}/ssl/${row.original.id}/download`, '_blank')}>
                     Download CSR
                   </DropdownMenuItem>
                   {row.original.type === 'csr' && <ActivateServerSsl ssl={row.original} />}

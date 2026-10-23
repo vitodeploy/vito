@@ -309,7 +309,14 @@ paths:
 
     delete:
       summary: Delete site
-      description: Delete a site
+      description: >-
+        Remove a site from Vito. By default, site files, the webserver configuration,
+        the isolated user, PHP-FPM pools, and the source-control deploy key are retained.
+        Existing related-resource deletion hooks still run, including worker removal,
+        SSL cleanup, Git hook removal, and removal of the site's log-analysis statistics.
+        Set cleanup to true to also tear down the
+        remote site files and webserver configuration and remove unshared isolated
+        resources. Deploy-key cleanup is best-effort and does not block deletion.
       tags:
         - Sites
       security:
@@ -336,6 +343,20 @@ paths:
           schema:
             type: integer
             example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cleanup:
+                  type: boolean
+                  default: false
+                  description: >-
+                    Also remove remote site files and configuration and unshared isolated resources.
+                    Accepts true, false, 1, 0, "1" or "0"; any other value returns 422.
+                    May also be sent as a query parameter (?cleanup=1) for clients that drop DELETE bodies.
       responses:
         '204':
           description: Site deleted successfully
@@ -357,6 +378,12 @@ paths:
             application/json:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Invalid cleanup option
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/deploy:
     post:

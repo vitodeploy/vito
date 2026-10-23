@@ -106,7 +106,7 @@ class GithubApp extends AbstractSourceControlProvider
      */
     public function getLastCommit(string $repo, string $branch): ?array
     {
-        $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.$branch;
+        $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.rawurlencode($branch);
         $res = $this->getClient()->get($url);
         $this->handleResponseErrors($res, $repo);
 
@@ -127,9 +127,14 @@ class GithubApp extends AbstractSourceControlProvider
         return null;
     }
 
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
         return '';
+    }
+
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return null;
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void {}

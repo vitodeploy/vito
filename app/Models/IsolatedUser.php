@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WebMode;
 use Database\Factories\IsolatedUserFactory;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ use Throwable;
  * @property ?array<string, array{version?: string, status?: ?string}> $installed_tooling
  * @property Server $server
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Component> $components
  */
 class IsolatedUser extends AbstractModel
 {
@@ -47,11 +49,47 @@ class IsolatedUser extends AbstractModel
     }
 
     /**
+     * @return HasMany<Component, covariant $this>
+     */
+    public function components(): HasMany
+    {
+        return $this->hasMany(Component::class);
+    }
+
+    /**
      * @return HasMany<Site, covariant $this>
      */
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
+    }
+
+    public function isUsedByOthers(Site|Component $except): bool
+    {
+        return $this->sites()
+            ->when($except instanceof Site, fn ($query) => $query->whereKeyNot($except->id))
+            ->exists()
+            || $this->components()
+                ->when($except instanceof Component, fn ($query) => $query->whereKeyNot($except->id))
+                ->exists();
+    }
+
+    public function fpmPoolUsedByOthers(string $phpVersion, Site|Component $except): bool
+    {
+        if ($this->sites()
+            ->where('php_version', $phpVersion)
+            ->when($except instanceof Site, fn ($query) => $query->whereKeyNot($except->id))
+            ->exists()) {
+            return true;
+        }
+
+        return $this->components()
+            ->when($except instanceof Component, fn ($query) => $query->whereKeyNot($except->id))
+            ->with(['environment.application', 'capabilities'])
+            ->get()
+            ->contains(fn (Component $component): bool => ($component->environment->runtime_version === $phpVersion || $component->installed_runtime_version === $phpVersion)
+                && $component->hasCapability('web')
+                && $component->environment->application->preset()->webMode() === WebMode::FPM);
     }
 
     public function lock(): Lock

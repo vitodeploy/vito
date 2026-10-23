@@ -2,8 +2,8 @@
 
 namespace App\Tooling;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
-use App\Models\Site;
 
 interface ToolingInterface
 {
@@ -28,19 +28,19 @@ interface ToolingInterface
     /**
      * @throws SSHError
      */
-    public function install(Site $site, string $version): void;
+    public function install(ToolingTargetDTO $target, string $version): void;
 
     /**
      * @throws SSHError
      */
-    public function uninstall(Site $site): void;
+    public function uninstall(ToolingTargetDTO $target): void;
 
-    public function installedVersion(Site $site): ?string;
+    public function installedVersion(ToolingTargetDTO $target): ?string;
 
     /**
      * @return array<int, string>
      */
-    public function pathContributions(Site $site): array;
+    public function pathContributions(ToolingTargetDTO $target): array;
 
     /**
      * @return array<int, string>

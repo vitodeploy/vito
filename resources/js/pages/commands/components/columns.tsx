@@ -73,9 +73,7 @@ export const columns: ColumnDef<Command>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <Edit command={row.original} />
-              <Link
-                href={`/servers/${row.original.server_id}/sites/${row.original.site_id}/commands/${row.original.id}`}
-              >
+              <Link href={`/servers/${row.original.server_id}/sites/${row.original.site_id}/commands/${row.original.id}`}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Executions</DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />

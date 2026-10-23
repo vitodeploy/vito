@@ -2,7 +2,11 @@
 
 namespace App\SiteTypes;
 
+use App\Actions\IsolatedUser\EnsureIsolatedUser;
+use App\Actions\PHP\EnsureFpmPool;
+use App\Actions\SourceControl\SetupDeployKey;
 use App\DTOs\SocketEventDTO;
+use App\DTOs\ToolingTargetDTO;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHCommandError;
@@ -10,16 +14,11 @@ use App\Exceptions\SSHError;
 use App\Helpers\SiteShellEnvironment;
 use App\Http\Resources\SiteResource;
 use App\Models\Deployment;
-use App\Models\Service;
 use App\Models\Site;
-use App\Services\PHP\PHP;
 use App\SSH\OS\Git;
 use App\Tooling\SiteToolingState;
 use App\Tooling\ToolingRegistry;
-use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-use RuntimeException;
 
 abstract class AbstractSiteType implements SiteType
 {
@@ -78,7 +77,7 @@ abstract class AbstractSiteType implements SiteType
      */
     public function deploymentEnvironment(): array
     {
-        return SiteShellEnvironment::collect($this->site);
+        return SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this->site));
     }
 
     public function afterDeploy(Deployment $deployment): void
@@ -138,12 +137,17 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $os = $this->site->server->os();
+        $setupDeployKey = app(SetupDeployKey::class);
+        $keyName = $this->site->getSshKeyName();
+        $user = $this->site->user ?? $this->site->server->getSshUser();
 
         if (! $this->site->ssh_key) {
-            $keyName = $this->site->getSshKeyName();
-            $os->generateSSHKey($keyName, $this->site);
-            $publicKey = $os->readSSHKey($keyName, $this->site);
+            $publicKey = $setupDeployKey->generateKey(
+                $this->site->server,
+                $user,
+                $keyName,
+                $this->site->id,
+            );
 
             if (str_starts_with($keyName, 'iuser_') && $this->site->isolatedUser) {
                 $this->site->isolatedUser->ssh_key = $publicKey;
@@ -156,12 +160,17 @@ abstract class AbstractSiteType implements SiteType
         }
 
         if (empty($this->site->type_data['deploy_key_id'])) {
-            $keyId = $this->site->sourceControl?->provider()?->deployKey(
-                $this->site->getDeployKeyName(),
+            $key = $setupDeployKey->setup(
+                $this->site->server,
+                $user,
+                $keyName,
+                $this->site->sourceControl,
                 $this->site->repository,
-                $this->site->ssh_key
+                $this->site->getDeployKeyName(),
+                publicKey: $this->site->ssh_key,
+                siteId: $this->site->id,
             );
-            $this->site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
+            $this->site->jsonUpdate('type_data', 'deploy_key_id', $key['deploy_key_id']);
         }
     }
 
@@ -174,37 +183,10 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $lock = $this->site->isolatedUser?->lock() ?? $this->site->server->isolatedUserLock($this->site->user);
+        app(EnsureIsolatedUser::class)->ensure($this->site->server, $this->site->user, $this->site->id);
 
-        try {
-            $lock->block(30);
-        } catch (LockTimeoutException) {
-            throw new RuntimeException("Could not acquire isolated-user lock for '{$this->site->user}' on server {$this->site->server_id} within 30s.");
-        }
-
-        try {
-            $this->site->server->os()->createIsolatedUser(
-                $this->site->user,
-                Str::random(15),
-                $this->site->id
-            );
-
-            if ($this->site->php_version) {
-                $service = $this->site->php();
-                if (! $service instanceof Service) {
-                    throw new RuntimeException('PHP service not found');
-                }
-                if (! $this->site->fpmPoolSharedWithSiblings() && ! $this->fpmPoolExists($this->site->user, $this->site->php_version)) {
-                    /** @var PHP $php */
-                    $php = $service->handler();
-                    $php->createFpmPool(
-                        $this->site->user,
-                        $this->site->php_version
-                    );
-                }
-            }
-        } finally {
-            $lock->release();
+        if ($this->site->php_version) {
+            app(EnsureFpmPool::class)->ensure($this->site->server, $this->site->user, $this->site->php_version);
         }
     }
 
@@ -242,23 +224,6 @@ abstract class AbstractSiteType implements SiteType
     /**
      * @throws SSHError
      */
-    protected function fpmPoolExists(string $user, string $version): bool
-    {
-        try {
-            $this->site->server->ssh()->exec(view('ssh.site.check-fpm-pool-exists', [
-                'user' => $user,
-                'version' => $version,
-            ]));
-
-            return true;
-        } catch (SSHCommandError) {
-            return false;
-        }
-    }
-
-    /**
-     * @throws SSHError
-     */
     protected function setupRequestedTooling(): void
     {
         $iuser = $this->site->isolatedUser;
@@ -281,7 +246,7 @@ abstract class AbstractSiteType implements SiteType
                 continue;
             }
 
-            $tool->install($this->site, $version);
+            $tool->install(ToolingTargetDTO::forSite($this->site), $version);
 
             SiteToolingState::completeInstall($this->site, $toolId, $version);
 

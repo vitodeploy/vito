@@ -201,6 +201,26 @@ class EnvParser
     }
 
     /**
+     * @param  array<int, array{key: string, value: string}>  $variables
+     */
+    public static function stringifyLiteral(array $variables): string
+    {
+        $lines = [];
+        foreach ($variables as $variable) {
+            $key = $variable['key'];
+            $value = str_replace(["\r\n", "\r"], "\n", $variable['value']);
+            if (str_contains($value, "'") || str_contains($value, "\n") || str_contains($value, '="')) {
+                $value = str_replace(['\\', '"', '$', "\n"], ['\\\\', '\\"', '\\$', '\\n'], $value);
+                $lines[] = $key.'="'.$value.'"';
+            } else {
+                $lines[] = $key."='".$value."'";
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
      * Normalise the stored secret marker into a flat list of secret keys.
      *
      * Values are NEVER stored in the database; only the list of keys the user

@@ -141,6 +141,30 @@ test('create domain rejects duplicate on same server', function () {
         ->assertSessionHasErrors('domain');
 });
 
+test('hosted domains cannot claim a site domain without a hosted domain row', function (bool $updating) {
+    SSH::fake();
+    Bus::fake();
+    $this->actingAs($this->user);
+    $input = [
+        'domain' => $this->site->domain,
+        'type' => HostedDomainType::ALIAS->value,
+        'ssl_method' => SslMethod::NONE->value,
+    ];
+    $params = ['server' => $this->server, 'site' => $this->site];
+
+    if ($updating) {
+        $domain = HostedDomain::factory()->create(['site_id' => $this->site->id, 'domain' => 'original.example.com']);
+        $this->put(route('hosted-domains.update', $params + ['hostedDomain' => $domain]), $input)
+            ->assertSessionHasErrors('domain');
+        $this->assertDatabaseHas('hosted_domains', ['id' => $domain->id, 'domain' => 'original.example.com']);
+    } else {
+        $this->post(route('hosted-domains.store', $params), $input)->assertRedirect()->assertSessionHasErrors('domain');
+    }
+
+    Bus::assertNotDispatched(CheckDomainJob::class);
+    expect(SSH::getExecutedCommands())->toBe([]);
+})->with([false, true]);
+
 test('create domain with custom ssl', function () {
     SSH::fake();
 

@@ -2,6 +2,8 @@
 
 namespace App\Jobs\Site\Tooling;
 
+use App\Actions\Site\Tooling\AssertToolingNotUsedByComponents;
+use App\DTOs\ToolingTargetDTO;
 use App\Jobs\Worker\RefreshSiteWorkerConfigsJob;
 use App\Models\ServerLog;
 use App\Models\Site;
@@ -42,7 +44,9 @@ class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
                 throw new RuntimeException("Tooling '{$this->toolId}' is not registered; it may have been removed or the worker is out of sync.");
             }
 
-            $tool->uninstall($this->site);
+            app(AssertToolingNotUsedByComponents::class)->assert($this->site->refresh(), $this->toolId);
+
+            $tool->uninstall(ToolingTargetDTO::forSite($this->site));
 
             SiteToolingState::completeUninstall($this->site, $this->toolId);
 

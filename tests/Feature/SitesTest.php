@@ -1,8 +1,12 @@
 <?php
 
+use App\Actions\Site\DeleteSite;
+use App\Enums\HostedDomainStatus;
+use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Enums\UserRole;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Jobs\Site\CreateJob;
 use App\Models\Database;
@@ -19,11 +23,94 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+test('site attachment shares the isolated user teardown lock and releases it before dispatch', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    Event::listen('eloquent.creating: '.Site::class, function (): void {
+        expect($this->server->isolatedUserLock('sharedruntime')->get())->toBeFalse();
+    });
+
+    $this->actingAs($this->user)->post(route('sites.store', $this->server), [
+        'type' => Blank::id(), 'domain' => 'shared-runtime.example.com', 'port' => 3000, 'user' => 'sharedruntime',
+    ])->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['domain' => 'shared-runtime.example.com', 'user' => 'sharedruntime']);
+    expect($this->server->isolatedUserLock('sharedruntime')->get(fn () => true))->toBeTrue();
+    Queue::assertPushed(CreateJob::class);
+});
+
+test('site creation rejects domains and aliases already served on the server', function (string $field, bool $hostedAlias) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $host = $this->site->domain;
+    if ($hostedAlias) {
+        $host = $this->site->hostedDomains()->create([
+            'domain' => 'occupied.example.com',
+            'type' => HostedDomainType::ALIAS,
+            'status' => HostedDomainStatus::ACTIVE,
+        ])->domain;
+    }
+    $input = [
+        'type' => Blank::id(),
+        'domain' => $field === 'domain' ? $host : 'new.example.com',
+        'aliases' => $field === 'domain' ? [] : [$host],
+        'user' => 'newruntime',
+        'port' => 3000,
+    ];
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), $input)
+        ->assertRedirect()->assertSessionHasErrors($field);
+
+    $this->assertDatabaseMissing('sites', ['user' => 'newruntime']);
+    Queue::assertNothingPushed();
+    Http::assertNothingSent();
+    expect(SSH::getExecutedCommands())->toBe([]);
+})->with(['domain', 'aliases.0'])->with([false, true]);
+
+test('site creation ignores the legacy aliases column left behind by the hosted domains migration', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $this->site->update(['aliases' => ['stale.example.com']]);
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), [
+        'type' => Blank::id(),
+        'domain' => 'stale.example.com',
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['domain' => 'stale.example.com', 'user' => 'newruntime']);
+});
+
+test('site creation rejects null aliases before checking hosts', function () {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+
+    $this->actingAs($this->user)->post(route('sites.store', ['server' => $this->server]), [
+        'type' => Blank::id(),
+        'domain' => 'invalid-alias.example.com',
+        'aliases' => [null],
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertRedirect()->assertSessionHasErrors('aliases.0');
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'invalid-alias.example.com']);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBe([]);
+});
 
 test('site settings rejects outsiders and mismatched servers', function (bool $outsider) {
     if ($outsider) {
@@ -120,6 +207,30 @@ test('site source selection uses the actor rather than the server creator', func
     }
 })->with(['create', 'update'])->with(['creator', 'global', 'project', 'foreign-project']);
 
+test('site repository http failures bubble up without mutations or provider details in form errors', function (int $status, bool $update) {
+    SSH::fake();
+    Queue::fake();
+    Http::preventStrayRequests();
+    Http::fake(['api.github.com/repos/*' => Http::response(['message' => 'provider response details'], $status)]);
+    $this->withoutExceptionHandling()->actingAs($this->user);
+    $sourceControl = SourceControl::factory()->github()->create(['user_id' => $this->user->id]);
+    $originalSource = $this->site->source_control_id;
+
+    expect(fn () => $update
+        ? $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), ['source_control' => $sourceControl->id])
+        : $this->post(route('sites.store', $this->server), [
+            'type' => Blank::id(), 'domain' => 'provider-failure.example.com', 'port' => 3000,
+            'user' => 'providerfailure', 'use_source_control' => true, 'source_control' => $sourceControl->id,
+            'repository' => 'organization/repository', 'branch' => 'main',
+        ]))->toThrow(RequestException::class);
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'provider-failure.example.com']);
+    $this->assertDatabaseMissing('isolated_users', ['server_id' => $this->server->id, 'username' => 'providerfailure']);
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+})->with([429, 500])->with([false, true]);
+
 test('web site resources hide installation passwords from read-only users', function () {
     $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
     $typeData = [
@@ -145,8 +256,8 @@ test('create site', function (array $inputs) {
     SSH::fake();
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 201),
+        'https://api.github.com/repos/*/keys' => Http::response(['id' => 123], 201),
+        'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 
     if (isset($inputs['database']) && isset($inputs['database_user'])) {
@@ -481,6 +592,7 @@ test('create blank site with source control requires repository', function () {
 test('create laravel site dispatches ensure env script', function () {
     SSH::fake();
     Http::fake([
+        'https://api.github.com/repos/*/keys' => Http::response(['id' => 123], 201),
         'https://api.github.com/repos/*' => Http::response([], 201),
     ]);
 
@@ -555,6 +667,59 @@ test('delete site', function () {
     $this->assertDatabaseMissing('sites', [
         'id' => $site->id,
     ]);
+});
+
+test('site deletion continues when deploy key cleanup fails without logging credentials', function (?int $status) {
+    SSH::fake();
+    Http::fake([
+        'https://api.github.com/repos/*' => $status === null
+            ? Http::failedConnection()
+            : Http::response(['message' => 'provider-response-secret'], $status),
+    ]);
+    Log::spy();
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+
+    $this->actingAs($this->user)->delete(route('site-settings.destroy', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]), ['domain' => $this->site->domain])
+        ->assertRedirect()
+        ->assertSessionDoesntHaveErrors()
+        ->assertSessionHas('warning', 'Site deleted, but its deploy key could not be removed from the repository. Remove it manually.')
+        ->assertSessionMissing('success');
+
+    $this->assertDatabaseMissing('sites', ['id' => $this->site->id]);
+    SSH::assertExecutedContains('rm -rf '.$this->site->path);
+    Log::shouldHaveReceived('warning')->once()->with('Site deploy key cleanup failed; continuing site deletion.', [
+        'site_id' => $this->site->id,
+        'source_control_id' => $this->site->source_control_id,
+        'deploy_key_id' => '123',
+        'exception' => RuntimeException::class,
+    ]);
+})->with([401, 403, 503, null]);
+
+test('site deletion still removes deploy keys when the provider accepts cleanup', function (int $status) {
+    SSH::fake();
+    Http::fake(['https://api.github.com/repos/*' => Http::response([], $status)]);
+    Log::spy();
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+
+    expect(app(DeleteSite::class)->delete($this->site, ['domain' => $this->site->domain]))->toBeTrue();
+
+    $this->assertDatabaseMissing('sites', ['id' => $this->site->id]);
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE'
+        && $request->url() === 'https://api.github.com/repos/organization/repository/keys/123');
+    Log::shouldNotHaveReceived('warning');
+})->with([204, 404]);
+
+test('site deletion still fails when remote teardown fails', function () {
+    SSH::fake()->execWillFail();
+    Http::fake();
+
+    expect(fn () => app(DeleteSite::class)->delete($this->site, ['domain' => $this->site->domain]))
+        ->toThrow(SSHCommandError::class);
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id]);
 });
 
 test('change php version', function () {

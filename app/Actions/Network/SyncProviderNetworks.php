@@ -257,7 +257,7 @@ class SyncProviderNetworks
                 continue;
             }
 
-            $this->remove->remove($member);
+            $this->remove->remove($member, observed: true);
         }
     }
 
@@ -304,7 +304,7 @@ class SyncProviderNetworks
                         return;
                     }
 
-                    $this->delete->delete($network);
+                    $this->delete->delete($network, observed: true);
 
                     return;
                 }
@@ -315,7 +315,7 @@ class SyncProviderNetworks
                     return;
                 }
 
-                $this->delete->delete($network);
+                $this->delete->delete($network, observed: true);
             });
     }
 

@@ -82,4 +82,20 @@ class NetworkServer extends AbstractModel
     {
         return $this->hasMany(ServerNetworkRule::class);
     }
+
+    /**
+     * Whether the last save changed how other members reach this server: its address, or whether it is usable at all.
+     */
+    public function routingChanged(): bool
+    {
+        if ($this->wasChanged(['ip', 'server_ip_address_id'])) {
+            return true;
+        }
+        $usable = fn (?string $status): bool => in_array($status, [NetworkServerStatus::ACTIVE->value, NetworkServerStatus::UPDATING->value], true);
+        if ($this->wasChanged('status')) {
+            return $usable($this->getPrevious()['status'] ?? null) !== $usable($this->status->value);
+        }
+
+        return $this->wasRecentlyCreated && $this->getChanges() === [] && $usable($this->status->value);
+    }
 }

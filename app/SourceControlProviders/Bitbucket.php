@@ -7,7 +7,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -116,7 +115,7 @@ class Bitbucket extends AbstractSourceControlProvider
             throw new FailedToDestroyGitHook($e->getMessage());
         }
 
-        if ($response->status() != 204) {
+        if (! in_array($response->status(), [204, 404], true)) {
             throw new FailedToDestroyGitHook($response->body());
         }
     }
@@ -127,7 +126,7 @@ class Bitbucket extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $res = Http::withHeaders($this->getAuthenticationHeaders())
-            ->get($this->apiUrl."/repositories/$repo/commits?include=".$branch);
+            ->get($this->apiUrl."/repositories/$repo/commits", ['include' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 
@@ -151,25 +150,18 @@ class Bitbucket extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): string
+    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
     {
-        try {
-            $res = Http::withHeaders($this->getAuthenticationHeaders())->post(
-                $this->apiUrl."/repositories/$repo/deploy-keys",
-                [
-                    'label' => $title,
-                    'key' => $key,
-                ]
-            );
+        return $this->registerDeployKey(
+            fn () => Http::withHeaders($this->getAuthenticationHeaders()),
+            $this->apiUrl."/repositories/$repo/deploy-keys",
+            ['label' => $title, 'key' => $key], pageSizeParameter: 'pagelen', collectionKey: 'values',
+        );
+    }
 
-            if ($res->status() != 200) {
-                throw new FailedToDeployGitKey($res->json()['error']['message']);
-            }
-
-            return $res->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => Http::withHeaders($this->getAuthenticationHeaders()), $this->apiUrl."/repositories/$repo/deploy-keys", $key, pageSizeParameter: 'pagelen', collectionKey: 'values');
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -178,20 +170,11 @@ class Bitbucket extends AbstractSourceControlProvider
             $response = Http::withHeaders($this->getAuthenticationHeaders())
                 ->delete($this->apiUrl."/repositories/$repo/deploy-keys/$keyId");
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Bitbucket deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Bitbucket deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 
@@ -220,6 +203,13 @@ class Bitbucket extends AbstractSourceControlProvider
         return [
             'Authorization' => 'Basic '.$basicAuth,
         ];
+    }
+
+    public function getPushBranches(array $payload): array
+    {
+        return collect(data_get($payload, 'push.changes', []))
+            ->filter(fn (array $change): bool => data_get($change, 'new.type') === 'branch' && ! ($change['closed'] ?? false))
+            ->pluck('new.name')->filter(fn ($name): bool => is_string($name) && $name !== '')->unique()->values()->all();
     }
 
     public function getWebhookBranch(array $payload): string

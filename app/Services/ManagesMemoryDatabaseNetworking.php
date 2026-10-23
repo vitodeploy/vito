@@ -142,7 +142,8 @@ trait ManagesMemoryDatabaseNetworking
      */
     protected function verifyNetworking(bool $expectedOpen): void
     {
-        if ($this->networkingIsOpen() === $expectedOpen) {
+        $output = $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
+        if ($expectedOpen ? preg_match('/^\s*bind\s+0\.0\.0\.0(\s+-?::)?\s*$/m', $output) === 1 : $this->parseNetworkingProbe($output) === false) {
             return;
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Enums\DeploymentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
@@ -21,7 +22,6 @@ use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\BunSite;
 use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
-use App\SourceControlProviders\GithubApp;
 use App\Tooling\ToolingRegistry;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
@@ -165,7 +165,7 @@ class Site extends AbstractModel
     public function ssh(): SSH
     {
         return $this->server->ssh($this->user)->variables(
-            SiteShellEnvironment::collect($this)
+            SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this))
         );
     }
 
@@ -672,13 +672,7 @@ class Site extends AbstractModel
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
 
-        if ($this->sourceControl?->isGithubApp()) {
-            /** @var GithubApp $provider */
-            $provider = $this->sourceControl->provider();
-            $variables['GIT_HTTP_TOKEN'] = $provider->installationAccessToken();
-        }
-
-        return $variables;
+        return array_merge($variables, $this->sourceControl?->cloneVariables() ?? []);
     }
 
     /**
@@ -704,7 +698,7 @@ class Site extends AbstractModel
 
     public function userSharedWithSiblings(): bool
     {
-        return $this->siblingsSharingUser()->exists();
+        return $this->isolatedUser?->isUsedByOthers($this) ?? false;
     }
 
     /**
@@ -771,15 +765,9 @@ class Site extends AbstractModel
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
     {
-        if (! $this->isolated_user_id) {
-            return false;
-        }
+        $phpVersion ??= (string) $this->php_version;
 
-        return Site::query()
-            ->where('isolated_user_id', $this->isolated_user_id)
-            ->where('php_version', $phpVersion ?? $this->php_version)
-            ->where('id', '!=', $this->id)
-            ->exists();
+        return $phpVersion !== '' && ($this->isolatedUser?->fpmPoolUsedByOthers($phpVersion, $this) ?? false);
     }
 
     public function webserver(): Webserver

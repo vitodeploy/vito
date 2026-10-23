@@ -1,3 +1,4 @@
+import { ComponentProcessOwner } from '@/types/application';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMemo, FormEvent } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
@@ -18,25 +19,30 @@ export default function CronJobForm({
   open,
   onOpenChange,
   serverId,
+  component,
   site,
   cronJob,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   serverId: number;
+  component?: ComponentProcessOwner;
   site?: Site;
   cronJob?: CronJob;
 }) {
-  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }>; ssh_users?: string[] }>();
+  const page = usePage<SharedData & { server?: Server; sites?: Array<{ id: number; domain: string }>; ssh_users?: string[] }>();
   const configs = useConfigs()!;
 
   const sshUsers = useMemo(() => {
-    const base = site ? (page.props.ssh_users ?? []) : page.props.server.ssh_users;
+    const base = site ? (page.props.ssh_users ?? []) : (page.props.server?.ssh_users ?? []);
     if (cronJob?.user && !base.includes(cronJob.user)) {
       return [...base, cronJob.user];
     }
     return base;
-  }, [site, page.props.ssh_users, page.props.server.ssh_users, cronJob?.user]);
+  }, [site, page.props.ssh_users, page.props.server?.ssh_users, cronJob?.user]);
+  const componentOwned = !!component || !!cronJob?.component_id;
+  const componentUser = component?.user ?? cronJob?.user ?? '';
+  const componentUrl = component?.url ?? cronJob?.component_url;
   const form = useForm<{
     name: string;
     command: string;
@@ -47,7 +53,7 @@ export default function CronJobForm({
   }>({
     name: cronJob?.name || '',
     command: cronJob?.command || '',
-    user: cronJob?.user || (site?.isolated_user_id ? site.user : ''),
+    user: component?.user ?? cronJob?.user ?? (site?.isolated_user_id ? site.user : ''),
     frequency: cronJob ? (configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
     custom: cronJob?.frequency || '',
     site_id: cronJob?.site_id?.toString() || '0',
@@ -55,7 +61,8 @@ export default function CronJobForm({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const url = `/servers/${serverId}${site ? `/sites/${site.id}` : ''}/cronjobs`;
+    form.transform((data) => ({ ...data, site_id: componentOwned ? undefined : data.site_id }));
+    const url = componentUrl ? `${componentUrl}/cronjobs` : `/servers/${serverId}${site ? `/sites/${site.id}` : ''}/cronjobs`;
     if (cronJob) {
       form.put(`${url}/${cronJob.id}`, {
         onSuccess: () => onOpenChange(false),
@@ -94,7 +101,7 @@ export default function CronJobForm({
               <InputError message={form.errors.command} />
             </FormField>
 
-            {page.props.sites && !site && (
+            {page.props.sites && !site && !componentOwned && (
               <FormField>
                 <Label htmlFor="site_id">Belongs to</Label>
                 <Select value={form.data.site_id} onValueChange={(value) => form.setData('site_id', value)}>
@@ -151,20 +158,29 @@ export default function CronJobForm({
 
             <FormField>
               <Label htmlFor="user">User</Label>
-              <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
-                <SelectTrigger id="user">
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {sshUsers.map((user) => (
-                      <SelectItem key={`user-${user}`} value={user}>
-                        {user}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              {componentOwned ? (
+                <Input id="user" value={componentUser} readOnly />
+              ) : (
+                <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
+                  <SelectTrigger id="user">
+                    <SelectValue placeholder="Select a user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {sshUsers.map((user) => (
+                        <SelectItem key={`user-${user}`} value={user}>
+                          {user}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+              {componentOwned && (
+                <p className="text-muted-foreground text-sm">
+                  Runs in the component’s current release as its Linux user. Variables come from the component environment, not this process.
+                </p>
+              )}
               <InputError message={form.errors.user} />
             </FormField>
           </FormFields>

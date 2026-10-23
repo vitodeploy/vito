@@ -19,7 +19,7 @@ test('enable networking', function (string $name) {
 
     $service = vitoPestFeatureServiceNetworkingTestMemoryDatabase($name);
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -42,10 +42,32 @@ test('enable networking', function (string $name) {
     SSH::assertExecutedContains("sudo install -o {$name} -g {$name} -m 600 /dev/null /etc/{$name}/vito-networking.conf");
     SSH::assertExecutedContains('printf \'requirepass "%s"\n\' "$VITO_MEMDB_PASSWORD"');
     SSH::assertExecutedContains('sudo sed -i \'/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d\'');
-    SSH::assertExecutedContains('# BEGIN VITO NETWORKING\nbind 0.0.0.0\ninclude %s\n# END VITO NETWORKING\n');
+    SSH::assertExecutedContains("version=\"$({$name}-server --version 2>/dev/null | sed -nE 's/.*v=([0-9]+)\\.([0-9]+).*/\\1 \\2/p')\"");
+    SSH::assertExecutedContains("bind='bind 0.0.0.0'");
+    SSH::assertExecutedContains("bind='bind 0.0.0.0 -::'");
+    SSH::assertExecutedContains('printf \'# BEGIN VITO NETWORKING\n%s\ninclude %s\n# END VITO NETWORKING\n\' "$bind"');
     SSH::assertExecutedContains("sudo systemctl restart {$name}-server");
     SSH::assertNotExecutedContains((string) $service->secret, 'The networking password must never appear in a command.');
 })->with('memoryDatabases');
+
+test('enable networking accepts the IPv4-only bind written for Redis older than 6.2', function () {
+    $this->actingAs($this->user);
+
+    $service = vitoPestFeatureServiceNetworkingTestMemoryDatabase('redis');
+
+    SSH::fake("Active: active\nbind 0.0.0.0");
+
+    $this->postJson(route('services.networking.enable', [
+        'server' => $this->server,
+        'service' => $service->id,
+    ]))->assertNoContent();
+
+    $service->refresh();
+
+    expect($service->type_data['networking'])->toBeTrue();
+    expect($service->type_data['networking_effective'])->toBeTrue();
+    expect($service->status)->toEqual(ServiceStatus::READY);
+});
 
 test('disable networking', function (string $name) {
     $this->actingAs($this->user);
@@ -120,7 +142,7 @@ test('enable keeps the existing secret', function () {
     $service->secret = 'existing-secret';
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -485,7 +507,7 @@ test('a successful toggle clears a previous networking failure', function () {
     $service->type_data = ['networking' => false, 'networking_failed' => true];
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -506,7 +528,7 @@ test('failed disable does not roll back', function () {
     $service->secret = 'existing-secret';
     $service->save();
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\nbind 0.0.0.0 -::");
 
     $this->postJson(route('services.networking.disable', [
         'server' => $this->server,

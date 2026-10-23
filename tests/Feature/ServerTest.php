@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
 use App\Enums\NetworkServerStatus;
 use App\Enums\OperatingSystem;
@@ -9,6 +10,9 @@ use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Server\InstallJob;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\Environment;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Project;
@@ -24,6 +28,8 @@ use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -657,6 +663,26 @@ test('transfer server', function (UserRole $role): void {
     expect($this->user->refresh()->current_project_id)->toEqual($newProject->id);
 })->with([UserRole::OWNER, UserRole::ADMIN]);
 
+test('server transfer refreshes placement under a transaction before saving', function () {
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    Server::query()->whereKey($this->server->id)->update(['name' => 'Fresh server']);
+    $depth = DB::transactionLevel();
+    $retrieved = false;
+    Event::listen('eloquent.retrieved: '.Server::class, function () use ($depth, &$retrieved): void {
+        $retrieved = true;
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+    Event::listen('eloquent.updating: '.Server::class, function () use ($depth): void {
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+
+    $server = app(TransferServer::class)->transfer($this->user, $this->server, ['project_id' => $project->id]);
+
+    expect($retrieved)->toBeTrue()->and($server->name)->toBe('Fresh server');
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $project->id]);
+});
+
 test('cannot transfer a server to a read-only project', function (): void {
     $project = Project::factory()->create();
     $project->users()->create([
@@ -675,6 +701,26 @@ test('cannot transfer a server to a read-only project', function (): void {
         'project_id' => $this->server->project_id,
     ]);
     expect($this->user->refresh()->current_project_id)->toBe($this->server->project_id);
+});
+
+test('cannot transfer a server hosting components and names their environments', function (): void {
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'name' => 'Store']);
+    $environment = Environment::factory()->for($application)->create(['name' => 'Production']);
+    $otherEnvironment = Environment::factory()->for($application)->create(['name' => 'Staging']);
+    Component::factory()->for($environment)->for($this->server)->create();
+    Component::factory()->for($environment)->for($this->server)->create(['user' => 'other']);
+    Component::factory()->for($otherEnvironment, 'environment')->for($this->server)->create();
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+
+    $this->actingAs($this->user)->postJson(route('servers.transfer', $this->server), ['project_id' => $project->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'project_id' => 'This server hosts components in the following environments: Store / Production, Store / Staging. Remove them before transferring it.',
+        ]);
+
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $application->project_id]);
+    expect($this->user->refresh()->current_project_id)->toBe($application->project_id);
 });
 
 test('cannot transfer a server while network memberships remain', function (NetworkServerStatus $status): void {
