@@ -4,6 +4,8 @@ namespace App\Actions\HostedDomain;
 
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\DTOs\VerificationResult;
+use App\Enums\HostedDomainStatus;
+use App\Enums\HostedDomainType;
 use App\Models\HostedDomain;
 use App\Models\Site;
 use Illuminate\Support\Facades\Http;
@@ -58,6 +60,12 @@ class VerifyHostedDomain
             return VerificationResult::failure('Could not stage verification challenge on server.');
         }
 
+        if (! $this->publishChallengeRoute($hostedDomain, $site)) {
+            $this->cleanupChallenge($site, $remoteFile);
+
+            return VerificationResult::failure('Could not publish verification challenge on the web server.');
+        }
+
         try {
             $ips = $this->resolveIps($hostedDomain->domain);
 
@@ -89,6 +97,43 @@ class VerifyHostedDomain
                 : VerificationResult::failure('Domain did not respond with the expected challenge from any resolved IP.');
         } finally {
             $this->cleanupChallenge($site, $remoteFile);
+        }
+    }
+
+    /**
+     * A domain that is not active yet is not in the site's vhost, so the web
+     * server would answer from another server block and never serve the
+     * challenge. Regenerate the vhost, which adds a challenge-only block for it.
+     */
+    private function publishChallengeRoute(HostedDomain $hostedDomain, Site $site): bool
+    {
+        if ($hostedDomain->type === HostedDomainType::PRIMARY || $hostedDomain->status === HostedDomainStatus::ACTIVE) {
+            return true;
+        }
+
+        // Custom templates don't carry the challenge block, so rewriting them would only reload the web server for nothing.
+        if ($site->vhost_template !== null || ! $site->vhost_generation_enabled) {
+            return true;
+        }
+
+        try {
+            $webserver = $site->webserver();
+
+            // The retry job runs every few minutes; only touch the web server when the vhost changed.
+            if (trim($webserver->getVHost($site)) === trim($webserver->generateVhost($site))) {
+                return true;
+            }
+
+            $webserver->updateVHost($site);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::warning('hosted-domain verification: failed to publish challenge route', [
+                'domain' => $hostedDomain->domain,
+                'site_id' => $site->id,
+            ]);
+
+            return false;
         }
     }
 

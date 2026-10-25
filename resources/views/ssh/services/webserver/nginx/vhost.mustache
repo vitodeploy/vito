@@ -253,3 +253,25 @@ server {
 }
 
 {{/redirect_blocks}}
+
+{{#has_pending_verification}}
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name{{#pending_verification_domains}} {{name}}{{/pending_verification_domains}};
+
+    location ^~ /.well-known/vito/{{verification_key}}/ {
+        allow all;
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        alias /var/lib/vito/verify/{{verification_key}}/;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 404;
+    }
+}
+
+{{/has_pending_verification}}

@@ -15,6 +15,13 @@ abstract class AbstractGenerateConfig
 {
     protected const PHP_VALUE_TOKEN = '@@VITO_PHP_VALUE@@';
 
+    /** @var array<int, HostedDomainStatus> */
+    protected const UNVERIFIED_STATUSES = [
+        HostedDomainStatus::CREATING,
+        HostedDomainStatus::UPDATING,
+        HostedDomainStatus::PENDING,
+    ];
+
     /**
      * Generate the full vhost config for a site.
      */
@@ -130,7 +137,20 @@ abstract class AbstractGenerateConfig
             $domains = $domains->prepend($primary);
         }
 
-        return $this->buildFromHostedDomains($site, $domains);
+        $data = $this->buildFromHostedDomains($site, $domains);
+
+        $pendingDomains = $site->hostedDomains
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::UNVERIFIED_STATUSES, true))
+            ->map(fn (HostedDomain $hd) => ['name' => $hd->domain, 'address' => 'http://'.$hd->domain])
+            ->values()
+            ->all();
+
+        // Domains waiting for verification must answer the HTTP challenge
+        // before they can become active and join the real server blocks.
+        $data['has_pending_verification'] = $pendingDomains !== [] && ! empty($data['verification_key']);
+        $data['pending_verification_domains'] = $pendingDomains;
+
+        return $data;
     }
 
     /**
