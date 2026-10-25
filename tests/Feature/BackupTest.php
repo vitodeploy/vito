@@ -1144,3 +1144,41 @@ dataset('data', function () {
         ['postgresql', '16'],
     ];
 });
+
+test('retention does not re-dispatch deletion for files already being deleted', function () {
+    Bus::fake();
+
+    $backup = Backup::factory()->create([
+        'type' => BackupType::FILE,
+        'server_id' => $this->server->id,
+        'storage_id' => $this->storageProvider->id,
+        'path' => '/home/vito/example.com',
+        'status' => null,
+        'keep_backups' => 1,
+    ]);
+
+    // Creating the second file pushes the first past the keep limit, marking it
+    // DELETING and dispatching exactly one DeleteFileJob for it.
+    $old = BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    expect($old->refresh()->status)->toBe(BackupFileStatus::DELETING);
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
+
+    // A further backup run must not re-dispatch deletion for the file that is
+    // already DELETING; only the newly-expired file should be dispatched.
+    // Before the fix this re-queued every still-present old file on every run,
+    // growing the queue without bound when deletions could not complete.
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 2);
+});

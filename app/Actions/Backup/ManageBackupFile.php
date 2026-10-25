@@ -15,6 +15,14 @@ class ManageBackupFile
 {
     public function delete(BackupFile $file): void
     {
+        // Skip files that are already being deleted. Without this guard the
+        // retention logic can dispatch duplicate DeleteFileJob instances for
+        // the same file on every backup run, which floods the queue when the
+        // server or storage provider is unreachable and deletions never settle.
+        if ($file->status === BackupFileStatus::DELETING) {
+            return;
+        }
+
         $server = Server::find($file->backup->server_id);
 
         if ($server === null) {

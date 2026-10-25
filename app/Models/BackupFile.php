@@ -61,6 +61,10 @@ class BackupFile extends AbstractModel
                 if ($lastFileToKeep) {
                     $files = $backupFile->backup->files()
                         ->where('id', '<=', $lastFileToKeep->id)
+                        ->whereNotIn('status', [
+                            BackupFileStatus::DELETING,
+                            BackupFileStatus::DELETE_FAILED,
+                        ])
                         ->get();
                     /** @var BackupFile $file */
                     foreach ($files as $file) {
