@@ -7,8 +7,7 @@ fi
 env_file=$1
 shift
 if [ -e "$env_file" ]; then
-    umask 077
-    records=$(/usr/bin/mktemp)
+    records=$(umask 077; /usr/bin/mktemp)
     trap '/bin/rm -f -- "$records"' EXIT
     LC_ALL=C /usr/bin/awk '
         function invalid() {

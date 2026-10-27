@@ -2,6 +2,7 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\Application\GetApplicationSourceControl;
 use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ApplicationStatus;
@@ -65,6 +66,7 @@ class DeployEnvironment
             Application::query()->lockForUpdate()->findOrFail($environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
+                || $environment->application->presetOrNull() === null
                 || ! $environment->liveRun || $environment->deployments()->blocking()->exists()
                 || ! app(ValidateEnvironmentResource::class)->ready($environment)
                 || ($environment->liveRun->attachment_ids ?? []) !== $environment->attachments()->orderBy('id')->pluck('id')->all()
@@ -94,6 +96,7 @@ class DeployEnvironment
 
     public function validate(Environment $environment): void
     {
+        app(GetApplicationRuntime::class)->get($environment->application, 'deployment');
         if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY) {
             throw ValidationException::withMessages(['deployment' => 'Deployments cannot start during teardown.']);
         }

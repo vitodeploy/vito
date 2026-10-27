@@ -1,22 +1,170 @@
 <?php
 
+use App\Actions\Application\ValidateApplication;
+use App\Actions\Site\SyncSiteDeployKey;
+use App\Actions\SourceControl\SetupDeployKey;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
+use App\Facades\SSH;
+use App\Jobs\Site\DeployJob;
 use App\Models\Application;
+use App\Models\GitHook;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\Plugins\RegisterSourceControl;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\BitbucketV2;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
+use App\SourceControlProviders\SourceControlProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+class LegacyDirectSourceControl implements SourceControlProvider
+{
+    public function __construct(private SourceControl $sourceControl) {}
+
+    public static function id(): string
+    {
+        return 'legacy-direct';
+    }
+
+    public function createRules(array $input): array
+    {
+        return [];
+    }
+
+    public function createData(array $input): array
+    {
+        return [];
+    }
+
+    public function data(): array
+    {
+        return [];
+    }
+
+    public function connect(): bool
+    {
+        return true;
+    }
+
+    public function getRepo(string $repo): mixed
+    {
+        return ['full_name' => $repo];
+    }
+
+    public function fullRepoUrl(string $repo, string $key): string
+    {
+        return "git@legacy.example.com-$key:$repo.git";
+    }
+
+    public function getSshPort(): int
+    {
+        return 22;
+    }
+
+    public static function editableFields(): array
+    {
+        return [];
+    }
+
+    public function editRules(array $input): array
+    {
+        return [];
+    }
+
+    public function editData(array $input): array
+    {
+        return $this->sourceControl->provider_data;
+    }
+
+    public function deployHook(string $repo, array $events, string $secret): array
+    {
+        return ['hook_id' => 'legacy-hook', 'hook_response' => []];
+    }
+
+    public function destroyHook(string $repo, string $hookId): void {}
+
+    public function getLastCommit(string $repo, string $branch): ?array
+    {
+        return null;
+    }
+
+    public function deployKey(string $title, string $repo, string $key): string
+    {
+        return 'legacy-key';
+    }
+
+    public function deleteDeployKey(string $keyId, string $repo): void {}
+
+    public function getWebhookBranch(array $payload): string
+    {
+        return $payload['branch'] ?? '';
+    }
+
+    public function getRepos(bool $useCache = true): array
+    {
+        return [];
+    }
+
+    public function getBranches(string $repo, bool $useCache = true): array
+    {
+        return [];
+    }
+}
+
+class LegacyGithubSourceControl extends Github
+{
+    public function deployKey(string $title, string $repo, string $key): string
+    {
+        return 'legacy-github-key';
+    }
+}
+
+test('released source provider contracts still register site keys and receive site webhooks', function () {
+    SSH::fake();
+    Http::preventStrayRequests();
+    Queue::fake();
+    RegisterSourceControl::make('legacy-direct')->label('Legacy')->handler(LegacyDirectSourceControl::class)->register();
+    $source = SourceControl::factory()->create([
+        'provider' => 'legacy-direct', 'project_id' => $this->user->current_project_id, 'user_id' => $this->user->id,
+    ]);
+    $this->site->update(['source_control_id' => $source->id, 'ssh_key' => 'ssh-rsa legacy-key']);
+
+    app(SyncSiteDeployKey::class)->setup($this->site);
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'type_data->deploy_key_id' => 'legacy-key']);
+    $hook = GitHook::factory()->create(['site_id' => $this->site->id, 'source_control_id' => $source->id, 'actions' => ['deploy']]);
+    $this->postJson('/api/git-hooks?secret='.$hook->secret, ['branch' => $this->site->branch])->assertOk();
+    Queue::assertPushed(DeployJob::class);
+    $this->assertDatabaseHas('deployments', ['site_id' => $this->site->id]);
+
+    expect(fn () => app(ValidateApplication::class)->validate($this->user->currentProject, [
+        'name' => 'New app', 'source_control_id' => $source->id, 'repository' => 'owner/repo',
+    ], $this->user))->toThrow(ValidationException::class, 'This source-control provider supports Sites only.');
+    Http::assertNothingSent();
+});
+
+test('released deploy key overrides on built in providers keep their original signature', function () {
+    SSH::fake();
+    Http::preventStrayRequests();
+    RegisterSourceControl::make('legacy-github')->label('Legacy GitHub')->handler(LegacyGithubSourceControl::class)->register();
+    $source = SourceControl::factory()->create(['provider' => 'legacy-github']);
+
+    $key = app(SetupDeployKey::class)->setup($this->server, 'vito', 'legacy', $source, 'owner/repo', 'Legacy', publicKey: 'ssh-rsa legacy');
+
+    expect($key['deploy_key_id'])->toBe('legacy-github-key');
+    Http::assertNothingSent();
+});
 
 test('connect provider', function (string $provider, ?string $customUrl, array $input) {
     $this->actingAs($this->user);
@@ -565,12 +713,17 @@ test('deploy key registration reconciles lost post responses', function (string 
         return Http::response(str_starts_with($provider, 'bitbucket') ? ['values' => $keys] : $keys);
     });
     expect(SourceControl::factory()->create(['provider' => $provider])->provider()
-        ->deployKey('component_123', 'owner/repository', 'ssh-rsa lost-response-key', true))->toBe('987');
+        ->deployReadOnlyKey('component_123', 'owner/repository', 'ssh-rsa lost-response-key'))->toBe('987');
 })->with(['github', 'gitlab', 'gitea', 'bitbucket', 'bitbucket-v2']);
 
 test('component keys are read only while legacy site key permissions are preserved', function (string $provider, bool $readOnly) {
     Http::fake(['*' => Http::response(['id' => 123], 201)]);
-    SourceControl::factory()->create(['provider' => $provider])->provider()->deployKey('test', 'owner/repository', 'ssh-rsa key', $readOnly);
+    $handler = SourceControl::factory()->create(['provider' => $provider])->provider();
+    if ($readOnly) {
+        $handler->deployReadOnlyKey('test', 'owner/repository', 'ssh-rsa key');
+    } else {
+        $handler->deployKey('test', 'owner/repository', 'ssh-rsa key');
+    }
 
     Http::assertSent(fn ($request) => $provider === 'github' ? $request['read_only'] === $readOnly : $request['can_push'] === ! $readOnly);
 })->with(['github', 'gitlab'])->with([false, true]);

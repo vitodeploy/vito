@@ -3,6 +3,7 @@
 namespace App\Actions\Worker;
 
 use App\Actions\Component\ValidateComponentProcess;
+use App\Enums\WorkerStatus;
 use App\Models\Component;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
@@ -41,6 +42,7 @@ class DeleteWorker
         if ($worker->component_id !== null) {
             /** @var ProcessManager $handler */
             $handler = $worker->server->processManager()->handler();
+            $worker->update(['status' => WorkerStatus::DELETING]);
             $handler->delete($worker->id);
         }
         $worker->delete();

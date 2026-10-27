@@ -22,6 +22,7 @@ export default function SettingsSheet({
   sourceControls,
   deploymentActive,
   can,
+  open,
   onClose,
 }: {
   application: Application;
@@ -31,6 +32,7 @@ export default function SettingsSheet({
   sourceControls: SourceControl[];
   deploymentActive: boolean;
   can: { update: boolean; delete: boolean; updateApplication: boolean; deleteApplication: boolean };
+  open: boolean;
   onClose: () => void;
 }) {
   const dialog = useDialog();
@@ -90,7 +92,13 @@ export default function SettingsSheet({
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    dialog.environmentDeploymentScript.open({ url: scriptUrl, stage: stage.id, label: stage.label, script, componentOverride: false })
+                    dialog.environmentDeploymentScript.openNested({
+                      url: scriptUrl,
+                      stage: stage.id,
+                      label: stage.label,
+                      script,
+                      componentOverride: false,
+                    })
                   }
                 >
                   <PencilIcon />
@@ -120,7 +128,7 @@ export default function SettingsSheet({
                 variant="destructive"
                 size="sm"
                 disabled={application.status !== 'ready'}
-                onClick={() => dialog.deleteApplicationResource.open({ application, environment })}
+                onClick={() => dialog.deleteApplicationResource.openNested({ application, environment })}
               >
                 {environment.status === 'deletion_failed' ? 'Retry' : 'Delete'}
               </Button>
@@ -128,7 +136,7 @@ export default function SettingsSheet({
           )}
           {can.deleteApplication && application.status !== 'deleting' && (
             <Row label={`Delete ${application.name}`} description="Deletes every environment of this application.">
-              <Button variant="destructive" size="sm" onClick={() => dialog.deleteApplicationResource.open({ application })}>
+              <Button variant="destructive" size="sm" onClick={() => dialog.deleteApplicationResource.openNested({ application })}>
                 {application.status === 'deletion_failed' ? 'Retry' : 'Delete'}
               </Button>
             </Row>
@@ -145,6 +153,7 @@ export default function SettingsSheet({
       subtitle={`Configure ${environment.name} and the ${application.name} application.`}
       tabs={[{ value: 'settings', label: 'Settings', content }]}
       onClose={onClose}
+      open={open}
       sheet
     />
   );

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
@@ -32,12 +32,10 @@ import ApplicationLayout from '@/layouts/application/layout';
 import Canvas, { panelProps } from '@/pages/applications/components/canvas';
 import ComponentPanel from '@/pages/applications/components/component-panel';
 import DeployButton from '@/pages/applications/components/deploy-button';
-import DeploymentsSheet from '@/pages/applications/components/deployments-sheet';
 import DocsLink from '@/pages/applications/components/docs-link';
 import ResourcePanel from '@/pages/applications/components/resource-panel';
-import SettingsSheet from '@/pages/applications/components/settings-sheet';
 import Status from '@/pages/applications/components/status';
-import VariablesSheet from '@/pages/applications/components/variables-sheet';
+import { useDialogStore } from '@/stores/dialog-store';
 import {
   Application,
   BackendTarget,
@@ -57,7 +55,7 @@ import {
 import { DeploymentScript } from '@/types/deployment-script';
 import { SourceControl } from '@/types/source-control';
 
-type Page = {
+export type EnvironmentPage = {
   application: Application;
   environment: Environment;
   topology: EnvironmentTopology;
@@ -102,19 +100,30 @@ const sheets = [
 ];
 
 export default function ShowEnvironment() {
-  const props = usePage<Page>().props;
+  const { props, url } = usePage<EnvironmentPage>();
   const { application, environment, topology, lastDeployment, warnings, component, resource, can } = props;
   const dialog = useDialog();
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
   const ready = application.status === 'ready' && environment.status === 'ready';
   const selection = component ? `?component=${component.id}` : resource ? `?resource=${resource.id}` : '';
   const close = useCallback(() => router.visit(baseUrl, { preserveState: true, preserveScroll: true, only: panelProps }), [baseUrl]);
-  const closeSheet = () => router.visit(`${baseUrl}${selection}`, { preserveState: true, preserveScroll: true, only: panelProps });
-  const withProp = <K extends 'options' | 'resourceOptions'>(prop: K, open: (value: NonNullable<Page[K]>) => void) =>
+  const deploymentsList = useRef<string | null>(null);
+  const hasDeployments = props.deployments !== null;
+  const deploymentId = props.deployment?.id;
+  useEffect(() => {
+    if (props.sheet !== 'deployments') deploymentsList.current = null;
+    if (!props.sheet || (props.sheet === 'deployments' && !hasDeployments)) return;
+    if (props.sheet === 'deployments' && !deploymentId) deploymentsList.current = baseUrl;
+    dialog.environmentSheet.open({ returnToList: deploymentsList.current === baseUrl });
+    return () => {
+      if (useDialogStore.getState().active?.key === 'environmentSheet') dialog.environmentSheet.close();
+    };
+  }, [baseUrl, dialog, deploymentId, hasDeployments, props.sheet, url]);
+  const withProp = <K extends 'options' | 'resourceOptions'>(prop: K, open: (value: NonNullable<EnvironmentPage[K]>) => void) =>
     router.reload({
       only: [prop],
       onSuccess: (page) => {
-        const value = (page.props as unknown as Page)[prop];
+        const value = (page.props as unknown as EnvironmentPage)[prop];
         if (value) open(value);
       },
       onNetworkError: () => {
@@ -249,37 +258,6 @@ export default function ShowEnvironment() {
         {resource && (
           <ResourcePanel application={application} environment={environment} resource={resource} editable={can.update && ready} onClose={close} />
         )}
-        {props.sheet === 'settings' && (
-          <SettingsSheet
-            application={application}
-            environment={environment}
-            scripts={props.scripts}
-            primaryCandidates={props.primaryCandidates}
-            sourceControls={props.sourceControls}
-            deploymentActive={props.deploymentActive}
-            can={can}
-            onClose={closeSheet}
-          />
-        )}
-        {props.sheet === 'variables' && (
-          <VariablesSheet
-            application={application}
-            environment={environment}
-            variables={props.variables}
-            warnings={warnings}
-            canUpdate={can.update}
-            onClose={closeSheet}
-          />
-        )}
-        {props.sheet === 'deployments' && props.deployments && (
-          <DeploymentsSheet
-            application={application}
-            environment={environment}
-            deployments={props.deployments}
-            deployment={props.deployment}
-            onClose={closeSheet}
-          />
-        )}
       </div>
     </ApplicationLayout>
   );
@@ -292,7 +270,7 @@ function CreateMenu({
 }: {
   disabled: boolean;
   create: Record<'app' | 'loadBalancer' | 'database' | 'redis', () => void>;
-  can: Page['can'];
+  can: EnvironmentPage['can'];
 }) {
   return (
     <DropdownMenu modal={false}>

@@ -221,7 +221,8 @@ export default function AttachResource({
               <TriangleAlertIcon className="text-warning!" />
               <AlertDescription>
                 Components on other servers need a shared private network. Vito limits the {redis ? 'Redis' : 'database'} port to attached components,
-                so other remote clients{redis ? '' : ', including Sites,'} may lose access. Enabling networking restarts the service
+                so other remote clients{redis ? '' : ', including Sites,'} lose access unless a firewall rule allows their IP on that port. Enabling
+                networking restarts the service
                 {redis ? ', and local clients must then use its password' : ''}. The firewall must cover IPv4 and IPv6. Stored data is kept.
               </AlertDescription>
             </Alert>

@@ -4,8 +4,9 @@ namespace App\Tooling;
 
 use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
+use App\Models\Site;
 
-class ComposerTooling extends AbstractTooling
+class ComposerTooling extends AbstractTooling implements TargetToolingInterface
 {
     public const string INSTALL_DIR = '.local/vito/bin';
 
@@ -37,7 +38,15 @@ class ComposerTooling extends AbstractTooling
     /**
      * @throws SSHError
      */
-    public function install(ToolingTargetDTO $target, string $version): void
+    public function install(Site $site, string $version): void
+    {
+        $this->installForTarget(ToolingTargetDTO::forSite($site), $version);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function installForTarget(ToolingTargetDTO $target, string $version): void
     {
         $target->server->ssh($target->user)->exec(
             view('ssh.composer.install', [
@@ -54,7 +63,15 @@ class ComposerTooling extends AbstractTooling
     /**
      * @throws SSHError
      */
-    public function uninstall(ToolingTargetDTO $target): void
+    public function uninstall(Site $site): void
+    {
+        $this->uninstallForTarget(ToolingTargetDTO::forSite($site));
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function uninstallForTarget(ToolingTargetDTO $target): void
     {
         $target->server->ssh($target->user)->exec(
             view('ssh.composer.uninstall', [
@@ -66,7 +83,7 @@ class ComposerTooling extends AbstractTooling
         );
     }
 
-    public function pathContributions(ToolingTargetDTO $target): array
+    public function pathContributionsForTarget(ToolingTargetDTO $target): array
     {
         return [($target->configDir ?? '/home/'.$target->user).'/'.self::INSTALL_DIR];
     }

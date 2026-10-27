@@ -289,15 +289,15 @@ test('tooling can install and collect paths without a site', function () {
     $user->setToolingVersion('composer', '2');
     $target = new ToolingTargetDTO($this->server, 'runtime', $user, '8.2');
 
-    new NodeTooling()->install($target, '22');
-    new ComposerTooling()->install($target, '2');
+    new NodeTooling()->installForTarget($target, '22');
+    new ComposerTooling()->installForTarget($target, '2');
 
     SSH::assertExecutedContains('mise use -g node@22');
     SSH::assertExecutedContains('php8.2 composer-setup.php --2');
     expect(SiteShellEnvironment::collect($target)['PATH'])->toContain('/home/runtime/.local/share/mise/shims', '/home/runtime/.local/vito/bin');
 
-    new NodeTooling()->uninstall($target);
-    new ComposerTooling()->uninstall($target);
+    new NodeTooling()->uninstallForTarget($target);
+    new ComposerTooling()->uninstallForTarget($target);
     SSH::assertExecutedContains('mise uninstall node --all');
     SSH::assertExecutedContains('rm -f');
 });

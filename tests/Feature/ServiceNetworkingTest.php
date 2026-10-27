@@ -50,12 +50,12 @@ test('enable networking', function (string $name) {
     SSH::assertNotExecutedContains((string) $service->secret, 'The networking password must never appear in a command.');
 })->with('memoryDatabases');
 
-test('enable networking accepts the IPv4-only bind written for Redis older than 6.2', function () {
+test('networking records verified IPv6 support without breaking IPv4-only Redis hosts', function (string $bind, bool $listener, bool $dualStack) {
     $this->actingAs($this->user);
 
     $service = vitoPestFeatureServiceNetworkingTestMemoryDatabase('redis');
 
-    SSH::fake("Active: active\nbind 0.0.0.0");
+    SSH::fake("Active: active\n".$bind.($listener ? "\nVITO_IPV6_LISTENER" : ''));
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -66,8 +66,14 @@ test('enable networking accepts the IPv4-only bind written for Redis older than 
 
     expect($service->type_data['networking'])->toBeTrue();
     expect($service->type_data['networking_effective'])->toBeTrue();
+    expect($service->type_data['networking_dual_stack'])->toBe($dualStack);
     expect($service->status)->toEqual(ServiceStatus::READY);
-});
+})->with([
+    ['bind 0.0.0.0', false, false],
+    ['bind 0.0.0.0 ::', true, true],
+    ['bind 0.0.0.0 -::', true, true],
+    ['bind 0.0.0.0 -::', false, false],
+]);
 
 test('disable networking', function (string $name) {
     $this->actingAs($this->user);
@@ -198,6 +204,7 @@ test('enable networking skips the restart when the service is not running', func
     expect($service->type_data['networking'])->toBeTrue();
     expect($service->type_data['networking_effective'])->toBeTrue();
     expect($service->type_data['networking_checked_at'] ?? null)->toBeNull('A toggle that never restarted or verified must not stamp an observation timestamp.');
+    expect($service->type_data['networking_dual_stack'])->toBeFalse();
     expect($service->status)->toEqual(ServiceStatus::from($status));
 
     SSH::assertExecutedContains('# BEGIN VITO NETWORKING');

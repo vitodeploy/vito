@@ -2,7 +2,6 @@
 
 namespace App\Actions\Site\Tooling;
 
-use App\DTOs\ToolingTargetDTO;
 use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
 use App\Models\IsolatedUser;
 use App\Models\Site;
@@ -28,7 +27,7 @@ class UninstallSiteTooling
             ]);
         }
 
-        if ($tool->installedVersion(ToolingTargetDTO::forSite($site)) === null) {
+        if ($tool->installedVersion($site) === null) {
             throw ValidationException::withMessages([
                 'tool' => "{$tool::label()} is not currently installed for this isolated user.",
             ]);

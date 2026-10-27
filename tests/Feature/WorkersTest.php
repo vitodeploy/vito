@@ -1,18 +1,24 @@
 <?php
 
 use App\Actions\Worker\ManageWorker;
+use App\Actions\Worker\SyncWorkerStatuses;
 use App\Enums\UserRole;
 use App\Enums\WorkerStatus;
+use App\Events\SocketEvent;
 use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
+use App\Http\Resources\WorkerResource;
 use App\Jobs\Worker\ManageJob;
 use App\Jobs\Worker\RestartAllJob;
 use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
@@ -389,6 +395,61 @@ test('worker config refresh preserves a legacy log path without privileged log p
     $this->assertDatabaseHas('workers', ['id' => $worker->id, 'stdout_logfile' => $worker->stdout_logfile]);
 })->with(['/home/vito/.logs/workers/legacy.log', "/home/vito/worker's logs/worker.log", '/root/.logs/workers/legacy.log']);
 
+test('managed worker logs remain readable after restrictive root creation or rotation', function (string $path, string $reader) {
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id, 'user' => 'isolated', 'stdout_logfile' => $path,
+    ]);
+    SSH::shouldReceive('init')->once()
+        ->with(Mockery::on(fn (Server $server): bool => $server->is($this->server)), $reader)->andReturnSelf();
+    SSH::shouldReceive('exec')->once()->with('tail -100 -- '.escapeshellarg($path))->andReturn('worker output');
+
+    /** @var ProcessManager $handler */
+    $handler = $this->server->processManager()->handler();
+    expect($handler->getLogs($worker->user, $worker->getLogFile()))->toBe('worker output');
+})->with([
+    ['/var/log/vito/workers/isolated/42.log', 'root'],
+    ['/home/vito/.logs/workers/42.log', 'root'],
+    ['/root/.logs/workers/42.log', 'root'],
+    ['/home/isolated/.logs/workers/42.log', 'isolated'],
+    ['/home/vitoextra/.logs/workers/42.log', 'isolated'],
+]);
+
+test('worker status broadcasts retain flat ownership metadata without exposing it in the legacy API', function (string $owner) {
+    Event::fake([SocketEvent::class]);
+    $component = $owner === 'site' ? null : Component::factory()->create(['server_id' => $this->server->id]);
+    $capability = $owner === 'managed' ? ComponentCapability::factory()->for($component)->create(['capability' => 'worker']) : null;
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $component === null ? $this->site->id : null,
+        'component_id' => $component?->id,
+        'component_capability_id' => $capability?->id,
+        'status' => WorkerStatus::STOPPED,
+    ]);
+    SSH::fake($worker->id.':'.$worker->id.'_00 RUNNING pid 123, uptime 0:01:00');
+
+    expect(app(SyncWorkerStatuses::class)->sync($this->server))->toBe(1);
+
+    Event::assertDispatched(SocketEvent::class, function (SocketEvent $event) use ($worker, $component, $capability): bool {
+        if ($event->data->type !== 'worker.updated') {
+            return false;
+        }
+        $data = json_decode(json_encode($event->data->data, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+        expect($data['id'])->toBe($worker->id)
+            ->and($data['component_id'])->toBe($component?->id)
+            ->and($data['managed'])->toBe($capability !== null)
+            ->and($data['status'])->toBe('running')
+            ->and(array_filter(array_keys($data), is_int(...)))->toBe([]);
+        if ($component !== null) {
+            expect($data['component_name'])->toBe($component->name)
+                ->and($data['component_url'])->toBe(route('components.show', [$component->environment->application_id, $component->environment_id, $component->id], false));
+        }
+
+        return true;
+    });
+    $api = (new WorkerResource($worker->fresh()->load('component.environment')))->resolve(Request::create('/api/projects/1/servers/1/workers'));
+    expect($api)->not->toHaveKeys(['component_id', 'component_name', 'component_url', 'managed']);
+})->with(['site', 'custom', 'managed']);
+
 test('worker config refresh moves a legacy log out of an isolated user home once and carries recent lines over', function () {
     SSH::fake();
     $legacy = '/home/isolated/.logs/workers/legacy.log';
@@ -487,6 +548,28 @@ test('worker deletion leaves legacy logs in place when an unprivileged user owns
     ['/home/isolated/.logs/workers/legacy.log', false],
     ['/home/vitoextra/.logs/workers/legacy.log', false],
 ]);
+
+test('worker edit keeps the log history of an unchanged log path', function () {
+    SSH::fake();
+    $worker = Worker::factory()->create(['server_id' => $this->server->id, 'site_id' => $this->site->id, 'user' => 'vito']);
+    $worker->update(['stdout_logfile' => $worker->defaultLogFile()]);
+
+    $this->actingAs($this->user)->put(route('workers.update', [
+        'server' => $this->server,
+        'worker' => $worker,
+    ]), [
+        'name' => $worker->name,
+        'command' => 'php artisan queue:work --tries=2',
+        'user' => 'vito',
+        'auto_start' => true,
+        'auto_restart' => true,
+        'numprocs' => 2,
+    ])->assertRedirect()->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('supervisorctl stop '.$worker->id.':*');
+    SSH::assertNotExecutedContains('rm -f -- ');
+    expect(SSH::getUploadedContent())->toContain('stdout_logfile='.$worker->defaultLogFile());
+});
 
 test('worker edit records the newly installed log path when the user changes', function () {
     SSH::fake();

@@ -144,6 +144,20 @@ test('detach removes only managed access while preserving databases users ordina
     }
 })->with(['mysql', 'postgresql']);
 
+test('explicit allow rules for an attached port keep access above the resource guard', function () {
+    $port = $this->server->database()->handler()->networkingPort();
+    FirewallRule::factory()->for($this->server)->create(['port' => (string) $port, 'source' => '10.9.9.9', 'mask' => '32', 'type' => 'allow']);
+    FirewallRule::factory()->for($this->server)->create(['port' => (string) $port, 'source' => null, 'mask' => null, 'type' => 'allow']);
+    $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
+    $this->sync->sync($attachment);
+
+    $script = collect(SSH::getExecutedCommands())->last(fn (string $command): bool => str_contains($command, 'ufw --force reset'));
+    expect(strpos($script, 'sudo ufw allow from 10.9.9.9/32 to any proto tcp port '.$port))->toBeInt()
+        ->toBeLessThan(strpos($script, 'sudo ufw deny from any to any proto tcp port '.$port))
+        ->and($script)->toContain('-A vito-resource-guard -p tcp -s 10.9.9.9/32 --dport '.$port.' -j RETURN')
+        ->not->toContain('sudo ufw allow from any to any proto tcp port '.$port);
+});
+
 test('resource firewall dependencies require a successful guard and are removed before stopping it', function () {
     $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
     $this->sync->sync($attachment);
@@ -338,7 +352,7 @@ test('IPv6 resources upgrade existing IPv4 networking and use host-scoped firewa
         : app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);
     expect($this->sync->sync($attachment))->toBeFalse();
     SSH::assertExecutedContains('Resource access requires IPv4 and IPv6 firewall protection.');
-    SSH::fake("Active: active\n*\nbind 0.0.0.0 -::\nmysqlx_bind_address\t127.0.0.1");
+    SSH::fake("Active: active\n*\nbind 0.0.0.0 -::\nmysqlx_bind_address\t127.0.0.1\nVITO_IPV6_LISTENER");
     (new ToggleNetworkingJob($service->fresh(), true, ServiceStatus::READY))->handle();
     expect($service->fresh()->type_data['networking_dual_stack'])->toBeTrue();
     expect($this->sync->sync($attachment))->toBeTrue();
@@ -352,6 +366,25 @@ test('IPv6 resources upgrade existing IPv4 networking and use host-scoped firewa
         SSH::assertExecutedContains('host all all ::/0 scram-sha-256');
     }
 })->with(['mysql', 'mariadb', 'postgresql', 'redis', 'valkey']);
+
+test('IPv6 Redis attachments cannot become ready after an IPv4-only networking verification', function () {
+    $member = resourcePrivateClient($this->component, $this->server);
+    $member->network->update(['cidr' => 'fd50::/64']);
+    $member->network->servers()->where('server_id', $this->server->id)->update(['ip' => 'fd50::1']);
+    $member->update(['ip' => 'fd50::2']);
+    $service = $this->server->memoryDatabase();
+    $service->update(['secret' => 'ipv6-password', 'type_data' => ['networking' => true]]);
+    $attachment = app(AttachRedis::class)->attach($this->environment, ['service_id' => $service->id]);
+    expect($this->sync->sync($attachment))->toBeFalse();
+    SSH::fake("Active: active\nbind 0.0.0.0");
+
+    (new ToggleNetworkingJob($service->fresh(), true, ServiceStatus::READY))->handle();
+
+    expect($service->fresh()->type_data['networking_dual_stack'])->toBeFalse()
+        ->and($this->sync->sync($attachment))->toBeFalse()
+        ->and($attachment->fresh()->access[$this->component->id]['ready'])->toBeFalse();
+    $this->assertDatabaseHas('environment_attachments', ['id' => $attachment->id, 'status' => EnvironmentAttachmentStatus::PENDING]);
+});
 
 test('a failure in the final firewall cleanup preserves the attachment and rule custody for retry', function () {
     $attachment = app(AttachDatabase::class)->attach($this->environment, ['server_id' => $this->server->id, 'database_id' => $this->database->id]);

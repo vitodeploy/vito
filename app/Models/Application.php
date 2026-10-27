@@ -43,13 +43,14 @@ class Application extends AbstractModel
 
     public function preset(): AbstractRuntimePreset
     {
+        return $this->presetOrNull() ?? throw new InvalidArgumentException("Runtime preset for {$this->runtime} is not defined.");
+    }
+
+    public function presetOrNull(): ?AbstractRuntimePreset
+    {
         $handler = config('component.runtimes', [])[$this->runtime]['handler'] ?? null;
 
-        if (! is_string($handler) || ! is_subclass_of($handler, AbstractRuntimePreset::class)) {
-            throw new InvalidArgumentException("Runtime preset for {$this->runtime} is not defined.");
-        }
-
-        return new $handler;
+        return is_string($handler) && is_subclass_of($handler, AbstractRuntimePreset::class) ? new $handler : null;
     }
 
     /**

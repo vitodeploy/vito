@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
-class GithubApp extends AbstractSourceControlProvider
+class GithubApp extends AbstractSourceControlProvider implements SupportsApplications
 {
     private const string API_BASE_URL = 'https://api.github.com';
 
@@ -127,7 +127,12 @@ class GithubApp extends AbstractSourceControlProvider
         return null;
     }
 
-    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->deployKey($title, $repo, $key);
+    }
+
+    public function deployKey(string $title, string $repo, string $key): string
     {
         return '';
     }

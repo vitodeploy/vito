@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Application\GetApplicationSourceControl;
 use App\Actions\GitHook\TriggerRepositoryAutoDeploy;
 use App\Actions\Site\Deploy;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -33,7 +34,8 @@ class GitHookController extends Controller
             ->firstOrFail();
 
         if ($gitHook->repository !== null) {
-            foreach ($gitHook->sourceControl?->provider()->getPushBranches($request->array()) ?? [] as $branch) {
+            $provider = $gitHook->sourceControl ? app(GetApplicationSourceControl::class)->provider($gitHook->sourceControl) : null;
+            foreach ($provider?->getPushBranches($request->array()) ?? [] as $branch) {
                 app(TriggerRepositoryAutoDeploy::class)->forBranch($gitHook, $branch);
             }
 

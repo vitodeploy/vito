@@ -2,6 +2,7 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
@@ -78,7 +79,7 @@ class CreateComponent
                 'type' => ComponentType::from($input['type']),
             ]);
             $component->isolated_user_id = $isolatedUser?->id;
-            $component->path = $component->type === ComponentType::APP ? '/home/'.$component->user.'/app-'.$application->id.'-'.$environment->slug : '';
+            $component->path = $component->type === ComponentType::APP ? '/home/'.$component->user.'/app-'.$application->id.'-'.$environment->id : '';
             $component->load_balancer_method = $component->type === ComponentType::LOAD_BALANCER ? LoadBalancerMethod::ROUND_ROBIN : null;
             $component->status = ComponentStatus::PENDING;
             $component->save();
@@ -145,7 +146,7 @@ class CreateComponent
 
         app(ValidateEnvironmentResource::class)->component($environment, $server);
 
-        $preset = $environment->application->preset();
+        $preset = app(GetApplicationRuntime::class)->get($environment->application, 'runtime');
         foreach ($preset->requiredServices($environment->runtime_version ?? '') as $type => $version) {
             if (! $server->services()->where('type', $type)->when($version !== null, fn ($query) => $query->where('version', $version))
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED, ServiceStatus::DISABLED])->exists()) {

@@ -55,7 +55,13 @@ export default function EnvironmentFields({
       )}
       {fields.map((field) => (
         <div key={`${preset?.id}-${field.name}`} className={inline ? 'px-4 py-3' : undefined}>
-          <DynamicField config={field} value={data[field.name]} onChange={(value) => onChange(field.name, value)} error={errors[field.name]} />
+          <DynamicField
+            controlled
+            config={field}
+            value={data[field.name]}
+            onChange={(value) => onChange(field.name, value)}
+            error={errors[field.name]}
+          />
         </div>
       ))}
     </>

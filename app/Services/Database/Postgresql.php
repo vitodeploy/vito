@@ -112,6 +112,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
         if (! $this->networkingValueMatches($this->networkingListenAddresses(), $expected)) {
             throw new SSHCommandError("{$this->service->name} is not listening on {$expected} after the restart.");
         }
+        $this->service->jsonUpdate('type_data', 'networking_dual_stack', $expectedOpen, save: false);
     }
 
     public function networkingProbeCommand(): string

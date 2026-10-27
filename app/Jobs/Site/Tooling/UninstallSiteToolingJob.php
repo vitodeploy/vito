@@ -3,7 +3,6 @@
 namespace App\Jobs\Site\Tooling;
 
 use App\Actions\Site\Tooling\AssertToolingNotUsedByComponents;
-use App\DTOs\ToolingTargetDTO;
 use App\Jobs\Worker\RefreshSiteWorkerConfigsJob;
 use App\Models\ServerLog;
 use App\Models\Site;
@@ -46,7 +45,7 @@ class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
 
             app(AssertToolingNotUsedByComponents::class)->assert($this->site->refresh(), $this->toolId);
 
-            $tool->uninstall(ToolingTargetDTO::forSite($this->site));
+            $tool->uninstall($this->site);
 
             SiteToolingState::completeUninstall($this->site, $this->toolId);
 

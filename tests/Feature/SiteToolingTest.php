@@ -4,6 +4,7 @@ use App\DTOs\DynamicField;
 use App\Enums\SiteStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Helpers\SiteShellEnvironment;
 use App\Jobs\Site\Tooling\InstallSiteToolingJob;
 use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
 use App\Models\Application;
@@ -22,9 +23,13 @@ use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
+use App\Tooling\AbstractMiseTooling;
+use App\Tooling\AbstractTooling;
+use App\Tooling\ComposerTooling;
 use App\Tooling\NodeTooling;
 use App\Tooling\PnpmTooling;
 use App\Tooling\SiteToolingState;
+use App\Tooling\ToolingInterface;
 use App\Tooling\ToolingRegistry;
 use App\Tooling\YarnTooling;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -704,4 +709,113 @@ test('other user sites are not touched', function () {
 
     $otherUserSite->refresh();
     expect($otherUserSite->isolatedUser?->toolingVersion('node'))->toBeNull();
+});
+
+trait LegacySiteToolingProvider
+{
+    public static function id(): string
+    {
+        return 'legacy-tool';
+    }
+
+    public static function label(): string
+    {
+        return 'Legacy tool';
+    }
+
+    public static function description(): string
+    {
+        return 'A plugin written for the released Site tooling contract.';
+    }
+
+    public static function supportedVersions(): array
+    {
+        return ['1'];
+    }
+
+    public static function supportedVersionsWithNone(): array
+    {
+        return ['none', '1'];
+    }
+
+    public static function typeDataKey(): string
+    {
+        return 'legacy_tool_version';
+    }
+
+    public static function commands(): array
+    {
+        return ['legacy-tool'];
+    }
+
+    public function install(Site $site, string $version): void
+    {
+        $site->server->ssh($site->user)->exec('legacy-install-'.$site->id.'-'.$version);
+    }
+
+    public function uninstall(Site $site): void
+    {
+        $site->server->ssh($site->user)->exec('legacy-uninstall-'.$site->id);
+    }
+
+    public function installedVersion(Site $site): ?string
+    {
+        return $site->isolatedUser?->toolingVersion(static::id());
+    }
+
+    public function pathContributions(Site $site): array
+    {
+        return ['/home/'.$site->user.'/legacy-tool'];
+    }
+}
+
+test('released Site tooling plugins still bootstrap install expose paths and uninstall', function (string $kind) {
+    $provider = match ($kind) {
+        'interface' => new class implements ToolingInterface
+        {
+            use LegacySiteToolingProvider;
+        },
+        'abstract' => new class extends AbstractTooling
+        {
+            use LegacySiteToolingProvider;
+        },
+        'mise' => new class extends AbstractMiseTooling
+        {
+            use LegacySiteToolingProvider;
+        },
+        'composer' => new class extends ComposerTooling
+        {
+            use LegacySiteToolingProvider;
+        },
+    };
+    config(['tooling.providers' => [...config('tooling.providers'), $provider::class]]);
+    SSH::fake();
+    $this->actingAs($this->user);
+    $parameters = ['server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'legacy-tool'];
+
+    $this->getJson(route('bootstrap.show'))->assertOk()
+        ->assertJsonPath('configs.tooling', fn (array $tooling): bool => in_array('legacy-tool', array_column($tooling, 'id'), true));
+    $this->post(route('site-tooling.install', $parameters), ['version' => '1'])->assertSessionHasNoErrors();
+    SSH::assertExecutedContains('legacy-install-'.$this->isolatedSite->id.'-1');
+    $this->get(route('site-tooling', [$this->server, $this->isolatedSite]))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('installed_versions.legacy-tool', '1'));
+    expect(SiteShellEnvironment::collect($this->isolatedSite->fresh())['PATH'])->toStartWith('/home/isolated-foo/legacy-tool:');
+
+    $this->delete(route('site-tooling.uninstall', $parameters))->assertSessionHasNoErrors();
+    SSH::assertExecutedContains('legacy-uninstall-'.$this->isolatedSite->id);
+    expect(vitoPestFeatureSiteToolingTestIuser()->toolingVersion('legacy-tool'))->toBeNull();
+})->with(['interface', 'abstract', 'mise', 'composer']);
+
+test('missing component runtime plugins protect shared tooling through validation', function () {
+    SSH::fake();
+    $user = vitoPestFeatureSiteToolingTestIuser();
+    $user->setToolingVersion('node', '22');
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'missing-plugin']);
+    $environment = Environment::factory()->for($application)->create();
+    Component::factory()->for($environment)->for($this->server)->create(['user' => $user->username, 'isolated_user_id' => $user->id]);
+
+    $this->actingAs($this->user)->deleteJson(route('site-tooling.uninstall', [
+        'server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'node',
+    ]))->assertUnprocessable()->assertJsonValidationErrors('tool');
+    expect(SSH::getExecutedCommands())->toBeEmpty()->and($user->fresh()->toolingVersion('node'))->toBe('22');
 });

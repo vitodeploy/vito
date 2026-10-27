@@ -14,9 +14,9 @@ class AssertToolingNotUsedByComponents
         if (Component::query()->where('server_id', $site->server_id)->where('user', $site->user)
             ->with('environment.application')->get()
             ->contains(function (Component $component) use ($toolId): bool {
-                $preset = $component->environment->application->preset();
+                $preset = $component->environment->application->presetOrNull();
 
-                return $preset->tooling() === $toolId && $preset->sharedTooling();
+                return $preset === null || ($preset->tooling() === $toolId && $preset->sharedTooling());
             })) {
             $label = ToolingRegistry::find($toolId)?->label() ?? $toolId;
 

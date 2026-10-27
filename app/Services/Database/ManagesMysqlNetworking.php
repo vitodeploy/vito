@@ -59,6 +59,7 @@ trait ManagesMysqlNetworking
         }
 
         $this->verifyXPluginNetworking(EnvironmentAttachment::forService($this->service)->exists() ? '127.0.0.1' : $expected);
+        $this->service->jsonUpdate('type_data', 'networking_dual_stack', $expectedOpen, save: false);
     }
 
     public function networkingProbeCommand(): string

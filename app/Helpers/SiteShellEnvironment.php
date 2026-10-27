@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\DTOs\ToolingTargetDTO;
 use App\Models\Site;
+use App\Tooling\TargetToolingInterface;
 use App\Tooling\ToolingRegistry;
 
 final class SiteShellEnvironment
@@ -11,18 +12,26 @@ final class SiteShellEnvironment
     /**
      * @return array<string, string>
      */
-    public static function collect(ToolingTargetDTO $target): array
+    public static function collect(Site|ToolingTargetDTO $target): array
     {
+        $site = $target instanceof Site ? $target : null;
+        $target = $target instanceof Site ? ToolingTargetDTO::forSite($target) : $target;
         if (! $target->isolatedUser || $target->user === '') {
             return [];
         }
 
         $paths = [];
         foreach (ToolingRegistry::all() as $tool) {
-            if ($tool->installedVersion($target) === null) {
+            if ($site) {
+                $version = $tool->installedVersion($site);
+                $contributions = $version === null ? [] : $tool->pathContributions($site);
+            } elseif ($tool instanceof TargetToolingInterface) {
+                $version = $tool->installedVersionForTarget($target);
+                $contributions = $version === null ? [] : $tool->pathContributionsForTarget($target);
+            } else {
                 continue;
             }
-            foreach ($tool->pathContributions($target) as $entry) {
+            foreach ($contributions as $entry) {
                 if ($entry !== '' && ! in_array($entry, $paths, true)) {
                     $paths[] = $entry;
                 }
@@ -41,7 +50,7 @@ final class SiteShellEnvironment
     public static function wrap(Site $site, string $command, bool $cdToSitePath = false): string
     {
         $exports = '';
-        foreach (self::collect(ToolingTargetDTO::forSite($site)) as $key => $value) {
+        foreach (self::collect($site) as $key => $value) {
             $exports .= sprintf('export %s=%s && ', $key, escapeshellarg($value));
         }
 

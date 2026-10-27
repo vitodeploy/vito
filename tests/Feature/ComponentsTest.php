@@ -3,6 +3,7 @@
 use App\Actions\Component\CreateComponent;
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\GetComponentOptions;
+use App\Actions\Environment\CreateEnvironment;
 use App\Actions\Environment\UpdateEnvironment;
 use App\ComponentCapabilities\Web;
 use App\DTOs\DynamicForm;
@@ -47,13 +48,28 @@ test('components create atomically with normalized capabilities and a first prim
     $input = array_replace($this->input, ['user' => $defaultUser ? $this->server->getSshUser() : 'runtime', 'path' => '/etc', 'status' => 'ready']);
     $component = app(CreateComponent::class)->create($this->environment, $input);
 
-    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending', 'user' => $input['user'], 'path' => '/home/'.$input['user'].'/app-'.$this->application->id.'-'.$this->environment->slug]);
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending', 'user' => $input['user'], 'path' => '/home/'.$input['user'].'/app-'.$this->application->id.'-'.$this->environment->id]);
     $this->assertDatabaseHas('component_capabilities', ['component_id' => $component->id, 'capability' => 'web', 'config->port' => 10000, 'status' => 'pending']);
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'primary_component_id' => $component->id, 'primary_component_initialized' => true]);
     expect($component->isolated_user_id === null)->toBe($defaultUser);
     Queue::assertPushed(InstallComponentJob::class);
     expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([false, true]);
+
+test('maximum length environment names produce distinct bounded component paths', function () {
+    $paths = [];
+    foreach (['a', 'b'] as $suffix) {
+        $environment = app(CreateEnvironment::class)->create($this->application, [
+            'name' => str_repeat('x', 254).$suffix, 'branch' => 'main', 'runtime_version' => '22',
+        ]);
+        $component = app(CreateComponent::class)->create($environment, array_replace($this->input, ['capabilities' => []]));
+        $paths[] = $component->path;
+        expect(strlen($component->path))->toBeLessThanOrEqual(255)
+            ->and(strlen(basename($component->path)))->toBeLessThanOrEqual(255);
+        $this->assertDatabaseHas('components', ['id' => $component->id, 'path' => $component->path]);
+    }
+    expect(array_unique($paths))->toHaveCount(2);
+});
 
 test('components reject invalid placement and capability input without partial rows', function (string $field, mixed $value) {
     $input = $this->input;

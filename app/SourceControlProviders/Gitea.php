@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class Gitea extends AbstractSourceControlProvider
+class Gitea extends AbstractSourceControlProvider implements SupportsApplications
 {
     protected string $defaultApiHost = 'https://gitea.com/';
 
@@ -205,7 +205,12 @@ class Gitea extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->deployKey($title, $repo, $key);
+    }
+
+    public function deployKey(string $title, string $repo, string $key): string
     {
         return $this->registerDeployKey(
             fn () => Http::withToken($this->data()['token']),

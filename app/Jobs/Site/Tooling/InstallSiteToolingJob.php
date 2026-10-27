@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Site\Tooling;
 
-use App\DTOs\ToolingTargetDTO;
 use App\Jobs\Worker\RefreshSiteWorkerConfigsJob;
 use App\Models\ServerLog;
 use App\Models\Site;
@@ -44,7 +43,7 @@ class InstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
                 throw new RuntimeException("Tooling '{$this->toolId}' is not registered; it may have been removed or the worker is out of sync.");
             }
 
-            $tool->install(ToolingTargetDTO::forSite($this->site), $this->version);
+            $tool->install($this->site, $this->version);
 
             SiteToolingState::completeInstall($this->site, $this->toolId, $this->version);
 

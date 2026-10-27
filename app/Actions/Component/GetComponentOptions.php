@@ -32,8 +32,8 @@ class GetComponentOptions
     public function capabilities(Environment $environment): array
     {
         $capabilities = [];
-        if (isset(config('component.runtimes', [])[$environment->application->runtime])) {
-            $preset = $environment->application->preset();
+        $preset = $environment->application->presetOrNull();
+        if ($preset) {
             foreach (config('component.capabilities', []) as $id => $configuration) {
                 $handler = (new ComponentCapability(['capability' => $id]))->handler();
                 $capabilities[] = [

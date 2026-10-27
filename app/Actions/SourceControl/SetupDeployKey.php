@@ -2,6 +2,7 @@
 
 namespace App\Actions\SourceControl;
 
+use App\Actions\Application\GetApplicationSourceControl;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Server;
@@ -34,7 +35,9 @@ class SetupDeployKey
 
         return [
             'public_key' => $publicKey,
-            'deploy_key_id' => $sourceControl->provider()->deployKey($title, $repository, $publicKey, $readOnly),
+            'deploy_key_id' => $readOnly
+                ? app(GetApplicationSourceControl::class)->provider($sourceControl)->deployReadOnlyKey($title, $repository, $publicKey)
+                : $sourceControl->provider()->deployKey($title, $repository, $publicKey),
         ];
     }
 

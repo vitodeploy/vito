@@ -43,6 +43,25 @@ export default function ApplicationLayout({ children }: { children: ReactNode })
   }>().props;
   const baseUrl = `/applications/${application.id}/environments/${environment.id}`;
   const leaving = useRef(false);
+  const navigating = useRef(0);
+  useEffect(() => {
+    const before = router.on('before', ({ detail: { visit } }) => {
+      if (!visit.async && visit.method === 'get' && visit.url.href !== window.location.href) {
+        router.cancelAll({ async: true, prefetch: false, sync: false });
+      }
+    });
+    const start = router.on('start', ({ detail: { visit } }) => {
+      if (!visit.async) navigating.current += 1;
+    });
+    const finish = router.on('finish', ({ detail: { visit } }) => {
+      if (!visit.async) navigating.current = Math.max(0, navigating.current - 1);
+    });
+    return () => {
+      before();
+      start();
+      finish();
+    };
+  }, []);
   const leave = useCallback((url: string) => {
     if (leaving.current) return;
     leaving.current = true;
@@ -70,7 +89,7 @@ export default function ApplicationLayout({ children }: { children: ReactNode })
   }, []);
   const reloadOptions: ReloadOptions = {
     only: reloadProps,
-    onBefore: () => !leaving.current,
+    onBefore: () => !leaving.current && navigating.current === 0,
     onHttpException: (response) => {
       if (response.status === 404) {
         leave(`/applications/${application.id}`);

@@ -104,7 +104,7 @@ test('shared linux users support independent component runtime versions without 
     SSH::assertExecutedContains('mise use --path '.escapeshellarg($other->path.'/mise.toml')." 'node@24'");
     SSH::assertNotExecutedContains('mise use -g');
     expect($this->component->isolatedUser->fresh()->installed_tooling)->toBeNull();
-    (new Mise($this->server))->installRuntime(ToolingTargetDTO::forSite($this->site), 'node', '22');
+    (new Mise($this->server))->installRuntime($this->site, 'node', '22');
     SSH::assertExecutedContains('mise use -g node@22');
 });
 
@@ -280,11 +280,23 @@ test('purging servers queues provider cleanup without remote teardown and record
     expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
+test('purging the primary component lets the next app component become primary', function () {
+    expect($this->environment->fresh()->primary_component_id)->toBe($this->component->id);
+    app(PurgeServerComponents::class)->purge($this->server);
+    expect($this->environment->fresh()->primary_component_id)->toBeNull();
+
+    $next = app(CreateComponent::class)->create($this->environment->fresh(), [
+        'name' => 'Replacement', 'server_id' => $this->server->id, 'user' => 'runtime', 'type' => 'app',
+    ]);
+
+    expect($this->environment->fresh()->primary_component_id)->toBe($next->id);
+});
+
 test('mise rejects mismatched target servers before any remote command', function (bool $install) {
     SSH::fake();
     $target = new ToolingTargetDTO(Server::factory()->create(), 'runtime');
     $mise = new Mise($this->server);
-    expect(fn () => $install ? $mise->installRuntime($target, 'node', '22') : $mise->uninstallRuntime($target, 'node'))
+    expect(fn () => $install ? $mise->installRuntimeForTarget($target, 'node', '22') : $mise->uninstallRuntimeForTarget($target, 'node'))
         ->toThrow(InvalidArgumentException::class);
     expect(SSH::getExecutedCommands())->toBeEmpty();
 })->with([false, true]);

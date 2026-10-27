@@ -10,6 +10,8 @@ use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\ComponentCapability\InstallWebCapability;
 use App\Actions\Environment\UpdateEnvironment;
 use App\Actions\PHP\EnsureFpmPool;
+use App\Actions\Site\DeleteSite;
+use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Worker\CreateWorker;
 use App\DTOs\ToolingTargetDTO;
 use App\Enums\ApplicationStatus;
@@ -32,6 +34,8 @@ use App\Models\CronJob;
 use App\Models\Deployment;
 use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
+use App\Models\IsolatedUser;
+use App\Models\Site;
 use App\Models\SourceControl;
 use App\Support\Testing\SSHFake;
 use App\Tooling\ComposerTooling;
@@ -80,6 +84,23 @@ test('proxy install creates one stopped managed app for non-framework runtimes a
     $this->assertDatabaseMissing('workers', ['id' => $worker->id]);
     $this->assertDatabaseMissing('components', ['id' => $component->id]);
 })->with(['node', 'custom']);
+
+test('components are deleted after their runtime plugin is removed', function (string $runtime) {
+    $this->application->update(['runtime' => $runtime]);
+    if ($runtime === 'php') {
+        $this->environment->update(['runtime_version' => '8.2']);
+    }
+    $config = $runtime === 'php' ? ['web_directory' => 'public'] : ['start_command' => 'node server.js', 'port' => 14000];
+    $component = installCapabilityComponent([['capability' => 'web', 'config' => $config]]);
+    app(InstallComponent::class)->install($component->id);
+    $this->application->update(['runtime' => 'missing-plugin']);
+
+    app(DeleteComponent::class)->delete($component->fresh(), []);
+    app(DeleteComponent::class)->handle($component->id);
+
+    $this->assertDatabaseMissing('components', ['id' => $component->id]);
+    expect($component->workers()->count())->toBe(0);
+})->with(['node', 'php']);
 
 test('static web creates no pool or process', function () {
     $this->application->update(['runtime' => 'static']);
@@ -150,12 +171,12 @@ test('component Composer removal targets only its own quoted path', function () 
     $component->path = "/home/runtime/component's directory";
     $target = ToolingTargetDTO::forComponent($component);
 
-    new ComposerTooling()->uninstall($target);
+    new ComposerTooling()->uninstallForTarget($target);
 
     SSH::assertExecutedContains('rm -f -- '.escapeshellarg($component->basePath().'/.local/vito/bin/composer'));
     SSH::assertNotExecutedContains('$HOME/.local/vito/bin');
     SSH::assertNotExecutedContains('ACTIVATION_LINE=');
-    expect(new ComposerTooling()->pathContributions($target))->toBe([$component->basePath().'/.local/vito/bin']);
+    expect(new ComposerTooling()->pathContributionsForTarget($target))->toBe([$component->basePath().'/.local/vito/bin']);
 });
 
 test('fpm uninstall retains pools used by Sites or another components installed runtime', function (string $shared) {
@@ -533,3 +554,41 @@ test('background scheduler operations requeue on cron contention and finish with
     }
     expect($this->server->cronJobs()->count())->toBe(in_array($operation, ['remove', 'delete']) ? 0 : 1);
 })->with(['install', 'update', 'remove', 'delete']);
+
+test('legacy isolated Site deletion and PHP changes retain pools belonging to an unavailable runtime', function (string $operation) {
+    $this->application->update(['runtime' => 'php']);
+    $this->environment->update(['runtime_version' => '8.3']);
+    $user = IsolatedUser::factory()->create(['server_id' => $this->server->id, 'username' => 'shared-runtime']);
+    $component = Component::factory()->for($this->environment)->for($this->server)->create([
+        'isolated_user_id' => $user->id, 'user' => $user->username, 'installed_runtime_version' => '8.2',
+    ]);
+    ComponentCapability::factory()->for($component)->create(['capability' => 'web']);
+    $site = Site::factory()->for($this->server)->create([
+        'user' => $user->username, 'isolated_user_id' => $user->id, 'domain' => 'legacy-isolated.test', 'php_version' => '8.2',
+    ]);
+    $this->server->services()->create(['type' => 'php', 'name' => 'php', 'version' => '8.3', 'status' => ServiceStatus::READY]);
+    config(['component.runtimes.php' => null]);
+
+    if ($operation === 'delete') {
+        app(DeleteSite::class)->delete($site, ['domain' => $site->domain]);
+        $this->assertDatabaseMissing('sites', ['id' => $site->id]);
+    } else {
+        app(UpdatePHPVersion::class)->update($site, ['version' => '8.3']);
+        $this->assertDatabaseHas('sites', ['id' => $site->id, 'php_version' => '8.3']);
+    }
+
+    SSH::assertNotExecutedContains('/etc/php/8.2/fpm/pool.d/shared-runtime.conf');
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'installed_runtime_version' => '8.2']);
+    $this->assertDatabaseHas('isolated_users', ['id' => $user->id]);
+})->with(['delete', 'change']);
+
+test('service dependency guards retain components whose runtime plugin is unavailable', function () {
+    $component = Component::factory()->for($this->environment)->for($this->server)->create();
+    $this->application->update(['runtime' => 'missing-plugin']);
+    $service = $this->server->php('8.2');
+
+    expect($this->server->componentsUsing($service)->modelKeys())->toBe([$component->id]);
+    expect(fn () => Validator::make(['service' => $service->id], $service->handler()->deletionRules())->validate())
+        ->toThrow(ValidationException::class);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+});

@@ -51,7 +51,7 @@ class CreateCronJob
             $cronJob->component_capability_id = $managedBy?->id;
             $cronJob->save();
 
-            $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
+            $server->cron()->update($cronJob->user, app(SyncCronJobs::class)->crontab($server, $cronJob->user));
             $cronJob->status = CronjobStatus::READY;
             $cronJob->save();
 

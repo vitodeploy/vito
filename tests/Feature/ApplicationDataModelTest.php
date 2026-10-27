@@ -4,22 +4,38 @@ use App\Contracts\VitoEnum;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
+use App\Enums\WorkerStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Jobs\Site\DeployJob;
+use App\Jobs\Worker\EditJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\ComponentCapability;
 use App\Models\CronJob;
+use App\Models\Database;
+use App\Models\DatabaseUser;
 use App\Models\Deployment;
 use App\Models\DeploymentScript;
 use App\Models\Environment;
 use App\Models\EnvironmentDeployment;
 use App\Models\EnvironmentDomain;
+use App\Models\FirewallRule;
+use App\Models\GitHook;
+use App\Models\HostedDomain;
 use App\Models\IsolatedUser;
 use App\Models\Server;
+use App\Models\ServerLog;
+use App\Models\Site;
 use App\Models\Ssl;
 use App\Models\Worker;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
@@ -76,6 +92,7 @@ test('component paths stay stored when parent names and users change', function 
     $component = Component::factory()->create();
     $environment = $component->environment;
     $path = '/home/'.$component->server->ssh_user.'/app-'.$environment->application_id.'-'.$environment->slug;
+    $component->forceFill(['path' => $path])->save();
 
     expect($component->user)->toBe($component->server->ssh_user)
         ->and($component->server->project_id)->toBe($component->project()->id)
@@ -274,6 +291,180 @@ test('application migration round trips while preserving site data', function ()
     }
     expect(Component::query()->count())->toBe(0)
         ->and(SSH::getExecutedCommands())->toBe([]);
+});
+
+test('all application migrations preserve a populated legacy SQLite schema and its web and api workflows', function () {
+    expect(app()->environment('testing'))->toBeTrue();
+    /** SQLite schema changes must run outside the test transaction, as they do in the Migrator. */
+    $this->server->getConnection()->commit();
+    RefreshDatabaseState::$migrated = false;
+    SSH::fake('legacy worker log');
+    Http::preventStrayRequests();
+    Http::fake(['*' => Http::response([])]);
+    Queue::fake();
+    Event::fake([SocketEvent::class]);
+    $migrationFiles = collect([
+        '2026_10_17_171647_create_applications_tables.php',
+        '2026_10_17_224408_add_component_lifecycle_fields.php',
+        '2026_10_18_083748_add_component_capability_process_ownership.php',
+        '2026_10_18_133728_create_environment_variables_table.php',
+        '2026_10_18_160459_create_environment_deployments_table.php',
+        '2026_10_18_223613_add_environment_deployment_operations.php',
+        '2026_10_19_085705_create_environment_domains.php',
+        '2026_10_19_141435_create_component_backends.php',
+        '2026_10_19_154937_create_environment_attachments.php',
+        '2026_10_23_131437_backfill_worker_log_paths.php',
+    ])->map(fn (string $file): string => database_path('migrations/'.$file));
+    $migrator = app('migrator');
+    foreach ($migrationFiles->reverse() as $file) {
+        (require $file)->down();
+        $migrator->getRepository()->delete((object) ['migration' => basename($file, '.php')]);
+    }
+
+    $newTables = ['applications', 'environments', 'components', 'component_capabilities', 'environment_variables', 'environment_deployments', 'environment_domains', 'component_backends', 'environment_attachments'];
+    foreach ($newTables as $table) {
+        expect(Schema::hasTable($table))->toBeFalse();
+    }
+    foreach ([
+        'deployments' => ['component_id', 'environment_deployment_id', 'previous_deployment_id', 'current_stage', 'release_started', 'component_name', 'server_name'],
+        'deployment_scripts' => ['component_id', 'environment_id'],
+        'workers' => ['component_id', 'component_capability_id'],
+        'cron_jobs' => ['component_id', 'component_capability_id'],
+        'git_hooks' => ['repository'],
+        'ssls' => ['environment_id'],
+        'database_users' => ['environment_attachment_id'],
+        'firewall_rules' => ['environment_attachment_id', 'component_managed'],
+    ] as $table => $columns) {
+        foreach ($columns as $column) {
+            expect(Schema::hasColumn($table, $column))->toBeFalse();
+        }
+    }
+    foreach (['deployments', 'deployment_scripts', 'git_hooks'] as $table) {
+        expect(collect(Schema::getColumns($table))->firstWhere('name', 'site_id')['nullable'])->toBeFalse();
+    }
+
+    $source = $this->site->sourceControl;
+    $source->update(['provider_data' => ['token' => 'legacy-source-secret']]);
+    $this->server->update(['authentication' => ['password' => 'legacy-server-secret']]);
+    $redis = $this->server->memoryDatabase();
+    $redis->forceFill(['secret' => 'legacy-redis-secret', 'type_data' => ['networking' => false]])->save();
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', 'legacy-key-id');
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id, 'source_control_id' => $source->id, 'repository' => 'owner/legacy-isolated',
+        'domain' => 'legacy-isolated.test', 'user' => 'legacyuser', 'path' => '/home/legacyuser/legacy-isolated.test',
+        'ssh_key' => 'ssh-rsa legacy-site-key', 'type_data' => ['deploy_key_id' => 'isolated-key-id', 'env_path' => '.env'],
+    ]);
+    $script = $site->deploymentScript;
+    $log = ServerLog::factory()->create(['server_id' => $this->server->id, 'site_id' => $site->id]);
+    $deployment = Deployment::factory()->create([
+        'site_id' => $site->id, 'deployment_script_id' => $script->id, 'log_id' => $log->id,
+        'release' => '20261016000000', 'active' => true, 'commit_id' => str_repeat('a', 40),
+    ]);
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id, 'site_id' => $site->id, 'user' => $site->user, 'status' => WorkerStatus::RUNNING,
+        'environment' => [['key' => 'LEGACY_TOKEN', 'value' => 'legacy-worker-secret', 'is_secret' => true]],
+    ]);
+    $rootWorker = Worker::factory()->create(['server_id' => $this->server->id, 'user' => 'root', 'status' => WorkerStatus::RUNNING]);
+    $customWorker = Worker::factory()->create([
+        'server_id' => $this->server->id, 'user' => 'vito', 'status' => WorkerStatus::RUNNING, 'stdout_logfile' => '/home/vito/existing-worker.log',
+    ]);
+    $cron = CronJob::factory()->create(['server_id' => $this->server->id, 'site_id' => $site->id, 'user' => $site->user, 'command' => 'echo legacy-site-cron']);
+    $rootCron = CronJob::factory()->create(['server_id' => $this->server->id, 'user' => 'root', 'command' => 'echo legacy-server-cron']);
+    $ssl = Ssl::factory()->create(['site_id' => $site->id, 'certificate' => 'legacy-certificate', 'pk' => 'legacy-private-key']);
+    $serverSsl = Ssl::factory()->serverLevel()->create(['server_id' => $this->server->id]);
+    $host = HostedDomain::factory()->primary()->create(['site_id' => $site->id, 'domain' => $site->domain, 'ssl_id' => $ssl->id]);
+    $hook = GitHook::factory()->create(['site_id' => $site->id, 'source_control_id' => $source->id, 'actions' => ['deploy']]);
+    $database = Database::factory()->create(['server_id' => $this->server->id, 'name' => 'legacy_database']);
+    $databaseUser = DatabaseUser::factory()->create([
+        'server_id' => $this->server->id, 'username' => 'legacy_database_user', 'password' => 'legacy-database-secret', 'databases' => [$database->name],
+    ]);
+    $rule = FirewallRule::factory()->create(['server_id' => $this->server->id, 'port' => '443']);
+    $token = $this->user->createToken('legacy-api', ['read', 'write', 'project:'.$this->server->project_id]);
+    $records = [$this->server, $this->server->project, $this->user, $this->site, $source, $redis, $site, $site->isolatedUser, $script, $log, $deployment, $worker, $rootWorker, $customWorker, $cron, $rootCron, $ssl, $serverSsl, $host, $hook, $database, $databaseUser, $rule, $token->accessToken];
+    $snapshots = collect($records)->map(fn ($record): array => ['model' => $record, 'attributes' => $record->fresh()->getRawOriginal()]);
+    $keyPaths = $this->server->sshKey();
+    expect(File::size($keyPaths['private_key_path']))->toBeGreaterThan(0)
+        ->and(File::size($keyPaths['public_key_path']))->toBeGreaterThan(0);
+    $keyHashes = collect([$keyPaths['private_key_path'], $keyPaths['public_key_path']])->mapWithKeys(fn (string $path): array => [$path => hash_file('sha256', $path)]);
+
+    Event::fake([SocketEvent::class]);
+    expect($migrator->run($migrationFiles->all()))->toBe($migrationFiles->all());
+
+    expect($this->server->getConnection()->scalar('PRAGMA foreign_keys'))->toBe(1);
+    foreach ($newTables as $table) {
+        $this->assertDatabaseCount($table, 0);
+    }
+    foreach ($snapshots as $snapshot) {
+        $record = $snapshot['model'];
+        $expected = $snapshot['attributes'];
+        if ($record instanceof Worker && $expected['stdout_logfile'] === null) {
+            $home = $expected['user'] === 'root' ? '/root' : '/home/'.$expected['user'];
+            $expected['stdout_logfile'] = $home.'/.logs/workers/'.$record->id.'.log';
+        }
+        expect($record->fresh()->getRawOriginal())->toMatchArray($expected);
+    }
+    foreach ($keyHashes as $path => $hash) {
+        expect(hash_file('sha256', $path))->toBe($hash);
+    }
+    foreach ([$deployment, $script, $worker, $cron] as $record) {
+        $this->assertDatabaseHas($record->getTable(), ['id' => $record->id, 'site_id' => $site->id, 'component_id' => null]);
+    }
+    $this->assertDatabaseHas('git_hooks', ['id' => $hook->id, 'site_id' => $site->id, 'repository' => null]);
+    $this->assertDatabaseHas('ssls', ['id' => $ssl->id, 'site_id' => $site->id, 'environment_id' => null]);
+    $this->assertDatabaseHas('database_users', ['id' => $databaseUser->id, 'environment_attachment_id' => null]);
+    $this->assertDatabaseHas('firewall_rules', ['id' => $rule->id, 'component_managed' => false, 'environment_attachment_id' => null]);
+    expect($source->fresh()->provider_data['token'])->toBe('legacy-source-secret')
+        ->and($this->server->fresh()->authentication['password'])->toBe('legacy-server-secret')
+        ->and($redis->fresh()->secret)->toBe('legacy-redis-secret')
+        ->and($databaseUser->fresh()->password)->toBe('legacy-database-secret')
+        ->and($ssl->fresh()->pk)->toBe('legacy-private-key')
+        ->and($worker->fresh()->environment[0]['value'])->toBe('legacy-worker-secret')
+        ->and(SSH::getExecutedCommands())->toBe([]);
+    Http::assertNothingSent();
+    Queue::assertNothingPushed();
+    Event::assertNotDispatched(SocketEvent::class);
+
+    $serverRoute = ['project' => $this->server->project_id, 'server' => $this->server];
+    $route = [...$serverRoute, 'site' => $site];
+    $this->withToken($token->plainTextToken)->getJson(route('api.projects.servers.sites.show', $route))
+        ->assertOk()->assertJsonPath('id', $site->id)->assertJsonPath('path', $site->path)->assertJsonPath('type_data.deploy_key_id', 'isolated-key-id');
+    $this->getJson(route('api.projects.servers.sites.workers.show', [...$route, 'worker' => $worker]))
+        ->assertOk()->assertJsonPath('site_id', $site->id)->assertJsonPath('status', 'running')->assertJsonMissingPath('component_id');
+    $this->getJson(route('api.projects.servers.sites.cron-jobs.show', [...$route, 'cronJob' => $cron]))
+        ->assertOk()->assertJsonPath('command', 'echo legacy-site-cron');
+    $this->getJson(route('api.projects.servers.databases.show', [...$serverRoute, 'database' => $database]))
+        ->assertOk()->assertJsonPath('name', 'legacy_database');
+    $this->getJson(route('api.projects.servers.ssls.show', [...$serverRoute, 'ssl' => $serverSsl]))
+        ->assertOk()->assertJsonPath('id', $serverSsl->id)->assertJsonMissingPath('pk');
+    $this->getJson(route('api.projects.servers.workers.logs', [...$serverRoute, 'worker' => $worker]))
+        ->assertOk()->assertJsonPath('logs', 'legacy worker log');
+    SSH::assertExecutedContains('/home/legacyuser/.logs/workers/'.$worker->id.'.log');
+
+    $this->putJson(route('api.projects.servers.workers.update', [...$route, 'worker' => $worker]), [
+        'name' => $worker->name, 'command' => $worker->command, 'user' => $worker->user,
+        'auto_start' => true, 'auto_restart' => true, 'numprocs' => 2,
+    ])->assertOk();
+    Queue::assertPushed(EditJob::class);
+    Queue::pushed(EditJob::class)->sole()->handle();
+    $this->assertDatabaseHas('workers', ['id' => $worker->id, 'site_id' => $site->id, 'component_id' => null, 'numprocs' => 2, 'status' => WorkerStatus::RUNNING]);
+    $this->postJson(route('api.projects.servers.cron-jobs.create', $serverRoute), [
+        'name' => 'After upgrade', 'user' => 'root', 'command' => 'echo after-upgrade', 'frequency' => '0 * * * *',
+    ])->assertSuccessful()->assertJsonPath('status', 'ready')->assertJsonPath('site_id', null);
+    SSH::assertExecutedContains('echo legacy-server-cron');
+    SSH::assertExecutedContains('echo after-upgrade');
+    $this->postJson(route('api.projects.servers.sites.deploy', $route))->assertSuccessful()->assertJsonPath('site_id', $site->id);
+    Queue::assertPushed(DeployJob::class);
+    $this->assertDatabaseHas('deployments', ['site_id' => $site->id, 'component_id' => null, 'status' => 'deploying']);
+    Queue::pushed(DeployJob::class)->sole()->handle();
+    $this->assertDatabaseHas('deployments', ['site_id' => $site->id, 'component_id' => null, 'status' => 'finished', 'active' => true]);
+    $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'active' => false]);
+
+    $this->actingAs($this->user)->get(route('site-settings', [$this->server, $site]))->assertOk();
+    $this->get(route('workers.site', [$this->server, $site]))->assertOk();
+    $this->get(route('cronjobs.site', [$this->server, $site]))->assertOk();
+    $this->patch(route('site-settings.update-web-directory', [$this->server, $site]), ['web_directory' => 'public-upgraded'])
+        ->assertRedirect()->assertSessionDoesntHaveErrors();
+    $this->assertDatabaseHas('sites', ['id' => $site->id, 'web_directory' => 'public-upgraded', 'path' => $site->path, 'source_control_id' => $source->id]);
 });
 
 test('application lifecycle state and generated paths cannot be mass assigned', function () {

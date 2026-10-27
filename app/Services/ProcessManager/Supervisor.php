@@ -146,7 +146,8 @@ class Supervisor extends AbstractProcessManager implements HasLogs
             view('ssh.services.process-manager.supervisor.delete-worker', [
                 'id' => $id,
                 'component' => $worker?->component_id !== null,
-                'logFile' => $logFile !== null && $this->isRootSafeLogPath($logFile) ? $logFile : null,
+                'logFile' => $logFile !== null && $this->isRootSafeLogPath($logFile)
+                    && ($worker->status === WorkerStatus::DELETING || $logFile !== $worker->defaultLogFile()) ? $logFile : null,
             ]),
             'delete-worker',
             $siteId
@@ -296,7 +297,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function getLogs(string $user, string $logPath): string
     {
-        return $this->service->server->ssh($user)->exec(
+        return $this->service->server->ssh($this->isRootSafeLogPath($logPath) ? 'root' : $user)->exec(
             'tail -100 -- '.escapeshellarg($logPath)
         );
     }

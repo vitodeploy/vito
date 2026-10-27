@@ -8,7 +8,6 @@ use App\Actions\CronJob\SyncCronJobs;
 use App\Enums\CronjobStatus;
 use App\Models\Component;
 use App\Models\ComponentCapability;
-use App\Models\CronJob;
 
 class InstallSchedulerCapability
 {
@@ -29,7 +28,7 @@ class InstallSchedulerCapability
             $cronJob->command = $capability->config['command'];
             $cronJob->status = CronjobStatus::UPDATING;
             $cronJob->save();
-            $component->server->cron()->update($component->user, CronJob::crontab($component->server, $component->user));
+            $component->server->cron()->update($component->user, app(SyncCronJobs::class)->crontab($component->server, $component->user));
             $cronJob->status = CronjobStatus::READY;
             $cronJob->save();
         }, background: true, atomic: true);

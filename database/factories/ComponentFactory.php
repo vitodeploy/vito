@@ -30,7 +30,7 @@ class ComponentFactory extends Factory
             'path' => function (array $attributes): string {
                 $environment = Environment::query()->findOrFail($attributes['environment_id']);
 
-                return '/home/'.$attributes['user'].'/app-'.$environment->application_id.'-'.$environment->slug;
+                return '/home/'.$attributes['user'].'/app-'.$environment->application_id.'-'.$environment->id;
             },
             'status' => ComponentStatus::PENDING,
             'last_error' => null,

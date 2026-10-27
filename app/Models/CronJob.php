@@ -6,6 +6,7 @@ use App\Enums\CronjobStatus;
 use App\Helpers\ComponentShell;
 use App\Traits\HasExclusiveOwner;
 use Database\Factories\CronJobFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -99,28 +100,25 @@ class CronJob extends AbstractModel
         return $value;
     }
 
+    /** @param Builder<self> $query */
+    public function scopeInCrontab(Builder $query, string $user): void
+    {
+        $query->with('component.environment.application', 'component.server', 'component.isolatedUser')
+            ->where('user', $user)
+            ->whereIn('status', [CronjobStatus::READY, CronjobStatus::CREATING, CronjobStatus::UPDATING, CronjobStatus::ENABLING]);
+    }
+
     public static function crontab(Server $server, string $user): string
     {
-        $data = '';
-        $cronJobs = $server->cronJobs()->with('component.environment.application', 'component.server', 'component.isolatedUser')
-            ->where('user', $user)
-            ->whereIn('status', [
-                CronjobStatus::READY,
-                CronjobStatus::CREATING,
-                CronjobStatus::UPDATING,
-                CronjobStatus::ENABLING,
-            ])
-            ->get();
-        /** @var CronJob $cronJob */
-        foreach ($cronJobs as $key => $cronJob) {
-            $command = $cronJob->component ? $cronJob->wrappedCommand() : ($user === 'root' ? $cronJob->command : self::wrapCommand($cronJob->command));
-            $data .= $cronJob->frequency.' '.$command;
-            if ($key != count($cronJobs) - 1) {
-                $data .= "\n";
-            }
-        }
+        return $server->cronJobs()->inCrontab($user)->get()
+            ->map(fn (CronJob $cronJob): string => $cronJob->crontabLine())->implode("\n");
+    }
 
-        return $data;
+    public function crontabLine(): string
+    {
+        $command = $this->component ? $this->wrappedCommand() : ($this->user === 'root' ? $this->command : self::wrapCommand($this->command));
+
+        return $this->frequency.' '.$command;
     }
 
     public function wrappedCommand(): string

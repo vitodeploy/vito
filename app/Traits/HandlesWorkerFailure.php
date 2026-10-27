@@ -87,6 +87,7 @@ trait HandlesWorkerFailure
     protected function broadcastWorkerUpdate(Worker $worker): void
     {
         $worker->refresh();
+        $worker->loadMissing('component.environment');
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $worker->server->project_id,

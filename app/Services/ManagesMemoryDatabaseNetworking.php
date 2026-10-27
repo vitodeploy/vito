@@ -6,6 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\ServerLog;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 trait ManagesMemoryDatabaseNetworking
@@ -142,8 +143,14 @@ trait ManagesMemoryDatabaseNetworking
      */
     protected function verifyNetworking(bool $expectedOpen): void
     {
-        $output = $this->service->server->ssh()->clearLog()->exec($this->networkingProbeCommand());
+        $output = $this->service->server->ssh()->clearLog()->exec(view('ssh.services.memory-database.verify-networking', [
+            'probe' => new HtmlString($this->networkingProbeCommand()),
+        ]));
         if ($expectedOpen ? preg_match('/^\s*bind\s+0\.0\.0\.0(\s+-?::)?\s*$/m', $output) === 1 : $this->parseNetworkingProbe($output) === false) {
+            $this->service->jsonUpdate('type_data', 'networking_dual_stack', $expectedOpen
+                && preg_match('/^\s*bind\s+0\.0\.0\.0\s+-?::\s*$/m', $output) === 1
+                && str_contains($output, 'VITO_IPV6_LISTENER'), save: false);
+
             return;
         }
 

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import { InertiaTableData } from '@forjedio/inertia-table-react';
 import { RocketIcon } from 'lucide-react';
@@ -16,20 +15,34 @@ export default function DeploymentsSheet({
   environment,
   deployments,
   deployment,
+  open,
+  returnToList,
   onClose,
 }: {
   application: Application;
   environment: Environment;
   deployments: InertiaTableData;
   deployment: EnvironmentDeployment | null;
+  open: boolean;
+  returnToList: boolean;
   onClose: () => void;
 }) {
   const baseUrl = `/applications/${application.id}/environments/${environment.id}/deployments`;
   const query = usePage().url.split('?')[1];
   const url = (id?: number | string) => `${baseUrl}${id ? `/${id}` : ''}${query ? `?${query}` : ''}`;
   const visit = (id?: number | string) => router.visit(url(id), { preserveState: true, preserveScroll: true, only: panelProps });
-  const [listOpen, setListOpen] = useState(!deployment);
-  if (!deployment && !listOpen) setListOpen(true);
+
+  if (deployment) {
+    return (
+      <DeploymentPanel
+        application={application}
+        environment={environment}
+        deployment={deployment}
+        open={open}
+        onClose={returnToList ? () => visit() : onClose}
+      />
+    );
+  }
 
   const content =
     deployments.data.length === 0 ? (
@@ -38,7 +51,6 @@ export default function DeploymentsSheet({
       <VitoTable
         tableData={deployments}
         onRowClick={(row) => visit(String(row.id))}
-        rowClassName={(row) => (row.id === deployment?.id ? 'bg-muted/60' : '')}
         cellRenderers={{
           status: ({ row }) => <Status status={String(row.status)} color={String(row._status_enum_color)} />,
           message: ({ row }) => (
@@ -62,20 +74,14 @@ export default function DeploymentsSheet({
     );
 
   return (
-    <>
-      {listOpen && (
-        <SidePanel
-          icon={RocketIcon}
-          title="Deployments"
-          subtitle={`Every deployment releases ${environment.branch} to all components at once.`}
-          tabs={[{ value: 'deployments', label: 'Deployments', content }]}
-          onClose={onClose}
-          sheet
-        />
-      )}
-      {deployment && (
-        <DeploymentPanel application={application} environment={environment} deployment={deployment} onClose={listOpen ? () => visit() : onClose} />
-      )}
-    </>
+    <SidePanel
+      icon={RocketIcon}
+      title="Deployments"
+      subtitle={`Every deployment releases ${environment.branch} to all components at once.`}
+      tabs={[{ value: 'deployments', label: 'Deployments', content }]}
+      onClose={onClose}
+      open={open}
+      sheet
+    />
   );
 }

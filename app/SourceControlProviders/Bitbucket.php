@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Throwable;
 
-class Bitbucket extends AbstractSourceControlProvider
+class Bitbucket extends AbstractSourceControlProvider implements SupportsApplications
 {
     protected string $apiUrl = 'https://api.bitbucket.org/2.0';
 
@@ -150,7 +150,12 @@ class Bitbucket extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->deployKey($title, $repo, $key);
+    }
+
+    public function deployKey(string $title, string $repo, string $key): string
     {
         return $this->registerDeployKey(
             fn () => Http::withHeaders($this->getAuthenticationHeaders()),

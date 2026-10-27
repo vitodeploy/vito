@@ -2,7 +2,6 @@
 
 namespace App\Actions\Site\Tooling;
 
-use App\DTOs\ToolingTargetDTO;
 use App\Models\Site;
 use App\Tooling\SiteToolingState;
 use App\Tooling\ToolingRegistry;
@@ -36,7 +35,7 @@ class GetSiteTooling
         $installed = [];
         $statuses = [];
         foreach (ToolingRegistry::all() as $id => $tool) {
-            $installed[$id] = $tool->installedVersion(ToolingTargetDTO::forSite($site));
+            $installed[$id] = $tool->installedVersion($site);
             $statuses[$id] = SiteToolingState::currentStatus($site, $id);
         }
 

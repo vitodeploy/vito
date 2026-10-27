@@ -6,10 +6,12 @@ use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
 use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Jobs\Component\DeletePurgedComponentDeployKeyJob;
 use App\Models\Application;
+use App\Models\Component;
 use App\Models\ComponentBackend;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
 use App\Models\Server;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -22,21 +24,7 @@ class PurgeServerComponents
     public function purge(Server $server): array
     {
         return DB::transaction(function () use ($server): array {
-            $environmentIds = $server->components()->toBase()->pluck('environment_id')->unique();
-            Application::query()->whereHas('environments', fn ($query) => $query->whereKey($environmentIds))->orderBy('id')->lockForUpdate()->get();
-            $environments = Environment::query()->whereKey($environmentIds)->orderBy('id')->lockForUpdate()->get();
-            $server = Server::query()->lockForUpdate()->findOrFail($server->id);
-            if (EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
-                throw ValidationException::withMessages(['server' => 'Detach the resources hosted by this server and finish cleanup before deleting it.']);
-            }
-            $components = $server->components()->lockForUpdate()
-                ->get(['id', 'server_id', 'environment_id', 'deploy_key_source_control_id', 'deploy_key_repository', 'deploy_key_id', 'ssh_key']);
-            if ($components->pluck('environment_id')->diff($environments->modelKeys())->isNotEmpty()) {
-                throw ValidationException::withMessages(['server' => 'Server components changed during deletion. Please retry.']);
-            }
-            foreach ($environments as $environment) {
-                app(AssertEnvironmentIdle::class)->validate($environment, 'server');
-            }
+            $components = $this->validate($server);
             $backends = ComponentBackend::query()->whereIn('component_id', $components->modelKeys())
                 ->orWhereIn('target_component_id', $components->modelKeys())->with('component', 'targetComponent')->get();
             $departure = [
@@ -44,10 +32,35 @@ class PurgeServerComponents
                 'environments' => $components->pluck('environment_id')->unique()->values()->all(),
                 'keys' => $components->filter(fn ($component) => $component->deploy_key_id !== null || $component->deploy_key_source_control_id !== null)->values()->toArray(),
             ];
+            Environment::query()->whereIn('primary_component_id', $components->modelKeys())->update(['primary_component_initialized' => false]);
             $server->components()->delete();
 
             return $departure;
         });
+    }
+
+    /**
+     * @return Collection<int, Component>
+     */
+    public function validate(Server $server): Collection
+    {
+        $environmentIds = $server->components()->toBase()->pluck('environment_id')->unique();
+        Application::query()->whereHas('environments', fn ($query) => $query->whereKey($environmentIds))->orderBy('id')->lockForUpdate()->get();
+        $environments = Environment::query()->whereKey($environmentIds)->orderBy('id')->lockForUpdate()->get();
+        $server = Server::query()->lockForUpdate()->findOrFail($server->id);
+        if (EnvironmentAttachment::query()->where('server_id', $server->id)->exists()) {
+            throw ValidationException::withMessages(['server' => 'Detach the resources hosted by this server and finish cleanup before deleting it.']);
+        }
+        $components = $server->components()->lockForUpdate()
+            ->get(['id', 'server_id', 'environment_id', 'deploy_key_source_control_id', 'deploy_key_repository', 'deploy_key_id', 'ssh_key']);
+        if ($components->pluck('environment_id')->diff($environments->modelKeys())->isNotEmpty()) {
+            throw ValidationException::withMessages(['server' => 'Server components changed during deletion. Please retry.']);
+        }
+        foreach ($environments as $environment) {
+            app(AssertEnvironmentIdle::class)->validate($environment, 'server');
+        }
+
+        return $components;
     }
 
     /**

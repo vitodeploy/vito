@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\DTOs\ToolingTargetDTO;
 use App\Models\Component;
+use App\Tooling\TargetToolingInterface;
 use App\Tooling\ToolingRegistry;
 
 final class ComponentShell
@@ -13,7 +14,8 @@ final class ComponentShell
         $target = ToolingTargetDTO::forComponent($component);
         $environment = SiteShellEnvironment::collect(new ToolingTargetDTO($target->server, $target->user, $target->isolatedUser, $target->phpVersion));
         $toolId = $component->environment->application->preset()->tooling();
-        $paths = $toolId === null ? [] : (ToolingRegistry::find($toolId)?->pathContributions($target) ?? []);
+        $tool = $toolId === null ? null : ToolingRegistry::find($toolId);
+        $paths = $tool instanceof TargetToolingInterface ? $tool->pathContributionsForTarget($target) : [];
         $environment['PATH'] = implode(':', [$component->basePath().'/bin', ...$paths, $environment['PATH'] ?? "/usr/local/bin:/usr/bin:/bin:/home/{$component->user}/.local/bin"]);
 
         $script = '';

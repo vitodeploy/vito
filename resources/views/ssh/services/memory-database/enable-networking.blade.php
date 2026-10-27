@@ -19,6 +19,9 @@ printf 'requirepass "%s"\n' "$VITO_MEMDB_PASSWORD" | sudo tee {{ $include }} > /
 sudo sed -i '/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d' {{ $conf }}
 
 bind='bind 0.0.0.0'
+if grep -q . /proc/net/if_inet6 2>/dev/null; then
+    bind='bind 0.0.0.0 ::'
+fi
 version="$({{ $owner }}-server --version 2>/dev/null | sed -nE 's/.*v=([0-9]+)\.([0-9]+).*/\1 \2/p')"
 if [ -n "$version" ]; then
     major="${version%% *}"

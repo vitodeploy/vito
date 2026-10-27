@@ -1,6 +1,11 @@
 <?php
 
+use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\Environment\GetEnvironmentTopology;
+use App\Actions\Environment\UpdateEnvironment;
+use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
+use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\EnvironmentAttachmentStatus;
@@ -24,6 +29,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -122,4 +128,58 @@ test('topology reads require authorization and scoped parents', function () {
     $this->getJson($this->url)->assertForbidden();
     auth()->logout();
     $this->getJson($this->url)->assertUnauthorized();
+});
+
+test('missing runtime plugins leave overview recovery sheets and deployment details readable', function () {
+    $this->application->update(['runtime' => 'missing-plugin']);
+    $component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
+    ComponentCapability::factory()->for($component)->create(['capability' => 'web', 'config' => ['port' => 12000]]);
+    $database = Database::factory()->for($this->server)->create();
+    EnvironmentAttachment::factory()->for($this->environment)->create([
+        'server_id' => $this->server->id, 'attachable_id' => $database->id,
+        'status' => EnvironmentAttachmentStatus::READY, 'credentials' => ['username' => 'application', 'password' => 'private-password'],
+    ]);
+    $this->environment->variables()->create(['key' => 'APP_ENV', 'value' => 'production', 'is_secret' => false]);
+    $run = EnvironmentDeployment::factory()->for($this->environment)->create(['status' => EnvironmentDeploymentStatus::FAILED]);
+
+    foreach (['', '/settings', '/variables', '/deployments', '/deployments/'.$run->id, '?component='.$component->id] as $query) {
+        $response = $this->get($this->url.$query)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('warnings', ['The runtime plugin is missing. Restore it before changing runtime configuration or deploying.'])
+            ->has('topology.nodes', 2));
+        if ($query === '/variables') {
+            $keys = array_column($response->viewData('page')['props']['variables'], 'key');
+            expect($keys)->toContain('APP_ENV', 'DATABASE_HOST')->not->toContain('DB_CONNECTION', 'PORT');
+        }
+    }
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Http::assertNothingSent();
+    Queue::assertNothingPushed();
+});
+
+test('missing runtime plugins reject configuration and deployment before mutations', function () {
+    $this->application->update(['runtime' => 'missing-plugin']);
+    $component = Component::factory()->for($this->environment)->for($this->server)->create(['status' => ComponentStatus::READY]);
+    $this->environment->update(['primary_component_id' => $component->id]);
+
+    expect(fn () => app(UpdateEnvironment::class)->update($this->environment, [
+        'name' => 'Changed', 'branch' => 'main', 'runtime_version' => '22',
+    ]))->toThrow(ValidationException::class, 'The runtime plugin is missing.');
+    expect(fn () => app(UpdateComponentCapabilities::class)->update($component, ['capabilities' => []]))
+        ->toThrow(ValidationException::class, 'The runtime plugin is missing.');
+    expect(fn () => app(DeployEnvironment::class)->run($this->environment, $this->user))
+        ->toThrow(ValidationException::class, 'The runtime plugin is missing.');
+    $domain = EnvironmentDomain::factory()->for($this->environment)->for($component)->create(['status' => HostedDomainStatus::ACTIVE]);
+    expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [
+        'host' => 'new.example.com', 'type' => 'alias', 'component_id' => $component->id, 'ssl_method' => 'none',
+    ]))->toThrow(ValidationException::class, 'The runtime plugin is missing.');
+    expect(fn () => app(DeleteEnvironmentDomain::class)->delete($domain))
+        ->toThrow(ValidationException::class, 'The runtime plugin is missing.');
+
+    $this->assertDatabaseHas('environment_domains', ['id' => $domain->id]);
+    $this->assertDatabaseMissing('environment_domains', ['host' => 'new.example.com']);
+    $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'name' => $this->environment->name]);
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'ready']);
+    $this->assertDatabaseCount('environment_deployments', 0);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
 });

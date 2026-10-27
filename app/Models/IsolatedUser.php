@@ -89,7 +89,7 @@ class IsolatedUser extends AbstractModel
             ->get()
             ->contains(fn (Component $component): bool => ($component->environment->runtime_version === $phpVersion || $component->installed_runtime_version === $phpVersion)
                 && $component->hasCapability('web')
-                && $component->environment->application->preset()->webMode() === WebMode::FPM);
+                && ($component->environment->application->presetOrNull()?->webMode() ?? WebMode::FPM) === WebMode::FPM);
     }
 
     public function lock(): Lock

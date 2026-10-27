@@ -2,6 +2,7 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
@@ -47,6 +48,7 @@ class UpdateComponentCapabilities
                     throw ValidationException::withMessages(['capabilities' => 'Only a ready component outside teardown can change capabilities.']);
                 }
 
+                app(GetApplicationRuntime::class)->get($component->environment->application, 'capabilities');
                 $existing = $component->capabilities()->get()->keyBy('capability');
                 foreach ($input['capabilities'] as $configuration) {
                     $capability = $existing->get($configuration['capability']) ?? new ComponentCapability([

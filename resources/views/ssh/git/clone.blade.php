@@ -21,7 +21,7 @@ if ! find {!! $path !!} -type d -exec chmod 755 {} \;; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! find {!! $path !!} -type f -exec chmod 644 {} \;; then
+if ! find {!! $path !!} -type f ! -perm -u+x -exec chmod 644 {} \; || ! find {!! $path !!} -type f -perm -u+x -exec chmod 755 {} \;; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @else
@@ -66,7 +66,7 @@ if ! find {!! $path !!} -type d -exec chmod 755 {} \;; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! find {!! $path !!} -type f -exec chmod 644 {} \;; then
+if ! find {!! $path !!} -type f ! -perm -u+x -exec chmod 644 {} \; || ! find {!! $path !!} -type f -perm -u+x -exec chmod 755 {} \;; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 

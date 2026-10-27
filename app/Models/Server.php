@@ -268,7 +268,10 @@ class Server extends AbstractModel
                 if ($service->type === 'firewall' && $component->load_balancer_backends_exists) {
                     return true;
                 }
-                $preset = $component->environment->application->preset();
+                $preset = $component->environment->application->presetOrNull();
+                if ($preset === null) {
+                    return true;
+                }
                 $versions = array_unique([
                     $component->environment->runtime_version ?? '',
                     $component->installed_runtime_version ?? $component->environment->runtime_version ?? '',
@@ -282,6 +285,9 @@ class Server extends AbstractModel
                 }
 
                 return $component->capabilities->contains(function (ComponentCapability $capability) use ($service, $preset, $versions): bool {
+                    if (! isset(config('component.capabilities', [])[$capability->capability])) {
+                        return true;
+                    }
                     if (! in_array($service->type, $capability->handler()->requiredServices($preset), true)) {
                         return false;
                     }

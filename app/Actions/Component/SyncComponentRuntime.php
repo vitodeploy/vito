@@ -10,6 +10,7 @@ use App\Enums\ComponentStatus;
 use App\Enums\EnvironmentStatus;
 use App\Enums\WebMode;
 use App\Models\Component;
+use App\Tooling\TargetToolingInterface;
 use App\Tooling\ToolingRegistry;
 use RuntimeException;
 
@@ -39,8 +40,11 @@ class SyncComponentRuntime
         $version = $component->environment->runtime_version;
         $toolId = $preset->tooling();
         if ($toolId !== null) {
-            $tool = ToolingRegistry::find($toolId) ?? throw new RuntimeException('The runtime tooling is unavailable.');
-            $tool->install(ToolingTargetDTO::forComponent($component), $preset->toolingVersion($version ?? ''));
+            $tool = ToolingRegistry::find($toolId);
+            if (! $tool instanceof TargetToolingInterface) {
+                throw new RuntimeException('The runtime tooling does not support components.');
+            }
+            $tool->installForTarget(ToolingTargetDTO::forComponent($component), $preset->toolingVersion($version ?? ''));
         }
         $executables = $preset->executables($version ?? '');
         if ($executables !== []) {

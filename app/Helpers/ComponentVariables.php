@@ -20,7 +20,7 @@ class ComponentVariables
         }
 
         $web = $component->capabilities->firstWhere('capability', 'web');
-        if ($web && $component->environment->application->preset()->webMode() === WebMode::PROXY && isset($web->config['port'])) {
+        if ($web && $component->environment->application->presetOrNull()?->webMode() === WebMode::PROXY && isset($web->config['port'])) {
             $variables['PORT'] = ['value' => (string) $web->config['port'], 'source' => 'vito', 'is_secret' => false];
         }
 
@@ -42,7 +42,7 @@ class ComponentVariables
             if ($generic === []) {
                 continue;
             }
-            $aliases = $component->environment->application->preset()->attachmentAliases($attachment, $generic);
+            $aliases = $component->environment->application->presetOrNull()?->attachmentAliases($attachment, $generic) ?? [];
             foreach ([...$generic, ...$aliases] as $key => $value) {
                 $variables[$key] = ['value' => $value, 'source' => 'resource',
                     'is_secret' => array_key_exists($key, $aliases) || str_ends_with($key, '_PASSWORD') || str_ends_with($key, '_URL')];

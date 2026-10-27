@@ -46,6 +46,7 @@ export default function CapabilityFields({
               <div className="grid gap-4 pb-1">
                 {option.form.map((field) => (
                   <DynamicField
+                    controlled
                     key={field.name}
                     config={field}
                     idPrefix={option.id}

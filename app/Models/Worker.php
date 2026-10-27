@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\DTOs\ToolingTargetDTO;
 use App\Enums\WorkerStatus;
 use App\Helpers\SiteShellEnvironment;
 use App\Services\ProcessManager\ProcessManager;
@@ -94,6 +93,7 @@ class Worker extends AbstractModel
                 /** @var ProcessManager $handler */
                 $handler = $service->handler();
 
+                self::query()->whereKey($worker->id)->update(['status' => WorkerStatus::DELETING]);
                 $handler->delete($worker->id, $worker->site_id);
             } catch (Throwable $e) {
                 Log::error($e);
@@ -176,7 +176,7 @@ class Worker extends AbstractModel
         $base = $this->environmentMap();
 
         if ($this->site_id && $this->site) {
-            return array_merge($base, SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this->site)));
+            return array_merge($base, SiteShellEnvironment::collect($this->site));
         }
 
         return $base;

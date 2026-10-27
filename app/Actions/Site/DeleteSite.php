@@ -35,17 +35,20 @@ class DeleteSite
 
         $deployKeyRemoved = true;
         if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
+            $deployKeyId = (string) $site->type_data['deploy_key_id'];
+            $site->jsonUpdate('type_data', 'deploy_key_id', null);
             try {
-                $site->sourceControl->provider()->deleteDeployKey(
-                    $site->type_data['deploy_key_id'],
+                app(SyncSiteDeployKey::class)->remove(
+                    $site->sourceControl,
                     $site->repository,
+                    $deployKeyId,
                 );
             } catch (Exception $e) {
                 $deployKeyRemoved = false;
                 Log::warning('Site deploy key cleanup failed; continuing site deletion.', [
                     'site_id' => $site->id,
                     'source_control_id' => $site->source_control_id,
-                    'deploy_key_id' => $site->type_data['deploy_key_id'],
+                    'deploy_key_id' => $deployKeyId,
                     'exception' => $e::class,
                 ]);
             }

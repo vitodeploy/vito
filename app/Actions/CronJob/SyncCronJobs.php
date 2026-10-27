@@ -38,6 +38,38 @@ class SyncCronJobs
     /**
      * @throws SSHError
      */
+    public function crontab(Server $server, string $user): string
+    {
+        $cronJobs = $server->cronJobs()->inCrontab($user)->get();
+        $unavailable = $cronJobs->filter(fn (CronJob $cronJob): bool => $cronJob->component !== null
+            && $cronJob->component->environment->application->presetOrNull() === null)->modelKeys();
+        $preserved = [];
+        if ($unavailable !== []) {
+            foreach (explode("\n", $this->getUserCrontab($server, $user)) as $line) {
+                if (preg_match('/ # vito-component-cron:(\d+)$/', trim($line), $matches) && in_array((int) $matches[1], $unavailable, true)) {
+                    $preserved[(int) $matches[1]] = $line;
+                }
+            }
+        }
+
+        $lines = [];
+        foreach ($cronJobs as $cronJob) {
+            if (in_array($cronJob->id, $unavailable, true)) {
+                if (isset($preserved[$cronJob->id])) {
+                    $lines[] = $preserved[$cronJob->id];
+                }
+
+                continue;
+            }
+            $lines[] = $cronJob->crontabLine();
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @throws SSHError
+     */
     public function sync(Server $server, bool $locked = false): void
     {
         if (! $locked) {

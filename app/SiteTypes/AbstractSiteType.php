@@ -4,9 +4,9 @@ namespace App\SiteTypes;
 
 use App\Actions\IsolatedUser\EnsureIsolatedUser;
 use App\Actions\PHP\EnsureFpmPool;
+use App\Actions\Site\SyncSiteDeployKey;
 use App\Actions\SourceControl\SetupDeployKey;
 use App\DTOs\SocketEventDTO;
-use App\DTOs\ToolingTargetDTO;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHCommandError;
@@ -77,7 +77,7 @@ abstract class AbstractSiteType implements SiteType
      */
     public function deploymentEnvironment(): array
     {
-        return SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this->site));
+        return SiteShellEnvironment::collect($this->site);
     }
 
     public function afterDeploy(Deployment $deployment): void
@@ -159,19 +159,7 @@ abstract class AbstractSiteType implements SiteType
             }
         }
 
-        if (empty($this->site->type_data['deploy_key_id'])) {
-            $key = $setupDeployKey->setup(
-                $this->site->server,
-                $user,
-                $keyName,
-                $this->site->sourceControl,
-                $this->site->repository,
-                $this->site->getDeployKeyName(),
-                publicKey: $this->site->ssh_key,
-                siteId: $this->site->id,
-            );
-            $this->site->jsonUpdate('type_data', 'deploy_key_id', $key['deploy_key_id']);
-        }
+        app(SyncSiteDeployKey::class)->setup($this->site);
     }
 
     /**
@@ -246,7 +234,7 @@ abstract class AbstractSiteType implements SiteType
                 continue;
             }
 
-            $tool->install(ToolingTargetDTO::forSite($this->site), $version);
+            $tool->install($this->site, $version);
 
             SiteToolingState::completeInstall($this->site, $toolId, $version);
 

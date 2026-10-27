@@ -1,6 +1,5 @@
 <?php
 
-use App\DTOs\ToolingTargetDTO;
 use App\Helpers\SiteShellEnvironment;
 use App\Models\Site;
 use App\SiteTypes\Laravel;
@@ -17,7 +16,7 @@ test('collect returns empty when no tools are installed', function () {
         'type_data' => [],
     ]);
 
-    expect(SiteShellEnvironment::collect(ToolingTargetDTO::forSite($site)))->toBe([]);
+    expect(SiteShellEnvironment::collect($site))->toBe([]);
 });
 
 test('collect returns mise shims on path when a tool is installed', function () {
@@ -30,7 +29,7 @@ test('collect returns mise shims on path when a tool is installed', function () 
     ]);
     $site->isolatedUser->setToolingVersion('node', '22');
 
-    $env = SiteShellEnvironment::collect(ToolingTargetDTO::forSite($site->refresh()));
+    $env = SiteShellEnvironment::collect($site->refresh());
 
     expect($env)->toHaveKey('PATH');
     expect($env['PATH'])->toStartWith('/home/isolated-node/.local/share/mise/shims:');
@@ -50,7 +49,7 @@ test('collect dedupes path entries from multiple mise tools', function () {
     $site->isolatedUser->setToolingVersion('bun', '1.2');
     $site->isolatedUser->setToolingVersion('pnpm', '9');
 
-    $env = SiteShellEnvironment::collect(ToolingTargetDTO::forSite($site->refresh()));
+    $env = SiteShellEnvironment::collect($site->refresh());
 
     expect($env)->toHaveKey('PATH');
     $occurrences = substr_count($env['PATH'], '/home/isolated-multi/.local/share/mise/shims');
@@ -60,7 +59,7 @@ test('collect dedupes path entries from multiple mise tools', function () {
 test('collect returns empty when site user is empty', function () {
     $site = new Site(['server_id' => $this->server->id, 'user' => '']);
 
-    expect(SiteShellEnvironment::collect(ToolingTargetDTO::forSite($site)))->toBe([]);
+    expect(SiteShellEnvironment::collect($site))->toBe([]);
 });
 
 test('wrap builds bash invocation with env and optional cd', function () {

@@ -5,6 +5,7 @@ namespace App\SSH\Mise;
 use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
 use App\Models\Server;
+use App\Models\Site;
 use InvalidArgumentException;
 
 class Mise
@@ -35,7 +36,15 @@ class Mise
     /**
      * @throws SSHError
      */
-    public function installRuntime(ToolingTargetDTO $target, string $runtime, string $version): void
+    public function installRuntime(Site $site, string $runtime, string $version): void
+    {
+        $this->installRuntimeForTarget(ToolingTargetDTO::forSite($site), $runtime, $version);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function installRuntimeForTarget(ToolingTargetDTO $target, string $runtime, string $version): void
     {
         $this->assertTarget($target);
 
@@ -53,7 +62,15 @@ class Mise
     /**
      * @throws SSHError
      */
-    public function uninstallRuntime(ToolingTargetDTO $target, string $runtime): void
+    public function uninstallRuntime(Site $site, string $runtime): void
+    {
+        $this->uninstallRuntimeForTarget(ToolingTargetDTO::forSite($site), $runtime);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function uninstallRuntimeForTarget(ToolingTargetDTO $target, string $runtime): void
     {
         $this->assertTarget($target);
 

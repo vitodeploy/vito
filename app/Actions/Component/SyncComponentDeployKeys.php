@@ -56,7 +56,7 @@ class SyncComponentDeployKeys
             if ($component->deploy_key_id !== null) {
                 return;
             }
-            $component->deploy_key_id = $sourceControl->provider()->findDeployKey($application->repository, $component->ssh_key ?? '');
+            $component->deploy_key_id = app(GetApplicationSourceControl::class)->provider($sourceControl)->findDeployKey($application->repository, $component->ssh_key ?? '');
             $component->save();
             if ($component->deploy_key_id !== null) {
                 return;
@@ -112,7 +112,7 @@ class SyncComponentDeployKeys
             throw new RuntimeException('The deploy key source control is unavailable.');
         }
 
-        $keyId ??= $sourceControl->provider()->findDeployKey($repository, $publicKey ?? '');
+        $keyId ??= app(GetApplicationSourceControl::class)->provider($sourceControl)->findDeployKey($repository, $publicKey ?? '');
         if ($keyId !== null) {
             $sourceControl->provider()->deleteDeployKey($keyId, $repository);
         }

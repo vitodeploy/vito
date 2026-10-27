@@ -396,3 +396,18 @@ test('unauthorized user cannot download', function () {
     $this->get(route('logs.services.download', ['server' => $this->server, 'key' => 'nginx:error']))
         ->assertForbidden();
 });
+
+test('missing component runtime plugins do not break legacy service log catalogue or reads', function () {
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'runtime' => 'missing-plugin']);
+    $environment = Environment::factory()->for($application)->create(['runtime_version' => '8.2']);
+    $component = Component::factory()->for($environment)->for($this->server)->create();
+    ComponentCapability::factory()->for($component)->create(['capability' => 'web']);
+    SSH::fake('legacy-php-output');
+    $this->actingAs($this->user);
+
+    $response = $this->get(route('logs.services', $this->server))->assertOk();
+    expect(array_column($response->viewData('page')['props']['catalogue'], 'key'))
+        ->toContain('php:8.2:fpm-journal', 'php:8.2:user:'.$this->site->user, 'nginx:error');
+    $this->postJson(route('logs.services.read', $this->server), ['key' => 'php:8.2:user:'.$this->site->user])
+        ->assertOk()->assertJson(['content' => 'legacy-php-output']);
+});

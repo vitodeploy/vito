@@ -2,6 +2,7 @@
 
 namespace App\Actions\EnvironmentDeployment;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentType;
 use App\Enums\EnvironmentStatus;
@@ -27,6 +28,7 @@ class RollbackEnvironment
 
     public function validate(Environment $environment, EnvironmentDeployment $target): void
     {
+        app(GetApplicationRuntime::class)->get($environment->application, 'deployment');
         if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY
             || $target->environment_id !== $environment->id || ! $target->canRollback()) {
             throw ValidationException::withMessages(['deployment' => 'Choose a finished non-join deployment whose release is retained on every deployed app component.']);

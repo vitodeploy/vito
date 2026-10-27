@@ -59,12 +59,16 @@ class SyncRepositoryGitHook
         }
     }
 
-    public function disableProject(Project $project): void
+    public function disableProject(Project $project, bool $afterCommit = true): void
     {
         Environment::query()->whereHas('application', fn ($query) => $query->where('project_id', $project->id))->update(['auto_deploy' => false]);
         foreach ($project->applications()->with('sourceControl')->get()->unique(fn ($application) => $application->source_control_id.':'.$application->repository) as $application) {
             if ($application->sourceControl) {
-                DB::afterCommit(fn () => $this->sync($application->sourceControl, $application->repository));
+                if ($afterCommit) {
+                    DB::afterCommit(fn () => $this->sync($application->sourceControl, $application->repository));
+                } else {
+                    $this->sync($application->sourceControl, $application->repository);
+                }
             }
         }
     }

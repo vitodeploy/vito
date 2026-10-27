@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class Github extends AbstractSourceControlProvider
+class Github extends AbstractSourceControlProvider implements SupportsApplications
 {
     private const string API_BASE_URL = 'https://api.github.com';
 
@@ -179,7 +179,17 @@ class Github extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
+    public function deployKey(string $title, string $repo, string $key): string
+    {
+        return $this->registerKey($title, $repo, $key, false);
+    }
+
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->registerKey($title, $repo, $key, true);
+    }
+
+    private function registerKey(string $title, string $repo, string $key, bool $readOnly): string
     {
         return $this->registerDeployKey(
             fn () => $this->getClient(),

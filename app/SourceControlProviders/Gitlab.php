@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class Gitlab extends AbstractSourceControlProvider
+class Gitlab extends AbstractSourceControlProvider implements SupportsApplications
 {
     protected string $defaultApiHost = 'https://gitlab.com/';
 
@@ -217,7 +217,17 @@ class Gitlab extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key, bool $readOnly = false): string
+    public function deployKey(string $title, string $repo, string $key): string
+    {
+        return $this->registerKey($title, $repo, $key, false);
+    }
+
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->registerKey($title, $repo, $key, true);
+    }
+
+    private function registerKey(string $title, string $repo, string $key, bool $readOnly): string
     {
         return $this->registerDeployKey(
             fn () => Http::withToken($this->data()['token']),

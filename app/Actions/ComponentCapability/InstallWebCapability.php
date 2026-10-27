@@ -48,7 +48,7 @@ class InstallWebCapability
         foreach ($component->workers()->where('component_capability_id', $capability->id)->get() as $worker) {
             app(DeleteWorker::class)->remove($worker);
         }
-        if ($component->environment->application->preset()->webMode() === WebMode::FPM) {
+        if (in_array($component->environment->application->presetOrNull()?->webMode(), [null, WebMode::FPM], true)) {
             foreach (array_unique(array_filter([$component->installed_runtime_version, $component->environment->runtime_version])) as $version) {
                 $this->removePool($component, $version);
             }

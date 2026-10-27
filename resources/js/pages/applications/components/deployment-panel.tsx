@@ -80,11 +80,13 @@ export default function DeploymentPanel({
   application,
   environment,
   deployment,
+  open,
   onClose,
 }: {
   application: Application;
   environment: Environment;
   deployment: EnvironmentDeployment;
+  open: boolean;
   onClose: () => void;
 }) {
   const dialog = useDialog();
@@ -165,7 +167,7 @@ export default function DeploymentPanel({
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      dialog.logViewer.open({
+                      dialog.logViewer.openNested({
                         serverId: component.server_id!,
                         logId: component.log_id!,
                         title: `${component.component_name} · deployment #${deployment.id}`,
@@ -206,7 +208,7 @@ export default function DeploymentPanel({
               variant="outline"
               size="sm"
               onClick={() =>
-                dialog.confirm.open({
+                dialog.confirm.openNested({
                   title: 'Cancel deployment',
                   description: 'No further stages will start. Work already running finishes first.',
                   confirmLabel: 'Cancel deployment',
@@ -227,7 +229,7 @@ export default function DeploymentPanel({
                     size="sm"
                     disabled={!deployment.rollback_available}
                     onClick={() =>
-                      dialog.confirm.open({
+                      dialog.confirm.openNested({
                         title: `Roll back to #${deployment.id}`,
                         description:
                           'Switches every component back to this release, runs the post-release script and restarts processes. Variables stay as they are, release-command effects (like migrations) are not undone, and any pending deployment is replaced.',
@@ -250,6 +252,7 @@ export default function DeploymentPanel({
       }
       tabs={[{ value: 'overview', label: 'Overview', content: overview }]}
       onClose={onClose}
+      open={open}
       sheet
     />
   );

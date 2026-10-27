@@ -383,6 +383,8 @@ test('clones serialize shared ssh config setup without mutating global git confi
         expect($clone)->toContain('flock -w 60 9 || exit 1', ') 9>~/.ssh/config.vito.lock; then');
         expect(strpos($clone, 'config.vito.lock'))->toBeLessThan(strpos($clone, 'git clone'));
     }
+    expect($clone)->toContain('-type f ! -perm -u+x -exec chmod 644', '-type f -perm -u+x -exec chmod 755')
+        ->not->toContain('-type f -exec chmod 644');
 })->with([false, true]);
 
 test('failed barrier jobs report a safe advancement error instead of a cleanup error', function () {

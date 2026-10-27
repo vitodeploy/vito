@@ -15,6 +15,7 @@ use App\Actions\Worker\InstallWorker;
 use App\Actions\Worker\ManageWorker;
 use App\Actions\Worker\RestartAllWorkers;
 use App\Enums\ComponentStatus;
+use App\Enums\CronjobStatus;
 use App\Enums\EnvironmentDeploymentStatus;
 use App\Enums\UserRole;
 use App\Enums\WorkerStatus;
@@ -44,6 +45,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
@@ -450,3 +452,56 @@ test('component restart handles an absent process manager without dereferencing 
         $this->assertDatabaseHas('workers', ['id' => $worker->id, 'status' => 'failed']);
     }
 })->with([false, true]);
+
+test('legacy cron mutations preserve running component commands when their runtime plugin is unavailable', function (string $operation, bool $siteOwned) {
+    $this->component->update(['user' => $this->server->getSshUser()]);
+    $componentCron = app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component->fresh());
+    $preserved = $componentCron->frequency.' '.$componentCron->wrappedCommand();
+    $site = $siteOwned ? $this->site : null;
+    $legacy = CronJob::factory()->for($this->server)->create([
+        'site_id' => $site?->id, 'user' => $this->server->getSshUser(), 'command' => 'echo legacy', 'frequency' => '* * * * *',
+        'status' => $operation === 'enable' ? CronjobStatus::DISABLED : CronjobStatus::READY,
+    ]);
+    $remote = $preserved."\n".($operation === 'enable' ? '#' : '').'* * * * * '.CronJob::wrapCommand('echo legacy');
+    SSH::fake($remote);
+    $this->application->update(['runtime' => 'missing-plugin']);
+    $input = ['name' => 'Legacy', 'command' => 'echo updated', 'frequency' => '0 0 * * *', 'user' => $legacy->user];
+
+    match ($operation) {
+        'create' => app(CreateCronJob::class)->create($this->server, $input, site: $site),
+        'edit' => app(EditCronJob::class)->edit($this->server, $legacy, $input, site: $site),
+        'enable' => app(EnableCronJob::class)->enable($this->server, $legacy),
+        'disable' => app(DisableCronJob::class)->disable($this->server, $legacy),
+        'delete' => app(DeleteCronJob::class)->delete($this->server, $legacy),
+    };
+
+    $rendered = app(SyncCronJobs::class)->crontab($this->server, $legacy->user);
+    expect($rendered)->toContain($preserved)->and(substr_count($rendered, 'vito-component-cron:'.$componentCron->id))->toBe(1);
+    SSH::assertExecutedContains(str_replace("'", "'\\''", $preserved));
+    $this->assertDatabaseHas('cron_jobs', ['id' => $componentCron->id, 'status' => 'ready', 'command' => $componentCron->command]);
+    if ($operation === 'delete') {
+        $this->assertDatabaseMissing('cron_jobs', ['id' => $legacy->id]);
+    } else {
+        $this->assertDatabaseHas('cron_jobs', ['id' => $legacy->id, 'status' => $operation === 'disable' ? 'disabled' : 'ready']);
+    }
+})->with(['create', 'edit', 'enable', 'disable', 'delete'])->with([false, true]);
+
+test('legacy cron API mutations preserve component tasks with a missing runtime plugin', function () {
+    $this->component->update(['user' => $this->server->getSshUser()]);
+    $componentCron = app(CreateCronJob::class)->create($this->server, $this->cronInput, component: $this->component->fresh());
+    $preserved = $componentCron->frequency.' '.$componentCron->wrappedCommand();
+    SSH::fake($preserved);
+    $this->application->update(['runtime' => 'missing-plugin']);
+    Sanctum::actingAs($this->user, ['read', 'write']);
+    $parameters = ['project' => $this->server->project, 'server' => $this->server];
+
+    $this->postJson(route('api.projects.servers.cron-jobs.create', $parameters), [
+        'command' => 'echo api', 'user' => $this->server->getSshUser(), 'frequency' => '* * * * *',
+    ])->assertSuccessful()->assertJsonFragment(['command' => 'echo api', 'status' => 'ready']);
+    $legacy = $this->server->cronJobs()->whereNull('component_id')->where('command', 'echo api')->sole();
+    $this->deleteJson(route('api.projects.servers.cron-jobs.delete', [...$parameters, 'cronJob' => $legacy]))->assertNoContent();
+
+    SSH::assertExecutedContains(str_replace("'", "'\\''", $preserved));
+    $this->assertDatabaseMissing('cron_jobs', ['id' => $legacy->id]);
+    $this->assertDatabaseHas('cron_jobs', ['id' => $componentCron->id, 'status' => 'ready']);
+});

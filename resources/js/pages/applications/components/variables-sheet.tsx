@@ -29,6 +29,7 @@ export default function VariablesSheet({
   variables,
   warnings,
   canUpdate,
+  open,
   onClose,
 }: {
   application: Application;
@@ -36,6 +37,7 @@ export default function VariablesSheet({
   variables: EnvironmentVariable[];
   warnings: string[];
   canUpdate: boolean;
+  open: boolean;
   onClose: () => void;
 }) {
   const dialog = useDialog();
@@ -44,8 +46,8 @@ export default function VariablesSheet({
   const editable = canUpdate && application.status === 'ready' && environment.status === 'ready';
   const own = variables.filter((variable) => variable.source === 'environment');
   const provided = variables.filter((variable) => variable.source !== 'environment');
-  const add = () => dialog.variableForm.open({ application, environment });
-  const importEnv = () => dialog.importEnv.open({ application, environment });
+  const add = () => dialog.variableForm.openNested({ application, environment });
+  const importEnv = () => dialog.importEnv.openNested({ application, environment });
   const columns = 'grid min-h-15 grid-cols-[minmax(0,2fr)_minmax(0,3fr)_8rem] items-center gap-4 px-4 py-3 text-sm';
 
   const content = (
@@ -87,12 +89,12 @@ export default function VariablesSheet({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => dialog.variableForm.open({ application, environment, variable })}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => dialog.variableForm.openNested({ application, environment, variable })}>Edit</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"
                       onSelect={() =>
-                        dialog.confirm.open({
+                        dialog.confirm.openNested({
                           title: `Delete ${variable.key}`,
                           description: 'It is removed from every component on the next deploy.',
                           variant: 'destructive',
@@ -165,6 +167,7 @@ export default function VariablesSheet({
       }
       tabs={[{ value: 'variables', label: 'Variables', content }]}
       onClose={onClose}
+      open={open}
       sheet
     />
   );

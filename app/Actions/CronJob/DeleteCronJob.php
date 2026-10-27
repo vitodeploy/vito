@@ -36,7 +36,7 @@ class DeleteCronJob
         $user = $cronJob->user;
         $cronJob->status = CronjobStatus::DELETING;
         $cronJob->save();
-        $server->cron()->update($cronJob->user, CronJob::crontab($server, $user));
+        $server->cron()->update($cronJob->user, app(SyncCronJobs::class)->crontab($server, $user));
         $cronJob->delete();
     }
 }

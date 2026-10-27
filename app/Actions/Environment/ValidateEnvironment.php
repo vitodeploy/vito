@@ -2,6 +2,7 @@
 
 namespace App\Actions\Environment;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Models\Application;
 use App\Models\Environment;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +16,7 @@ class ValidateEnvironment
      */
     public function validate(Application $application, array $input, ?Environment $environment = null): void
     {
-        $versions = $application->preset()->versions();
+        $versions = app(GetApplicationRuntime::class)->get($application, 'runtime_version')->versions();
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', Rule::unique('environments')->where('application_id', $application->id)->ignore($environment)],

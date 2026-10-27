@@ -283,7 +283,11 @@ Additional extension points:
   These aliases have lower priority than explicit environment variables and are conservatively masked in UI
   responses. Never expose credentials through warnings, catalogue descriptors or dynamic-form defaults.
 
-Runtime tooling receives `ToolingTargetDTO::forComponent()`. Mise runtime versions and executable links
+Application tooling opts into `App\Tooling\TargetToolingInterface`; its `installForTarget()`,
+`uninstallForTarget()`, `installedVersionForTarget()` and `pathContributionsForTarget()` methods receive
+`ToolingTargetDTO::forComponent()`. The existing `ToolingInterface` methods continue to receive a `Site`,
+so existing Site tooling plugins do not need to change. Built-in Mise and Composer providers support both
+contracts. Mise runtime versions and executable links
 are selected per component directory. Composer installs under the component's `.local/vito/bin`, without
 changing the user's shell profiles or shared Site installation. `sharedTooling()` defaults to `true`,
 protecting shared runtime installations from Site tooling removal; PHP and Laravel return `false` because
@@ -639,6 +643,12 @@ the interface directly means you must add all four.
 
 The `RegisterSourceControl` builder also accepts `->connectable(bool)` and `->usableForSites(bool)`,
 and v4.x ships a built-in GitHub App provider.
+
+Applications support is optional. Implement `App\SourceControlProviders\SupportsApplications` to add
+`repositoryRules()`, `deployReadOnlyKey($title, $repo, $key)`, `findDeployKey($repo, $key)`, and
+`getPushBranches($payload)`. Key registration must reconcile retries by public key, and push parsing
+must ignore tag and branch-deletion events. Existing Site providers keep the three-argument
+`deployKey($title, $repo, $key)` contract and continue working without these additions.
 
 :::danger
 If you override `editableFields()` to return a non-empty list, you must also override `editData()` to

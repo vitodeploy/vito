@@ -1,6 +1,8 @@
 <?php
 
 use App\Actions\Site\DeleteSite;
+use App\Actions\Site\Deploy;
+use App\Actions\Site\SyncSiteDeployKey;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
@@ -21,9 +23,11 @@ use App\SiteTypes\Blank;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\Wordpress;
+use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -711,6 +715,124 @@ test('site deletion still removes deploy keys when the provider accepts cleanup'
         && $request->url() === 'https://api.github.com/repos/organization/repository/keys/123');
     Log::shouldNotHaveReceived('warning');
 })->with([204, 404]);
+
+test('shared site deploy keys survive deleting or disconnecting either site across source credentials', function (bool $differentCredentials, string $operation, string $repositoryA, string $repositoryB) {
+    SSH::fake();
+    Queue::fake();
+    Http::preventStrayRequests();
+    $source = $this->site->sourceControl;
+    $otherSource = $source;
+    if ($differentCredentials) {
+        $otherSource = $source->replicate();
+        $otherSource->save();
+    }
+    $siteA = Site::factory()->create([
+        'server_id' => $this->server->id, 'source_control_id' => $source->id, 'repository' => $repositoryA,
+        'user' => 'sharedkeys', 'domain' => 'key-a.test', 'path' => '/home/sharedkeys/key-a.test',
+    ]);
+    $siteB = Site::factory()->create([
+        'server_id' => $this->server->id, 'source_control_id' => $otherSource->id, 'repository' => $repositoryB,
+        'user' => 'sharedkeys', 'domain' => 'key-b.test', 'path' => '/home/sharedkeys/key-b.test',
+    ]);
+    $siteA->isolatedUser->update(['ssh_key' => 'ssh-rsa shared-user-key']);
+    $registrations = 0;
+    Http::fake(function ($request) use (&$registrations) {
+        if ($request->method() === 'POST') {
+            $registrations++;
+
+            return $registrations === 1 ? Http::response(['id' => 321], 201) : Http::response([], 422);
+        }
+        if ($request->method() === 'GET' && str_contains($request->url(), '/keys')) {
+            return Http::response([['id' => 321, 'key' => 'ssh-rsa shared-user-key']]);
+        }
+
+        return Http::response([], $request->method() === 'DELETE' ? 204 : 200);
+    });
+    app(SyncSiteDeployKey::class)->setup($siteA);
+    app(SyncSiteDeployKey::class)->setup($siteB);
+    $this->assertDatabaseHas('sites', ['id' => $siteA->id, 'type_data->deploy_key_id' => '321']);
+    $this->assertDatabaseHas('sites', ['id' => $siteB->id, 'type_data->deploy_key_id' => '321']);
+
+    if ($operation === 'delete') {
+        app(DeleteSite::class)->delete($siteA, ['domain' => $siteA->domain]);
+        $this->assertDatabaseMissing('sites', ['id' => $siteA->id]);
+    } else {
+        $replacement = SourceControl::factory()->github()->create(['project_id' => $this->user->current_project_id, 'user_id' => $this->user->id]);
+        $this->actingAs($this->user)->patch(route('site-settings.update-source-control', [$this->server, $siteA]), [
+            'source_control' => $replacement->id,
+        ])->assertSessionDoesntHaveErrors();
+        $this->assertDatabaseHas('sites', ['id' => $siteA->id, 'source_control_id' => $replacement->id, 'type_data->deploy_key_id' => null]);
+    }
+
+    Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE');
+    $this->assertDatabaseHas('sites', ['id' => $siteB->id, 'type_data->deploy_key_id' => '321']);
+    expect($siteB->fresh()->getSshKeyName())->toBe($siteA->getSshKeyName());
+    app(Deploy::class)->run($siteB->fresh());
+    $this->assertDatabaseHas('deployments', ['site_id' => $siteB->id]);
+
+    app(DeleteSite::class)->delete($siteB->fresh(), ['domain' => $siteB->domain]);
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/321'));
+})->with([false, true])->with(['delete', 'source swap'])->with([
+    'same spelling' => ['owner/shared', 'owner/shared'],
+    'case alias peer' => ['owner/shared', 'Owner/Shared'],
+    'case alias removed' => ['Owner/Shared', 'owner/shared'],
+]);
+
+test('site key registration holds its repository lock until the reference is saved', function (string $repository) {
+    SSH::fake();
+    Http::preventStrayRequests();
+    $source = $this->site->sourceControl;
+    $repoUrl = $source->provider()->fullRepoUrl('owner/shared', '');
+    $lockKey = 'site-deploy-key:'.hash('sha256', $repoUrl);
+    $this->site->update(['ssh_key' => 'ssh-rsa site-key', 'repository' => $repository]);
+    Http::fake(function () use ($lockKey) {
+        expect(Cache::lock($lockKey, 600)->get())->toBeFalse();
+
+        return Http::response(['id' => 321], 201);
+    });
+    Event::listen('eloquent.saving: '.Site::class, function (Site $site) use ($lockKey): void {
+        if (($site->type_data['deploy_key_id'] ?? null) === '321') {
+            expect(Cache::lock($lockKey, 600)->get())->toBeFalse();
+        }
+    });
+
+    app(SyncSiteDeployKey::class)->setup($this->site);
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'type_data->deploy_key_id' => '321']);
+    expect(Cache::lock($lockKey, 600)->get(fn (): bool => true))->toBeTrue();
+})->with(['owner/shared', 'Owner/shared', 'owner/Shared']);
+
+test('site key cleanup respects custom repository hosts and path casing', function (string $peerHost, string $peerRepository, int $deletions) {
+    SSH::fake();
+    Http::preventStrayRequests();
+    $provider = new class(new SourceControl) extends Gitea
+    {
+        public static int $deletions = 0;
+
+        public function deleteDeployKey(string $keyId, string $repo): void
+        {
+            self::$deletions++;
+        }
+    };
+    $provider::$deletions = 0;
+    config(['source-control.providers.case-sensitive-fixture.handler' => $provider::class]);
+    $source = SourceControl::factory()->create(['provider' => 'case-sensitive-fixture', 'url' => 'https://git-one.example/']);
+    $peer = SourceControl::factory()->create(['provider' => 'case-sensitive-fixture', 'url' => $peerHost]);
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id, 'source_control_id' => $peer->id, 'repository' => $peerRepository,
+    ]);
+    $site->jsonUpdate('type_data', 'deploy_key_id', '321');
+
+    app(SyncSiteDeployKey::class)->remove($source, 'owner/shared', '321');
+
+    expect($provider::$deletions)->toBe($deletions);
+    $this->assertDatabaseHas('sites', ['id' => $site->id, 'type_data->deploy_key_id' => '321']);
+    Http::assertNothingSent();
+})->with([
+    'same host and path' => ['https://git-one.example/', 'owner/shared', 0],
+    'different host' => ['https://git-two.example/', 'owner/shared', 1],
+    'case-sensitive path' => ['https://git-one.example/', 'Owner/Shared', 1],
+]);
 
 test('site deletion still fails when remote teardown fails', function () {
     SSH::fake()->execWillFail();

@@ -29,9 +29,10 @@ interface DynamicFieldProps {
   config: DynamicFieldConfig;
   error?: string;
   idPrefix?: string;
+  controlled?: boolean;
 }
 
-export default function DynamicField({ value, onChange, config, error, idPrefix }: DynamicFieldProps) {
+export default function DynamicField({ value, onChange, config, error, idPrefix, controlled = false }: DynamicFieldProps) {
   const fieldId = `${config.type === 'checkbox' ? 'switch' : 'field'}-${idPrefix ? `${idPrefix}-` : ''}${config.name}`;
   const defaultLabel = config.name.replaceAll('_', ' ');
   const label = config?.label || defaultLabel;
@@ -53,6 +54,8 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
       setInitialValue(true);
     }
   }, [initialValue, setInitialValue, onChange, value, config]);
+
+  const inputValue = controlled ? { value: value as string | number | string[] } : { defaultValue: (value as string) || '' };
 
   // Handle alert
   if (config?.type === 'alert') {
@@ -101,7 +104,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
     return (
       <FormField>
         <div className="flex items-center space-x-2">
-          <Switch id={fieldId} defaultChecked={value as boolean} onCheckedChange={onChange} />
+          <Switch id={fieldId} {...(controlled ? { checked: Boolean(value) } : { defaultChecked: value as boolean })} onCheckedChange={onChange} />
           <Label htmlFor={fieldId}>{label}</Label>
           {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
           <InputError message={error} />
@@ -117,7 +120,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
         <Label htmlFor={fieldId} className="capitalize">
           {label}
         </Label>
-        <Select defaultValue={value as string} onValueChange={onChange}>
+        <Select {...(controlled ? { value: String(value) } : { defaultValue: value as string })} onValueChange={onChange}>
           <SelectTrigger id={fieldId}>
             <SelectValue placeholder={config.placeholder || `Select ${label}`} />
           </SelectTrigger>
@@ -148,7 +151,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
         <Textarea
           name={config.name}
           id={fieldId}
-          defaultValue={(value as string) || ''}
+          {...inputValue}
           placeholder={config.placeholder}
           onChange={(e) => onChange(e.target.value)}
           className={config.className}
@@ -170,7 +173,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
           type="password"
           name={config.name}
           id={fieldId}
-          defaultValue={(value as string) || ''}
+          {...inputValue}
           placeholder={config.placeholder}
           onChange={(e) => onChange(e.target.value)}
           autoComplete="off"
@@ -192,7 +195,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
         <PasswordInput
           name={config.name}
           id={fieldId}
-          defaultValue={(value as string) || ''}
+          {...inputValue}
           placeholder={config.placeholder}
           onChange={(e) => onChange(e.target.value)}
           autoComplete="off"
@@ -229,7 +232,7 @@ export default function DynamicField({ value, onChange, config, error, idPrefix 
       type="text"
       name={config.name}
       id={fieldId}
-      defaultValue={(value as string) || ''}
+      {...inputValue}
       onChange={(e) => onChange(e.target.value)}
       className={guideSteps ? 'pr-10' : undefined}
       {...props}

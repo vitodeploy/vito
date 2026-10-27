@@ -84,7 +84,10 @@ class Ufw extends AbstractFirewall implements HasLogs
         $ordinary = $networkRules->concat($serverRules->where('component_managed', false)->where('status', '!=', FirewallRuleStatus::DELETING))
             ->reject(fn ($rule): bool => $rule->protocol === 'tcp' && $managedPorts->contains((string) $rule->port)
                 && ($rule->source === null || (string) $rule->mask === '0'));
-        $rules = $managed->where('type', 'allow')->where('status', '!=', FirewallRuleStatus::DELETING)->concat($denies)->concat($ordinary);
+        $resourcePorts = $serverRules->whereNotNull('environment_attachment_id')->pluck('port')->map(fn ($port): string => (string) $port);
+        $explicitAllow = fn ($rule): bool => $rule->type === 'allow' && $rule->protocol === 'tcp' && $resourcePorts->contains((string) $rule->port);
+        $rules = $managed->where('type', 'allow')->where('status', '!=', FirewallRuleStatus::DELETING)
+            ->concat($ordinary->filter($explicitAllow))->concat($denies)->concat($ordinary->reject($explicitAllow));
 
         $finalize = app(FinalizeServerNetworkRules::class);
 
@@ -92,8 +95,8 @@ class Ufw extends AbstractFirewall implements HasLogs
             $server->ssh()->exec(
                 view('ssh.services.firewall.ufw.apply-rules', [
                     'rules' => $rules,
-                    'requireIpv6' => $serverRules->whereNotNull('environment_attachment_id')->isNotEmpty(),
-                    'resourceRules' => $rules->where('component_managed', true)->whereIn('port', $serverRules->whereNotNull('environment_attachment_id')->pluck('port')),
+                    'requireIpv6' => $resourcePorts->isNotEmpty(),
+                    'resourceRules' => $rules->filter(fn ($rule): bool => $rule->component_managed || $explicitAllow($rule))->whereIn('port', $resourcePorts),
                 ]),
                 'apply-rules'
             );

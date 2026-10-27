@@ -2,6 +2,7 @@
 
 namespace App\Actions\EnvironmentDomain;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\HostedDomain\AssertHostAvailable;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
@@ -66,6 +67,7 @@ class ValidateEnvironmentDomain
         if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY) {
             throw ValidationException::withMessages(['host' => 'Domains cannot change during teardown.']);
         }
+        app(GetApplicationRuntime::class)->get($environment->application, 'host');
     }
 
     /** @param array<string, mixed> $input */

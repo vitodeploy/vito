@@ -29,7 +29,7 @@ class ValidateApplication
 
         $sourceControl = SourceControl::query()->findOrFail($input['source_control_id']);
         Gate::forUser($actor)->authorize('view', $sourceControl);
-        $provider = $sourceControl->provider();
+        $provider = app(GetApplicationSourceControl::class)->provider($sourceControl);
 
         Validator::make($input, [
             'repository' => $provider->repositoryRules(),

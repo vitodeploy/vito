@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\DTOs\ToolingTargetDTO;
 use App\Enums\DeploymentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
@@ -165,7 +164,7 @@ class Site extends AbstractModel
     public function ssh(): SSH
     {
         return $this->server->ssh($this->user)->variables(
-            SiteShellEnvironment::collect(ToolingTargetDTO::forSite($this))
+            SiteShellEnvironment::collect($this)
         );
     }
 

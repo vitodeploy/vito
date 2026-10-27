@@ -2,6 +2,7 @@
 
 namespace App\Actions\Component;
 
+use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\EnvironmentDeployment\AssertEnvironmentIdle;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
@@ -106,6 +107,8 @@ class ValidateComponentProcess
             || ($process === null && ! $component->hasCapability($capability)))) {
             throw ValidationException::withMessages(['name' => 'The component and its capability must be ready before managing processes.']);
         }
+
+        app(GetApplicationRuntime::class)->get($component->environment->application, 'name');
 
         Validator::make($input, [
             'user' => ['sometimes', Rule::in([$component->user])],

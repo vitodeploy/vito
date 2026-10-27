@@ -7,7 +7,7 @@ Attach a new or existing database, or an installed Redis/Valkey service, from an
 The resource and app servers must belong to the application's project. Same-server access uses loopback. Remote components require a shared available private network, and the resource server needs a ready firewall with IPv4 and IPv6 enforcement.
 
 ::: warning Strict remote access
-Attaching restricts the resource's service port to attached app component sources. This is **service-port-wide**, not isolation of one database row: unrelated remote Sites, tools and clients may lose access. Existing ordinary database users/data are preserved, but their remote reachability is not guaranteed. Networking changes can restart the service. Redis/Valkey needs password authentication, including for local clients.
+Attaching restricts the resource's service port to attached app component sources. This is **service-port-wide**, not isolation of one database row: unrelated remote Sites, tools and clients may lose access. Server firewall allow rules for that port with a specific source IP or CIDR keep working; rules allowing any source and network-wide allow-all rules no longer reach the port. Existing ordinary database users/data are preserved. Networking changes can restart the service. Redis/Valkey needs password authentication, including for local clients.
 :::
 
 Read the confirmation warning and plan downtime/access changes before attaching. Wait until the attachment is **Ready** before deploying. Failures preserve cleanup information and offer Retry. Attach/detach operations require an idle environment.
