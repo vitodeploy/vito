@@ -15,10 +15,20 @@ abstract class AbstractGenerateConfig
 {
     protected const PHP_VALUE_TOKEN = '@@VITO_PHP_VALUE@@';
 
+    /**
+     * An alias that is updating is usually live already (DNS re-check, SSL
+     * renewal), so it keeps its place in the site's server blocks.
+     *
+     * @var array<int, HostedDomainStatus>
+     */
+    protected const SERVED_STATUSES = [
+        HostedDomainStatus::ACTIVE,
+        HostedDomainStatus::UPDATING,
+    ];
+
     /** @var array<int, HostedDomainStatus> */
     protected const UNVERIFIED_STATUSES = [
         HostedDomainStatus::CREATING,
-        HostedDomainStatus::UPDATING,
         HostedDomainStatus::PENDING,
     ];
 
@@ -130,7 +140,7 @@ abstract class AbstractGenerateConfig
             ->first(fn (HostedDomain $hd) => $hd->type === HostedDomainType::PRIMARY);
 
         $activeOthers = $site->hostedDomains
-            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && $hd->status === HostedDomainStatus::ACTIVE);
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::SERVED_STATUSES, true));
 
         $domains = $activeOthers;
         if ($primary) {

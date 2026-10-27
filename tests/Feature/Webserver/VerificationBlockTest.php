@@ -190,6 +190,26 @@ test('nginx omits the pending challenge block when every domain is active', func
         return 404;', $vhost);
 });
 
+test('nginx keeps an updating alias in the site server block instead of the challenge block', function () {
+    HostedDomain::factory()->primary()->create([
+        'site_id' => $this->site->id,
+        'domain' => $this->site->domain,
+    ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'live.example.com',
+        'status' => HostedDomainStatus::UPDATING,
+    ]);
+
+    $this->site->update(['verification_key' => 'updatingKey11']);
+    $this->site->refresh();
+
+    $vhost = $this->site->webserver()->generateVhost($this->site);
+
+    $this->assertStringContainsString('server_name '.$this->site->domain.' live.example.com;', $vhost);
+    $this->assertStringNotContainsString('server_name live.example.com;', $vhost);
+});
+
 test('caddy serves the challenge for pending alias domains before they are active', function () {
     vitoPestFeatureWebserverVerificationBlockTestSwitchToCaddy();
 
