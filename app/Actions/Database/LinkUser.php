@@ -2,8 +2,10 @@
 
 namespace App\Actions\Database;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\EnvironmentAttachment;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -18,8 +20,9 @@ class LinkUser
      *
      * @throws ValidationException
      */
-    public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
+    public function link(DatabaseUser $databaseUser, array $input, ?EnvironmentAttachment $attachment = null): DatabaseUser
     {
+        app(ValidateEnvironmentResource::class)->databaseUser($databaseUser, $attachment);
         $this->validate($databaseUser->server, $input);
 
         if (! isset($input['databases']) || ! is_array($input['databases'])) {

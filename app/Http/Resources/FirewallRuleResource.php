@@ -24,6 +24,7 @@ class FirewallRuleResource extends JsonResource
             'source' => $this->source,
             'mask' => $this->mask,
             'note' => $this->note,
+            'component_managed' => $this->component_managed,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,

@@ -41,6 +41,17 @@ import EditNetworkServer from '@/pages/networks/components/edit-network-server';
 import NetworkFirewallRuleForm from '@/pages/networks/components/firewall-rule-form';
 import AddNetworkPeer from '@/pages/networks/components/add-peer';
 import PeerConfigDialog from '@/pages/networks/components/peer-config';
+import CreateApplication from '@/pages/applications/components/create-application';
+import EnvironmentForm from '@/pages/applications/components/environment-form';
+import DeleteApplicationResource from '@/pages/applications/components/delete-dialog';
+import AddComponent from '@/pages/applications/components/add-component';
+import DeleteComponent from '@/pages/applications/components/delete-component';
+import VariableForm from '@/pages/applications/components/variable-form';
+import ImportEnv from '@/pages/applications/components/import-env';
+import DeploymentScriptEditor from '@/pages/applications/components/deployment-script';
+import DomainForm from '@/pages/applications/components/domain-form';
+import AttachResource from '@/pages/applications/components/attach-resource';
+import EnvironmentSheet from '@/pages/applications/components/environment-sheet';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -99,9 +110,23 @@ export const dialogs = {
   networkFirewallForm: NetworkFirewallRuleForm,
   networkAddPeer: AddNetworkPeer,
   networkPeerConfig: PeerConfigDialog,
+  createApplication: CreateApplication,
+  createEnvironment: EnvironmentForm,
+  deleteApplicationResource: DeleteApplicationResource,
+  addComponent: AddComponent,
+  deleteComponent: DeleteComponent,
+  variableForm: VariableForm,
+  importEnv: ImportEnv,
+  environmentDeploymentScript: DeploymentScriptEditor,
+  environmentDomainForm: DomainForm,
+  attachResource: AttachResource,
+  environmentSheet: EnvironmentSheet,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 
 export type DialogRegistry = typeof dialogs;
+
+/** Dialogs whose owning page synchronizes their lifecycle with navigation. */
+export const routeDialogs: ReadonlyArray<keyof DialogRegistry> = ['environmentSheet'];
 
 export type ConsumerProps<C> = C extends ComponentType<infer P> ? Omit<P, keyof DialogControlProps> : never;

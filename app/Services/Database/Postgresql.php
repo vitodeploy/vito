@@ -3,6 +3,7 @@
 namespace App\Services\Database;
 
 use App\DTOs\ServiceLog;
+use App\Enums\DatabaseUserStatus;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\DatabaseUser;
@@ -83,7 +84,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
         $this->service->server->ssh()->exec(
             view($this->getNetworkingScriptView('write-networking'), [
                 ...$this->networkingScriptData(),
-                'address' => $enable ? '0.0.0.0' : 'localhost',
+                'address' => $enable ? '*' : 'localhost',
                 'open' => $enable,
             ]),
             ($enable ? 'enable' : 'disable').'-postgresql-networking'
@@ -106,11 +107,12 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
      */
     protected function verifyNetworking(bool $expectedOpen): void
     {
-        $expected = $expectedOpen ? '0.0.0.0' : 'localhost';
+        $expected = $expectedOpen ? '*' : 'localhost';
 
         if (! $this->networkingValueMatches($this->networkingListenAddresses(), $expected)) {
             throw new SSHCommandError("{$this->service->name} is not listening on {$expected} after the restart.");
         }
+        $this->service->jsonUpdate('type_data', 'networking_dual_stack', $expectedOpen, save: false);
     }
 
     public function networkingProbeCommand(): string
@@ -182,7 +184,14 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
      */
     public function deleteUser(string $username, string $host): void
     {
+        $attachment = $this->service->server->databaseUsers()->where('username', $username)->where('host', $host)->first()?->environmentAttachment;
         foreach ($this->userDatabases($username, $host) as $database) {
+            if ($attachment) {
+                $this->service->server->ssh()->exec(view($this->getScriptView('reassign-user'), [
+                    'username' => $username, 'database' => $database,
+                    'owner' => ! $attachment->isDeleting() && $username !== $attachment->credentials['username'] ? $attachment->credentials['username'] : 'postgres',
+                ]), 'reassign-database-user');
+            }
             $this->reconcilePrivileges($database, [$username]);
         }
 
@@ -223,13 +232,17 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
         ));
 
         $roster = $this->service->server->databaseUsers()
+            ->with('environmentAttachment')
             ->get()
+            ->filter(fn (DatabaseUser $user): bool => $user->environment_attachment_id === null || $user->status === DatabaseUserStatus::READY)
             ->filter(fn (DatabaseUser $user): bool => in_array($database, (array) $user->databases, true))
             ->filter(fn (DatabaseUser $user): bool => ! in_array($user->username, $revokeOnly, true))
             ->filter(fn (DatabaseUser $user): bool => preg_match('/^[A-Za-z0-9_-]+$/', $user->username) === 1)
             ->map(fn (DatabaseUser $user): array => [
                 'username' => $user->username,
                 'permission' => $user->permission->value,
+                'owner' => $user->environmentAttachment && $user->username !== $user->environmentAttachment->credentials['username']
+                    ? $user->environmentAttachment->credentials['username'] : null,
             ])
             ->values()
             ->all();

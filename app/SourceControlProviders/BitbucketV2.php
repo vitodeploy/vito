@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
-class BitbucketV2 extends AbstractSourceControlProvider
+class BitbucketV2 extends AbstractSourceControlProvider implements SupportsApplications
 {
     protected string $apiUrl = 'https://api.bitbucket.org/2.0';
 
@@ -90,22 +90,13 @@ class BitbucketV2 extends AbstractSourceControlProvider
                 return $tokenData['access_token'] ?? null;
             }
 
-            $errorBody = $response->json();
-            $errorMessage = $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
-
             Log::error('Failed to get Bitbucket access token with client credentials', [
                 'status' => $response->status(),
-                'body' => $response->body(),
-                'error' => $errorMessage,
             ]);
 
-            throw new Exception($errorMessage);
-        } catch (Exception $e) {
-            Log::error('Error getting Bitbucket access token with client credentials', [
-                'error' => $e->getMessage(),
-            ]);
-
-            throw $e;
+            throw new Exception('Unable to authenticate with Bitbucket.');
+        } catch (Throwable) {
+            throw new Exception('Unable to authenticate with Bitbucket.');
         }
     }
 
@@ -207,7 +198,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
             throw new FailedToDestroyGitHook($e->getMessage());
         }
 
-        if ($response->status() !== 204) {
+        if (! in_array($response->status(), [204, 404], true)) {
             $errorBody = $response->json();
             $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
             throw new FailedToDestroyGitHook($errorMessage);
@@ -220,7 +211,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $res = Http::withHeaders($this->getAuthenticationHeaders())
-            ->get($this->apiUrl."/repositories/$repo/commits?include=".$branch);
+            ->get($this->apiUrl."/repositories/$repo/commits", ['include' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 
@@ -246,27 +237,23 @@ class BitbucketV2 extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->deployKey($title, $repo, $key);
+    }
+
     public function deployKey(string $title, string $repo, string $key): string
     {
-        try {
-            $res = Http::withHeaders($this->getAuthenticationHeaders())->post(
-                $this->apiUrl."/repositories/$repo/deploy-keys",
-                [
-                    'label' => $title,
-                    'key' => $key,
-                ]
-            );
+        return $this->registerDeployKey(
+            fn () => Http::withHeaders($this->getAuthenticationHeaders()),
+            $this->apiUrl."/repositories/$repo/deploy-keys",
+            ['label' => $title, 'key' => $key], pageSizeParameter: 'pagelen', collectionKey: 'values',
+        );
+    }
 
-            if ($res->status() !== 200) {
-                $errorBody = $res->json();
-                $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $res->body();
-                throw new FailedToDeployGitKey($errorMessage);
-            }
-
-            return $res->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => Http::withHeaders($this->getAuthenticationHeaders()), $this->apiUrl."/repositories/$repo/deploy-keys", $key, pageSizeParameter: 'pagelen', collectionKey: 'values');
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -275,20 +262,11 @@ class BitbucketV2 extends AbstractSourceControlProvider
             $response = Http::withHeaders($this->getAuthenticationHeaders())
                 ->delete($this->apiUrl."/repositories/$repo/deploy-keys/$keyId");
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Bitbucket deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Exception $e) {
-            Log::error('Error deleting Bitbucket deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 
@@ -336,6 +314,13 @@ class BitbucketV2 extends AbstractSourceControlProvider
         return [
             'Authorization' => 'Bearer '.$accessToken,
         ];
+    }
+
+    public function getPushBranches(array $payload): array
+    {
+        return collect(data_get($payload, 'push.changes', []))
+            ->filter(fn (array $change): bool => data_get($change, 'new.type') === 'branch' && ! ($change['closed'] ?? false))
+            ->pluck('new.name')->filter(fn ($name): bool => is_string($name) && $name !== '')->unique()->values()->all();
     }
 
     public function getWebhookBranch(array $payload): string

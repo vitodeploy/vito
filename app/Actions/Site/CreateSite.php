@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Actions\HostedDomain\AssertHostAvailable;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SiteStatus;
@@ -19,6 +20,8 @@ use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -37,12 +40,26 @@ class CreateSite
      */
     public function create(Server $server, array $input, User $actor): Site
     {
+        return app(AssertHostAvailable::class)->run($server->id, 'domain', fn (): Site => $this->createLocked($server, $input, $actor));
+    }
+
+    /** @param array<string, mixed> $input */
+    private function createLocked(Server $server, array $input, User $actor): Site
+    {
         $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
 
         $this->validate($server, $input);
 
-        DB::beginTransaction();
+        $lock = $server->isolatedUserLock($input['user']);
         try {
+            $lock->block(30);
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages(['user' => 'Another operation on this Linux user is in progress. Please retry.']);
+        }
+
+        try {
+            DB::beginTransaction();
+            $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
             $user = $input['user'];
 
             $isolatedUser = $user !== $server->getSshUser()
@@ -127,20 +144,22 @@ class CreateSite
             $site->commands()->createMany($site->type()->baseCommands());
 
             DB::commit();
-
-            dispatch(new CreateJob($site));
-
-            return $site;
         } catch (Exception $e) {
             DB::rollBack();
-            if ($e instanceof AuthorizationException) {
+            if ($e instanceof AuthorizationException || $e instanceof RequestException) {
                 throw $e;
             }
 
             throw ValidationException::withMessages([
                 'type' => $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
+
+        dispatch(new CreateJob($site));
+
+        return $site;
     }
 
     private function validate(Server $server, array $input): void
@@ -153,9 +172,15 @@ class CreateSite
             'domain' => [
                 'required',
                 new DomainRule,
-                Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $server->id)),
+            ],
+            'aliases' => [
+                'nullable',
+                'array',
             ],
             'aliases.*' => [
+                'bail',
+                'required',
+                'string',
                 new DomainRule,
             ],
             'user' => [
@@ -171,6 +196,11 @@ class CreateSite
         ];
 
         Validator::make($input, array_merge($rules, $this->typeRules($server, $input)))->validate();
+
+        app(AssertHostAvailable::class)->assert($server, $input['domain'], 'domain');
+        foreach ($input['aliases'] ?? [] as $index => $alias) {
+            app(AssertHostAvailable::class)->assert($server, $alias, 'aliases.'.$index);
+        }
     }
 
     /**

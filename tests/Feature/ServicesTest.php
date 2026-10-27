@@ -1,17 +1,43 @@
 <?php
 
+use App\Actions\Service\Uninstall;
+use App\Enums\ComponentStatus;
 use App\Enums\OperatingSystem;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Jobs\Service\UninstallJob;
+use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+test('process manager removal protects worker capabilities before any workers exist', function () {
+    SSH::fake();
+    Queue::fake();
+    $component = Component::factory()->create(['server_id' => $this->server->id, 'status' => ComponentStatus::READY]);
+    $capability = ComponentCapability::factory()->for($component)->create(['capability' => 'worker', 'status' => ComponentStatus::READY]);
+    $service = $this->server->processManager();
+    $this->assertDatabaseCount('workers', 0);
+
+    expect(fn () => app(Uninstall::class)->uninstall($service))->toThrow(ValidationException::class);
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'status' => ServiceStatus::READY]);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+
+    $capability->delete();
+    app(Uninstall::class)->uninstall($service);
+    Queue::assertPushed(UninstallJob::class);
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'status' => ServiceStatus::UNINSTALLING]);
+});
 
 test('see services list', function () {
     $this->actingAs($this->user);

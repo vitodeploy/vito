@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Actions\Component\SyncLoadBalancerBackends;
+use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
+use App\Actions\GitHook\SyncRepositoryGitHook;
 use App\Events\SiteCreatedEvent;
 use App\Events\SiteDeletedEvent;
 use App\Events\SocketEvent;
@@ -9,10 +12,14 @@ use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SFTP;
 use App\Helpers\SSH;
+use App\Http\Middleware\TrimStrings;
 use App\Listeners\HandleSiteCreatedStats;
 use App\Listeners\HandleSiteDeletedStats;
 use App\Listeners\SocketEventListener;
+use App\Models\NetworkServer;
 use App\Models\PersonalAccessToken;
+use App\Models\Project;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -30,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
     {
         ResourceCollection::withoutWrapping();
 
+        TrimStrings::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
+        ConvertEmptyStringsToNull::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
+
         // facades
         $this->app->bind('ssh', fn (): SSH => new SSH);
         $this->app->bind('notifier', fn (): Notifier => new Notifier);
@@ -42,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceHttps();
         }
 
+        Event::listen('eloquent.deleting: '.Project::class, fn (Project $project) => app(SyncRepositoryGitHook::class)->disableProject($project));
+        Event::listen('eloquent.saved: '.NetworkServer::class, fn (NetworkServer $member) => app(SyncLoadBalancerBackends::class)->membershipChanged($member));
+        Event::listen('eloquent.saved: '.NetworkServer::class, fn (NetworkServer $member) => app(SyncEnvironmentResourceAccess::class)->membershipChanged($member));
         Event::listen(SocketEvent::class, SocketEventListener::class);
         Event::listen(SiteCreatedEvent::class, HandleSiteCreatedStats::class);
         Event::listen(SiteDeletedEvent::class, HandleSiteDeletedStats::class);

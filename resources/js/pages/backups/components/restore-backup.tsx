@@ -38,12 +38,9 @@ export default function RestoreBackup({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(
-      `/servers/${backup.server_id}/backups/${backup.id}/files/${file.id}/restore`,
-      {
-        onSuccess: () => onOpenChange(false),
-      },
-    );
+    form.post(`/servers/${backup.server_id}/backups/${backup.id}/files/${file.id}/restore`, {
+      onSuccess: () => onOpenChange(false),
+    });
   };
 
   return (

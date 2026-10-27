@@ -2,10 +2,11 @@
 
 namespace App\Tooling;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 
-class ComposerTooling extends AbstractTooling
+class ComposerTooling extends AbstractTooling implements TargetToolingInterface
 {
     public const string INSTALL_DIR = '.local/vito/bin';
 
@@ -39,14 +40,23 @@ class ComposerTooling extends AbstractTooling
      */
     public function install(Site $site, string $version): void
     {
-        $site->server->ssh($site->user)->exec(
+        $this->installForTarget(ToolingTargetDTO::forSite($site), $version);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function installForTarget(ToolingTargetDTO $target, string $version): void
+    {
+        $target->server->ssh($target->user)->exec(
             view('ssh.composer.install', [
-                'phpVersion' => $site->php_version,
+                'phpVersion' => $target->phpVersion,
                 'majorVersion' => $version,
                 'installDir' => self::INSTALL_DIR,
+                'configDir' => $target->configDir,
             ]),
             'install-composer',
-            $site->id
+            $target->siteId
         );
     }
 
@@ -55,17 +65,26 @@ class ComposerTooling extends AbstractTooling
      */
     public function uninstall(Site $site): void
     {
-        $site->server->ssh($site->user)->exec(
+        $this->uninstallForTarget(ToolingTargetDTO::forSite($site));
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function uninstallForTarget(ToolingTargetDTO $target): void
+    {
+        $target->server->ssh($target->user)->exec(
             view('ssh.composer.uninstall', [
                 'installDir' => self::INSTALL_DIR,
+                'configDir' => $target->configDir,
             ]),
             'uninstall-composer',
-            $site->id
+            $target->siteId
         );
     }
 
-    public function pathContributions(Site $site): array
+    public function pathContributionsForTarget(ToolingTargetDTO $target): array
     {
-        return ['/home/'.$site->user.'/'.self::INSTALL_DIR];
+        return [($target->configDir ?? '/home/'.$target->user).'/'.self::INSTALL_DIR];
     }
 }

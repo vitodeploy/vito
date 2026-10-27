@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\WorkerStatus;
 use App\Helpers\SiteShellEnvironment;
 use App\Services\ProcessManager\ProcessManager;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\WorkerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,9 @@ use Throwable;
 
 /**
  * @property int $server_id
- * @property int $site_id
+ * @property ?int $site_id
+ * @property ?int $component_id
+ * @property ?int $component_capability_id
  * @property string $command
  * @property string $user
  * @property bool $auto_start
@@ -21,15 +24,18 @@ use Throwable;
  * @property int $numprocs
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $environment
  * @property int $redirect_stderr
- * @property string $stdout_logfile
+ * @property ?string $stdout_logfile
  * @property WorkerStatus $status
  * @property ?string $error
  * @property string $name
  * @property Server $server
+ * @property ?Component $component
  * @property ?Site $site
  */
 class Worker extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<WorkerFactory> */
     use HasFactory;
 
@@ -43,7 +49,6 @@ class Worker extends AbstractModel
         'numprocs',
         'environment',
         'redirect_stderr',
-        'stdout_logfile',
         'status',
         'name',
     ];
@@ -51,6 +56,8 @@ class Worker extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'component_id' => 'integer',
+        'component_capability_id' => 'integer',
         'auto_start' => 'boolean',
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
@@ -59,17 +66,34 @@ class Worker extends AbstractModel
         'status' => WorkerStatus::class,
     ];
 
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
+
     public static function boot(): void
     {
         parent::boot();
 
         static::deleting(function (Worker $worker): void {
+            if ($worker->component_id !== null) {
+                return;
+            }
             try {
                 /** @var Service $service */
                 $service = $worker->server->processManager();
                 /** @var ProcessManager $handler */
                 $handler = $service->handler();
 
+                self::query()->whereKey($worker->id)->update(['status' => WorkerStatus::DELETING]);
                 $handler->delete($worker->id, $worker->site_id);
             } catch (Throwable $e) {
                 Log::error($e);
@@ -97,6 +121,14 @@ class Worker extends AbstractModel
     }
 
     /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
+    }
+
+    /**
      * @return BelongsTo<Site, covariant $this>
      */
     public function site(): BelongsTo
@@ -106,16 +138,20 @@ class Worker extends AbstractModel
 
     public function getLogDirectory(): string
     {
-        if ($this->user === 'root') {
-            return '/root/.logs/workers';
-        }
-
-        return '/home/'.$this->user.'/.logs/workers';
+        return dirname($this->getLogFile());
     }
 
+    /**
+     * The recorded log path, or the default one for a worker that has not been installed yet.
+     */
     public function getLogFile(): string
     {
-        return $this->getLogDirectory().'/'.$this->id.'.log';
+        return $this->stdout_logfile ?? $this->defaultLogFile();
+    }
+
+    public function defaultLogFile(): string
+    {
+        return "/var/log/vito/workers/{$this->user}/{$this->id}.log";
     }
 
     /**

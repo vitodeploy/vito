@@ -41,6 +41,7 @@ return [
             'database' => storage_path((string) env('DB_DATABASE', 'database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'transaction_mode' => 'IMMEDIATE',
         ],
 
         'mysql' => [

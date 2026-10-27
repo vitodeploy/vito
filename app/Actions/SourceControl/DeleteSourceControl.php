@@ -21,6 +21,12 @@ class DeleteSourceControl
             ]);
         }
 
+        if ($sourceControl->applications()->exists()) {
+            throw ValidationException::withMessages([
+                'source_control' => __('This source control is being used by an application.'),
+            ]);
+        }
+
         $sourceControl->delete();
     }
 }

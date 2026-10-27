@@ -10,6 +10,12 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
+    location ^~ /.well-known/vito/ {
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        alias /var/lib/vito/verify/;
+    }
+
     location / {
         expires 1h;
         add_header Cache-Control "public, max-age=3600" always;

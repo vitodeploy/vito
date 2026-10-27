@@ -2,6 +2,8 @@
 
 namespace App\Jobs\ServerIp;
 
+use App\Actions\Network\CheckEnvironmentResourceNetwork;
+use App\Actions\Network\CheckLoadBalancerNetwork;
 use App\Actions\ServerIp\RefreshServerIps;
 use App\DTOs\SocketEventDTO;
 use App\Enums\IpAddressStatus;
@@ -28,6 +30,10 @@ class PersistServerIpsJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function (): void {
+            foreach ($this->server->ipAddresses()->where('status', IpAddressStatus::DELETING)->get() as $address) {
+                app(CheckLoadBalancerNetwork::class)->address($address);
+                app(CheckEnvironmentResourceNetwork::class)->address($address);
+            }
             app(RefreshServerIps::class)->handle($this->server);
 
             $managed = $this->server->ipAddresses()

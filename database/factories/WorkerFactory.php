@@ -24,7 +24,7 @@ class WorkerFactory extends Factory
             'numprocs' => 1,
             'environment' => null,
             'redirect_stderr' => 1,
-            'stdout_logfile' => 'file.log',
+            'stdout_logfile' => null,
             'status' => WorkerStatus::CREATING,
         ];
     }

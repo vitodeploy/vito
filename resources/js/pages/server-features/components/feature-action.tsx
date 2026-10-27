@@ -29,12 +29,9 @@ export default function FeatureAction({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(
-      `/servers/${server.id}/features/${encodeURIComponent(featureId)}/${encodeURIComponent(actionId)}`,
-      {
-        onSuccess: () => onOpenChange(false),
-      },
-    );
+    form.post(`/servers/${server.id}/features/${encodeURIComponent(featureId)}/${encodeURIComponent(actionId)}`, {
+      onSuccess: () => onOpenChange(false),
+    });
   };
 
   return (
