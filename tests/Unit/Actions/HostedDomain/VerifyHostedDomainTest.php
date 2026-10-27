@@ -4,6 +4,7 @@ use App\Actions\HostedDomain\VerifyHostedDomain;
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Enums\HostedDomainStatus;
 use App\Facades\SSH;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -208,4 +209,23 @@ test('does not rewrite the vhost when it already has the challenge route', funct
     app(VerifyHostedDomain::class)->verify($domain);
 
     $ssh->assertNotExecutedContains('reload');
+});
+
+test('takes a renamed alias back out of the site server block when its check fails', function () {
+    $ssh = SSH::fake();
+    Http::fake(fn () => Http::response(['Answer' => []], 200));
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'renamed.example.com',
+        'status' => HostedDomainStatus::UPDATING,
+    ]);
+
+    app()->call([new CheckDomainJob($domain), 'handle']);
+
+    expect($domain->refresh()->status)->toBe(HostedDomainStatus::PENDING);
+    expect($ssh->getUploadedContent())
+        ->toContain('server_name renamed.example.com;')
+        ->not->toContain(' renamed.example.com renamed.example.com');
+    $this->assertStringNotContainsString('server_name '.$this->site->domain.' renamed.example.com', $ssh->getUploadedContent());
 });

@@ -111,20 +111,8 @@ class VerifyHostedDomain
             return true;
         }
 
-        // Custom templates don't carry the challenge block, so rewriting them would only reload the web server for nothing.
-        if ($site->vhost_template !== null || ! $site->vhost_generation_enabled) {
-            return true;
-        }
-
         try {
-            $webserver = $site->webserver();
-
-            // The retry job runs every few minutes; only touch the web server when the vhost changed.
-            if (trim($webserver->getVHost($site)) === trim($webserver->generateVhost($site))) {
-                return true;
-            }
-
-            $webserver->updateVHost($site);
+            $this->syncVhost($site);
 
             return true;
         } catch (Throwable $e) {
@@ -135,6 +123,27 @@ class VerifyHostedDomain
 
             return false;
         }
+    }
+
+    /**
+     * Rewrite the site's vhost when the domains it should serve have changed,
+     * for example after a domain failed verification and went back to pending.
+     */
+    public function syncVhost(Site $site): void
+    {
+        // Custom templates don't carry the challenge block, so rewriting them would only reload the web server for nothing.
+        if ($site->vhost_template !== null || ! $site->vhost_generation_enabled) {
+            return;
+        }
+
+        $webserver = $site->webserver();
+
+        // The retry job runs every few minutes; only touch the web server when the vhost changed.
+        if (trim($webserver->getVHost($site)) === trim($webserver->generateVhost($site))) {
+            return;
+        }
+
+        $webserver->updateVHost($site);
     }
 
     private function expectedBody(Site $site, HostedDomain $hostedDomain, string $challengeId): string
