@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Webserver\GenerateNginxConfig;
+use App\Enums\HostedDomainStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\SslStatus;
 use App\Models\HostedDomain;
@@ -145,6 +146,90 @@ test('caddy omits http verification block for http only site', function () {
 
     $this->assertStringContainsString('handle_path /.well-known/vito/caddyPlain1/*', $vhost);
     $this->assertStringNotContainsString('redir https://{host}{uri} permanent', $vhost);
+});
+
+test('nginx serves the challenge for pending alias domains before they are active', function () {
+    HostedDomain::factory()->primary()->create([
+        'site_id' => $this->site->id,
+        'domain' => $this->site->domain,
+    ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'pending.example.com',
+        'status' => HostedDomainStatus::PENDING,
+    ]);
+
+    $this->site->update(['verification_key' => 'pendingKey77']);
+    $this->site->refresh();
+
+    $vhost = $this->site->webserver()->generateVhost($this->site);
+
+    $this->assertMatchesRegularExpression('/server_name pending\.example\.com;/', $vhost);
+    $this->assertStringContainsString('location ^~ /.well-known/vito/pendingKey77/', $vhost);
+    $this->assertStringNotContainsString('server_name '.$this->site->domain.' pending.example.com', $vhost);
+});
+
+test('nginx omits the pending challenge block when every domain is active', function () {
+    HostedDomain::factory()->primary()->create([
+        'site_id' => $this->site->id,
+        'domain' => $this->site->domain,
+    ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'active.example.com',
+        'status' => HostedDomainStatus::ACTIVE,
+    ]);
+
+    $this->site->update(['verification_key' => 'activeKey88']);
+    $this->site->refresh();
+
+    $vhost = $this->site->webserver()->generateVhost($this->site);
+
+    $this->assertStringNotContainsString('server_name active.example.com;', $vhost);
+    $this->assertStringNotContainsString('location / {
+        return 404;', $vhost);
+});
+
+test('nginx keeps an updating alias in the site server block instead of the challenge block', function () {
+    HostedDomain::factory()->primary()->create([
+        'site_id' => $this->site->id,
+        'domain' => $this->site->domain,
+    ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'live.example.com',
+        'status' => HostedDomainStatus::UPDATING,
+    ]);
+
+    $this->site->update(['verification_key' => 'updatingKey11']);
+    $this->site->refresh();
+
+    $vhost = $this->site->webserver()->generateVhost($this->site);
+
+    $this->assertStringContainsString('server_name '.$this->site->domain.' live.example.com;', $vhost);
+    $this->assertStringNotContainsString('server_name live.example.com;', $vhost);
+});
+
+test('caddy serves the challenge for pending alias domains before they are active', function () {
+    vitoPestFeatureWebserverVerificationBlockTestSwitchToCaddy();
+
+    HostedDomain::factory()->primary()->create([
+        'site_id' => $this->site->id,
+        'domain' => $this->site->domain,
+    ]);
+    HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'pending.example.com',
+        'status' => HostedDomainStatus::CREATING,
+    ]);
+
+    $this->site->update(['verification_key' => 'caddyPending9']);
+    $this->site->refresh();
+
+    $vhost = $this->server->webserver()->handler()->generateVhost($this->site);
+
+    $this->assertStringContainsString('http://pending.example.com {', $vhost);
+    $this->assertStringContainsString('respond 404', $vhost);
 });
 
 function vitoPestFeatureWebserverVerificationBlockTestSwitchToCaddy(): void

@@ -100,6 +100,20 @@
 }
 
 {{/has_http_verification}}
+{{#has_pending_verification}}
+{{#pending_verification_domains}}{{address}} {{/pending_verification_domains}}{
+    handle_path /.well-known/vito/{{verification_key}}/* {
+        root * /var/lib/vito/verify/{{verification_key}}
+        header Cache-Control "no-store"
+        file_server
+    }
+
+    handle {
+        respond 404
+    }
+}
+
+{{/has_pending_verification}}
 {{#redirect_blocks}}
 {{#domains}}{{address}} {{/domains}}{
     {{#has_tls}}

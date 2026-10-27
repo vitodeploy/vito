@@ -4,6 +4,7 @@ use App\Actions\HostedDomain\VerifyHostedDomain;
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Enums\HostedDomainStatus;
 use App\Facades\SSH;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -155,4 +156,76 @@ test('fails when no ips resolve', function () {
 
     expect($result->verified)->toBeFalse();
     $this->assertStringContainsString('HTTP', $result->failureReason);
+});
+
+test('publishes the challenge route in the site vhost before verifying a pending domain', function () {
+    $ssh = SSH::fake();
+    Http::fake(fn () => Http::response(['Answer' => []], 200));
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'unpublished.example.com',
+        'status' => HostedDomainStatus::CREATING,
+    ]);
+
+    app(VerifyHostedDomain::class)->verify($domain);
+
+    $ssh->assertExecutedContains('/etc/nginx/sites-available/'.$this->site->domain);
+    expect($ssh->getUploadedContent())
+        ->toContain('server_name unpublished.example.com;')
+        ->toContain('/.well-known/vito/');
+});
+
+test('does not rewrite the vhost when verifying an already active domain', function () {
+    $ssh = SSH::fake();
+    Http::fake(fn () => Http::response(['Answer' => []], 200));
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'live.example.com',
+        'status' => HostedDomainStatus::ACTIVE,
+    ]);
+
+    app(VerifyHostedDomain::class)->verify($domain);
+
+    $ssh->assertNotExecutedContains('/etc/nginx/sites-available/');
+});
+
+test('does not rewrite the vhost when it already has the challenge route', function () {
+    Http::fake(fn () => Http::response(['Answer' => []], 200));
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'already.example.com',
+        'status' => HostedDomainStatus::PENDING,
+    ]);
+
+    $this->site->refresh();
+    app(EnsureSiteVerificationKey::class)->ensure($this->site);
+    $current = $this->site->webserver()->generateVhost($this->site->refresh());
+
+    $ssh = SSH::fake($current);
+
+    app(VerifyHostedDomain::class)->verify($domain);
+
+    $ssh->assertNotExecutedContains('reload');
+});
+
+test('takes a renamed alias back out of the site server block when its check fails', function () {
+    $ssh = SSH::fake();
+    Http::fake(fn () => Http::response(['Answer' => []], 200));
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'renamed.example.com',
+        'status' => HostedDomainStatus::UPDATING,
+    ]);
+
+    app()->call([new CheckDomainJob($domain), 'handle']);
+
+    expect($domain->refresh()->status)->toBe(HostedDomainStatus::PENDING);
+    expect($ssh->getUploadedContent())
+        ->toContain('server_name renamed.example.com;')
+        ->not->toContain(' renamed.example.com renamed.example.com');
+    $this->assertStringNotContainsString('server_name '.$this->site->domain.' renamed.example.com', $ssh->getUploadedContent());
 });

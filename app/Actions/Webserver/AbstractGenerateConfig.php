@@ -16,6 +16,23 @@ abstract class AbstractGenerateConfig
     protected const PHP_VALUE_TOKEN = '@@VITO_PHP_VALUE@@';
 
     /**
+     * An alias that is updating is usually live already (DNS re-check, SSL
+     * renewal), so it keeps its place in the site's server blocks.
+     *
+     * @var array<int, HostedDomainStatus>
+     */
+    protected const SERVED_STATUSES = [
+        HostedDomainStatus::ACTIVE,
+        HostedDomainStatus::UPDATING,
+    ];
+
+    /** @var array<int, HostedDomainStatus> */
+    protected const UNVERIFIED_STATUSES = [
+        HostedDomainStatus::CREATING,
+        HostedDomainStatus::PENDING,
+    ];
+
+    /**
      * Generate the full vhost config for a site.
      */
     public function generate(Site $site, ?string $template = null): string
@@ -123,14 +140,27 @@ abstract class AbstractGenerateConfig
             ->first(fn (HostedDomain $hd) => $hd->type === HostedDomainType::PRIMARY);
 
         $activeOthers = $site->hostedDomains
-            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && $hd->status === HostedDomainStatus::ACTIVE);
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::SERVED_STATUSES, true));
 
         $domains = $activeOthers;
         if ($primary) {
             $domains = $domains->prepend($primary);
         }
 
-        return $this->buildFromHostedDomains($site, $domains);
+        $data = $this->buildFromHostedDomains($site, $domains);
+
+        $pendingDomains = $site->hostedDomains
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::UNVERIFIED_STATUSES, true))
+            ->map(fn (HostedDomain $hd) => ['name' => $hd->domain, 'address' => 'http://'.$hd->domain])
+            ->values()
+            ->all();
+
+        // Domains waiting for verification must answer the HTTP challenge
+        // before they can become active and join the real server blocks.
+        $data['has_pending_verification'] = $pendingDomains !== [] && ! empty($data['verification_key']);
+        $data['pending_verification_domains'] = $pendingDomains;
+
+        return $data;
     }
 
     /**
