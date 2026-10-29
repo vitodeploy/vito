@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Backup\DownloadBackupFile;
 use App\Actions\Backup\RestoreBackup;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
@@ -17,6 +18,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Prefix('servers/{server}/backups/{backup}/files')]
 #[Middleware(['auth', 'has-project'])]
@@ -35,6 +37,16 @@ class BackupFileController extends Controller
                 $backup->files()->with('backup')->latest()->simplePaginate(config('web.pagination_size'))
             ),
         ]);
+    }
+
+    #[Get('/{backupFile}/download', name: 'backup-files.download')]
+    public function download(Server $server, Backup $backup, BackupFile $backupFile): StreamedResponse
+    {
+        abort_unless($backup->server_id === $server->id && $backupFile->backup_id === $backup->id, 404);
+
+        $this->authorize('view', $backupFile);
+
+        return app(DownloadBackupFile::class)->run($backupFile);
     }
 
     #[Post('/{backupFile}/restore', name: 'backup-files.restore')]
