@@ -139,7 +139,7 @@ export const columns: ColumnDef<BackupFile>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {row.original.backup.storage.provider === 'local' &&
+              {row.original.backup?.storage?.provider === 'local' &&
                 ['created', 'restored', 'restore_failed'].includes(row.original.status) && <Download file={row.original} />}
               <Restore backup={row.original.backup} file={row.original} />
               <Delete file={row.original} />
