@@ -287,6 +287,33 @@ class SSH
     }
 
     /**
+     * Check that the requested remote path is a regular file before streaming a response.
+     *
+     * @throws SSHConnectionError
+     */
+    public function isRegularFile(string $remote): bool
+    {
+        return $this->ensureSftp()->is_file($remote);
+    }
+
+    /**
+     * Stream an SFTP file in chunks without creating a temporary copy or
+     * holding the complete archive in PHP memory.
+     *
+     * @param  callable(string): void  $onChunk
+     *
+     * @throws SSHError
+     */
+    public function streamDownload(string $remote, callable $onChunk): void
+    {
+        $downloaded = $this->ensureSftp()->get($remote, $onChunk);
+
+        if ($downloaded !== true) {
+            throw new SSHError('Failed to stream file from the server.');
+        }
+    }
+
+    /**
      * @throws SSHError
      */
     public function write(string $remotePath, string|View $content, ?string $owner = null, ?string $log = null, ?int $siteId = null): void
