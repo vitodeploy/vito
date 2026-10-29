@@ -308,7 +308,7 @@ class SSH
     {
         $downloaded = $this->ensureSftp()->get($remote, $onChunk);
 
-        if ($downloaded !== true) {
+        if ($downloaded === false) {
             throw new SSHError('Failed to stream file from the server.');
         }
     }
