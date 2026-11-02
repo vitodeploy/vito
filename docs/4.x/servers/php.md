@@ -22,7 +22,7 @@ server creation in the `PHP` menu in the server page or in the [Services](./serv
 
 :::info
 Vito installs PHP from the `ondrej/php` Launchpad PPA on Ubuntu 20.04 to 24.04, and from
-[packages.sury.org](https://packages.sury.org/php/) on Ubuntu 26.04, where the PPA has no packages.
+[packages.sury.org](https://packages.sury.org/php/) on Ubuntu 26.04 and Debian, where the PPA has no packages.
 :::
 
 ## Install and Uninstall

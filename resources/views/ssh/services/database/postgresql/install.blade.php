@@ -17,6 +17,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y wget lsb-release gnupg dirmngr ca-certificates locales
 
 # Ensure a UTF-8 locale exists so the cluster is initialised as UTF8 regardless of the server locale
+@if($isDebian)
+sudo sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+@endif
 sudo locale-gen en_US.UTF-8
 sudo update-locale LANG=en_US.UTF-8
 export LANG=en_US.UTF-8

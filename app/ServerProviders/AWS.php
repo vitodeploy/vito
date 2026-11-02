@@ -578,12 +578,14 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
         $this->connectToEc2Client();
 
         $version = $os->getVersion();
+        $imageName = $os->isDebian() ? 'debian-'.$version.'-amd64-*' : 'ubuntu/images/*-'.$version.'-amd64-server-*';
+        $owner = $os->isDebian() ? '136693071363' : '099720109477';
 
         $result = $this->ec2Client->describeImages([
             'Filters' => [
                 [
                     'Name' => 'name',
-                    'Values' => ['ubuntu/images/*-'.$version.'-amd64-server-*'],
+                    'Values' => [$imageName],
                 ],
                 [
                     'Name' => 'state',
@@ -594,7 +596,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
                     'Values' => ['hvm'],
                 ],
             ],
-            'Owners' => ['099720109477'],
+            'Owners' => [$owner],
         ]);
 
         // Extract and display image information

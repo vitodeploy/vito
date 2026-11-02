@@ -21,6 +21,7 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\ServerAutoUpdateCompleted;
+use App\Plugins\RegisterServerProvider;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
@@ -145,6 +146,168 @@ test('create ubuntu 26 server uses the provider image', function (string $provid
     'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/ubuntu26.04'],
     'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 26],
     'vultr' => [Vultr::id(), '/instances', 'os_id', 2760],
+]);
+
+test('create debian server uses the provider image', function (string $provider, string $endpoint, string $field, int|string $image) {
+    $this->actingAs($this->user);
+
+    Queue::fake();
+    Http::fake([
+        'api.hetzner.cloud/v1/ssh_keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.hetzner.cloud/v1/servers' => Http::response(['server' => ['id' => 1, 'public_net' => ['ipv4' => ['ip' => '1.1.1.1']]]], 201),
+        'api.linode.com/v4/linode/instances' => Http::response(['id' => 1, 'ipv4' => ['1.1.1.1']]),
+        'api.digitalocean.com/v2/account/keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.digitalocean.com/v2/images*' => Http::response(['images' => [
+            ['id' => 99, 'name' => '13.10 x64', 'distribution' => 'Ubuntu', 'status' => 'available', 'regions' => ['nyc1']],
+            ['id' => 12, 'name' => '12 x64', 'distribution' => 'Debian', 'status' => 'available', 'regions' => ['nyc1']],
+            ['id' => 13, 'name' => '13 x64', 'distribution' => 'Debian', 'status' => 'available', 'regions' => ['nyc1']],
+        ]]),
+        'api.digitalocean.com/v2/droplets' => Http::response(['droplet' => ['id' => 1]], 202),
+        'api.vultr.com/v2/ssh-keys' => Http::response(['ssh_key' => ['id' => 'key']], 201),
+        'api.vultr.com/v2/os*' => Http::response(['os' => [
+            ['id' => 99, 'name' => 'Ubuntu 13.10 x64', 'arch' => 'x64', 'family' => 'ubuntu'],
+            ['id' => 1, 'name' => 'Debian 13 i386 (trixie)', 'arch' => 'x86', 'family' => 'debian'],
+            ['id' => 2625, 'name' => 'Debian 13 x64 (trixie)', 'arch' => 'x64', 'family' => 'debian'],
+        ]]),
+        'api.vultr.com/v2/instances' => Http::response(['instance' => ['id' => 'instance']], 202),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => $provider,
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $this->post(route('servers.store'), [
+        'provider' => $provider,
+        'server_provider' => $serverProvider->id,
+        'name' => 'trixie',
+        'os' => OperatingSystem::DEBIAN13->value,
+        'region' => 'nyc1',
+        'plan' => 'small',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), $endpoint) && $request[$field] === $image);
+})->with([
+    'hetzner' => [Hetzner::id(), '/servers', 'image', 'debian-13'],
+    'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/debian13'],
+    'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 13],
+    'vultr' => [Vultr::id(), '/instances', 'os_id', 2625],
+]);
+
+test('create debian server prepares the base system', function (OperatingSystem $os) {
+    $this->actingAs($this->user);
+
+    Storage::fake();
+    SSH::fake('user_not_found');
+
+    $this->post(route('servers.store', [
+        'provider' => Custom::id(),
+        'name' => 'debian',
+        'ip' => '1.1.1.1',
+        'port' => '22',
+        'os' => $os->value,
+        'services' => [],
+    ]))->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('sudo() { env "$@"; }');
+    SSH::assertExecutedContains('install -y sudo psmisc openssl');
+    SSH::assertExecutedContains('PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"');
+    SSH::assertExecutedContains('install -y --no-install-recommends cron');
+    SSH::assertExecutedContains('install -y wget lsb-release rsyslog logrotate curl');
+    SSH::assertNotExecutedContains('software-properties-common');
+})->with([OperatingSystem::DEBIAN12, OperatingSystem::DEBIAN13]);
+
+test('create ubuntu server keeps its base system steps', function () {
+    $this->actingAs($this->user);
+
+    Storage::fake();
+    SSH::fake('user_not_found');
+
+    $this->post(route('servers.store', [
+        'provider' => Custom::id(),
+        'name' => 'ubuntu',
+        'ip' => '1.1.1.1',
+        'port' => '22',
+        'os' => OperatingSystem::UBUNTU24->value,
+        'services' => [],
+    ]))->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('install -y software-properties-common curl');
+    SSH::assertNotExecutedContains('install -y sudo psmisc openssl');
+    SSH::assertNotExecutedContains('--no-install-recommends cron');
+    SSH::assertNotExecutedContains('/etc/environment');
+});
+
+test('create server rejects a wildcard provider', function () {
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.store'), [
+        'provider' => '*',
+        'name' => 'wildcard',
+        'os' => OperatingSystem::DEBIAN13->value,
+    ])->assertSessionHasErrors('provider');
+});
+
+test('provider that does not declare debian cannot create a debian server', function () {
+    $this->actingAs($this->user);
+
+    RegisterServerProvider::make('plugin-provider')
+        ->label('Plugin')
+        ->handler(Custom::class)
+        ->defaultUser('root')
+        ->register();
+
+    expect(config('server-provider.providers.plugin-provider.operating_systems'))
+        ->toBe(['ubuntu_20', 'ubuntu_22', 'ubuntu_24', 'ubuntu_26']);
+
+    $this->post(route('servers.store'), [
+        'provider' => 'plugin-provider',
+        'name' => 'plugin',
+        'os' => OperatingSystem::DEBIAN13->value,
+    ])->assertSessionHasErrors('os');
+});
+
+test('provider cannot declare a value that is not an operating system', function () {
+    $this->actingAs($this->user);
+
+    RegisterServerProvider::make('plugin-provider')
+        ->label('Plugin')
+        ->handler(Custom::class)
+        ->operatingSystems(['freebsd_14'])
+        ->register();
+
+    $this->post(route('servers.store'), [
+        'provider' => 'plugin-provider',
+        'name' => 'plugin',
+        'os' => 'freebsd_14',
+    ])->assertSessionHasErrors('os');
+});
+
+test('cannot create debian server with an unavailable service version', function (OperatingSystem $os, string $service, string $type, string $version, string $error) {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $this->post(route('servers.store'), [
+        'provider' => Custom::id(),
+        'name' => 'debian',
+        'ip' => '8.8.8.8',
+        'port' => '22',
+        'os' => $os->value,
+        'services' => [
+            [
+                'name' => $service,
+                'type' => $type,
+                'version' => $version,
+            ],
+        ],
+    ])->assertSessionHasErrors(['services.0.version' => $error]);
+})->with([
+    [OperatingSystem::DEBIAN13, 'mariadb', 'database', '11.4', 'MariaDB 11.4 is not available on Debian 13.'],
+    [OperatingSystem::DEBIAN13, 'mariadb', 'database', '10.11', 'MariaDB 10.11 is not available on Debian 13.'],
+    [OperatingSystem::DEBIAN12, 'valkey', 'memory_database', 'latest', 'Valkey latest is not available on Debian 12.'],
 ]);
 
 test('cannot create ubuntu 26 server with an unavailable service version', function () {

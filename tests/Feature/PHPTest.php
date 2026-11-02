@@ -57,6 +57,8 @@ test('install uses the php repository for the server os', function (OperatingSys
 })->with([
     'ubuntu 24' => [OperatingSystem::UBUNTU24, 'ppa:ondrej/php', 'packages.sury.org'],
     'ubuntu 26' => [OperatingSystem::UBUNTU26, 'https://packages.sury.org/php/', 'ppa:ondrej/php'],
+    'debian 12' => [OperatingSystem::DEBIAN12, 'https://packages.sury.org/php/', 'ppa:ondrej/php'],
+    'debian 13' => [OperatingSystem::DEBIAN13, 'https://packages.sury.org/php/', 'ppa:ondrej/php'],
 ]);
 
 test('change default php cli', function () {

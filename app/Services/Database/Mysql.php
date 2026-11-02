@@ -41,6 +41,7 @@ class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
     {
         return view($this->getScriptView('install'), [
             'version' => $this->service->version,
+            'isDebian' => $this->service->server->os->isDebian(),
         ]);
     }
 

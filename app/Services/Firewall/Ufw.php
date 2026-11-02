@@ -37,6 +37,7 @@ class Ufw extends AbstractFirewall implements HasLogs
             ->exec(
                 view('ssh.services.firewall.ufw.install-ufw', [
                     'sshPort' => $this->service->server->port ?? 22,
+                    'isDebian' => $this->service->server->os->isDebian(),
                 ]),
                 'install-ufw'
             );

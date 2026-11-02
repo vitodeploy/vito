@@ -31,6 +31,7 @@ class OS
         $this->server->ssh()->exec(
             view('ssh.os.wait-for-boot', [
                 'timeout' => $timeout,
+                'isDebian' => $this->server->os->isDebian(),
             ]),
             'wait-for-boot'
         );
@@ -45,6 +46,7 @@ class OS
             view('ssh.os.install-dependencies', [
                 'name' => $this->server->creator->name,
                 'email' => $this->server->creator->email,
+                'isDebian' => $this->server->os->isDebian(),
             ]),
             'install-dependencies'
         );

@@ -575,6 +575,10 @@ You can register your own server provider using the `boot` method in your `Plugi
 The handler must implement the `App\ServerProviders\ServerProvider` interface or extend the
 `App\ServerProviders\AbstractProvider` class.
 
+Providers are offered the Ubuntu releases only. If yours can create other systems, list them with
+`->operatingSystems(config('core.operating_systems'))`. When Debian images log in as a different user, pass it with
+`->defaultUser('ubuntu', debian: 'admin')`.
+
 To let users change some credentials after connecting, register an edit form with `->editForm(DynamicForm::make([...]))`
 and implement the opt-in `App\ServerProviders\HasEditableCredentials` interface in the handler. Vito merges the changes
 into the stored credentials and calls `connect()` again before saving. Never put secrets in the edit form. To add a

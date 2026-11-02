@@ -2,6 +2,7 @@
 
 use App\Enums\IpAddressStatus;
 use App\Enums\IpAddressType;
+use App\Enums\OperatingSystem;
 use App\Facades\SSH;
 use App\Models\ServerIpAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -189,6 +190,137 @@ test('delete managed ip address', function () {
         'id' => $address->id,
     ]);
 });
+
+test('debian persists ips with a systemd unit instead of netplan', function () {
+    SSH::fake("[]\n===VITO-MANAGED===\nVITO_NETWORK_BACKEND=systemd");
+
+    $this->server->update(['os' => OperatingSystem::DEBIAN13]);
+
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.network.ips.store', ['server' => $this->server]), [
+        'ip' => '203.0.113.10',
+        'prefix_length' => '32',
+        'interface' => 'eth0',
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('server_ip_addresses', [
+        'ip' => '203.0.113.10',
+        'status' => IpAddressStatus::CONFIGURED,
+    ]);
+
+    SSH::assertExecutedContains('/etc/systemd/system/vito-ips.service');
+    SSH::assertExecutedContains('sudo systemctl restart vito-ips.service');
+    SSH::assertNotExecutedContains('netplan apply');
+});
+
+test('debian systemd unit keeps the managed marker and restores addresses', function () {
+    $address = ServerIpAddress::factory()->create([
+        'server_id' => $this->server->id,
+        'ip' => '203.0.113.10',
+        'prefix_length' => 32,
+        'interface' => 'eth0',
+    ]);
+
+    $unit = view('ssh.network.systemd-ips', ['addresses' => collect([$address])])->render();
+
+    expect($unit)->toContain('# vito-managed: 203.0.113.10')
+        ->and($unit)->toContain('ExecStart=-ip addr replace 203.0.113.10/32 dev eth0');
+});
+
+test('debian removes the address and the unit with the last managed ip', function () {
+    SSH::fake("[]\n===VITO-MANAGED===\nVITO_NETWORK_BACKEND=systemd");
+
+    $this->server->update(['os' => OperatingSystem::DEBIAN13]);
+
+    $address = ServerIpAddress::factory()->create([
+        'server_id' => $this->server->id,
+        'ip' => '203.0.113.10',
+        'prefix_length' => 32,
+        'interface' => 'eth0',
+        'is_managed' => true,
+        'status' => IpAddressStatus::CONFIGURED,
+    ]);
+
+    $this->actingAs($this->user);
+
+    $this->delete(route('servers.network.ips.destroy', ['server' => $this->server, 'serverIpAddress' => $address]))
+        ->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseMissing('server_ip_addresses', ['id' => $address->id]);
+
+    SSH::assertExecutedContains("sudo ip addr del '203.0.113.10/32' dev 'eth0'");
+    SSH::assertExecutedContains('sudo rm -f /etc/systemd/system/vito-ips.service');
+});
+
+test('debian leaves failed addresses out of the systemd unit', function () {
+    SSH::fake("[]\n===VITO-MANAGED===\nVITO_NETWORK_BACKEND=systemd");
+
+    $this->server->update(['os' => OperatingSystem::DEBIAN12]);
+
+    ServerIpAddress::factory()->create([
+        'server_id' => $this->server->id,
+        'ip' => '203.0.113.20',
+        'interface' => 'eth9',
+        'is_managed' => true,
+        'status' => IpAddressStatus::FAILED,
+    ]);
+
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.network.ips.store', ['server' => $this->server]), [
+        'ip' => '203.0.113.10',
+        'prefix_length' => '32',
+        'interface' => 'eth0',
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('server_ip_addresses', ['ip' => '203.0.113.10', 'status' => IpAddressStatus::CONFIGURED]);
+
+    SSH::assertExecutedContains("ip -o addr show to '203.0.113.10'");
+    SSH::assertNotExecutedContains('203.0.113.20');
+});
+
+test('debian without a network backend fails with a clear error', function () {
+    SSH::fake("[]\n===VITO-MANAGED===\nVITO_NETWORK_BACKEND=none");
+
+    $this->server->update(['os' => OperatingSystem::DEBIAN13]);
+
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.network.ips.store', ['server' => $this->server]), [
+        'ip' => '203.0.113.10',
+        'prefix_length' => '32',
+        'interface' => 'eth0',
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('server_ip_addresses', [
+        'ip' => '203.0.113.10',
+        'status' => IpAddressStatus::FAILED,
+    ]);
+    $this->assertDatabaseHas('server_logs', [
+        'server_id' => $this->server->id,
+        'type' => 'apply-server-ips-failed',
+    ]);
+
+    SSH::assertNotExecutedContains('netplan apply');
+    SSH::assertNotExecutedContains('systemctl restart vito-ips.service');
+});
+
+test('refresh reads the managed marker from the file the os uses', function (OperatingSystem $os, string $expected, string $unexpected) {
+    SSH::fake('[]');
+
+    $this->server->update(['os' => $os]);
+
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.network.refresh', ['server' => $this->server]));
+
+    SSH::assertExecutedContains($expected);
+    SSH::assertNotExecutedContains($unexpected);
+})->with([
+    'ubuntu' => [OperatingSystem::UBUNTU24, '/etc/netplan/60-vito.yaml', 'vito-ips.service'],
+    'debian' => [OperatingSystem::DEBIAN13, '/etc/systemd/system/vito-ips.service', '60-vito.yaml'],
+]);
 
 test('set ip as primary updates server ip', function () {
     $this->actingAs($this->user);

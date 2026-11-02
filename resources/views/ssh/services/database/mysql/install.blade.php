@@ -41,7 +41,7 @@ fi
 
 # Add the MySQL {{ $version }} LTS repository
 CODENAME=$(lsb_release -sc)
-echo "deb [signed-by=${MYSQL_KEYRING}] http://repo.mysql.com/apt/ubuntu ${CODENAME} mysql-{{ $version }}-lts" | sudo tee /etc/apt/sources.list.d/mysql.list
+echo "deb [signed-by=${MYSQL_KEYRING}] http://repo.mysql.com/apt/{{ $isDebian ? 'debian' : 'ubuntu' }} ${CODENAME} mysql-{{ $version }}-lts" | sudo tee /etc/apt/sources.list.d/mysql.list
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 

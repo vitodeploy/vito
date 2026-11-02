@@ -249,11 +249,13 @@ class PHP extends AbstractService implements HasLogs
     }
 
     /**
-     * Ondřej's Launchpad PPA stops at Ubuntu 24.04; later releases get PHP from
-     * its successor, packages.sury.org.
+     * Ondřej's Launchpad PPA only serves Ubuntu and stops at 24.04; Debian and
+     * later Ubuntu releases get PHP from its successor, packages.sury.org.
      */
     private function usesSuryRepository(): bool
     {
-        return version_compare($this->service->server->os->getVersion(), '26.04', '>=');
+        $os = $this->service->server->os;
+
+        return $os->isDebian() || version_compare($os->getVersion(), '26.04', '>=');
     }
 }

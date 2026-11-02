@@ -51,6 +51,7 @@ export interface Configs {
         form?: DynamicFieldConfig[];
         create_form?: DynamicFieldConfig[];
         edit_form?: DynamicFieldConfig[];
+        operating_systems?: string[];
       };
     };
   };
