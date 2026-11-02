@@ -68,6 +68,8 @@ paths:
                     - required: ['template_ubuntu_22']
                     - required: ['template_ubuntu_24']
                     - required: ['template_ubuntu_26']
+                    - required: ['template_debian_12']
+                    - required: ['template_debian_13']
               properties:
                 name:
                   type: string
@@ -123,6 +125,14 @@ paths:
                   type: integer
                   minimum: 100
                   description: Proxmox Ubuntu 26.04 cloud-init template VMID (at least one template is required)
+                template_debian_12:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Debian 12 cloud-init template VMID (at least one template is required)
+                template_debian_13:
+                  type: integer
+                  minimum: 100
+                  description: Proxmox Debian 13 cloud-init template VMID (at least one template is required)
                 global:
                   type: boolean
                   description: Whether this provider should be available globally (not tied to current project)
@@ -197,7 +207,7 @@ paths:
 
     put:
       summary: Update server provider
-      description: 'Update a server provider. Proxmox connections also accept `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24` and `template_ubuntu_26` (cloud-init template VM IDs); omitted fields keep their current value, and when a template changes all mapped templates are re-verified against Proxmox before saving. Other credentials, including the API token, can''t be changed.'
+      description: 'Update a server provider. Proxmox connections also accept `template_ubuntu_20`, `template_ubuntu_22`, `template_ubuntu_24`, `template_ubuntu_26`, `template_debian_12` and `template_debian_13` (cloud-init template VM IDs); omitted fields keep their current value, and when a template changes all mapped templates are re-verified against Proxmox before saving. Other credentials, including the API token, can''t be changed.'
       tags:
         - User Server Providers
       security:

@@ -135,6 +135,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ])
             ->unavailableVersions([
                 OperatingSystem::UBUNTU26->value => ['11.4', '10.11'],
+                OperatingSystem::DEBIAN13->value => ['11.4', '10.11'],
             ])
             ->configPaths([
                 [
@@ -170,6 +171,9 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Valkey::type())
             ->label('Valkey')
             ->handler(Valkey::class)
+            ->unavailableVersions([
+                OperatingSystem::DEBIAN12->value => ['latest'],
+            ])
             ->configPaths([
                 [
                     'name' => 'valkey.conf',

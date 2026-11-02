@@ -6,6 +6,7 @@ use App\DTOs\PrivateNetworkDTO;
 use App\DTOs\PrivateNetworkMemberDTO;
 use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
@@ -483,14 +484,14 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
             $region = $this->server->provider_data['region'] ?? null;
         }
 
-        $this->ec2Client = new Ec2Client([
+        $this->ec2Client = app(Ec2Client::class, ['args' => [
             'region' => $region ?? config('serverproviders.aws.regions')[0]['value'],
             'version' => '2016-11-15',
             'credentials' => [
                 'key' => $credentials['key'],
                 'secret' => $credentials['secret'],
             ],
-        ]);
+        ]]);
     }
 
     /**
@@ -577,13 +578,31 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     {
         $this->connectToEc2Client();
 
+        $instanceTypes = $this->ec2Client->describeInstanceTypes([
+            'InstanceTypes' => [$this->server->provider_data['plan']],
+        ]);
+        $architectures = array_values(array_intersect(
+            ['x86_64', 'arm64'],
+            $instanceTypes['InstanceTypes'][0]['ProcessorInfo']['SupportedArchitectures'] ?? [],
+        ));
+
+        if ($architectures === []) {
+            throw new ServerProviderError('The selected instance type does not support an available server image architecture.');
+        }
+
         $version = $os->getVersion();
+        $imageName = $os->isDebian() ? 'debian-'.$version.'-*-*' : 'ubuntu/images/*-'.$version.'-*-server-*';
+        $owner = $os->isDebian() ? '136693071363' : '099720109477';
 
         $result = $this->ec2Client->describeImages([
             'Filters' => [
                 [
+                    'Name' => 'architecture',
+                    'Values' => $architectures,
+                ],
+                [
                     'Name' => 'name',
-                    'Values' => ['ubuntu/images/*-'.$version.'-amd64-server-*'],
+                    'Values' => [$imageName],
                 ],
                 [
                     'Name' => 'state',
@@ -594,7 +613,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
                     'Values' => ['hvm'],
                 ],
             ],
-            'Owners' => ['099720109477'],
+            'Owners' => [$owner],
         ]);
 
         // Extract and display image information

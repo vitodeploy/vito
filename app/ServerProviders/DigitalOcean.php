@@ -375,7 +375,7 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
             $image = collect($images)
                 ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains($image['name'], $version)
                 )
-                ->where('distribution', 'Ubuntu')
+                ->where('distribution', $os->getDistro())
                 ->where('status', 'available')
                 ->first();
 
