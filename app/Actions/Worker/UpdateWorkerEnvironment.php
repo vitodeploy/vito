@@ -18,6 +18,10 @@ class UpdateWorkerEnvironment
      */
     public function update(Worker $worker, array $input): WorkerEnvironmentUpdateResult
     {
+        if ($worker->component_id !== null) {
+            throw ValidationException::withMessages(['variables' => 'Component processes use environment variables from their environment only.']);
+        }
+
         $validated = Validator::make($input, [
             ...self::rules(),
             'restart' => ['sometimes', 'boolean'],

@@ -102,9 +102,7 @@ export default function AppCommand() {
                     if (result.type === 'server') {
                       router.post(`/servers/${result.id}/switch`);
                     } else if (result.type === 'project') {
-                      router.patch(
-                        `/settings/projects/switch/${result.id}?${new URLSearchParams({ currentPath: window.location.pathname })}`,
-                      );
+                      router.patch(`/settings/projects/switch/${result.id}?${new URLSearchParams({ currentPath: window.location.pathname })}`);
                     } else if (result.type === 'site') {
                       router.post(`/servers/${result.parent_id}/sites/${result.id}/switch`);
                     }

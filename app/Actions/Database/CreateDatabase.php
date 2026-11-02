@@ -15,8 +15,11 @@ class CreateDatabase
     /**
      * @param  array<string, mixed>  $input
      */
-    public function create(Server $server, array $input): Database
+    public function create(Server $server, array $input, bool $defer = false): Database
     {
+        if ($defer) {
+            Validator::make($input, array_fill_keys(['user', 'existing_user_id', 'username', 'password'], ['prohibited']))->validate();
+        }
         $this->validate($server, $input);
 
         $database = new Database([
@@ -26,14 +29,13 @@ class CreateDatabase
             'name' => $input['name'],
         ]);
 
-        /** @var Service $service */
-        $service = $server->database();
+        if ($defer) {
+            $database->status = DatabaseStatus::CREATING;
+            $database->save();
 
-        /** @var \App\Services\Database\Database $databaseHandler */
-        $databaseHandler = $service->handler();
-        $databaseHandler->create($database->name, $database->charset, $database->collation);
-        $database->status = DatabaseStatus::READY;
-        $database->save();
+            return $database;
+        }
+        $this->provision($database);
 
         $hasCreatedUser = false;
         if (isset($input['user']) && $input['user'] && isset($input['existing_user_id']) && $input['existing_user_id']) {
@@ -54,6 +56,17 @@ class CreateDatabase
         }
 
         return $database;
+    }
+
+    public function provision(Database $database): void
+    {
+        /** @var Service $service */
+        $service = $database->server->database();
+        /** @var \App\Services\Database\Database $handler */
+        $handler = $service->handler();
+        $handler->create($database->name, $database->charset, $database->collation);
+        $database->status = DatabaseStatus::READY;
+        $database->save();
     }
 
     private function validate(Server $server, array $input): void

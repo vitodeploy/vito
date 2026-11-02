@@ -51,8 +51,10 @@ class SyncDatabaseUsers
                 continue;
             }
 
-            $databaseUser->databases = $databases;
-            $databaseUser->save();
+            if ($databaseUser->environment_attachment_id === null) {
+                $databaseUser->databases = $databases;
+                $databaseUser->save();
+            }
         }
     }
 }

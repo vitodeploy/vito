@@ -3,10 +3,15 @@
     import compression
     import security_headers
 
-    root * /var/www/vito-splash
-    file_server
+    handle_path /.well-known/vito/* {
+        root * /var/lib/vito/verify
+        header Cache-Control "no-store"
+        file_server
+    }
 
-    header {
-        Cache-Control "public, max-age=3600"
+    handle {
+        root * /var/www/vito-splash
+        header Cache-Control "public, max-age=3600"
+        file_server
     }
 }

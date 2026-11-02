@@ -16,7 +16,7 @@ test('enable mysql networking', function () {
 
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('mysql', '8.4');
 
-    SSH::fake("Active: active\n0.0.0.0\nmysqlx_bind_address\t0.0.0.0");
+    SSH::fake("Active: active\n*\nmysqlx_bind_address\t*");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -31,8 +31,8 @@ test('enable mysql networking', function () {
 
     SSH::assertExecutedContains('sudo mkdir -p /etc/mysql/mysql.conf.d');
     SSH::assertExecutedContains('sudo cp /etc/mysql/mysql.conf.d/zz-vito-networking.cnf /etc/mysql/mysql.conf.d/zz-vito-networking.cnf.vito.bak');
-    SSH::assertExecutedContains('printf \'[mysqld]\nbind-address = %s\n\' \'0.0.0.0\' | sudo tee /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
-    SSH::assertExecutedContains('printf \'loose-mysqlx-bind-address = %s\n\' \'0.0.0.0\' | sudo tee -a /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
+    SSH::assertExecutedContains('printf \'[mysqld]\nbind-address = %s\n\' \'*\' | sudo tee /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
+    SSH::assertExecutedContains('printf \'loose-mysqlx-bind-address = %s\n\' \'*\' | sudo tee -a /etc/mysql/mysql.conf.d/zz-vito-networking.cnf > /dev/null');
     SSH::assertExecutedContains('sudo systemctl restart mysql');
     SSH::assertExecutedContains('sudo mysql -N -e "SELECT @@bind_address"');
     SSH::assertExecutedContains('sudo mysql -N -e "SHOW VARIABLES LIKE \'mysqlx_bind_address\'"');
@@ -69,7 +69,7 @@ test('enable mysql networking tolerates a disabled x plugin', function () {
 
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('mysql', '8.4');
 
-    SSH::fake("Active: active\n0.0.0.0");
+    SSH::fake("Active: active\n*");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -90,7 +90,7 @@ test('enable mysql networking fails when the x plugin stays local', function () 
 
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('mysql', '8.4');
 
-    SSH::fake("Active: active\n0.0.0.0\nmysqlx_bind_address\t127.0.0.1");
+    SSH::fake("Active: active\n*\nmysqlx_bind_address\t127.0.0.1");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -111,7 +111,7 @@ test('enable mariadb networking does not manage the x plugin', function () {
 
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('mariadb', '11.4');
 
-    SSH::fake("Active: active\n0.0.0.0");
+    SSH::fake("Active: active\n*");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -124,7 +124,7 @@ test('enable mariadb networking does not manage the x plugin', function () {
     expect($service->status)->toEqual(ServiceStatus::READY);
 
     SSH::assertExecutedContains('sudo mkdir -p /etc/mysql/mariadb.conf.d');
-    SSH::assertExecutedContains('printf \'[mysqld]\nbind-address = %s\n\' \'0.0.0.0\' | sudo tee /etc/mysql/mariadb.conf.d/zz-vito-networking.cnf > /dev/null');
+    SSH::assertExecutedContains('printf \'[mysqld]\nbind-address = %s\n\' \'*\' | sudo tee /etc/mysql/mariadb.conf.d/zz-vito-networking.cnf > /dev/null');
     SSH::assertExecutedContains('sudo systemctl restart mariadb');
     SSH::assertExecutedContains('sudo mariadb -N -e "SELECT @@bind_address"');
     SSH::assertNotExecutedContains('loose-mysqlx-bind-address', 'MariaDB has no X plugin.');
@@ -157,7 +157,7 @@ test('enable postgresql networking', function () {
 
     $service = vitoPestFeatureServiceNetworkingDatabaseTestDatabaseService('postgresql', '16');
 
-    SSH::fake("Active: active\n0.0.0.0");
+    SSH::fake("Active: active\n*");
 
     $this->postJson(route('services.networking.enable', [
         'server' => $this->server,
@@ -173,7 +173,7 @@ test('enable postgresql networking', function () {
     SSH::assertExecutedContains('sudo cp /etc/postgresql/16/main/pg_hba.conf /etc/postgresql/16/main/pg_hba.conf.vito.bak');
     SSH::assertExecutedContains('sudo grep -Eq \'^[[:space:]]*include_dir[[:space:]]*=\' /etc/postgresql/16/main/postgresql.conf || printf "\ninclude_dir = \'conf.d\'\n" | sudo tee -a /etc/postgresql/16/main/postgresql.conf > /dev/null');
     SSH::assertExecutedContains('sudo mkdir -p /etc/postgresql/16/main/conf.d');
-    SSH::assertExecutedContains('printf "listen_addresses = \'%s\'\n" \'0.0.0.0\' | sudo tee /etc/postgresql/16/main/conf.d/zz-vito-networking.conf > /dev/null');
+    SSH::assertExecutedContains('printf "listen_addresses = \'%s\'\n" \'*\' | sudo tee /etc/postgresql/16/main/conf.d/zz-vito-networking.conf > /dev/null');
     SSH::assertExecutedContains('sudo sed -i \'/^# BEGIN VITO NETWORKING$/,/^# END VITO NETWORKING$/d\' /etc/postgresql/16/main/pg_hba.conf');
     SSH::assertExecutedContains('host all postgres 0.0.0.0/0 reject\nhost all all 0.0.0.0/0 scram-sha-256');
     SSH::assertExecutedContains('sudo systemctl restart postgresql');
@@ -285,7 +285,7 @@ test('failed mysql disable does not roll back', function () {
     $service->type_data = ['networking' => true];
     $service->save();
 
-    SSH::fake("Active: active\n0.0.0.0");
+    SSH::fake("Active: active\n*");
 
     $this->postJson(route('services.networking.disable', [
         'server' => $this->server,
@@ -362,7 +362,7 @@ test('failed postgresql disable never restores the open state', function () {
     $service->type_data = ['networking' => true];
     $service->save();
 
-    SSH::fake("Active: active\n0.0.0.0");
+    SSH::fake("Active: active\n*");
 
     $this->postJson(route('services.networking.disable', [
         'server' => $this->server,

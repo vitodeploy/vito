@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Service;
 
+use App\Actions\Service\Manage;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
@@ -27,6 +28,9 @@ class ManageJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->service->server_id}", function () {
+            if (in_array($this->action, ['stop', 'disable'], true)) {
+                app(Manage::class)->validateStopping($this->service);
+            }
             $succeeded = $this->service->handler()->manage($this->action);
             $this->service->status = $succeeded ? $this->successStatus : ServiceStatus::FAILED;
             $this->service->save();

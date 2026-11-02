@@ -5,6 +5,7 @@ namespace App\Services\Valkey;
 use App\DTOs\ServiceLog;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
+use App\Models\EnvironmentAttachment;
 use App\Services\AbstractService;
 use App\Services\HasLogs;
 use App\Services\ManagesMemoryDatabaseNetworking;
@@ -28,6 +29,15 @@ class Valkey extends AbstractService implements HasLogs, SupportsNetworkingSecre
     public function unit(): string
     {
         return 'valkey-server';
+    }
+
+    public function deletionRules(): array
+    {
+        return ['service' => [function (string $attribute, mixed $value, Closure $fail): void {
+            if (EnvironmentAttachment::forService($this->service)->exists()) {
+                $fail('Detach environment resources and finish cleanup before removing this service.');
+            }
+        }]];
     }
 
     public function creationRules(array $input): array

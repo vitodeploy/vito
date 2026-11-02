@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\DatabaseUserPermission;
 use App\Models\DatabaseUser;
 use App\Models\Service;
@@ -19,6 +20,7 @@ class UpdateDatabaseUser
      */
     public function update(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
+        app(ValidateEnvironmentResource::class)->databaseUser($databaseUser);
         $this->validate($databaseUser, $input);
 
         $oldHost = $databaseUser->host;

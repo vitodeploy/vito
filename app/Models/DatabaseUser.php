@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $server_id
+ * @property ?int $environment_attachment_id
  * @property string $username
  * @property string $password
  * @property array<string> $databases
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $host
  * @property DatabaseUserStatus $status
  * @property Server $server
+ * @property ?EnvironmentAttachment $environmentAttachment
  */
 class DatabaseUser extends AbstractModel
 {
@@ -35,6 +37,7 @@ class DatabaseUser extends AbstractModel
 
     protected $casts = [
         'server_id' => 'integer',
+        'environment_attachment_id' => 'integer',
         'password' => 'encrypted',
         'databases' => 'array',
         'permission' => DatabaseUserPermission::class,
@@ -44,6 +47,12 @@ class DatabaseUser extends AbstractModel
     protected $hidden = [
         'password',
     ];
+
+    /** @return BelongsTo<EnvironmentAttachment, covariant $this> */
+    public function environmentAttachment(): BelongsTo
+    {
+        return $this->belongsTo(EnvironmentAttachment::class);
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>

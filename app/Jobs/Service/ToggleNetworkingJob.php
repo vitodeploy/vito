@@ -2,6 +2,8 @@
 
 namespace App\Jobs\Service;
 
+use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
@@ -37,9 +39,12 @@ class ToggleNetworkingJob implements ShouldQueue
                 throw new RuntimeException("{$this->service->name} does not support networking.");
             }
 
+            $this->service->jsonUpdate('type_data', 'networking_dual_stack', false, save: false);
             if ($this->enable) {
+                app(SyncEnvironmentResourceAccess::class)->protectNetworking($this->service);
                 $handler->enableNetworking();
             } else {
+                app(ValidateEnvironmentResource::class)->unattached($this->service);
                 $handler->disableNetworking();
             }
 
@@ -59,6 +64,7 @@ class ToggleNetworkingJob implements ShouldQueue
     {
         $this->service->refresh();
         $this->service->jsonUpdate('type_data', 'networking_failed', true, save: false);
+        $this->service->jsonUpdate('type_data', 'networking_dual_stack', false, save: false);
 
         $handler = $this->service->hasHandler() ? $this->service->handler() : null;
 

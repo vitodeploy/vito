@@ -20,6 +20,7 @@ description: "PHP and Laravel coding standards, Actions pattern, Eloquent conven
 - Cast enum properties to their enum class (e.g., `'status' => ServerStatus::class`).
 - Use `'encrypted:json'` cast for sensitive data like credentials.
 - Use PHPDoc `@property` annotations for relationship collections.
+- Shared owner models (`Deployment`, `DeploymentScript`, `Worker`, `CronJob`, `GitHook`, `Ssl`) must use `HasExclusiveOwner`. Declare `ownerColumns(): list<string>` and `requiresOwner(): bool`: saving rejects multiple non-null owners, and missing owners when required. Deployments, scripts and hooks require one; workers, cron jobs and SSLs may be unowned. Extend the owner list when adding a new owner column; never bypass this guard with bulk owner updates or quiet saves.
 
 ## Eloquent & Database
 
@@ -77,6 +78,15 @@ All business logic belongs in Action classes under `app/Actions/`.
 - Extend `AbstractService` and implement `ServiceInterface`.
 - Implement `static id(): string` and `static type(): string`.
 - SSH scripts for services live in `resources/views/ssh/services/[service-name]/`.
+
+## Application Runtime Presets & Component Capabilities
+
+- Runtime presets under `app/RuntimePresets/` extend `AbstractRuntimePreset`; component capabilities under `app/ComponentCapabilities/` extend `AbstractComponentCapability`.
+- Both expose static `id()` and `label()` methods and register through `RegisterRuntimePreset` / `RegisterComponentCapability` in a provider or plugin `boot()`. Their registries live in `config/component.php`.
+- Presets are stateless suggestions, not runtime-specific branches in core code. Every preset selects a `WebMode` (`fpm`, `proxy`, `static`); there is no default mode. All suggested scripts, commands and paths remain editable. Framework specifics belong only in the preset and its staged scripts under `resources/deployment-scripts/presets/{id}/`.
+- Resolve presets with `Application::preset()` and capability handlers with `ComponentCapability::handler()`. A capability handler receives its model in the constructor; `form($preset)` describes its configuration.
+- Capability `validate($component, $server)` delegates business validation to Actions, throws `ValidationException` for invalid input, and may normalize its model's in-memory config. It must not save, SSH or dispatch jobs. Callers must serialize validation and persistence per server (ports) / environment (scheduler uniqueness) when adding mutation flows.
+- Bootstrap exposes only the public runtime/capability descriptors under `application.runtimes` and `application.capabilities`; keep the frontend `Configs` type in sync.
 
 ## Migrations
 

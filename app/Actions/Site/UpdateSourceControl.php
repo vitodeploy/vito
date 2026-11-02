@@ -79,7 +79,7 @@ class UpdateSourceControl
 
         if ($oldDeployKeyId && $oldSourceControl) {
             try {
-                $oldSourceControl->provider()->deleteDeployKey((string) $oldDeployKeyId, $site->repository);
+                app(SyncSiteDeployKey::class)->remove($oldSourceControl, $site->repository, (string) $oldDeployKeyId);
             } catch (Throwable $e) {
                 Log::warning('Failed to delete old deploy key on source-control swap', [
                     'site_id' => $site->id,

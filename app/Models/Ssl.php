@@ -4,15 +4,20 @@ namespace App\Models;
 
 use App\Enums\SslStatus;
 use App\Enums\SslType;
+use App\Traits\HasExclusiveOwner;
 use Carbon\Carbon;
 use Database\Factories\SslFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
+ * @property ?int $environment_id
+ * @property ?Environment $environment
+ * @property Collection<int, EnvironmentDomain> $environmentDomains
  * @property ?int $site_id
  * @property ?int $server_id
  * @property ?int $domain_id
@@ -40,6 +45,8 @@ use Illuminate\Support\Str;
  */
 class Ssl extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<SslFactory> */
     use HasFactory;
 
@@ -67,6 +74,7 @@ class Ssl extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'environment_id' => 'integer',
         'server_id' => 'integer',
         'domain_id' => 'integer',
         'certificate' => 'encrypted',
@@ -82,6 +90,19 @@ class Ssl extends AbstractModel
         'has_csr' => 'boolean',
         'status' => SslStatus::class,
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'environment_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
 
     /**
      * @return BelongsTo<Site, covariant $this>
@@ -115,14 +136,27 @@ class Ssl extends AbstractModel
         return $this->hasMany(HostedDomain::class);
     }
 
+    /** @return HasMany<EnvironmentDomain, covariant $this> */
+    public function environmentDomains(): HasMany
+    {
+        return $this->hasMany(EnvironmentDomain::class);
+    }
+
+    /** @return BelongsTo<Environment, covariant $this> */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
+    }
+
     /**
+     * @param  int|list<int>  $serverId
      * @return Builder<Ssl>
      */
-    public static function activeServerLevel(int $serverId): Builder
+    public static function activeServerLevel(int|array $serverId): Builder
     {
         return self::query()
-            ->whereNull('site_id')
-            ->where('server_id', $serverId)
+            ->whereNull('site_id')->whereNull('environment_id')
+            ->whereIn('server_id', (array) $serverId)
             ->where('status', SslStatus::CREATED)
             ->whereNot('type', SslType::CSR)
             ->whereNotNull('certificate_path')

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Database\CreateDatabase;
 use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
 use App\Enums\ServiceStatus;
@@ -11,6 +12,7 @@ use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -31,6 +33,15 @@ test('create database', function () {
         'status' => DatabaseStatus::READY,
     ]);
 });
+
+test('deferred database creation rejects user options instead of discarding them', function (string $field, mixed $value) {
+    SSH::fake();
+    expect(fn () => app(CreateDatabase::class)->create($this->server, [
+        'name' => 'deferred', 'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci', $field => $value,
+    ], defer: true))->toThrow(ValidationException::class);
+    $this->assertDatabaseMissing('databases', ['name' => 'deferred']);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+})->with([['user', true], ['existing_user_id', 1], ['username', 'ignored_user'], ['password', 'ignored_password']]);
 
 test('create database with a hyphen in the name', function () {
     $this->actingAs($this->user);
@@ -337,3 +348,11 @@ test('database deletion rejects a database from another server', function () {
     expect($ssh->getExecutedCommands())->toBeEmpty();
     Queue::assertNothingPushed();
 });
+
+test('mysql install refuses a different apt candidate before touching an existing installation', function (string $version) {
+    $rendered = view('ssh.services.database.mysql.install', ['version' => $version])->render();
+
+    expect($rendered)->toContain("mysql-{$version}-lts", "    {$version}.*) ;;", "VITO_SSH_ERROR: MySQL {$version} packages are not available")
+        ->and(strpos($rendered, 'apt-cache policy mysql-server'))->toBeLessThan(strpos($rendered, 'sudo systemctl stop mysql'))
+        ->and(strpos($rendered, 'sudo systemctl stop mysql'))->toBeLessThan(strpos($rendered, 'apt-get purge -y mysql-server'));
+})->with(['8.4', '9.7']);

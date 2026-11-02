@@ -54,10 +54,12 @@ class ApplyRulesJob implements ShouldQueue
     public function failed(Exception $e): void
     {
         $failedRules = $this->rule->server->firewallRules()
+            ->where('component_managed', false)
             ->where('status', '!=', FirewallRuleStatus::READY)
             ->get();
 
         $this->rule->server->firewallRules()
+            ->where('component_managed', false)
             ->where('status', '!=', FirewallRuleStatus::READY)
             ->update(['status' => FirewallRuleStatus::FAILED]);
 

@@ -12,6 +12,9 @@ use App\Jobs\Site\DeployJob;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
+use Illuminate\Http\Client\HttpClientException;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class Deploy
 {
@@ -24,7 +27,14 @@ class Deploy
         $site->type()->assertReadyToDeploy();
 
         if ($site->sourceControl) {
-            $site->sourceControl->getRepo($site->repository);
+            try {
+                $site->sourceControl->getRepo($site->repository);
+            } catch (HttpClientException $e) {
+                Log::warning('Source control API unavailable; deploying without the repository check.', [
+                    'site_id' => $site->id,
+                    'exception' => $e::class,
+                ]);
+            }
         }
 
         if (! $site->deploymentScript?->content) {
@@ -41,7 +51,15 @@ class Deploy
         $log->save();
         $deployment->log_id = $log->id;
         $deployment->save();
-        $lastCommit = $site->sourceControl?->provider()?->getLastCommit($site->repository, $site->branch);
+        try {
+            $lastCommit = $site->sourceControl?->provider()?->getLastCommit($site->repository, $site->branch);
+        } catch (Throwable $e) {
+            $lastCommit = null;
+            Log::warning('Failed to fetch the last commit; deploying without commit details.', [
+                'site_id' => $site->id,
+                'exception' => $e::class,
+            ]);
+        }
         if ($lastCommit) {
             $deployment->commit_id = $lastCommit['commit_id'];
             $deployment->commit_data = $lastCommit['commit_data'];

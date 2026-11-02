@@ -102,6 +102,8 @@ test('execute script and view log', function () {
         'user' => 'root',
     ]);
 
+    SSH::assertExecutedContains('if ! cd -- "$HOME"\'/\'; then');
+
     $this->assertDatabaseHas('server_logs', [
         'server_id' => $this->server->id,
     ]);

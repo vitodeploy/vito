@@ -165,8 +165,7 @@ export default function HostedDomains() {
                   <DropdownMenuItem
                     disabled={!page.props.hasSiteSsl}
                     onClick={() =>
-                      page.props.hasSiteSsl &&
-                      router.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/domains/renew-ssl`)
+                      page.props.hasSiteSsl && router.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/domains/renew-ssl`)
                     }
                   >
                     <RefreshCwIcon />
@@ -174,9 +173,7 @@ export default function HostedDomains() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => router.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/domains/check-expiry`)}
-                >
+                <DropdownMenuItem onClick={() => router.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/domains/check-expiry`)}>
                   <CalendarClockIcon />
                   Check SSL Expiry (all)
                 </DropdownMenuItem>
@@ -227,13 +224,7 @@ export default function HostedDomains() {
                     {hd.ssl_can_check_expiry && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            router.post(
-                              `/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/check-expiry`,
-                            )
-                          }
-                        >
+                        <DropdownMenuItem onSelect={() => router.post(`/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/check-expiry`)}>
                           <CalendarClockIcon />
                           Check SSL Expiry
                         </DropdownMenuItem>
@@ -242,13 +233,7 @@ export default function HostedDomains() {
                     {hd.status === 'pending' && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            router.post(
-                              `/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/check-dns`,
-                            )
-                          }
-                        >
+                        <DropdownMenuItem onSelect={() => router.post(`/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/check-dns`)}>
                           Validate
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -270,13 +255,7 @@ export default function HostedDomains() {
                     {!isPrimary && (hd.status === 'active' || hd.status === 'pending') && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            router.post(
-                              `/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/deactivate`,
-                            )
-                          }
-                        >
+                        <DropdownMenuItem onSelect={() => router.post(`/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/deactivate`)}>
                           Deactivate
                         </DropdownMenuItem>
                       </>
@@ -284,13 +263,7 @@ export default function HostedDomains() {
                     {hd.status === 'inactive' && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            router.post(
-                              `/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/reactivate`,
-                            )
-                          }
-                        >
+                        <DropdownMenuItem onSelect={() => router.post(`/servers/${hd.server_id}/sites/${hd.site_id}/domains/${hd.id}/reactivate`)}>
                           Reactivate
                         </DropdownMenuItem>
                       </>

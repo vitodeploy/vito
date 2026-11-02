@@ -2,8 +2,11 @@
 
 namespace App\Actions\Service;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Models\Service;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,6 +22,19 @@ class UpdateConfigFile
      */
     public function update(Service $service, array $input): void
     {
+        try {
+            Cache::lock('unique-queue:server-'.$service->server_id, 600)
+                ->block(10, fn () => $this->updateConfig($service, $input));
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages(['content' => 'Another operation on this server is in progress. Please retry.']);
+        }
+    }
+
+    /** @param array<string, mixed> $input */
+    private function updateConfig(Service $service, array $input): void
+    {
+        $service->refresh();
+        app(ValidateEnvironmentResource::class)->unattached($service);
         $this->validate($service, $input);
 
         $configPaths = config("service.services.{$service->name}.config_paths", []);

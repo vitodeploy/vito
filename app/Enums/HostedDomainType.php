@@ -4,8 +4,9 @@ namespace App\Enums;
 
 use App\Contracts\VitoEnum;
 use App\Traits\HasEnumHelpers;
+use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum HostedDomainType: string implements VitoEnum
+enum HostedDomainType: string implements HasTableDisplay, VitoEnum
 {
     use HasEnumHelpers;
 

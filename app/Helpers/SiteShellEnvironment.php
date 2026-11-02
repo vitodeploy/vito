@@ -2,7 +2,9 @@
 
 namespace App\Helpers;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Models\Site;
+use App\Tooling\TargetToolingInterface;
 use App\Tooling\ToolingRegistry;
 
 final class SiteShellEnvironment
@@ -10,18 +12,26 @@ final class SiteShellEnvironment
     /**
      * @return array<string, string>
      */
-    public static function collect(Site $site): array
+    public static function collect(Site|ToolingTargetDTO $target): array
     {
-        if (! $site->isolatedUser || $site->user === '' || $site->user === null) {
+        $site = $target instanceof Site ? $target : null;
+        $target = $target instanceof Site ? ToolingTargetDTO::forSite($target) : $target;
+        if (! $target->isolatedUser || $target->user === '') {
             return [];
         }
 
         $paths = [];
         foreach (ToolingRegistry::all() as $tool) {
-            if ($tool->installedVersion($site) === null) {
+            if ($site) {
+                $version = $tool->installedVersion($site);
+                $contributions = $version === null ? [] : $tool->pathContributions($site);
+            } elseif ($tool instanceof TargetToolingInterface) {
+                $version = $tool->installedVersionForTarget($target);
+                $contributions = $version === null ? [] : $tool->pathContributionsForTarget($target);
+            } else {
                 continue;
             }
-            foreach ($tool->pathContributions($site) as $entry) {
+            foreach ($contributions as $entry) {
                 if ($entry !== '' && ! in_array($entry, $paths, true)) {
                     $paths[] = $entry;
                 }
@@ -32,7 +42,7 @@ final class SiteShellEnvironment
             return [];
         }
 
-        $base = "/usr/local/bin:/usr/bin:/bin:/home/{$site->user}/.local/bin";
+        $base = "/usr/local/bin:/usr/bin:/bin:/home/{$target->user}/.local/bin";
 
         return ['PATH' => implode(':', $paths).':'.$base];
     }
