@@ -83,7 +83,7 @@ test('suggested deployment scripts are loaded by stage without reusing site scri
     ])
         ->and((new PHP)->defaultScripts()['build'])->toContain('if [ -f composer.json ]; then', 'composer install')
         ->and((new NodeJS)->defaultScripts())->toBe([
-            'build' => "npm ci\nnpm run build --if-present\n",
+            'build' => "if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then\n  npm ci\nelse\n  npm install\nfi\nnpm run build --if-present\n",
             'pre-release' => '',
             'post-release' => '',
         ])
