@@ -22,11 +22,17 @@ use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\ServerAutoUpdateCompleted;
 use App\Plugins\RegisterServerProvider;
+use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
+use Aws\CommandInterface;
+use Aws\Ec2\Ec2Client;
+use Aws\MockHandler;
+use Aws\Result;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +43,7 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
+use Psr\Http\Message\RequestInterface;
 
 uses(RefreshDatabase::class);
 
@@ -194,6 +201,78 @@ test('create debian server uses the provider image', function (string $provider,
     'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/debian13'],
     'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 13],
     'vultr' => [Vultr::id(), '/instances', 'os_id', 2625],
+]);
+
+test('aws provisions only images compatible with the selected plan', function (OperatingSystem $os, string $plan, array $architectures, ?string $imageArchitecture) {
+    SSH::fake();
+    Queue::fake();
+    Http::preventStrayRequests();
+
+    $handler = new MockHandler([
+        new Result(['KeyMaterial' => file_get_contents($this->server->sshKey()['private_key_path'])]),
+        new Result(['GroupId' => 'sg-test']),
+        new Result,
+        new Result(['InstanceTypes' => [['ProcessorInfo' => ['SupportedArchitectures' => $architectures]]]]),
+        new Result(['Images' => [['ImageId' => 'ami-compatible', 'CreationDate' => '2026-10-01T00:00:00Z']]]),
+        new Result(['Instances' => [[
+            'InstanceId' => 'i-test', 'PrivateIpAddress' => '10.0.0.10', 'Placement' => ['AvailabilityZone' => 'eu-central-1a'],
+        ]]]),
+    ]);
+    $commands = [];
+    $this->app->bind(Ec2Client::class, function ($app, array $parameters) use ($handler, &$commands): Ec2Client {
+        return new Ec2Client(array_merge($parameters['args'], [
+            'retries' => 0,
+            'handler' => function (CommandInterface $command, RequestInterface $request) use ($handler, &$commands): PromiseInterface {
+                $commands[$command->getName()] = $command->toArray();
+
+                return $handler($command, $request);
+            },
+        ]));
+    });
+    $provider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => AWS::id(),
+        'credentials' => ['key' => 'test-key', 'secret' => 'test-secret'],
+    ]);
+
+    $response = $this->actingAs($this->user)->post(route('servers.store'), [
+        'provider' => AWS::id(), 'server_provider' => $provider->id,
+        'name' => 'aws-architecture', 'os' => $os->value, 'region' => 'eu-central-1', 'plan' => $plan,
+    ]);
+
+    expect($commands['DescribeInstanceTypes']['InstanceTypes'])->toBe([$plan]);
+
+    if ($imageArchitecture === null) {
+        $response->assertSessionHasErrors('provider');
+        expect($commands)->not->toHaveKeys(['DescribeImages', 'RunInstances']);
+        Queue::assertNotPushed(InstallJob::class);
+
+        return;
+    }
+
+    $response->assertSessionDoesntHaveErrors();
+    $filters = collect($commands['DescribeImages']['Filters'])->pluck('Values', 'Name');
+    $imageName = $os->isDebian()
+        ? 'debian-'.$os->getVersion().'-'.$imageArchitecture.'-20261001-2618'
+        : 'ubuntu/images/hvm-ssd/ubuntu-'.$os->getCodename().'-'.$os->getVersion().'-'.$imageArchitecture.'-server-20261001';
+
+    expect($filters['architecture'])->toBe($architectures)
+        ->and(fnmatch($filters['name'][0], $imageName))->toBeTrue()
+        ->and($commands['DescribeImages']['Owners'])->toBe([$os->isDebian() ? '136693071363' : '099720109477'])
+        ->and($commands['RunInstances']['ImageId'])->toBe('ami-compatible')
+        ->and($commands['RunInstances']['InstanceType'])->toBe($plan);
+    $this->assertDatabaseHas('servers', ['name' => 'aws-architecture', 'ssh_user' => $os->isDebian() ? 'admin' : 'ubuntu']);
+    Queue::assertPushed(InstallJob::class);
+})->with([
+    'debian 12 x86' => [OperatingSystem::DEBIAN12, 't3.small', ['x86_64'], 'amd64'],
+    'debian 12 arm' => [OperatingSystem::DEBIAN12, 't4g.small', ['arm64'], 'arm64'],
+    'debian 13 x86' => [OperatingSystem::DEBIAN13, 't3.small', ['x86_64'], 'amd64'],
+    'debian 13 arm' => [OperatingSystem::DEBIAN13, 't4g.small', ['arm64'], 'arm64'],
+    'ubuntu x86' => [OperatingSystem::UBUNTU24, 't3.small', ['x86_64'], 'amd64'],
+    'ubuntu arm' => [OperatingSystem::UBUNTU24, 't4g.small', ['arm64'], 'arm64'],
+    'unsupported architecture' => [OperatingSystem::DEBIAN13, 'unsupported', ['i386'], null],
+    'missing architecture' => [OperatingSystem::DEBIAN13, 'unknown', [], null],
 ]);
 
 test('create debian server prepares the base system', function (OperatingSystem $os) {

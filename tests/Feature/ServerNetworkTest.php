@@ -214,18 +214,27 @@ test('debian persists ips with a systemd unit instead of netplan', function () {
     SSH::assertNotExecutedContains('netplan apply');
 });
 
-test('debian systemd unit keeps the managed marker and restores addresses', function () {
+test('debian systemd unit reports failed additions and retries without skipping other addresses', function () {
     $address = ServerIpAddress::factory()->create([
         'server_id' => $this->server->id,
         'ip' => '203.0.113.10',
         'prefix_length' => 32,
+        'interface' => 'wg-vito-1',
+    ]);
+    $otherAddress = ServerIpAddress::factory()->create([
+        'server_id' => $this->server->id,
+        'ip' => '2001:db8::10',
+        'prefix_length' => 128,
         'interface' => 'eth0',
     ]);
 
-    $unit = view('ssh.network.systemd-ips', ['addresses' => collect([$address])])->render();
+    $unit = view('ssh.network.systemd-ips', ['addresses' => collect([$address, $otherAddress])])->render();
 
-    expect($unit)->toContain('# vito-managed: 203.0.113.10')
-        ->and($unit)->toContain('ExecStart=-ip addr replace 203.0.113.10/32 dev eth0');
+    expect($unit)->toContain('# vito-managed: 203.0.113.10,2001:db8::10')
+        ->toContain('Restart=on-failure', 'RestartSec=10s', 'exit "$$status"')
+        ->toContain('ip addr replace 203.0.113.10/32 dev wg-vito-1 || status=1;')
+        ->toContain('ip addr replace 2001:db8::10/128 dev eth0 || status=1;')
+        ->not->toContain('ExecStart=-');
 });
 
 test('debian removes the address and the unit with the last managed ip', function () {

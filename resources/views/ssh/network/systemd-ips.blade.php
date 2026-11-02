@@ -8,9 +8,14 @@ PartOf=systemd-networkd.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+Restart=on-failure
+RestartSec=10s
+ExecStart=/bin/sh -c '\
+    status=0; \
 @foreach ($addresses as $address)
-ExecStart=-ip addr replace {!! $address->ip !!}/{!! $address->prefix_length !!} dev {!! $address->interface !!}
+    ip addr replace {!! $address->ip !!}/{!! $address->prefix_length !!} dev {!! $address->interface !!} || status=1; \
 @endforeach
+    exit "$$status"'
 
 [Install]
 WantedBy=multi-user.target
