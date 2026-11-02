@@ -1,0 +1,1 @@
+import{a as e,t}from"./jsx-runtime-D71uMYU6.js";import{p as n}from"./utils-it8ZEOdA.js";var r=e(n(),1);t();var i=r.createContext(void 0);function a(e){let t=r.useContext(i);return e||t||`ltr`}export{a as t};
