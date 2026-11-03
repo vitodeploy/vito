@@ -94,7 +94,7 @@ test('php component commands prefer component executables and Composer over serv
         $this->component, $command, $staged ? '/tmp/staged.env' : null, $staged ? '/tmp/release' : null,
     ));
 
-    expect($script)->toContain('export PATH='.escapeshellarg($this->component->basePath().'/bin:'.$this->component->basePath().'/.local/vito/bin:/usr/local/bin:/usr/bin:/bin:/home/'.$this->component->user.'/.local/bin').'; ')
+    expect($script)->toContain('export PATH='.escapeshellarg($this->component->basePath().'/bin:'.$this->component->basePath().'/.local/vito/bin:/home/'.$this->component->user.'/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin:/home/'.$this->component->user.'/.local/bin').'; ')
         ->toContain('/bin/bash -p -c '.escapeshellarg($command));
 })->with([false, true]);
 

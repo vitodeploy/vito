@@ -147,30 +147,41 @@ class Cloudflare extends AbstractDNSProvider
         }
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function getRecords(string $domainId): array
     {
-        $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
-            'per_page' => 100,
-        ]);
+        $records = [];
+        $page = 1;
+        do {
+            $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
+                'per_page' => 100,
+                'page' => $page,
+            ]);
 
-        if (! $response->successful()) {
-            Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
-            throw new \RuntimeException('Failed to fetch DNS records: '.($response->json('errors')[0]['message'] ?? 'Unknown error'));
-        }
+            if (! $response->successful()) {
+                Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
+                throw new \RuntimeException('Failed to fetch DNS records: '.($response->json('errors')[0]['message'] ?? 'Unknown error'));
+            }
 
-        return collect($response->json('result'))->map(function (array $record) {
-            return [
-                'id' => $record['id'],
-                'type' => $record['type'],
-                'name' => $record['name'],
-                'content' => $record['content'],
-                'ttl' => $record['ttl'],
-                'proxied' => $record['proxied'],
-                'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
-                'created_on' => $record['created_on'],
-                'modified_on' => $record['modified_on'],
-            ];
-        })->toArray();
+            $pageRecords = collect($response->json('result'))->map(function (array $record) {
+                return [
+                    'id' => $record['id'],
+                    'type' => $record['type'],
+                    'name' => $record['name'],
+                    'content' => $record['content'],
+                    'ttl' => $record['ttl'],
+                    'proxied' => $record['proxied'],
+                    'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
+                    'created_on' => $record['created_on'],
+                    'modified_on' => $record['modified_on'],
+                ];
+            })->toArray();
+            array_push($records, ...$pageRecords);
+        } while ($page++ < (int) $response->json('result_info.total_pages', 1));
+
+        return $records;
     }
 
     public function createRecord(string $domainId, array $recordData): array

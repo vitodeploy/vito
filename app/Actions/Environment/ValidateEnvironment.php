@@ -25,6 +25,7 @@ class ValidateEnvironment
         ])->validate();
 
         if ($environment === null) {
+            Validator::make($input, $application->preset()->creationRules())->validate();
             Validator::make(['name' => Str::slug($input['name'])], [
                 'name' => ['required', 'max:255', Rule::unique('environments', 'slug')->where('application_id', $application->id)],
             ], [

@@ -2,9 +2,14 @@
 
 namespace App\RuntimePresets;
 
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
 use App\Models\EnvironmentVariable;
+use App\Support\RepositoryFiles;
+use App\Tooling\NodeTooling;
+use Closure;
 use Illuminate\Support\Str;
 
 class Laravel extends PHP
@@ -17,6 +22,50 @@ class Laravel extends PHP
     public static function label(): string
     {
         return 'Laravel';
+    }
+
+    public function additionalTooling(): array
+    {
+        return [NodeTooling::id() => NodeTooling::supportedVersions()[0]];
+    }
+
+    public function detect(RepositoryFiles $files): ?array
+    {
+        return isset($files->json('composer.json')['require']['laravel/framework']) ? parent::detect($files) : null;
+    }
+
+    public function suggestsDatabase(): bool
+    {
+        return true;
+    }
+
+    public function creationForm(): DynamicForm
+    {
+        return DynamicForm::make([
+            DynamicField::make('app_key')
+                ->passwordWithToggle()
+                ->label('APP_KEY')
+                ->description("Leave empty to generate one. Moving an existing app? Paste its key, or it can't read data encrypted with the old one."),
+        ]);
+    }
+
+    public function creationRules(): array
+    {
+        return ['app_key' => ['nullable', 'string', function (string $attribute, string $value, Closure $fail): void {
+            $key = str_starts_with($value, 'base64:') ? base64_decode(substr($value, 7), true) : $value;
+            if ($key === false || ! in_array(strlen($key), [16, 32], true)) {
+                $fail('Enter a valid Laravel key, such as the output of php artisan key:generate --show.');
+            }
+        }]];
+    }
+
+    public function defaultVariables(Environment $environment, array $input): array
+    {
+        return [
+            'APP_KEY' => ['value' => ($input['app_key'] ?? null) ?: 'base64:'.base64_encode(random_bytes(32)), 'is_secret' => true],
+            'APP_ENV' => ['value' => $environment->slug, 'is_secret' => false],
+            'APP_DEBUG' => ['value' => 'false', 'is_secret' => false],
+        ];
     }
 
     public function webRoot(): ?string

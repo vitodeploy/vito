@@ -80,6 +80,14 @@ class GithubApp extends AbstractSourceControlProvider implements SupportsApplica
         return $res->json();
     }
 
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        $res = $this->getClient()->replaceHeaders(['Accept' => 'application/vnd.github.raw+json'])
+            ->get(self::API_BASE_URL.'/repos/'.$repo.'/contents/'.$path, ['ref' => $branch]);
+
+        return $this->repositoryFile($res, $repo);
+    }
+
     public function fullRepoUrl(string $repo, string $key): string
     {
         return sprintf('https://github.com/%s.git', $repo);

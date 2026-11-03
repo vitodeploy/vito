@@ -66,6 +66,7 @@ class UpdateEnvironment
                     throw ValidationException::withMessages(['auto_deploy' => 'Select an available source control before enabling automatic deployment.']);
                 }
                 $environment->auto_deploy = (bool) $input['auto_deploy'];
+                $environment->auto_deploy_failed = false;
             }
             $environment->save();
 

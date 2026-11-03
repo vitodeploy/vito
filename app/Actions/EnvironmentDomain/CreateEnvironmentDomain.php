@@ -10,6 +10,8 @@ use App\Models\EnvironmentDomain;
 
 class CreateEnvironmentDomain
 {
+    private const int DNS_PROPAGATION_SECONDS = 30;
+
     /** @param array<string, mixed> $input */
     public function create(Environment $environment, array $input): EnvironmentDomain
     {
@@ -17,9 +19,13 @@ class CreateEnvironmentDomain
             $domain = app(ValidateEnvironmentDomain::class)->validate($environment, $input);
             $domain->status = HostedDomainStatus::PENDING;
             $domain->save();
+            if (! empty($input['dns_domain_id'])) {
+                app(PointDomainAtServer::class)->point($domain, (int) $input['dns_domain_id']);
+                $domain->save();
+            }
             app(SyncComponentVhost::class)->sync($domain->component);
             app(BroadcastEnvironmentDomainUpdate::class)->broadcast($domain);
-            CheckEnvironmentDomainJob::dispatch($domain->id, $domain->component->server_id)->afterCommit();
+            CheckEnvironmentDomainJob::dispatch($domain->id, $domain->component->server_id)->delay($domain->dns_domain_id ? self::DNS_PROPAGATION_SECONDS : 0)->afterCommit();
 
             return $domain;
         });

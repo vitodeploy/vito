@@ -116,6 +116,13 @@ class Gitea extends AbstractSourceControlProvider implements SupportsApplication
         return $res->json();
     }
 
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        $res = Http::withToken($this->data()['token'])->get($this->getApiUrl().'/repos/'.$repo.'/raw/'.$path, ['ref' => $branch]);
+
+        return $this->repositoryFile($res, $repo);
+    }
+
     public function fullRepoUrl(string $repo, string $key): string
     {
         $host = parse_url($this->getApiUrl())['host'] ?? 'gitea.com';

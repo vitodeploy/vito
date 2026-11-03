@@ -126,6 +126,11 @@ export interface Configs {
       versions: string[];
       web_mode: 'fpm' | 'proxy' | 'static';
       form: DynamicFieldConfig[];
+      creation_form: DynamicFieldConfig[];
+      capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
+      required_services: string[];
+      version_service: string | null;
+      suggests_database: boolean;
     }[];
     capabilities: {
       id: string;

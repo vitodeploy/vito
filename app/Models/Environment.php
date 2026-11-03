@@ -34,6 +34,8 @@ use Illuminate\Support\Collection;
  * @property int $variables_version
  * @property bool $needs_redeploy
  * @property bool $auto_deploy
+ * @property bool $deploy_on_ready
+ * @property bool $auto_deploy_failed
  */
 class Environment extends AbstractModel
 {
@@ -57,6 +59,8 @@ class Environment extends AbstractModel
         'keep_releases' => 'integer',
         'variables_version' => 'integer',
         'auto_deploy' => 'boolean',
+        'deploy_on_ready' => 'boolean',
+        'auto_deploy_failed' => 'boolean',
     ];
 
     /**

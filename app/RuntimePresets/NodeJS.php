@@ -3,6 +3,7 @@
 namespace App\RuntimePresets;
 
 use App\Enums\WebMode;
+use App\Support\RepositoryFiles;
 use App\Tooling\NodeTooling;
 
 class NodeJS extends AbstractRuntimePreset
@@ -35,5 +36,15 @@ class NodeJS extends AbstractRuntimePreset
     public function startCommand(): ?string
     {
         return 'npm start';
+    }
+
+    public function detect(RepositoryFiles $files): ?array
+    {
+        if (! $files->has('package.json') || $files->has('composer.json')) {
+            return null;
+        }
+        $engine = $files->json('package.json')['engines']['node'] ?? null;
+
+        return $this->compatibleVersions($files->get('.nvmrc') ?? $files->get('.node-version') ?? (is_string($engine) ? $engine : null));
     }
 }

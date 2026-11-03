@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Applications;
 
 use App\Actions\Application\CreateApplication;
 use App\Actions\Application\DeleteApplication;
+use App\Actions\Application\DetectApplicationRuntime;
 use App\Actions\Application\UpdateApplication;
+use App\Actions\Component\GetComponentOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Application;
 use App\Models\Environment;
 use App\Models\SourceControl;
 use App\Tables\ApplicationTable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,11 +34,13 @@ class ApplicationController extends Controller
     {
         $project = user()->currentProject;
         $this->authorize('viewAny', [Application::class, $project]);
+        $canCreate = user()->can('create', [Application::class, $project]);
 
         return Inertia::render('applications/index', [
             'applications' => ApplicationTable::make($project->applications())->simplePaginate(),
             'sourceControls' => SourceControlResource::collection(SourceControl::getByProjectId($project->id, user())->get()),
-            'canCreate' => user()->can('create', [Application::class, $project]),
+            'canCreate' => $canCreate,
+            'servers' => $canCreate ? app(GetComponentOptions::class)->servers($project->id) : [],
         ]);
     }
 
@@ -48,6 +53,15 @@ class ApplicationController extends Controller
         $application = app(CreateApplication::class)->create($project, $request->all(), user());
 
         return to_route('applications.show', $application)->with('success', 'Application created.');
+    }
+
+    #[Get('/detect', name: 'applications.detect')]
+    public function detect(Request $request): JsonResponse
+    {
+        $project = user()->currentProject;
+        $this->authorize('create', [Application::class, $project]);
+
+        return response()->json(app(DetectApplicationRuntime::class)->detect($project, $request->all(), user()));
     }
 
     #[Get('/{application}', name: 'applications.show')]

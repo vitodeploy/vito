@@ -6,6 +6,7 @@ use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\HostedDomainType;
 use App\Models\Component;
+use App\Models\Domain;
 use App\Models\Environment;
 use App\Models\Ssl;
 
@@ -19,6 +20,8 @@ class GetEnvironmentDomainOptions
                 ->orWhereHas('capabilities', fn ($query) => $query->where('capability', 'web')->where('status', ComponentStatus::READY)))->get();
 
         return [
+            'dns_domains' => app(PointDomainAtServer::class)->available($environment)->with('dnsProvider')->orderBy('domain')->get()
+                ->map(fn (Domain $domain): array => ['id' => $domain->id, 'domain' => $domain->domain, 'provider' => $domain->dnsProvider->name])->all(),
             'components' => $components->map(fn (Component $component): array => [
                 'id' => $component->id, 'name' => $component->name, 'server_id' => $component->server_id,
                 'server_name' => $component->server->name, 'server_ip' => $component->server->ip,

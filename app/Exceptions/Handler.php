@@ -40,6 +40,7 @@ class Handler extends ExceptionHandler
         'password_confirmation',
         'value',
         'content',
+        'environment.app_key',
     ];
 
     /**

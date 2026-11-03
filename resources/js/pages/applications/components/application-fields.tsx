@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SelectRepo from '@/pages/source-controls/components/select-repo';
 import { SourceControl } from '@/types/source-control';
 import { useConfigs } from '@/stores/bootstrap-store';
 import { Configs } from '@/types';
@@ -21,17 +22,20 @@ export default function ApplicationFields({
   onChange,
   sourceControls,
   inline,
+  picker,
 }: {
   data: ApplicationFormData;
   errors: Partial<Record<keyof ApplicationFormData, string>>;
   onChange: (name: keyof ApplicationFormData, value: string) => void;
   sourceControls: SourceControl[];
   inline?: boolean;
+  picker?: boolean;
 }) {
   const available = usableSourceControls(sourceControls, useConfigs()!);
 
   return (
     <>
+      {(!picker || available.length !== 1) && (
       <Field
         id="application-source-control"
         label="Source control"
@@ -61,18 +65,30 @@ export default function ApplicationFields({
           </SelectContent>
         </Select>
       </Field>
-      <Field id="application-repository" label="Repository" inline={inline} error={errors.repository}>
-        <Input
-          id="application-repository"
-          value={data.repository}
-          onChange={(e) => onChange('repository', e.target.value)}
-          placeholder="organization/repository"
-          className="font-mono"
-        />
+      )}
+      <Field id={picker ? 'repository' : 'application-repository'} label="Repository" inline={inline} error={errors.repository}>
+        {picker ? (
+          <SelectRepo
+            sourceControlId={data.source_control_id}
+            value={data.repository}
+            onValueChange={(value) => onChange('repository', value)}
+            placeholder="organization/repository"
+          />
+        ) : (
+          <Input
+            id="application-repository"
+            value={data.repository}
+            onChange={(e) => onChange('repository', e.target.value)}
+            placeholder="organization/repository"
+            className="font-mono"
+          />
+        )}
       </Field>
-      <Field id="application-name" label="Name" inline={inline} error={errors.name}>
-        <Input id="application-name" value={data.name} onChange={(e) => onChange('name', e.target.value)} />
-      </Field>
+      {!picker && (
+        <Field id="application-name" label="Name" inline={inline} error={errors.name}>
+          <Input id="application-name" value={data.name} onChange={(e) => onChange('name', e.target.value)} />
+        </Field>
+      )}
     </>
   );
 }

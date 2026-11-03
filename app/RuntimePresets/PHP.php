@@ -3,6 +3,7 @@
 namespace App\RuntimePresets;
 
 use App\Enums\WebMode;
+use App\Support\RepositoryFiles;
 use App\Tooling\ComposerTooling;
 
 class PHP extends AbstractRuntimePreset
@@ -50,5 +51,15 @@ class PHP extends AbstractRuntimePreset
     public function webMode(): WebMode
     {
         return WebMode::FPM;
+    }
+
+    public function detect(RepositoryFiles $files): ?array
+    {
+        if (! $files->has('composer.json') && ! $files->has('index.php')) {
+            return null;
+        }
+        $constraint = $files->json('composer.json')['require']['php'] ?? null;
+
+        return $this->compatibleVersions(is_string($constraint) ? $constraint : null);
     }
 }

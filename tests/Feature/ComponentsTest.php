@@ -200,6 +200,7 @@ test('component listing scopes tables ready servers and dynamic capability forms
             ->where('can.createComponent', true)->where('component', null)->where('can.updateComponent', false)->where('can.deleteComponent', false)
             ->reloadOnly('options', fn (AssertableInertia $reload) => $reload
                 ->has('options.servers', 1)->where('options.servers.0.id', $this->server->id)
+                ->where('options.component_names', [$component->name])
                 ->has('options.capabilities', 3)->where('options.capabilities.0.id', 'web')
                 ->where('options.capabilities.0.form.0.name', 'web_directory')));
     $this->get(route('environments.show', [$this->application, $this->environment, 'component' => $component->id]))->assertSuccessful()

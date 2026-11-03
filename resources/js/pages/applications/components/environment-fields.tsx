@@ -20,23 +20,27 @@ export default function EnvironmentFields({
   errors,
   onChange,
   inline,
+  hideBranch,
 }: {
   preset?: RuntimePreset;
   data: EnvironmentFormData;
   errors: Record<string, string | undefined>;
   onChange: (name: string, value: DynamicFieldValue) => void;
   inline?: boolean;
+  hideBranch?: boolean;
 }) {
   const fields = (preset?.form ?? []).filter((field) => field.name !== 'name' && field.name !== 'branch');
 
   return (
     <>
-      <Field id="environment-name" label="Name" inline={inline} error={errors.name}>
+      <Field id="environment-name" label={hideBranch ? 'Environment name' : 'Name'} inline={inline} error={errors.name}>
         <Input id="environment-name" placeholder="Staging" value={data.name} onChange={(e) => onChange('name', e.target.value)} />
       </Field>
-      <Field id="environment-branch" label="Branch" inline={inline} error={errors.branch}>
-        <Input id="environment-branch" className="font-mono" value={data.branch} onChange={(e) => onChange('branch', e.target.value)} />
-      </Field>
+      {!hideBranch && (
+        <Field id="environment-branch" label="Branch" inline={inline} error={errors.branch}>
+          <Input id="environment-branch" className="font-mono" value={data.branch} onChange={(e) => onChange('branch', e.target.value)} />
+        </Field>
+      )}
       {preset && preset.versions.length > 0 && !fields.some((field) => field.name === 'runtime_version') && (
         <Field id="environment-runtime-version" label="Runtime version" inline={inline} error={errors.runtime_version}>
           <Select value={String(data.runtime_version ?? '')} onValueChange={(value) => onChange('runtime_version', value)}>

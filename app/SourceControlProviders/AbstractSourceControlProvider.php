@@ -14,7 +14,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Throwable;
 
-abstract class AbstractSourceControlProvider implements SourceControlProvider
+abstract class AbstractSourceControlProvider implements SourceControlProvider, SupportsRepositoryInspection
 {
     public function __construct(protected SourceControl $sourceControl) {}
 
@@ -213,5 +213,33 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
     public function getBranches(string $repo, bool $useCache = true): array
     {
         return [];
+    }
+
+    public function getDefaultBranch(string $repo): ?string
+    {
+        $branch = $this->getRepo($repo)['default_branch'] ?? null;
+
+        return is_string($branch) ? $branch : null;
+    }
+
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @throws SourceControlIsNotConnected
+     * @throws RepositoryNotFound
+     * @throws RepositoryPermissionDenied
+     * @throws RequestException
+     */
+    protected function repositoryFile(Response $res, string $repo): ?string
+    {
+        if ($res->status() === 404) {
+            return null;
+        }
+        $this->handleResponseErrors($res, $repo);
+
+        return $res->body();
     }
 }

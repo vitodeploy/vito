@@ -53,11 +53,13 @@ export default function BackendsForm({
   };
 
   const columns = caddy ? 'grid-cols-[minmax(0,1fr)_6rem_2rem]' : 'grid-cols-[minmax(0,1fr)_6rem_5rem_4.5rem_2rem]';
-  const add = () =>
+  const add = () => {
+    const unused = targets.find((target) => !form.data.backends.some((backend) => backend.target_component_id === target.id));
     form.setData('backends', [
       ...form.data.backends,
-      { target_component_id: targets[0]?.id ?? null, ip: targets.length ? null : '', port: '8080', weight: '', backup: false },
+      { target_component_id: (unused ?? targets[0])?.id ?? null, ip: targets.length ? null : '', port: '8080', weight: '', backup: false },
     ]);
+  };
 
   return (
     <form onSubmit={submit}>

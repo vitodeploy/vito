@@ -4,6 +4,7 @@ namespace App\Jobs\EnvironmentAttachment;
 
 use App\Actions\EnvironmentAttachment\SyncEnvironmentResourceAccess;
 use App\Actions\EnvironmentDeployment\DeployEnvironment;
+use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -22,6 +23,7 @@ class SyncEnvironmentResourceAccessJob implements ShouldQueue
 
     public function handle(): void
     {
+        $environmentId = EnvironmentAttachment::query()->whereKey($this->attachmentId)->value('environment_id');
         $synchronized = false;
         $this->run('server-'.$this->serverId, function () use (&$synchronized): void {
             $attachment = EnvironmentAttachment::query()->find($this->attachmentId);
@@ -33,6 +35,10 @@ class SyncEnvironmentResourceAccessJob implements ShouldQueue
         $attachment = EnvironmentAttachment::query()->find($this->attachmentId);
         if ($synchronized && $attachment) {
             app(DeployEnvironment::class)->join($attachment->environment);
+        }
+        $environment = Environment::query()->find($environmentId);
+        if ($synchronized && $environment) {
+            app(DeployEnvironment::class)->whenReady($environment);
         }
     }
 

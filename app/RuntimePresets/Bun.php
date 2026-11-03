@@ -3,6 +3,7 @@
 namespace App\RuntimePresets;
 
 use App\Enums\WebMode;
+use App\Support\RepositoryFiles;
 use App\Tooling\BunTooling;
 
 class Bun extends AbstractRuntimePreset
@@ -35,5 +36,10 @@ class Bun extends AbstractRuntimePreset
     public function startCommand(): ?string
     {
         return 'bun run start';
+    }
+
+    public function detect(RepositoryFiles $files): ?array
+    {
+        return ($files->has('bun.lock') || $files->has('bun.lockb')) && ! $files->has('composer.json') ? $this->compatibleVersions(null) : null;
     }
 }

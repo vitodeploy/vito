@@ -7,6 +7,7 @@ use App\Enums\WebMode;
 use App\Models\Component;
 use App\Models\Environment;
 use App\Models\EnvironmentAttachment;
+use App\Support\RepositoryFiles;
 use Illuminate\Support\Facades\File;
 
 abstract class AbstractRuntimePreset
@@ -75,6 +76,16 @@ abstract class AbstractRuntimePreset
         return [];
     }
 
+    /**
+     * Extra tooling installed for every component, keyed by tooling id with the version to install.
+     *
+     * @return array<string, string>
+     */
+    public function additionalTooling(): array
+    {
+        return [];
+    }
+
     public function webRoot(): ?string
     {
         return null;
@@ -133,5 +144,96 @@ abstract class AbstractRuntimePreset
     public function form(): DynamicForm
     {
         return DynamicForm::make([]);
+    }
+
+    /**
+     * Optional fields offered only while an environment is being created.
+     */
+    public function creationForm(): DynamicForm
+    {
+        return DynamicForm::make([]);
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public function creationRules(): array
+    {
+        return [];
+    }
+
+    /**
+     * Variables seeded into a new environment.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, array{value: string, is_secret: bool}>
+     */
+    public function defaultVariables(Environment $environment, array $input): array
+    {
+        return [];
+    }
+
+    public function suggestsDatabase(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Recognizes this runtime in a repository. Presets are asked in reverse registration order, so
+     * a more specific preset registered later wins over a generic one.
+     *
+     * @return ?list<string> Compatible versions, newest first, or null when the repository is not this runtime.
+     */
+    public function detect(RepositoryFiles $files): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Versions satisfying a Composer or npm style constraint, newest first. An empty, unparsable or
+     * unsatisfiable constraint returns every version, so detection never removes the user's choices.
+     *
+     * @return list<string>
+     */
+    protected function compatibleVersions(?string $constraint): array
+    {
+        $versions = $this->versions();
+        usort($versions, fn (string $a, string $b): int => version_compare($b, $a));
+        $alternatives = preg_split('/\s*\|\|?\s*/', trim(preg_replace('/([<>=^~]+)\s+/', '$1', $constraint ?? '') ?? '')) ?: [];
+        $compatible = array_filter($versions, function (string $version) use ($alternatives): bool {
+            foreach ($alternatives as $alternative) {
+                if ($alternative !== '' && $this->satisfies($version, $alternative)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return array_values($compatible ?: $versions);
+    }
+
+    private function satisfies(string $version, string $constraint): bool
+    {
+        foreach (preg_split('/[\s,]+/', $constraint, flags: PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
+            if (! preg_match('/\A(\^|~|>=|<=|>|<|=)?v?(\d+(?:\.\d+)*)/', $part, $match)) {
+                return false;
+            }
+            $precision = min(substr_count($version, '.'), substr_count($match[2], '.')) + 1;
+            $current = implode('.', array_slice(explode('.', $version), 0, $precision));
+            $target = implode('.', array_slice(explode('.', $match[2]), 0, $precision));
+            $sameMajor = (int) $version === (int) $match[2];
+            $satisfied = match ($match[1]) {
+                '^' => $sameMajor && version_compare($current, $target, '>='),
+                '~' => substr_count($match[2], '.') >= 2 ? version_compare($current, $target, '==') : $sameMajor && version_compare($current, $target, '>='),
+                '>=', '<=', '>', '<' => version_compare($current, $target, $match[1]),
+                default => version_compare($current, $target, '=='),
+            };
+            if (! $satisfied) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

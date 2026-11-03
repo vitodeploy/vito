@@ -278,6 +278,11 @@ Additional extension points:
 - `vhostData(Component $component): array` derives webserver data from the selected web mode. The default uses
   the component's current release/web directory, its user/version FPM socket or its loopback proxy port.
   `SyncComponentVhost` remains the only vhost writer; presets must not write configuration themselves.
+- `detect(RepositoryFiles $files): ?array` recognizes the runtime in a repository and returns compatible versions, newest first, or null. Presets are asked in reverse registration order, so a plugin preset wins over the built-in ones.
+- `additionalTooling(): array` installs extra tooling on every component, keyed by tooling id with the version.
+- `defaultVariables(Environment $environment, array $input): array` seeds variables into new environments. `creationForm()` and `creationRules()` add optional fields for them.
+- `suggestsDatabase(): bool` turns the database option on by default when creating an application.
+- Source control plugins can implement `App\SourceControlProviders\SupportsRepositoryInspection` to enable detection. Without it, or when `getFileContents()` keeps the default empty result, Vito asks the user to pick a runtime.
 - `attachmentAliases(EnvironmentAttachment $attachment, array $generic): array` adds a string map of
   resource-variable aliases. The default is empty; Laravel supplies its own `DB_*`/Redis conventions.
   These aliases have lower priority than explicit environment variables and are conservatively masked in UI

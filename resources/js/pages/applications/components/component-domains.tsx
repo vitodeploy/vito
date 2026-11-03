@@ -140,7 +140,7 @@ export default function ComponentDomains({
                         onSelect={() =>
                           dialog.confirm.open({
                             title: `Remove ${domain.host}`,
-                            description: 'Removes the vhost and any certificate no other domain uses. Delete redirects to this domain first.',
+                            description: `Removes the vhost and any certificate no other domain uses. Delete redirects to this domain first.${domain.dns_managed ? ' The DNS record stays on the Domains page.' : ''}`,
                             variant: 'destructive',
                             confirmLabel: 'Remove',
                             method: 'delete',
@@ -154,7 +154,10 @@ export default function ComponentDomains({
                   </DropdownMenu>
                 )}
               </div>
-              {domain.status === 'pending' && target && (
+              {domain.status === 'pending' && domain.dns_managed && (
+                <span className="text-muted-foreground text-xs">Vito manages this DNS record. Verification runs automatically, usually within minutes.</span>
+              )}
+              {domain.status === 'pending' && !domain.dns_managed && target && (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-muted-foreground text-xs">Add this DNS record, then verify:</span>
                   <div className="grid grid-cols-[3rem_1fr_1fr] items-center gap-2 text-xs">

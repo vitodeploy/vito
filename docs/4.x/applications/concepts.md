@@ -27,12 +27,16 @@ The deployment core is runtime-agnostic. Presets suggest editable scripts, comma
 
 ## Getting started
 
-1. Create an application with a project-available source control and repository.
-2. Create an environment, choosing its branch and runtime version when required.
-3. Add [components](components.md) on ready servers with the required services installed.
-4. Configure [variables](variables.md), optional [resources](resources.md), and [deployment scripts](deployments.md).
-5. Select a ready app component as primary and deploy. The release command runs there once.
-6. Add [domains](domains.md), directly to web components or to a [load balancer](load-balancing.md).
+Click **New application**, pick a repository and a server, then click **Deploy**. Vito:
+
+1. Reads the repository to suggest its default branch, runtime and a compatible version. You can change any of them, and you pick the runtime yourself when it can't be detected.
+2. Creates a `Production` environment and a `web` [component](components.md) on the server. Name, Linux user, capabilities and other details are under **Advanced**.
+3. Optionally creates a [database](resources.md) on the same server. It is on by default for presets that suggest one, such as Laravel, when the server has a ready database and firewall.
+4. Seeds preset [variables](variables.md). Laravel gets a generated `APP_KEY`, `APP_ENV` and `APP_DEBUG=false`. When moving an existing app, paste its `APP_KEY` under **Advanced**, otherwise it can't read data encrypted with the old key.
+5. Turns on deploy on push, then starts the first deploy as soon as the component and database are ready. If the repository webhook can't be installed, deploy on push is turned off and the environment shows a warning.
+6. Add [domains](domains.md) when it is live, directly to the web component or to a [load balancer](load-balancing.md).
+
+Creating an application without a server is still possible when the project has no ready servers. Add components from the graph, then deploy. Additional environments, components and resources are added from the graph, and these do not deploy automatically.
 
 The overview shows the latest run, component/domain status, preset warnings and a read-only topology. Server bands show placement; arrows show routing and resource dependencies. Click a node to open its details. These are Vito lifecycle statuses, **not live health checks**. “Redeploy to apply” means saved changes have not yet been applied by a successful deploy.
 
