@@ -4,6 +4,7 @@ namespace App\Actions\Domain;
 
 use App\Models\DNSRecord;
 use App\Models\EnvironmentDomain;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -33,7 +34,9 @@ class DeleteDNSRecord
             ]);
         }
 
-        $dnsRecord->delete();
-        EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
+        DB::transaction(function () use ($dnsRecord): void {
+            $dnsRecord->delete();
+            EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
+        });
     }
 }

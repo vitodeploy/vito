@@ -240,7 +240,7 @@ class Cloudflare extends AbstractDNSProvider
         try {
             $response = $this->getClient()->delete("zones/{$domainId}/dns_records/{$recordId}");
 
-            if (! $response->successful()) {
+            if (! $response->successful() && $response->status() !== 404) {
                 Log::error('Failed to delete Cloudflare DNS record', ['domainId' => $domainId, 'recordId' => $recordId, 'response' => $response->json()]);
 
                 return false;

@@ -438,6 +438,18 @@ describe('managed dns', function () {
         $this->assertDatabaseHas('dns_records', ['provider_record_id' => 'r8']);
     });
 
+    test('a record already gone at the provider can still be removed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r6']);
+        $this->dnsDomain->update(['provider_domain_id' => 'gone']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/gone/*' => Http::response(['errors' => [['message' => 'not found']]], 404)]);
+
+        app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole());
+
+        $this->assertDatabaseMissing('dns_records', ['provider_record_id' => 'r6']);
+        expect($domain->refresh()->dns_domain_id)->toBeNull();
+    });
+
     test('only edits that move the record stop treating dns as managed', function (array $change, bool $managed) {
         $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
         $record = $this->dnsDomain->records()->where('name', 'app.example.com')->sole();
