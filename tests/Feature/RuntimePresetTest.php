@@ -176,6 +176,7 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'laravel ignores plain php' => ['laravel', ['composer.json' => '{"require":{"php":"^8.3"}}'], null],
     'php alternatives' => ['php', ['composer.json' => '{"require":{"php":"^7.4 || ^8.4"}}'], ['8.5', '8.4', '7.4']],
     'php bounded range' => ['php', ['composer.json' => '{"require":{"php":">=8.1,<8.3"}}'], ['8.2', '8.1']],
+    'php constraint with leading whitespace' => ['php', ['composer.json' => json_encode(['require' => ['php' => str_repeat(' ', 300).'^8.4']])], ['8.5', '8.4']],
     'php tilde patch' => ['php', ['composer.json' => '{"require":{"php":"~8.2.0"}}'], ['8.2']],
     'php spaced comparator' => ['php', ['composer.json' => '{"require":{"php":">= 8.4"}}'], ['8.5', '8.4']],
     'php unsatisfiable keeps every version' => ['php', ['composer.json' => '{"require":{"php":"^9.0"}}'], ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0', '7.4', '7.3', '7.2', '7.1', '7.0', '5.6']],

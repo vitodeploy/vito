@@ -474,11 +474,11 @@ describe('managed dns', function () {
         expect($domain->refresh()->dns_domain_id !== null)->toBe($managed);
     })->with([[['ttl' => 600], true], [['content' => '203.0.113.9'], false]]);
 
-    test('a malformed dns domain id is refused', function () {
-        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, 'dns_domain_id' => [$this->dnsDomain->id]]))->toThrow(ValidationException::class);
+    test('a malformed dns domain id is refused', function (mixed $id) {
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, 'dns_domain_id' => $id]))->toThrow(ValidationException::class);
 
         Http::assertNothingSent();
-    });
+    })->with([[[[1]]], [true], ['1'], [0]]);
 
     test('a provider failure leaves nothing behind', function () {
         $this->dnsDomain->update(['provider_domain_id' => 'broken']);

@@ -103,13 +103,20 @@ export default function CreateApplication({
     if (key === detectedKey.current) return;
 
     const controller = new AbortController();
+    const fallBackToPicker = () => {
+      if (!runtimeChosen.current) {
+        setDetected(null);
+        setData((data) => ({ ...data, runtime: '', capabilities: [] }));
+      }
+      setChangingRuntime(true);
+    };
     const timer = setTimeout(async () => {
       setDetecting(true);
       try {
         const query = new URLSearchParams({ source_control_id: sourceControlId, repository, ...(branch ? { branch } : {}) });
         const response = await fetch(`/applications/detect?${query}`, { headers: { Accept: 'application/json' }, signal: controller.signal });
         if (!response.ok) {
-          setChangingRuntime(true);
+          fallBackToPicker();
           return;
         }
         const result = (await response.json()) as Detected;
@@ -131,11 +138,12 @@ export default function CreateApplication({
               branch: resolvedBranch,
             },
             ...(switching ? { runtime: nextRuntime.id, capabilities: webCapability(nextRuntime) } : {}),
+            ...(!nextRuntime && !runtimeChosen.current ? { runtime: '', capabilities: [] } : {}),
           };
         });
         if (!runtimeChosen.current) setChangingRuntime(!nextRuntime);
       } catch {
-        if (!controller.signal.aborted) setChangingRuntime(true);
+        if (!controller.signal.aborted) fallBackToPicker();
       } finally {
         setDetecting(false);
       }

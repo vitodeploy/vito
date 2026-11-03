@@ -16,7 +16,7 @@ class CreateEnvironmentDomain
     /** @param array<string, mixed> $input */
     public function create(Environment $environment, array $input): EnvironmentDomain
     {
-        Validator::make($input, ['dns_domain_id' => ['nullable', 'integer', 'min:1']])->validate();
+        Validator::make($input, ['dns_domain_id' => ['nullable', 'integer:strict', 'min:1']])->validate();
 
         return app(ValidateEnvironmentDomain::class)->run($environment, function () use ($environment, $input): EnvironmentDomain {
             $domain = app(ValidateEnvironmentDomain::class)->validate($environment, $input);
