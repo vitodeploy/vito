@@ -82,6 +82,24 @@ test('detection suggests the default branch runtime and compatible versions', fu
         && $request->header('Accept') === ['application/vnd.github.raw+json']);
 });
 
+test('detection prefers the node package manager preset without changing existing runtimes', function (array $files, string $runtime, array $versions) {
+    $this->files = $files;
+
+    ($this->detect)()->assertSuccessful()->assertExactJson([
+        'branch' => 'trunk', 'runtime' => $runtime, 'versions' => $versions,
+    ]);
+})->with([
+    'pnpm lockfile' => [['package.json' => '{"engines":{"node":"^22"}}', 'pnpm-lock.yaml' => 'lockfileVersion: 9.0'], 'pnpm', ['22']],
+    'yarn lockfile' => [['package.json' => '{"engines":{"node":">=23"}}', 'yarn.lock' => '# yarn lockfile v1'], 'yarn', ['24', '23']],
+    'pnpm metadata wins over stale locks' => [['package.json' => '{"packageManager":"pnpm@10.0.0"}', 'yarn.lock' => '', 'bun.lock' => ''], 'pnpm', ['24', '23', '22']],
+    'yarn metadata wins over stale locks' => [['package.json' => '{"packageManager":"yarn@4.9.2"}', 'pnpm-lock.yaml' => '', 'bun.lock' => ''], 'yarn', ['24', '23', '22']],
+    'npm metadata wins over stale locks' => [['package.json' => '{"packageManager":"npm@11.0.0"}', 'pnpm-lock.yaml' => '', 'yarn.lock' => ''], 'node', ['24', '23', '22']],
+    'npm without metadata' => [['package.json' => '{}', 'package-lock.json' => '{}'], 'node', ['24', '23', '22']],
+    'bun lockfile' => [['package.json' => '{}', 'bun.lock' => '{}'], 'bun', ['1.2', '1.1', '1.0']],
+    'laravel keeps priority' => [['composer.json' => '{"require":{"php":"^8.4","laravel/framework":"^13.0"}}', 'package.json' => '{"packageManager":"pnpm@10.0.0"}', 'pnpm-lock.yaml' => ''], 'laravel', ['8.5', '8.4']],
+    'php keeps priority' => [['composer.json' => '{"require":{"php":"^8.4"}}', 'package.json' => '{"packageManager":"yarn@4.9.2"}', 'yarn.lock' => ''], 'php', ['8.5', '8.4']],
+]);
+
 test('detection reads the requested branch and leaves unknown repositories to the user', function () {
     $this->files = [];
 
@@ -442,6 +460,37 @@ test('the applications page offers servers only to members who can create', func
     $this->user->refresh();
     $this->get(route('applications'))->assertInertia(fn ($page) => $page->where('servers', []));
 });
+
+test('package manager applications provision node and their manager with editable deployment defaults', function (string $runtime) {
+    $this->post(route('applications.store'), [
+        ...$this->input,
+        'runtime' => $runtime,
+        'environment' => ['name' => 'Production', 'branch' => 'main', 'runtime_version' => '22'],
+    ])->assertRedirect()->assertSessionDoesntHaveErrors()->assertSessionMissing('error');
+
+    $component = Component::query()->sole();
+    $environment = $component->environment;
+    $preset = $environment->application->preset();
+    $this->assertDatabaseHas('applications', ['id' => $environment->application_id, 'runtime' => $runtime]);
+    $this->assertDatabaseHas('environments', ['id' => $environment->id, 'runtime_version' => '22']);
+    $this->assertDatabaseHas('deployment_scripts', ['environment_id' => $environment->id, 'name' => 'build', 'content' => $preset->defaultScripts()['build']]);
+    expect($component->capabilities()->sole()->config['start_command'])->toBe($runtime.' start');
+
+    (new InstallComponentJob($component->id, $this->server->id))->withFakeQueueInteractions()->handle();
+
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'ready', 'installed_runtime_version' => '22']);
+    SSH::assertExecutedContains('mise use --path '.escapeshellarg($component->path.'/mise.toml')." 'node@22'");
+    SSH::assertExecutedContains('mise use --path '.escapeshellarg($component->path.'/mise.toml').' '.escapeshellarg($runtime.'@'.$preset->additionalTooling()[$runtime]));
+    SSH::assertNotExecutedContains('mise use -g');
+
+    $script = base64_decode(str(ComponentShell::wrap($component->refresh(), $runtime.' start'))->between('$(echo ', ' | base64')->toString());
+    expect($script)->toContain('/.local/share/mise/shims');
+
+    $this->site->update(['user' => $component->user]);
+    foreach (['node', $runtime] as $tool) {
+        expect(fn () => app(AssertToolingNotUsedByComponents::class)->assert($this->site, $tool))->toThrow(ValidationException::class);
+    }
+})->with(['pnpm', 'yarn']);
 
 test('laravel components get node on their path and keep it from being uninstalled', function () {
     $this->post(route('applications.store'), $this->input)->assertSessionDoesntHaveErrors();

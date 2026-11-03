@@ -12,7 +12,9 @@ use App\RuntimePresets\Custom;
 use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
+use App\RuntimePresets\Pnpm;
 use App\RuntimePresets\StaticSite;
+use App\RuntimePresets\Yarn;
 use Illuminate\Support\ServiceProvider;
 
 class ComponentServiceProvider extends ServiceProvider
@@ -21,7 +23,7 @@ class ComponentServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        foreach ([PHP::class, NodeJS::class, Bun::class, StaticSite::class, Custom::class, Laravel::class] as $preset) {
+        foreach ([PHP::class, NodeJS::class, Bun::class, Pnpm::class, Yarn::class, StaticSite::class, Custom::class, Laravel::class] as $preset) {
             RegisterRuntimePreset::make($preset::id())
                 ->handler($preset)
                 ->register();
