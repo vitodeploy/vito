@@ -155,7 +155,9 @@ export default function ComponentDomains({
                 )}
               </div>
               {domain.status === 'pending' && domain.dns_managed && (
-                <span className="text-muted-foreground text-xs">Vito manages this DNS record. Verification runs automatically, usually within minutes.</span>
+                <span className="text-muted-foreground text-xs">
+                  Vito manages this DNS record. Verification runs automatically, usually within minutes.
+                </span>
               )}
               {domain.status === 'pending' && !domain.dns_managed && target && (
                 <div className="flex flex-col gap-1.5">

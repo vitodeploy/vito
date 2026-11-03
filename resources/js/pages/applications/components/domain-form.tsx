@@ -77,7 +77,9 @@ export default function DomainForm({
         <DialogHeader>
           <DialogTitle>{domain ? `Edit ${domain.host}` : 'Add domain'}</DialogTitle>
           <DialogDescription>
-            {dnsDomain ? 'Vito creates the DNS record and verifies the domain for you.' : 'Traffic starts once DNS points to the server and verification passes.'}
+            {dnsDomain
+              ? 'Vito creates the DNS record and verifies the domain for you.'
+              : 'Traffic starts once DNS points to the server and verification passes.'}
           </DialogDescription>
         </DialogHeader>
         <Form id="environment-domain-form" className="p-4" onSubmit={submit}>
@@ -85,7 +87,10 @@ export default function DomainForm({
             {managedDomains.length > 0 && (
               <FormField>
                 <Label htmlFor="environment-domain-dns">Domain</Label>
-                <Select value={form.data.dns_domain_id || 'other'} onValueChange={(value) => form.setData('dns_domain_id', value === 'other' ? '' : value)}>
+                <Select
+                  value={form.data.dns_domain_id || 'other'}
+                  onValueChange={(value) => form.setData('dns_domain_id', value === 'other' ? '' : value)}
+                >
                   <SelectTrigger id="environment-domain-dns">
                     <SelectValue />
                   </SelectTrigger>

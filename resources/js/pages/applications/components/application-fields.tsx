@@ -36,35 +36,35 @@ export default function ApplicationFields({
   return (
     <>
       {(!picker || available.length !== 1) && (
-      <Field
-        id="application-source-control"
-        label="Source control"
-        inline={inline}
-        error={errors.source_control_id}
-        description={
-          available.length === 0 && (
-            <>
-              <Link href="/settings/source-controls" className="underline">
-                Connect a source control
-              </Link>{' '}
-              to select a repository.
-            </>
-          )
-        }
-      >
-        <Select value={data.source_control_id} onValueChange={(value) => onChange('source_control_id', value)}>
-          <SelectTrigger id="application-source-control">
-            <SelectValue placeholder="Select a source control" />
-          </SelectTrigger>
-          <SelectContent>
-            {available.map((source) => (
-              <SelectItem key={source.id} value={String(source.id)}>
-                {source.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+        <Field
+          id="application-source-control"
+          label="Source control"
+          inline={inline}
+          error={errors.source_control_id}
+          description={
+            available.length === 0 && (
+              <>
+                <Link href="/settings/source-controls" className="underline">
+                  Connect a source control
+                </Link>{' '}
+                to select a repository.
+              </>
+            )
+          }
+        >
+          <Select value={data.source_control_id} onValueChange={(value) => onChange('source_control_id', value)}>
+            <SelectTrigger id="application-source-control">
+              <SelectValue placeholder="Select a source control" />
+            </SelectTrigger>
+            <SelectContent>
+              {available.map((source) => (
+                <SelectItem key={source.id} value={String(source.id)}>
+                  {source.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       )}
       <Field id={picker ? 'repository' : 'application-repository'} label="Repository" inline={inline} error={errors.repository}>
         {picker ? (

@@ -175,11 +175,19 @@ export default function ShowEnvironment() {
                 ) : (
                   <LoaderCircleIcon className="text-muted-foreground size-4 shrink-0 animate-spin" />
                 )}
-                {setupFailed ? 'Setup needs attention. Retry or remove the failed step and the first deploy will start.' : 'The first deploy starts automatically when setup finishes.'}
+                {setupFailed
+                  ? 'Setup needs attention. Retry or remove the failed step and the first deploy will start.'
+                  : 'The first deploy starts automatically when setup finishes.'}
               </div>
             )}
             {needsDomain && domainTarget && (
-              <Link href={`${baseUrl}?component=${domainTarget.record_id}`} preserveState preserveScroll only={panelProps} className={cn(chip, 'hover:bg-muted')}>
+              <Link
+                href={`${baseUrl}?component=${domainTarget.record_id}`}
+                preserveState
+                preserveScroll
+                only={panelProps}
+                className={cn(chip, 'hover:bg-muted')}
+              >
                 <GlobeIcon className="text-muted-foreground size-4 shrink-0" />
                 It's live. Add a domain to make it public.
               </Link>

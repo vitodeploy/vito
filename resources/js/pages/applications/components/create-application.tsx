@@ -117,7 +117,12 @@ export default function CreateApplication({
           const switching = !runtimeChosen.current && !!nextRuntime && data.runtime !== nextRuntime.id;
           return {
             ...data,
-            environment: { ...data.environment, ...(switching ? environmentDefaults(nextRuntime) : {}), name: data.environment.name, branch: resolvedBranch },
+            environment: {
+              ...data.environment,
+              ...(switching ? environmentDefaults(nextRuntime) : {}),
+              name: data.environment.name,
+              branch: resolvedBranch,
+            },
             ...(switching ? { runtime: nextRuntime.id, capabilities: webCapability(nextRuntime) } : {}),
           };
         });
@@ -159,7 +164,9 @@ export default function CreateApplication({
         ...data,
         [name]: value,
         ...(name === 'repository' && (!data.name || data.name === derived) ? { name: value.split('/').pop() ?? '' } : {}),
-        ...(repositoryChanged ? { runtime: '', capabilities: [], environment: { ...environmentDefaults(), name: data.environment.name, branch: '' } } : {}),
+        ...(repositoryChanged
+          ? { runtime: '', capabilities: [], environment: { ...environmentDefaults(), name: data.environment.name, branch: '' } }
+          : {}),
       };
     });
   };
@@ -251,7 +258,9 @@ export default function CreateApplication({
                   <span>
                     {detected?.runtime === preset.id && !runtimeChosen.current && <span className="text-muted-foreground">Detected </span>}
                     <span className="font-medium">{preset.label}</span>
-                    {version ? ` · ${preset.version_service && preset.version_service !== preset.id ? `${preset.version_service.toUpperCase()} ` : ''}${version}` : ''}
+                    {version
+                      ? ` · ${preset.version_service && preset.version_service !== preset.id ? `${preset.version_service.toUpperCase()} ` : ''}${version}`
+                      : ''}
                   </span>
                   <Button type="button" variant="ghost" size="sm" onClick={() => setChangingRuntime(true)}>
                     Change
@@ -304,7 +313,10 @@ export default function CreateApplication({
             <Advanced
               forceOpen={Object.keys(form.errors).some(
                 (key) =>
-                  key === 'name' || key === 'user' || key.startsWith('capabilities') || (key.startsWith('environment.') && key !== 'environment.branch'),
+                  key === 'name' ||
+                  key === 'user' ||
+                  key.startsWith('capabilities') ||
+                  (key.startsWith('environment.') && key !== 'environment.branch'),
               )}
             >
               <Field id="application-name" label="Name" error={form.errors.name}>

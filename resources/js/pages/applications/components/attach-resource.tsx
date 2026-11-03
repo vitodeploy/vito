@@ -166,58 +166,58 @@ export default function AttachResource({
               </>
             )}
             <Advanced forceOpen={!!(form.errors.charset || form.errors.collation || form.errors.alias)}>
-                {form.data.mode === 'new' && service && (
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <FormField>
-                      <Label htmlFor="resource-charset">Charset</Label>
-                      <Select
-                        value={form.data.charset}
-                        disabled={form.processing}
-                        onValueChange={(charset) =>
-                          charset && form.setData({ ...form.data, charset, collation: defaultCollation(service.charsets, charset) })
-                        }
-                      >
-                        <SelectTrigger id="resource-charset">
-                          <SelectValue placeholder="Charset" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.keys(service.charsets).map((charset) => (
-                            <SelectItem key={charset} value={charset}>
-                              {charset}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-                    <FormField>
-                      <Label htmlFor="resource-collation">Collation</Label>
-                      <Combobox
-                        id="resource-collation"
-                        items={(service.charsets[form.data.charset]?.list ?? []).map((collation) => ({ value: collation, label: collation }))}
-                        value={form.data.collation}
-                        onValueChange={(collation) => form.setData('collation', collation)}
-                        placeholder="Collation"
-                        searchText="Search collations..."
-                        noneFoundText="No collations found."
-                      />
-                    </FormField>
-                  </div>
-                )}
-            <FormField>
-              <Label htmlFor="resource-alias">
-                Variable prefix <span className="text-muted-foreground font-normal">(optional)</span>
-              </Label>
-              <Input
-                id="resource-alias"
-                value={form.data.alias}
-                maxLength={64}
-                placeholder="ANALYTICS"
-                disabled={form.processing}
-                onChange={(e) => form.setData('alias', e.target.value.toUpperCase())}
-                className="font-mono"
-              />
-              <p className="text-muted-foreground text-xs">Only needed for a second {redis ? 'Redis' : 'database'}, e.g. ANALYTICS_DB_HOST.</p>
-            </FormField>
+              {form.data.mode === 'new' && service && (
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <FormField>
+                    <Label htmlFor="resource-charset">Charset</Label>
+                    <Select
+                      value={form.data.charset}
+                      disabled={form.processing}
+                      onValueChange={(charset) =>
+                        charset && form.setData({ ...form.data, charset, collation: defaultCollation(service.charsets, charset) })
+                      }
+                    >
+                      <SelectTrigger id="resource-charset">
+                        <SelectValue placeholder="Charset" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(service.charsets).map((charset) => (
+                          <SelectItem key={charset} value={charset}>
+                            {charset}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField>
+                    <Label htmlFor="resource-collation">Collation</Label>
+                    <Combobox
+                      id="resource-collation"
+                      items={(service.charsets[form.data.charset]?.list ?? []).map((collation) => ({ value: collation, label: collation }))}
+                      value={form.data.collation}
+                      onValueChange={(collation) => form.setData('collation', collation)}
+                      placeholder="Collation"
+                      searchText="Search collations..."
+                      noneFoundText="No collations found."
+                    />
+                  </FormField>
+                </div>
+              )}
+              <FormField>
+                <Label htmlFor="resource-alias">
+                  Variable prefix <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
+                <Input
+                  id="resource-alias"
+                  value={form.data.alias}
+                  maxLength={64}
+                  placeholder="ANALYTICS"
+                  disabled={form.processing}
+                  onChange={(e) => form.setData('alias', e.target.value.toUpperCase())}
+                  className="font-mono"
+                />
+                <p className="text-muted-foreground text-xs">Only needed for a second {redis ? 'Redis' : 'database'}, e.g. ANALYTICS_DB_HOST.</p>
+              </FormField>
             </Advanced>
             <Alert>
               <TriangleAlertIcon className="text-warning!" />

@@ -384,7 +384,7 @@ describe('with the real queue', function () {
 
 test('php installs restart fpm so the pool runs as the server user', function () {
     expect(view('ssh.services.php.install-php', ['version' => '8.4', 'user' => 'vito', 'useSury' => false])->render())
-        ->toContain("s/www-data/vito/g")
+        ->toContain('s/www-data/vito/g')
         ->toContain('systemctl restart php8.4-fpm')
         ->not->toContain('systemctl start php8.4-fpm');
 });
