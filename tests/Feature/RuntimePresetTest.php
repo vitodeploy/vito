@@ -17,7 +17,9 @@ use App\RuntimePresets\Custom;
 use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
+use App\RuntimePresets\Pnpm;
 use App\RuntimePresets\StaticSite;
+use App\RuntimePresets\Yarn;
 use App\Support\RepositoryFiles;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +58,8 @@ test('built-in runtime presets resolve and expose public bootstrap descriptors',
 })->with([
     ['php', PHP::class, WebMode::FPM, 'composer'],
     ['node', NodeJS::class, WebMode::PROXY, 'node'],
+    ['pnpm', Pnpm::class, WebMode::PROXY, 'node'],
+    ['yarn', Yarn::class, WebMode::PROXY, 'node'],
     ['bun', Bun::class, WebMode::PROXY, 'bun'],
     ['static', StaticSite::class, WebMode::STATIC, null],
     ['custom', Custom::class, WebMode::PROXY, null],
@@ -75,6 +79,8 @@ test('runtime requirements use the selected version without imposing server-wide
     ['php', ['php' => '8.4']],
     ['laravel', ['php' => '8.4']],
     ['node', []],
+    ['pnpm', []],
+    ['yarn', []],
     ['bun', []],
     ['static', []],
     ['custom', []],
@@ -92,7 +98,15 @@ test('suggested deployment scripts are loaded by stage without reusing site scri
             'pre-release' => '',
             'post-release' => '',
         ])
-        ->and((new Bun)->defaultScripts()['build'])->toContain('bun install');
+        ->and((new Bun)->defaultScripts()['build'])->toContain('bun install')
+        ->and((new Pnpm)->defaultScripts())->toBe([
+            'build' => "if [ -f pnpm-lock.yaml ]; then\n  pnpm install --frozen-lockfile --prod=false\nelse\n  pnpm install --prod=false\nfi\npnpm run --if-present build\n",
+            'pre-release' => '',
+            'post-release' => '',
+        ])
+        ->and((new Yarn)->defaultScripts()['build'])->toContain('yarn set version', '--yarn-path --only-if-needed', 'yarn install --frozen-lockfile --production=false', 'yarn install --immutable', 'yarn run build')
+        ->and((new Yarn)->defaultScripts()['pre-release'])->toBe('')
+        ->and((new Yarn)->defaultScripts()['post-release'])->toBe('');
 });
 
 test('runtime suggestions are empty unless the preset supplies them', function () {
@@ -110,6 +124,8 @@ test('runtime suggestions are empty unless the preset supplies them', function (
         ->and((new Laravel)->sharedPaths())->toBe(['storage'])
         ->and((new Laravel)->schedulerCommand())->toBe('php artisan schedule:run')
         ->and((new NodeJS)->startCommand())->toBe('npm start')
+        ->and((new Pnpm)->startCommand())->toBe('pnpm start')
+        ->and((new Yarn)->startCommand())->toBe('yarn start')
         ->and((new Bun)->startCommand())->toBe('bun run start');
 });
 
@@ -187,6 +203,20 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'node empty nvmrc falls back to engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}', '.nvmrc' => "\n"], ['24', '23']],
     'node unparsable alias keeps every version' => ['node', ['package.json' => '{}', '.nvmrc' => 'lts/*'], ['24', '23', '22']],
     'node skips php repositories' => ['node', ['package.json' => '{}', 'composer.json' => '{}'], null],
+    'pnpm lockfile uses node engines' => ['pnpm', ['package.json' => '{"engines":{"node":">=23"}}', 'pnpm-lock.yaml' => 'lockfileVersion: 9.0'], ['24', '23']],
+    'pnpm package manager without a lockfile' => ['pnpm', ['package.json' => '{"packageManager":"pnpm@10.0.0"}', '.nvmrc' => '22.11.0'], ['22']],
+    'pnpm skips other package managers' => ['pnpm', ['package.json' => '{"packageManager":"yarn@4.9.2"}', 'pnpm-lock.yaml' => ''], null],
+    'pnpm requires a manifest' => ['pnpm', ['pnpm-lock.yaml' => ''], null],
+    'pnpm requires a hint' => ['pnpm', ['package.json' => '{}'], null],
+    'pnpm skips php repositories' => ['pnpm', ['package.json' => '{}', 'composer.json' => '{}', 'pnpm-lock.yaml' => ''], null],
+    'pnpm ignores invalid metadata' => ['pnpm', ['package.json' => '{"packageManager":[]}', 'pnpm-lock.yaml' => ''], ['24', '23', '22']],
+    'yarn lockfile uses node engines' => ['yarn', ['package.json' => '{"engines":{"node":">=23"}}', 'yarn.lock' => '# yarn lockfile v1'], ['24', '23']],
+    'yarn package manager without a lockfile' => ['yarn', ['package.json' => '{"packageManager":"yarn@4.9.2"}', '.node-version' => '22.11.0'], ['22']],
+    'yarn skips other package managers' => ['yarn', ['package.json' => '{"packageManager":"pnpm@10.0.0"}', 'yarn.lock' => ''], null],
+    'yarn requires a manifest' => ['yarn', ['yarn.lock' => ''], null],
+    'yarn requires a hint' => ['yarn', ['package.json' => '{}'], null],
+    'yarn skips php repositories' => ['yarn', ['package.json' => '{}', 'composer.json' => '{}', 'yarn.lock' => ''], null],
+    'yarn ignores empty metadata' => ['yarn', ['package.json' => '{"packageManager":""}', 'yarn.lock' => ''], ['24', '23', '22']],
     'bun lockfile' => ['bun', ['bun.lock' => '{}', 'package.json' => '{}'], (new Bun)->versions()],
     'static index' => ['static', ['index.html' => '<html>'], []],
     'static skips built projects' => ['static', ['index.html' => '<html>', 'package.json' => '{}'], null],
