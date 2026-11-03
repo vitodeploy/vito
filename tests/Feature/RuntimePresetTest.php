@@ -104,7 +104,14 @@ test('suggested deployment scripts are loaded by stage without reusing site scri
             'pre-release' => '',
             'post-release' => '',
         ])
-        ->and((new Yarn)->defaultScripts()['build'])->toContain('yarn set version', '--yarn-path --only-if-needed', 'yarn install --frozen-lockfile --production=false', 'yarn install --immutable', 'yarn run build')
+        ->and((new Yarn)->defaultScripts()['build'])->toContain(
+            'yarn set version',
+            '--yarn-path --only-if-needed',
+            "elif [ -f yarn.lock ] && grep -q '^  version: 6$' yarn.lock; then\n  YARN_IGNORE_PATH=1 yarn set version 3.x --yarn-path --only-if-needed\n",
+            'yarn install --frozen-lockfile --production=false',
+            "if [ -f yarn.lock ]; then\n      yarn install --immutable\n    else\n      yarn install --no-immutable\n    fi",
+            'yarn run build',
+        )
         ->and((new Yarn)->defaultScripts()['pre-release'])->toBe('')
         ->and((new Yarn)->defaultScripts()['post-release'])->toBe('');
 });

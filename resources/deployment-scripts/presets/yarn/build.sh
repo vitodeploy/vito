@@ -3,6 +3,8 @@ if [ -n "$YARN_VERSION" ]; then
   YARN_IGNORE_PATH=1 yarn set version "$YARN_VERSION" --yarn-path --only-if-needed
 elif [ -f yarn.lock ] && grep -q '^# yarn lockfile v1' yarn.lock; then
   YARN_IGNORE_PATH=1 yarn set version 1.22.22 --yarn-path --only-if-needed
+elif [ -f yarn.lock ] && grep -q '^  version: 6$' yarn.lock; then
+  YARN_IGNORE_PATH=1 yarn set version 3.x --yarn-path --only-if-needed
 fi
 case "$(yarn --version)" in
   1.*) yarn install --frozen-lockfile --production=false ;;
