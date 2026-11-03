@@ -20,10 +20,17 @@ The deployment core is runtime-agnostic. Presets suggest editable scripts, comma
 | Laravel | FPM | Suggested build/release scripts, public directory and shared storage |
 | Node | Proxy | Per-component Node tooling and a managed application process |
 | Bun | Proxy | Per-component Bun tooling and a managed application process |
+| Go | Proxy | Per-component Go toolchain; builds `./app` from the root package |
+| Rust | Proxy | Per-component Rust toolchain; builds with Cargo in release mode |
+| Python | Proxy | Per-component Python tooling and a virtual environment in each release |
 | Static | Static | Files served directly by the webserver |
-| Custom | Proxy | Your commands, for example a Python or Go service |
+| Custom | Proxy | Your commands for a runtime not covered by a preset |
 
 **FPM** sends requests to a PHP-FPM pool. **Proxy** forwards to a process listening on the component's `PORT`. **Static** serves files only. Plugins can register additional presets and must choose a web mode explicitly. Custom does not install an arbitrary runtime for you: prepare its tools on the server or provide a plugin preset.
+
+Go is detected from `go.mod`, Rust from `Cargo.toml`, and Python from `requirements.txt`, `pyproject.toml` or `setup.py`. Version hints come from `.go-version` (or the minimum Go version in `go.mod`), `rust-toolchain`, and `.python-version`. Missing or unsupported hints leave all supported versions available. PHP/Composer repositories keep their existing detection priority, even when they include tooling for another language.
+
+These presets are framework-neutral starting points. Go builds the repository root with `go build -o app .`; change the package path for projects using a layout such as `./cmd/server`. Rust respects an existing `Cargo.lock`; change the suggested `./target/release/app` start command to your Cargo binary's name. Python creates `.venv` inside each release and installs `requirements.txt`, or installs the project with pip when using `pyproject.toml` or `setup.py`. Its default start command is `.venv/bin/python main.py`; replace it with your production WSGI/ASGI command when needed, and include its server package in your dependencies. Poetry/uv-only projects need an adapted build script. Do not share `.venv` between releases. All web processes must listen on `127.0.0.1` and the supplied `PORT`. Native dependencies may require additional system packages on the server.
 
 ## Getting started
 

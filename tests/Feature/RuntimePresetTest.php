@@ -14,10 +14,13 @@ use App\Plugins\RegisterRuntimePreset;
 use App\RuntimePresets\AbstractRuntimePreset;
 use App\RuntimePresets\Bun;
 use App\RuntimePresets\Custom;
+use App\RuntimePresets\Go;
 use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
 use App\RuntimePresets\Pnpm;
+use App\RuntimePresets\Python;
+use App\RuntimePresets\Rust;
 use App\RuntimePresets\StaticSite;
 use App\RuntimePresets\Yarn;
 use App\Support\RepositoryFiles;
@@ -61,6 +64,9 @@ test('built-in runtime presets resolve and expose public bootstrap descriptors',
     ['pnpm', Pnpm::class, WebMode::PROXY, 'node'],
     ['yarn', Yarn::class, WebMode::PROXY, 'node'],
     ['bun', Bun::class, WebMode::PROXY, 'bun'],
+    ['go', Go::class, WebMode::PROXY, 'go'],
+    ['rust', Rust::class, WebMode::PROXY, 'rust'],
+    ['python', Python::class, WebMode::PROXY, 'python'],
     ['static', StaticSite::class, WebMode::STATIC, null],
     ['custom', Custom::class, WebMode::PROXY, null],
     ['laravel', Laravel::class, WebMode::FPM, 'composer'],
@@ -82,6 +88,9 @@ test('runtime requirements use the selected version without imposing server-wide
     ['pnpm', []],
     ['yarn', []],
     ['bun', []],
+    ['go', []],
+    ['rust', []],
+    ['python', []],
     ['static', []],
     ['custom', []],
 ]);
@@ -116,6 +125,17 @@ test('suggested deployment scripts are loaded by stage without reusing site scri
         ->and((new Yarn)->defaultScripts()['post-release'])->toBe('');
 });
 
+test('compiled and python runtimes seed release-local build scripts', function (string $runtime, string $build) {
+    $preset = (new Application(['runtime' => $runtime]))->preset();
+
+    expect($preset->defaultScripts())->toBe(['build' => $build, 'pre-release' => '', 'post-release' => ''])
+        ->and($preset->sharedPaths())->toBe([]);
+})->with([
+    ['go', "go mod download\ngo build -o app .\n"],
+    ['rust', "if [ -f Cargo.lock ]; then\n  cargo build --release --locked\nelse\n  cargo build --release\nfi\n"],
+    ['python', "python -m venv .venv\nif [ -f requirements.txt ]; then\n  .venv/bin/python -m pip install -r requirements.txt\nelif [ -f pyproject.toml ] || [ -f setup.py ]; then\n  .venv/bin/python -m pip install .\nfi\n"],
+]);
+
 test('runtime suggestions are empty unless the preset supplies them', function () {
     foreach ([new StaticSite, new Custom] as $preset) {
         expect($preset->versions())->toBe([])
@@ -133,7 +153,10 @@ test('runtime suggestions are empty unless the preset supplies them', function (
         ->and((new NodeJS)->startCommand())->toBe('npm start')
         ->and((new Pnpm)->startCommand())->toBe('pnpm start')
         ->and((new Yarn)->startCommand())->toBe('yarn start')
-        ->and((new Bun)->startCommand())->toBe('bun run start');
+        ->and((new Bun)->startCommand())->toBe('bun run start')
+        ->and((new Go)->startCommand())->toBe('./app')
+        ->and((new Rust)->startCommand())->toBe('./target/release/app')
+        ->and((new Python)->startCommand())->toBe('.venv/bin/python main.py');
 });
 
 test('plugins can register runtime presets and capabilities in bootstrap', function () {
@@ -141,12 +164,12 @@ test('plugins can register runtime presets and capabilities in bootstrap', funct
     {
         public static function id(): string
         {
-            return 'python';
+            return 'plugin-runtime';
         }
 
         public static function label(): string
         {
-            return 'Python';
+            return 'Plugin runtime';
         }
 
         public function webMode(): WebMode
@@ -180,13 +203,13 @@ test('plugins can register runtime presets and capabilities in bootstrap', funct
     $runtimes = collect($response->json('configs.application.runtimes'))->keyBy('id');
     $capabilities = collect($response->json('configs.application.capabilities'))->keyBy('id');
 
-    expect($runtimes['python'])->toMatchArray([
-        'id' => 'python', 'label' => 'Python', 'versions' => [], 'web_mode' => 'proxy', 'form' => $preset->form()->toArray(),
+    expect($runtimes['plugin-runtime'])->toMatchArray([
+        'id' => 'plugin-runtime', 'label' => 'Plugin runtime', 'versions' => [], 'web_mode' => 'proxy', 'form' => $preset->form()->toArray(),
         'creation_form' => [], 'required_services' => ['webserver', 'process_manager'], 'version_service' => null, 'suggests_database' => false,
     ])
         ->and($capabilities['tasks'])->toBe(['id' => 'tasks', 'label' => 'Tasks', 'description' => '', 'surfaces' => []])
         ->and($response->json('version'))->not->toBe($version)
-        ->and((new Application(['runtime' => 'python']))->preset())->toBeInstanceOf($preset::class)
+        ->and((new Application(['runtime' => 'plugin-runtime']))->preset())->toBeInstanceOf($preset::class)
         ->and((new ComponentCapability(['capability' => 'tasks']))->handler())->toBeInstanceOf($capability::class);
 });
 
@@ -225,6 +248,22 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'yarn skips php repositories' => ['yarn', ['package.json' => '{}', 'composer.json' => '{}', 'yarn.lock' => ''], null],
     'yarn ignores empty metadata' => ['yarn', ['package.json' => '{"packageManager":""}', 'yarn.lock' => ''], ['24', '23', '22']],
     'bun lockfile' => ['bun', ['bun.lock' => '{}', 'package.json' => '{}'], (new Bun)->versions()],
+    'go minimum version' => ['go', ['go.mod' => "module example.com/app\n\ngo 1.26.0\n"], ['1.27', '1.26']],
+    'go pinned version wins' => ['go', ['go.mod' => "module example.com/app\ngo 1.25", '.go-version' => "1.26.3\n"], ['1.26']],
+    'go invalid hint keeps choices' => ['go', ['go.mod' => 'module example.com/app', '.go-version' => 'latest'], ['1.27', '1.26', '1.25']],
+    'go requires a manifest' => ['go', ['.go-version' => '1.27'], null],
+    'go skips php repositories' => ['go', ['go.mod' => '', 'composer.json' => '{}'], null],
+    'rust manifest' => ['rust', ['Cargo.toml' => '[package]'], ['1.99', '1.98', '1.97']],
+    'rust pinned toolchain' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => "1.98.0\n"], ['1.98']],
+    'rust stable keeps choices' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => 'stable'], ['1.99', '1.98', '1.97']],
+    'rust requires a manifest' => ['rust', ['rust-toolchain' => '1.99'], null],
+    'rust skips php repositories' => ['rust', ['Cargo.toml' => '', 'composer.json' => '{}'], null],
+    'python requirements' => ['python', ['requirements.txt' => 'gunicorn'], ['3.14', '3.13', '3.12', '3.11']],
+    'python pyproject with version' => ['python', ['pyproject.toml' => '[project]', '.python-version' => "3.12.4\n"], ['3.12']],
+    'python setup' => ['python', ['setup.py' => 'from setuptools import setup'], ['3.14', '3.13', '3.12', '3.11']],
+    'python invalid hint keeps choices' => ['python', ['requirements.txt' => '', '.python-version' => 'not-a-version'], ['3.14', '3.13', '3.12', '3.11']],
+    'python requires a manifest' => ['python', ['.python-version' => '3.14'], null],
+    'python skips php repositories' => ['python', ['requirements.txt' => '', 'composer.json' => '{}'], null],
     'static index' => ['static', ['index.html' => '<html>'], []],
     'static skips built projects' => ['static', ['index.html' => '<html>', 'package.json' => '{}'], null],
     'custom never detects' => ['custom', ['composer.json' => '{}'], null],
