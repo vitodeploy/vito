@@ -122,6 +122,23 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
         return $res->json();
     }
 
+    public function getDefaultBranch(string $repo): ?string
+    {
+        $res = Http::withToken($this->data()['token'])->get($this->getApiUrl().'/projects/'.urlencode($repo));
+        $this->handleResponseErrors($res, $repo);
+        $branch = $res->json('default_branch');
+
+        return is_string($branch) ? $branch : null;
+    }
+
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        $res = Http::withToken($this->data()['token'])
+            ->get($this->getApiUrl().'/projects/'.urlencode($repo).'/repository/files/'.urlencode($path).'/raw', ['ref' => $branch]);
+
+        return $this->repositoryFile($res, $repo);
+    }
+
     public function fullRepoUrl(string $repo, string $key): string
     {
         $host = parse_url($this->getApiUrl())['host'] ?? 'gitlab.com';

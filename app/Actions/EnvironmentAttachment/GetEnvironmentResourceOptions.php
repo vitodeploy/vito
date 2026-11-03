@@ -2,6 +2,7 @@
 
 namespace App\Actions\EnvironmentAttachment;
 
+use App\Enums\ComponentType;
 use App\Enums\DatabaseStatus;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
@@ -17,7 +18,7 @@ class GetEnvironmentResourceOptions
             ->whereIn('name', ['mysql', 'mariadb', 'postgresql', 'redis', 'valkey'])->where('status', ServiceStatus::READY)
             ->with(['server.databases' => fn ($query) => $query->where('status', DatabaseStatus::READY)])->get();
 
-        return ['services' => $services->map(fn (Service $service): array => [
+        return ['component_server_ids' => $environment->components()->where('type', ComponentType::APP)->distinct()->pluck('server_id')->all(), 'services' => $services->map(fn (Service $service): array => [
             'id' => $service->id, 'name' => $service->name, 'type' => $service->type,
             'server_id' => $service->server_id, 'server_name' => $service->server->name,
             'databases' => $service->type === 'database' ? $service->server->databases->map(fn ($database): array => ['id' => $database->id, 'name' => $database->name])->all() : [],

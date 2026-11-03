@@ -22,6 +22,7 @@ use Illuminate\Support\Collection;
  * @property bool $force_ssl
  * @property HostedDomainStatus $status
  * @property ?string $error
+ * @property ?int $dns_domain_id
  * @property Environment $environment
  * @property Component $component
  * @property ?EnvironmentDomain $redirectToDomain

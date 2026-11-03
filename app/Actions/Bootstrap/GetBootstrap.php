@@ -2,6 +2,8 @@
 
 namespace App\Actions\Bootstrap;
 
+use App\Actions\Component\GetComponentOptions;
+use App\ComponentCapabilities\Web;
 use App\Models\Application;
 use App\Models\ComponentCapability;
 use App\Models\GithubApp;
@@ -109,7 +111,7 @@ final class GetBootstrap
     }
 
     /**
-     * @return list<array{id: string, label: string, versions: list<string>, web_mode: string, form: array<int, mixed>}>
+     * @return list<array{id: string, label: string, versions: list<string>, web_mode: string, form: array<int, mixed>, creation_form: array<int, mixed>, capabilities: array<int, mixed>, required_services: list<string>, version_service: ?string, suggests_database: bool}>
      */
     private function runtimes(): array
     {
@@ -123,6 +125,11 @@ final class GetBootstrap
                 'versions' => $preset->versions(),
                 'web_mode' => $preset->webMode()->getText(),
                 'form' => $registration['form'],
+                'creation_form' => $preset->creationForm()->toArray(),
+                'capabilities' => app(GetComponentOptions::class)->forPreset($preset),
+                'required_services' => (new ComponentCapability(['capability' => Web::id()]))->handler()->requiredServices($preset),
+                'version_service' => collect($preset->requiredServices($preset->versions()[0] ?? ''))->filter()->keys()->first(),
+                'suggests_database' => $preset->suggestsDatabase(),
             ];
         }
 

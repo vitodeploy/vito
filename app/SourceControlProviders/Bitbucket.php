@@ -68,6 +68,21 @@ class Bitbucket extends AbstractSourceControlProvider implements SupportsApplica
         return $res->json();
     }
 
+    public function getDefaultBranch(string $repo): ?string
+    {
+        $branch = $this->getRepo($repo)['mainbranch']['name'] ?? null;
+
+        return is_string($branch) ? $branch : null;
+    }
+
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        $res = Http::withHeaders($this->getAuthenticationHeaders())
+            ->get($this->apiUrl."/repositories/$repo/src/".rawurlencode($branch).'/'.$path);
+
+        return $this->repositoryFile($res, $repo);
+    }
+
     public function fullRepoUrl(string $repo, string $key): string
     {
         return sprintf('git@bitbucket.org-%s:%s.git', $key, $repo);

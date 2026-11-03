@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import InputError from '@/components/ui/input-error';
 import { Application, CapabilityConfiguration, ComponentOptions, Environment } from '@/types/application';
 import CapabilityFields from './capability-fields';
-import { Field } from './section';
+import { Advanced, Field } from './section';
 
 export default function AddComponent({
   open,
@@ -29,8 +29,13 @@ export default function AddComponent({
   const loadBalancer = type === 'load_balancer';
   const server = options.servers.length === 1 ? options.servers[0] : undefined;
   const web = options.capabilities.find((capability) => capability.id === 'web');
+  const uniqueName = (base: string) => {
+    let name = base;
+    for (let suffix = 2; options.component_names.includes(name); suffix++) name = `${base}-${suffix}`;
+    return name;
+  };
   const form = useForm({
-    name: loadBalancer ? 'load-balancer' : 'web',
+    name: uniqueName(loadBalancer ? 'load-balancer' : 'web'),
     server_id: server ? String(server.id) : '',
     user: server?.ssh_user ?? '',
     type,
@@ -95,38 +100,40 @@ export default function AddComponent({
                 </SelectContent>
               </Select>
             </Field>
-            <Field id="component-name" label="Name" error={form.errors.name}>
-              <Input id="component-name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-            </Field>
-            {!loadBalancer && (
-              <Field
-                id="component-user"
-                label="Run as"
-                description="The server's SSH user, or a new name to create an isolated user."
-                error={form.errors.user}
-              >
-                <Input
-                  id="component-user"
-                  value={form.data.user}
-                  onChange={(e) => form.setData('user', e.target.value)}
-                  autoComplete="off"
-                  className="font-mono"
-                />
+            <Advanced forceOpen={Object.keys(form.errors).some((key) => key === 'name' || key === 'user' || key.startsWith('capabilities'))}>
+              <Field id="component-name" label="Name" error={form.errors.name}>
+                <Input id="component-name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               </Field>
-            )}
-            {!loadBalancer && (
-              <FormField>
-                <Label>Capabilities</Label>
-                <div className="divide-y rounded-lg border">
-                  <CapabilityFields
-                    options={options.capabilities}
-                    value={form.data.capabilities}
-                    onChange={(value) => form.setData('capabilities', value)}
-                    errors={form.errors}
+              {!loadBalancer && (
+                <Field
+                  id="component-user"
+                  label="Run as"
+                  description="The server's SSH user, or a new name to create an isolated user."
+                  error={form.errors.user}
+                >
+                  <Input
+                    id="component-user"
+                    value={form.data.user}
+                    onChange={(e) => form.setData('user', e.target.value)}
+                    autoComplete="off"
+                    className="font-mono"
                   />
-                </div>
-              </FormField>
-            )}
+                </Field>
+              )}
+              {!loadBalancer && (
+                <FormField>
+                  <Label>Capabilities</Label>
+                  <div className="divide-y rounded-lg border">
+                    <CapabilityFields
+                      options={options.capabilities}
+                      value={form.data.capabilities}
+                      onChange={(value) => form.setData('capabilities', value)}
+                      errors={form.errors}
+                    />
+                  </div>
+                </FormField>
+              )}
+            </Advanced>
             <InputError message={form.errors.type ?? (loadBalancer ? form.errors.capabilities : undefined)} />
           </FormFields>
         </Form>

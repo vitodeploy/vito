@@ -3,6 +3,8 @@
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\UpdateComponentCapabilities;
+use App\Actions\Domain\DeleteDNSRecord;
+use App\Actions\Domain\UpdateDNSRecord;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
@@ -22,11 +24,13 @@ use App\Enums\SslStatus;
 use App\Enums\UserRole;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Http\Resources\EnvironmentDomainResource;
 use App\Jobs\EnvironmentDomain\CheckEnvironmentDomainJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\ComponentCapability;
 use App\Models\DNSProvider;
+use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\Environment;
 use App\Models\EnvironmentDomain;
@@ -38,6 +42,7 @@ use App\Models\Ssl;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -323,4 +328,208 @@ test('invalid domain requests are validation errors and processing domains canno
     $domain = EnvironmentDomain::factory()->for($this->component)->create(['status' => HostedDomainStatus::UPDATING]);
     $this->putJson(route('environments.domains.update', [...$parents, $domain]), $this->input)->assertUnprocessable();
     $this->postJson(route('environments.domains.verify', [...$parents, $domain]))->assertUnprocessable();
+});
+
+describe('managed dns', function () {
+    beforeEach(function () {
+        $this->dnsProvider = DNSProvider::factory()->create(['project_id' => $this->server->project_id]);
+        $this->dnsDomain = Domain::factory()->create([
+            'domain' => 'example.com', 'project_id' => $this->server->project_id, 'dns_provider_id' => $this->dnsProvider->id, 'provider_domain_id' => 'zone',
+        ]);
+        $this->records = [];
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records*' => function (Request $request) {
+            return $request->method() === 'POST'
+                ? Http::response(['result' => ['id' => 'new', ...$request->data()]])
+                : Http::response(['result' => $this->records]);
+        }]);
+        $this->managedInput = ['dns_domain_id' => $this->dnsDomain->id];
+    });
+
+    $record = fn (string $type, string $content, string $name = 'app.example.com') => [
+        'id' => 'r1', 'type' => $type, 'name' => $name, 'content' => $content, 'ttl' => 300, 'proxied' => false, 'created_on' => '', 'modified_on' => '',
+    ];
+
+    test('creates the address record through the provider and delays the first check', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+
+        expect($domain->dns_domain_id)->toBe($this->dnsDomain->id);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && $request['type'] === 'A' && $request['name'] === 'app.example.com' && $request['content'] === $this->server->ip && $request['proxied'] === false);
+        $this->assertDatabaseHas('dns_records', ['domain_id' => $this->dnsDomain->id, 'name' => 'app.example.com', 'content' => $this->server->ip]);
+        Queue::assertPushed(CheckEnvironmentDomainJob::class, fn ($job): bool => $job->delay === 30);
+        expect(new EnvironmentDomainResource($domain)->resolve()['dns_managed'])->toBeTrue();
+    });
+
+    test('uses an aaaa record for ipv6 servers and supports the apex', function () {
+        $this->server->forceFill(['ip' => '2001:db8::1'])->save();
+
+        app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput, 'host' => 'example.com']);
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST' && $request['type'] === 'AAAA' && $request['name'] === 'example.com');
+    });
+
+    test('reuses a record that already points at the server', function () use ($record) {
+        $this->records = [$record('A', $this->server->ip)];
+
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+
+        expect($domain->dns_domain_id)->toBe($this->dnsDomain->id);
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'POST');
+    });
+
+    test('never overwrites a record that points elsewhere', function (string $type, string $content) use ($record) {
+        $this->records = [$record($type, $content)];
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+        Http::assertNotSent(fn (Request $request): bool => $request->method() !== 'GET');
+        Queue::assertNotPushed(CheckEnvironmentDomainJob::class);
+    })->with([['A', '203.0.113.9'], ['CNAME', 'other.example.net'], ['AAAA', '2001:db8::9']]);
+
+    test('finds an existing record beyond the first page of dns results', function () use ($record) {
+        $this->dnsDomain->update(['provider_domain_id' => 'large']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/large/dns_records*' => fn (Request $request) => Http::response([
+            'result' => (int) $request['page'] === 2 ? [$record('A', '203.0.113.9')] : [$record('TXT', 'first', 'first.example.com')],
+            'result_info' => ['total_pages' => 2],
+        ])]);
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        Http::assertNotSent(fn (Request $request): bool => $request->method() === 'POST');
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('a conflicting record is refused even when another record already points at the server', function () use ($record) {
+        $this->records = [$record('A', $this->server->ip), $record('A', '203.0.113.9')];
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('a provider that returns no record id is refused', function () {
+        $this->dnsDomain->update(['provider_domain_id' => 'noid']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/noid/dns_records*' => fn (Request $request) => Http::response(['result' => $request->method() === 'POST' ? ['type' => 'A'] : []])]);
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('removing the record stops treating dns as managed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r9']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/r9' => Http::response(['result' => ['id' => 'r9']])]);
+
+        app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole());
+
+        expect($domain->refresh()->dns_domain_id)->toBeNull();
+    });
+
+    test('a failed provider delete keeps the record and the managed link', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r8']);
+        $this->dnsDomain->update(['provider_domain_id' => 'locked']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/locked/*' => Http::response(['errors' => [['message' => 'nope']]], 403)]);
+
+        expect(fn () => app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole()))->toThrow(ValidationException::class);
+
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
+        $this->assertDatabaseHas('dns_records', ['provider_record_id' => 'r8']);
+    });
+
+    test('a record already gone at the provider can still be removed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r6']);
+        $this->dnsDomain->update(['provider_domain_id' => 'gone']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/gone/*' => Http::response(['errors' => [['message' => 'not found']]], 404)]);
+
+        app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole());
+
+        $this->assertDatabaseMissing('dns_records', ['provider_record_id' => 'r6']);
+        expect($domain->refresh()->dns_domain_id)->toBeNull();
+    });
+
+    test('changing a non address record at the host keeps dns managed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $txt = DNSRecord::factory()->create(['domain_id' => $this->dnsDomain->id, 'type' => 'TXT', 'name' => 'app.example.com', 'content' => 'a', 'provider_record_id' => 'txt1']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/txt1' => Http::response(['result' => ['id' => 'txt1']])]);
+
+        app(UpdateDNSRecord::class)->update($txt, ['type' => 'TXT', 'name' => 'app.example.com', 'content' => 'b']);
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
+
+        app(DeleteDNSRecord::class)->delete($txt);
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
+    });
+
+    test('only edits that move the record stop treating dns as managed', function (array $change, bool $managed) {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $record = $this->dnsDomain->records()->where('name', 'app.example.com')->sole();
+        $record->update(['provider_record_id' => 'r7']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/r7' => Http::response(['result' => ['id' => 'r7']])]);
+
+        app(UpdateDNSRecord::class)->update($record, ['type' => 'A', 'name' => 'app.example.com', 'content' => $this->server->ip, 'ttl' => 300, ...$change]);
+
+        expect($domain->refresh()->dns_domain_id !== null)->toBe($managed);
+    })->with([[['ttl' => 600], true], [['content' => '203.0.113.9'], false]]);
+
+    test('a malformed dns domain id is refused', function (mixed $id) {
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, 'dns_domain_id' => $id]))->toThrow(ValidationException::class);
+
+        Http::assertNothingSent();
+    })->with([[[[1]]], [true], ['1'], [0]]);
+
+    test('a provider failure leaves nothing behind', function () {
+        $this->dnsDomain->update(['provider_domain_id' => 'broken']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/broken/*' => Http::response(['errors' => [['message' => 'nope']]], 500)]);
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('rejects hosts outside the domain and domains from other projects', function (string $kind, string $field) {
+        $input = [...$this->input, ...$this->managedInput];
+        if ($kind === 'outside') {
+            $input['host'] = 'app.notexample.com';
+        } elseif ($kind === 'foreign') {
+            $input['dns_domain_id'] = Domain::factory()->create()->id;
+        } else {
+            $this->dnsProvider->update(['project_id' => Project::factory()->create()->id]);
+            DNSProvider::factory()->create(['project_id' => null]);
+        }
+
+        try {
+            app(CreateEnvironmentDomain::class)->create($this->environment, $input);
+            $this->fail('Expected a validation error.');
+        } catch (ValidationException $e) {
+            expect($e->errors())->toHaveKey($field);
+        }
+        $this->assertDatabaseCount('environment_domains', 0);
+        Http::assertNothingSent();
+    })->with([['outside', 'host'], ['foreign', 'dns_domain_id'], ['foreign-provider', 'dns_domain_id']]);
+
+    test('domains added without a managed domain stay manual and queue immediately', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, $this->input);
+
+        expect($domain->dns_domain_id)->toBeNull();
+        Http::assertNothingSent();
+        Queue::assertPushed(CheckEnvironmentDomainJob::class, fn ($job): bool => ! $job->delay);
+    });
+
+    test('changing the host stops treating dns as managed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+
+        $updated = app(UpdateEnvironmentDomain::class)->update($domain, [...$this->input, 'host' => 'other.example.com']);
+
+        expect($updated->dns_domain_id)->toBeNull();
+    });
+
+    test('options list only domains vito can manage for the project', function () {
+        Domain::factory()->create(['domain' => 'foreign.com']);
+
+        expect(app(GetEnvironmentDomainOptions::class)->get($this->environment)['dns_domains'])
+            ->toBe([['id' => $this->dnsDomain->id, 'domain' => 'example.com', 'provider' => $this->dnsProvider->name]]);
+    });
 });

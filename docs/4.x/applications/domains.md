@@ -4,8 +4,12 @@ Environment domains route hosts to an explicit ready web component or [load bala
 
 ## Add and verify a domain
 
-1. Open the environment's **Domains** page and add a host.
-2. Choose its target component and SSL method.
+If the domain is [managed in Vito](../domains.md), select it and enter a subdomain. Vito creates the `A` or `AAAA` record through your DNS provider, then verifies the domain automatically. Vito never overwrites an existing record: if the host already points somewhere else, change that record on the Domains page or add the host as another domain. Removing the application domain leaves the DNS record in place.
+
+For any other domain:
+
+1. Add the host from the component's **Domains** section.
+2. Choose its SSL method.
 3. Point DNS at the target server, then use **Verify now**, or wait for the pending-domain check.
 4. Wait for verification and activation before expecting the application route to serve traffic.
 

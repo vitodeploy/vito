@@ -43,6 +43,7 @@ class SyncRepositoryGitHook
             if (! $hook->hook_id) {
                 $hook->deployHook();
             }
+            app(TriggerRepositoryAutoDeploy::class)->matching($sourceControl->id, $repository)->update(['auto_deploy_failed' => false]);
         });
     }
 

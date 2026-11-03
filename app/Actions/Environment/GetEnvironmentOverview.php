@@ -53,8 +53,11 @@ class GetEnvironmentOverview
         return [
             'topology' => fn () => app(GetEnvironmentTopology::class)->get($environment),
             'lastDeployment' => fn () => ($run = $environment->deployments()->latest('id')->first()) ? new EnvironmentDeploymentResource($run) : null,
-            'warnings' => fn () => $environment->application->presetOrNull()?->warnings($environment)
-                ?? ['The runtime plugin is missing. Restore it before changing runtime configuration or deploying.'],
+            'warnings' => fn () => [
+                ...($environment->auto_deploy_failed ? ['Deploy on push isn\'t working because the repository webhook could not be installed. Check the source control permissions, then save Deploy on push again in Settings.'] : []),
+                ...($environment->application->presetOrNull()?->warnings($environment)
+                    ?? ['The runtime plugin is missing. Restore it before changing runtime configuration or deploying.']),
+            ],
             'primaryCandidates' => fn () => app(GetComponentOptions::class)->primaryCandidates($environment),
             'deploymentActive' => fn () => $environment->deployments()->blocking()->exists(),
             'capabilities' => fn () => $component ? app(GetComponentOptions::class)->capabilities($environment) : [],

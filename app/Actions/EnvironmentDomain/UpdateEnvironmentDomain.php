@@ -27,6 +27,9 @@ class UpdateEnvironmentDomain
                 $domain->status = HostedDomainStatus::PENDING;
                 $domain->error = null;
             }
+            if ($domain->isDirty(['host', 'component_id'])) {
+                $domain->dns_domain_id = null;
+            }
             $synchronized = false;
             try {
                 DB::transaction(function () use ($domain, $previous, &$synchronized): void {

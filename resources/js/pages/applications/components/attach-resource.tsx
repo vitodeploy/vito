@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Application, Environment, EnvironmentResourceOptions } from '@/types/application';
+import { Advanced } from './section';
 
 export default function AttachResource({
   open,
@@ -32,33 +33,46 @@ export default function AttachResource({
     page.application?.id === application.id && page.environment?.id === environment.id ? (page.resourceOptions ?? initialOptions) : initialOptions;
   const redis = kind === 'redis';
   const services = options.services.filter((service) => (redis ? service.type === 'memory_database' : service.type === 'database'));
-  const form = useForm({
-    mode: redis ? 'redis' : 'new',
-    service_id: '',
-    server_id: '',
-    database_id: '',
-    name: '',
-    charset: '',
-    collation: '',
-    alias: '',
-  });
-  const service = services.find((item) => item.id.toString() === form.data.service_id);
   const defaultCollation = (charsets: EnvironmentResourceOptions['services'][number]['charsets'] | undefined, charset: string) => {
     const collations = charsets?.[charset];
     return collations?.default && collations.list.includes(collations.default) ? collations.default : (collations?.list[0] ?? '');
   };
-  const selectService = (id: string) => {
-    const selected = services.find((item) => item.id.toString() === id);
+  const serviceDefaults = (selected?: EnvironmentResourceOptions['services'][number]) => {
     const charset = selected?.charsets.utf8mb4 ? 'utf8mb4' : (selected?.default_charset ?? '');
-    form.setData({
-      ...form.data,
-      service_id: id,
+    return {
+      service_id: selected?.id.toString() ?? '',
       server_id: selected?.server_id.toString() ?? '',
       database_id: '',
       charset,
       collation: defaultCollation(selected?.charsets, charset),
+    };
+  };
+  const defaultName = (selected?: EnvironmentResourceOptions['services'][number]) => {
+    const base = `${application.name}_${environment.slug}`
+      .replace(/[^a-z0-9_]/gi, '_')
+      .toLowerCase()
+      .slice(0, 56);
+    let name = base;
+    for (let suffix = 2; selected?.databases.some((database) => database.name === name); suffix++) name = `${base}_${suffix}`;
+    return name;
+  };
+  const preselected = services.length === 1 ? services[0] : services.find((item) => options.component_server_ids.includes(item.server_id));
+  const form = useForm({
+    mode: redis ? 'redis' : 'new',
+    name: defaultName(preselected),
+    alias: '',
+    ...serviceDefaults(preselected),
+  });
+  const service = services.find((item) => item.id.toString() === form.data.service_id);
+  const selectService = (id: string) => {
+    const selected = services.find((item) => item.id.toString() === id);
+    form.setData({
+      ...form.data,
+      ...serviceDefaults(selected),
+      name: form.data.name === defaultName(service) ? defaultName(selected) : form.data.name,
     });
   };
+  const remote = !redis && !!service && options.component_server_ids.some((id) => id !== service.server_id);
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.transform((data) =>
@@ -160,70 +174,72 @@ export default function AttachResource({
                     value={form.data.name}
                     disabled={form.processing}
                     onChange={(e) => form.setData('name', e.target.value)}
-                    placeholder={`${application.name}_${environment.slug}`.replace(/[^a-z0-9_]/gi, '_').toLowerCase()}
                   />
                 </FormField>
-                {service && (
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <FormField>
-                      <Label htmlFor="resource-charset">Charset</Label>
-                      <Select
-                        value={form.data.charset}
-                        disabled={form.processing}
-                        onValueChange={(charset) =>
-                          charset && form.setData({ ...form.data, charset, collation: defaultCollation(service.charsets, charset) })
-                        }
-                      >
-                        <SelectTrigger id="resource-charset">
-                          <SelectValue placeholder="Charset" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.keys(service.charsets).map((charset) => (
-                            <SelectItem key={charset} value={charset}>
-                              {charset}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-                    <FormField>
-                      <Label htmlFor="resource-collation">Collation</Label>
-                      <Combobox
-                        id="resource-collation"
-                        items={(service.charsets[form.data.charset]?.list ?? []).map((collation) => ({ value: collation, label: collation }))}
-                        value={form.data.collation}
-                        onValueChange={(collation) => form.setData('collation', collation)}
-                        placeholder="Collation"
-                        searchText="Search collations..."
-                        noneFoundText="No collations found."
-                      />
-                    </FormField>
-                  </div>
-                )}
               </>
             )}
-            <FormField>
-              <Label htmlFor="resource-alias">
-                Variable prefix <span className="text-muted-foreground font-normal">(optional)</span>
-              </Label>
-              <Input
-                id="resource-alias"
-                value={form.data.alias}
-                maxLength={64}
-                placeholder="ANALYTICS"
-                disabled={form.processing}
-                onChange={(e) => form.setData('alias', e.target.value.toUpperCase())}
-                className="font-mono"
-              />
-              <p className="text-muted-foreground text-xs">Only needed for a second {redis ? 'Redis' : 'database'}, e.g. ANALYTICS_DB_HOST.</p>
-            </FormField>
+            <Advanced forceOpen={!!(form.errors.charset || form.errors.collation || form.errors.alias)}>
+              {form.data.mode === 'new' && service && (
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <FormField>
+                    <Label htmlFor="resource-charset">Charset</Label>
+                    <Select
+                      value={form.data.charset}
+                      disabled={form.processing}
+                      onValueChange={(charset) =>
+                        charset && form.setData({ ...form.data, charset, collation: defaultCollation(service.charsets, charset) })
+                      }
+                    >
+                      <SelectTrigger id="resource-charset">
+                        <SelectValue placeholder="Charset" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(service.charsets).map((charset) => (
+                          <SelectItem key={charset} value={charset}>
+                            {charset}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField>
+                    <Label htmlFor="resource-collation">Collation</Label>
+                    <Combobox
+                      id="resource-collation"
+                      items={(service.charsets[form.data.charset]?.list ?? []).map((collation) => ({ value: collation, label: collation }))}
+                      value={form.data.collation}
+                      onValueChange={(collation) => form.setData('collation', collation)}
+                      placeholder="Collation"
+                      searchText="Search collations..."
+                      noneFoundText="No collations found."
+                    />
+                  </FormField>
+                </div>
+              )}
+              <FormField>
+                <Label htmlFor="resource-alias">
+                  Variable prefix <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
+                <Input
+                  id="resource-alias"
+                  value={form.data.alias}
+                  maxLength={64}
+                  placeholder="ANALYTICS"
+                  disabled={form.processing}
+                  onChange={(e) => form.setData('alias', e.target.value.toUpperCase())}
+                  className="font-mono"
+                />
+                <p className="text-muted-foreground text-xs">Only needed for a second {redis ? 'Redis' : 'database'}, e.g. ANALYTICS_DB_HOST.</p>
+              </FormField>
+            </Advanced>
             <Alert>
               <TriangleAlertIcon className="text-warning!" />
               <AlertDescription>
-                Components on other servers need a shared private network. Vito limits the {redis ? 'Redis' : 'database'} port to attached components,
-                so other remote clients{redis ? '' : ', including Sites,'} lose access unless a firewall rule allows their IP on that port. Enabling
-                networking restarts the service
-                {redis ? ', and local clients must then use its password' : ''}. The firewall must cover IPv4 and IPv6. Stored data is kept.
+                {(remote || redis) && 'Components on other servers need a shared private network. '}
+                Vito limits the {redis ? 'Redis' : 'database'} port to attached components, so other remote clients
+                {redis ? '' : ', including Sites,'} lose access unless a firewall rule allows their IP on that port.{' '}
+                {(remote || redis) && `Enabling networking restarts the service${redis ? ', and local clients must then use its password' : ''}. `}
+                The firewall must cover IPv4 and IPv6. Stored data is kept.
               </AlertDescription>
             </Alert>
             {Object.entries(form.errors).map(([key, message]) => (

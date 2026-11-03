@@ -1,8 +1,9 @@
-import { ComponentType, ReactNode, useEffect } from 'react';
+import { ComponentType, ReactNode, useEffect, useState } from 'react';
 import { InertiaFormProps } from '@inertiajs/react';
-import { LoaderCircleIcon } from 'lucide-react';
+import { ChevronRightIcon, LoaderCircleIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FormField } from '@/components/ui/form';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
@@ -100,6 +101,21 @@ export function Field({
         <InputError message={error} />
       </div>
     </div>
+  );
+}
+
+export function Advanced({ forceOpen, children }: { forceOpen?: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const expanded = open || !!forceOpen;
+
+  return (
+    <Collapsible open={expanded} onOpenChange={setOpen} className="flex flex-col gap-4">
+      <CollapsibleTrigger className="text-muted-foreground hover:text-foreground flex items-center gap-1 self-start text-sm">
+        <ChevronRightIcon className={cn('size-4 transition-transform', expanded && 'rotate-90')} />
+        Advanced
+      </CollapsibleTrigger>
+      <CollapsibleContent className="flex flex-col gap-6">{children}</CollapsibleContent>
+    </Collapsible>
   );
 }
 

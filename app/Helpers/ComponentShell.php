@@ -13,9 +13,14 @@ final class ComponentShell
     {
         $target = ToolingTargetDTO::forComponent($component);
         $environment = SiteShellEnvironment::collect(new ToolingTargetDTO($target->server, $target->user, $target->isolatedUser, $target->phpVersion));
-        $toolId = $component->environment->application->preset()->tooling();
-        $tool = $toolId === null ? null : ToolingRegistry::find($toolId);
-        $paths = $tool instanceof TargetToolingInterface ? $tool->pathContributionsForTarget($target) : [];
+        $preset = $component->environment->application->preset();
+        $paths = [];
+        foreach (array_filter([$preset->tooling(), ...array_keys($preset->additionalTooling())]) as $toolId) {
+            $tool = ToolingRegistry::find($toolId);
+            if ($tool instanceof TargetToolingInterface) {
+                $paths = array_unique([...$paths, ...$tool->pathContributionsForTarget($target)]);
+            }
+        }
         $environment['PATH'] = implode(':', [$component->basePath().'/bin', ...$paths, $environment['PATH'] ?? "/usr/local/bin:/usr/bin:/bin:/home/{$component->user}/.local/bin"]);
 
         $script = '';

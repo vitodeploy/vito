@@ -3,6 +3,7 @@
 namespace App\Actions\Application;
 
 use App\Actions\Environment\CreateEnvironment;
+use App\Actions\Environment\SetUpEnvironment;
 use App\Models\Application;
 use App\Models\Project;
 use App\Models\User;
@@ -21,6 +22,9 @@ class CreateApplication
         Validator::make($input, [
             'runtime' => ['required', 'string', Rule::in(array_keys(config('component.runtimes', [])))],
             'environment' => ['required', 'array'],
+            'server_id' => ['nullable', 'integer', 'min:1'],
+            'database' => ['sometimes', 'boolean'],
+            'auto_deploy' => ['sometimes', 'boolean'],
         ])->validate();
 
         app(ValidateApplication::class)->validate($project, $input, $actor);
@@ -34,11 +38,16 @@ class CreateApplication
             ]);
 
             try {
-                app(CreateEnvironment::class)->create($application, $input['environment']);
+                $environment = app(CreateEnvironment::class)->create($application, $input['environment']);
             } catch (ValidationException $e) {
                 throw ValidationException::withMessages(
                     collect($e->errors())->mapWithKeys(fn (array $messages, string $field): array => ['environment.'.$field => $messages])->all()
                 );
+            }
+
+            if (! empty($input['server_id'])) {
+                $environment->setRelation('application', $application);
+                app(SetUpEnvironment::class)->setUp($environment, $input);
             }
 
             return $application;

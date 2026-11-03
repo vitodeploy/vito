@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class UpdateEnvironment
 {
@@ -66,6 +67,7 @@ class UpdateEnvironment
                     throw ValidationException::withMessages(['auto_deploy' => 'Select an available source control before enabling automatic deployment.']);
                 }
                 $environment->auto_deploy = (bool) $input['auto_deploy'];
+                $environment->auto_deploy_failed = false;
             }
             $environment->save();
 
@@ -92,7 +94,16 @@ class UpdateEnvironment
             }
 
             if (array_key_exists('auto_deploy', $input) && $application->sourceControl) {
-                DB::afterCommit(fn () => app(SyncRepositoryGitHook::class)->sync($application->sourceControl, $application->repository));
+                DB::afterCommit(function () use ($application, $environment): void {
+                    try {
+                        app(SyncRepositoryGitHook::class)->sync($application->sourceControl, $application->repository);
+                    } catch (Throwable $e) {
+                        $environment->auto_deploy_failed = $environment->auto_deploy;
+                        $environment->save();
+
+                        throw $e;
+                    }
+                });
             }
 
             return $environment;

@@ -8,6 +8,7 @@ use App\DTOs\DynamicForm;
 use App\Enums\WebMode;
 use App\Models\Application;
 use App\Models\ComponentCapability;
+use App\Models\Environment;
 use App\Plugins\RegisterComponentCapability;
 use App\Plugins\RegisterRuntimePreset;
 use App\RuntimePresets\AbstractRuntimePreset;
@@ -17,8 +18,10 @@ use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
 use App\RuntimePresets\StaticSite;
+use App\Support\RepositoryFiles;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 
 uses(RefreshDatabase::class);
 
@@ -32,12 +35,14 @@ test('built-in runtime presets resolve and expose public bootstrap descriptors',
         ->and($preset::id())->toBe($id)
         ->and($preset->webMode())->toBe($mode)
         ->and($preset->tooling())->toBe($tooling)
-        ->and($descriptor)->toBe([
+        ->and($descriptor)->toMatchArray([
             'id' => $id,
             'label' => $preset::label(),
             'versions' => $preset->versions(),
             'web_mode' => $mode->getText(),
             'form' => $preset->form()->toArray(),
+            'creation_form' => $preset->creationForm()->toArray(),
+            'suggests_database' => $preset->suggestsDatabase(),
         ])
         ->and($mode->getColor())->not->toBeEmpty();
 
@@ -77,7 +82,7 @@ test('runtime requirements use the selected version without imposing server-wide
 
 test('suggested deployment scripts are loaded by stage without reusing site scripts', function () {
     expect((new Laravel)->defaultScripts())->toBe([
-        'build' => "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader\n",
+        'build' => "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader\nif [ -f package.json ]; then\n  if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then\n    npm ci\n  else\n    npm install\n  fi\n  npm run build --if-present\nfi\n",
         'pre-release' => "php artisan migrate --force\n",
         'post-release' => "php artisan optimize\n",
     ])
@@ -152,14 +157,128 @@ test('plugins can register runtime presets and capabilities in bootstrap', funct
     $runtimes = collect($response->json('configs.application.runtimes'))->keyBy('id');
     $capabilities = collect($response->json('configs.application.capabilities'))->keyBy('id');
 
-    expect($runtimes['python'])->toBe([
+    expect($runtimes['python'])->toMatchArray([
         'id' => 'python', 'label' => 'Python', 'versions' => [], 'web_mode' => 'proxy', 'form' => $preset->form()->toArray(),
+        'creation_form' => [], 'required_services' => ['webserver', 'process_manager'], 'version_service' => null, 'suggests_database' => false,
     ])
         ->and($capabilities['tasks'])->toBe(['id' => 'tasks', 'label' => 'Tasks', 'description' => '', 'surfaces' => []])
         ->and($response->json('version'))->not->toBe($version)
         ->and((new Application(['runtime' => 'python']))->preset())->toBeInstanceOf($preset::class)
         ->and((new ComponentCapability(['capability' => 'tasks']))->handler())->toBeInstanceOf($capability::class);
 });
+
+test('runtime detection recognizes repositories and narrows versions to their constraints', function (string $runtime, array $files, ?array $versions) {
+    $detected = (new Application(['runtime' => $runtime]))->preset()->detect(new RepositoryFiles(fn (string $path): ?string => $files[$path] ?? null));
+
+    expect($detected)->toBe($versions);
+})->with([
+    'laravel with caret constraint' => ['laravel', ['composer.json' => '{"require":{"php":"^8.3","laravel/framework":"^13.0"}}'], ['8.5', '8.4', '8.3']],
+    'laravel ignores plain php' => ['laravel', ['composer.json' => '{"require":{"php":"^8.3"}}'], null],
+    'php alternatives' => ['php', ['composer.json' => '{"require":{"php":"^7.4 || ^8.4"}}'], ['8.5', '8.4', '7.4']],
+    'php bounded range' => ['php', ['composer.json' => '{"require":{"php":">=8.1,<8.3"}}'], ['8.2', '8.1']],
+    'php constraint with leading whitespace' => ['php', ['composer.json' => json_encode(['require' => ['php' => str_repeat(' ', 300).'^8.4']])], ['8.5', '8.4']],
+    'php tilde patch' => ['php', ['composer.json' => '{"require":{"php":"~8.2.0"}}'], ['8.2']],
+    'php spaced comparator' => ['php', ['composer.json' => '{"require":{"php":">= 8.4"}}'], ['8.5', '8.4']],
+    'php unsatisfiable keeps every version' => ['php', ['composer.json' => '{"require":{"php":"^9.0"}}'], ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0', '7.4', '7.3', '7.2', '7.1', '7.0', '5.6']],
+    'php from index file' => ['php', ['index.php' => '<?php'], ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0', '7.4', '7.3', '7.2', '7.1', '7.0', '5.6']],
+    'php requires a php file' => ['php', ['index.html' => '<html>'], null],
+    'node engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}'], ['24', '23']],
+    'node nvmrc wins over engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}', '.nvmrc' => "v22.11.0\n"], ['22']],
+    'node empty nvmrc falls back to engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}', '.nvmrc' => "\n"], ['24', '23']],
+    'node unparsable alias keeps every version' => ['node', ['package.json' => '{}', '.nvmrc' => 'lts/*'], ['24', '23', '22']],
+    'node skips php repositories' => ['node', ['package.json' => '{}', 'composer.json' => '{}'], null],
+    'bun lockfile' => ['bun', ['bun.lock' => '{}', 'package.json' => '{}'], (new Bun)->versions()],
+    'static index' => ['static', ['index.html' => '<html>'], []],
+    'static skips built projects' => ['static', ['index.html' => '<html>', 'package.json' => '{}'], null],
+    'custom never detects' => ['custom', ['composer.json' => '{}'], null],
+]);
+
+test('caret constraints stay within the minor for 0.x versions', function () {
+    $preset = new class extends Custom
+    {
+        public function versions(): array
+        {
+            return ['1.0', '0.3', '0.2', '0.0.3', '0.0.2'];
+        }
+
+        public function within(string $constraint): array
+        {
+            return $this->compatibleVersions($constraint);
+        }
+    };
+
+    expect($preset->within('^0.2'))->toBe(['0.2'])
+        ->and($preset->within('^0.0.2'))->toBe(['0.0.2'])
+        ->and($preset->within('^1.0'))->toBe(['1.0']);
+});
+
+test('the version service is the required service that takes a version', function () {
+    $preset = new class extends Custom
+    {
+        public static function id(): string
+        {
+            return 'mixed';
+        }
+
+        public function versions(): array
+        {
+            return ['1'];
+        }
+
+        public function requiredServices(string $version): array
+        {
+            return ['redis' => null, 'php' => $version];
+        }
+    };
+    RegisterRuntimePreset::make($preset::id())->handler($preset::class)->register();
+
+    $runtimes = $this->actingAs($this->user)->getJson('/bootstrap')->assertSuccessful()->json('configs.application.runtimes');
+
+    expect(collect($runtimes)->firstWhere('id', 'mixed')['version_service'])->toBe('php');
+});
+
+test('repository files ignore oversized files and invalid json', function () {
+    $reads = 0;
+    $files = new RepositoryFiles(function (string $path) use (&$reads): ?string {
+        $reads++;
+
+        return ['big.json' => str_repeat('a', 1024 * 1024 + 1), 'bad.json' => '{not json'][$path] ?? null;
+    });
+
+    expect($files->has('big.json'))->toBeFalse()
+        ->and($files->json('bad.json'))->toBe([])
+        ->and($files->has('bad.json'))->toBeTrue()
+        ->and($reads)->toBe(2);
+});
+
+test('laravel seeds environment variables and validates a pasted key', function () {
+    $environment = new Environment;
+    $environment->slug = 'staging';
+    $generated = (new Laravel)->defaultVariables($environment, []);
+    $key = 'base64:'.base64_encode(str_repeat('a', 32));
+    $pasted = (new Laravel)->defaultVariables($environment, ['app_key' => $key]);
+
+    expect(strlen(base64_decode(substr($generated['APP_KEY']['value'], 7), true)))->toBe(32)
+        ->and($generated['APP_KEY']['is_secret'])->toBeTrue()
+        ->and($generated['APP_ENV'])->toBe(['value' => 'staging', 'is_secret' => false])
+        ->and($generated['APP_DEBUG']['value'])->toBe('false')
+        ->and($pasted['APP_KEY']['value'])->toBe($key)
+        ->and((new PHP)->defaultVariables($environment, []))->toBe([]);
+});
+
+test('a pasted laravel key must be one laravel can use', function (mixed $key, bool $valid) {
+    expect(Validator::make(['app_key' => $key], (new Laravel)->creationRules())->passes())->toBe($valid);
+})->with([
+    'aes-256 base64' => ['base64:'.base64_encode(str_repeat('a', 32)), true],
+    'aes-128 base64' => ['base64:'.base64_encode(str_repeat('a', 16)), true],
+    'raw 32 characters' => [str_repeat('a', 32), true],
+    'truncated base64' => ['base64:abc=', false],
+    'not base64' => ['base64:!!!not-base64!!!', false],
+    'wrong raw length' => ['not-a-key', false],
+    'raw with control characters' => [str_repeat('a', 31)."\n", false],
+    'raw with a space' => [str_repeat('a', 31).' ', false],
+    'array' => [['a'], false],
+]);
 
 test('registration can override labels and serialized forms', function () {
     $form = DynamicForm::make([DynamicField::make('command')->text()->default('run')]);

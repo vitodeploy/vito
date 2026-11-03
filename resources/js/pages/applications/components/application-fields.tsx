@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SelectRepo from '@/pages/source-controls/components/select-repo';
 import { SourceControl } from '@/types/source-control';
 import { useConfigs } from '@/stores/bootstrap-store';
 import { Configs } from '@/types';
@@ -21,58 +23,86 @@ export default function ApplicationFields({
   onChange,
   sourceControls,
   inline,
+  picker,
 }: {
   data: ApplicationFormData;
   errors: Partial<Record<keyof ApplicationFormData, string>>;
   onChange: (name: keyof ApplicationFormData, value: string) => void;
   sourceControls: SourceControl[];
   inline?: boolean;
+  picker?: boolean;
 }) {
   const available = usableSourceControls(sourceControls, useConfigs()!);
+  const [typedRepository, setTypedRepository] = useState(false);
 
   return (
     <>
+      {(!picker || available.length !== 1) && (
+        <Field
+          id="application-source-control"
+          label="Source control"
+          inline={inline}
+          error={errors.source_control_id}
+          description={
+            available.length === 0 && (
+              <>
+                <Link href="/settings/source-controls" className="underline">
+                  Connect a source control
+                </Link>{' '}
+                to select a repository.
+              </>
+            )
+          }
+        >
+          <Select value={data.source_control_id} onValueChange={(value) => onChange('source_control_id', value)}>
+            <SelectTrigger id="application-source-control">
+              <SelectValue placeholder="Select a source control" />
+            </SelectTrigger>
+            <SelectContent>
+              {available.map((source) => (
+                <SelectItem key={source.id} value={String(source.id)}>
+                  {source.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      )}
       <Field
-        id="application-source-control"
-        label="Source control"
+        id={picker && !typedRepository ? 'repository' : 'application-repository'}
+        label="Repository"
         inline={inline}
-        error={errors.source_control_id}
+        error={errors.repository}
         description={
-          available.length === 0 && (
-            <>
-              <Link href="/settings/source-controls" className="underline">
-                Connect a source control
-              </Link>{' '}
-              to select a repository.
-            </>
-          )
+          picker && !typedRepository ? (
+            <button type="button" className="underline" onClick={() => setTypedRepository(true)}>
+              Not listed? Type it instead
+            </button>
+          ) : undefined
         }
       >
-        <Select value={data.source_control_id} onValueChange={(value) => onChange('source_control_id', value)}>
-          <SelectTrigger id="application-source-control">
-            <SelectValue placeholder="Select a source control" />
-          </SelectTrigger>
-          <SelectContent>
-            {available.map((source) => (
-              <SelectItem key={source.id} value={String(source.id)}>
-                {source.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {picker && !typedRepository ? (
+          <SelectRepo
+            sourceControlId={data.source_control_id}
+            value={data.repository}
+            onValueChange={(value) => onChange('repository', value)}
+            placeholder="organization/repository"
+          />
+        ) : (
+          <Input
+            id="application-repository"
+            value={data.repository}
+            onChange={(e) => onChange('repository', e.target.value)}
+            placeholder="organization/repository"
+            className="font-mono"
+          />
+        )}
       </Field>
-      <Field id="application-repository" label="Repository" inline={inline} error={errors.repository}>
-        <Input
-          id="application-repository"
-          value={data.repository}
-          onChange={(e) => onChange('repository', e.target.value)}
-          placeholder="organization/repository"
-          className="font-mono"
-        />
-      </Field>
-      <Field id="application-name" label="Name" inline={inline} error={errors.name}>
-        <Input id="application-name" value={data.name} onChange={(e) => onChange('name', e.target.value)} />
-      </Field>
+      {!picker && (
+        <Field id="application-name" label="Name" inline={inline} error={errors.name}>
+          <Input id="application-name" value={data.name} onChange={(e) => onChange('name', e.target.value)} />
+        </Field>
+      )}
     </>
   );
 }

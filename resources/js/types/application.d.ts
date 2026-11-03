@@ -29,6 +29,7 @@ export interface Environment {
   keep_releases: number;
   can_deploy: boolean;
   auto_deploy: boolean;
+  deploy_on_ready: boolean;
   last_error: string | null;
   status: string;
   status_color: 'success' | 'danger' | 'warning' | 'gray';
@@ -118,9 +119,11 @@ export interface EnvironmentDomain {
   status: 'pending' | 'updating' | 'active';
   status_color: string;
   error: string | null;
+  dns_managed: boolean;
 }
 
 export interface EnvironmentDomainOptions {
+  dns_domains: { id: number; domain: string; provider: string }[];
   components: { id: number; name: string; server_id: number; server_name: string; server_ip: string }[];
   aliases: { id: number; host: string; component_id: number }[];
   certificates: { id: number; server_id: number; domains: string[] }[];
@@ -140,6 +143,7 @@ export interface EnvironmentAttachment {
 }
 
 export interface EnvironmentResourceOptions {
+  component_server_ids: number[];
   services: {
     id: number;
     name: string;
@@ -204,7 +208,8 @@ export interface ComponentBackend {
 export type BackendTarget = { id: number; name: string; server_name: string };
 
 export interface ComponentOptions {
-  servers: { id: number; name: string; ssh_user: string }[];
+  servers: { id: number; name: string; ssh_user: string; services: Record<string, string[]>; database: string | null }[];
+  component_names: string[];
   capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
 }
 

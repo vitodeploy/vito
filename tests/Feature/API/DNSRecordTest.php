@@ -443,6 +443,8 @@ test('authenticated user can delete dns record', function () {
         'domain_id' => $domain->id,
     ]);
 
+    Http::fake(['*/dns_records/*' => Http::response(['result' => ['id' => $record->provider_record_id]])]);
+
     $response = $this->deleteJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}/records/{$record->id}");
 
     $response->assertOk()

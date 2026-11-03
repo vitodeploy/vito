@@ -5,12 +5,14 @@ namespace App\Actions\EnvironmentDeployment;
 use App\Actions\Application\GetApplicationRuntime;
 use App\Actions\Application\GetApplicationSourceControl;
 use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
+use App\DTOs\SocketEventDTO;
 use App\Enums\ApplicationStatus;
 use App\Enums\ComponentStatus;
 use App\Enums\ComponentType;
 use App\Enums\DeploymentStage;
 use App\Enums\EnvironmentDeploymentStatus;
 use App\Enums\EnvironmentStatus;
+use App\Events\SocketEvent;
 use App\Jobs\EnvironmentDeployment\StartEnvironmentDeploymentJob;
 use App\Models\Application;
 use App\Models\Environment;
@@ -19,6 +21,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class DeployEnvironment
 {
@@ -33,6 +36,8 @@ class DeployEnvironment
             } else {
                 $this->validate($environment);
             }
+            $environment->deploy_on_ready = false;
+            $environment->save();
             $running = $environment->deployments()->blocking()->where('status', '!=', EnvironmentDeploymentStatus::PENDING)->exists();
             foreach ($environment->deployments()->where('status', EnvironmentDeploymentStatus::PENDING)->get() as $pending) {
                 $pending->status = EnvironmentDeploymentStatus::SUPERSEDED;
@@ -92,6 +97,43 @@ class DeployEnvironment
 
             return $run;
         });
+    }
+
+    /**
+     * Starts a first deploy queued during setup once its component and resources are ready. A
+     * first deploy that can no longer start is reported on the environment instead of retried,
+     * so its failure can't mark the component or resource that triggered it as failed.
+     */
+    public function whenReady(Environment $environment): ?EnvironmentDeployment
+    {
+        try {
+            return DB::transaction(function () use ($environment): ?EnvironmentDeployment {
+                Application::query()->lockForUpdate()->findOrFail($environment->application_id);
+                $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
+                if (! $environment->deploy_on_ready
+                    || ! $environment->components()->whereKey($environment->primary_component_id)->where('status', ComponentStatus::READY)->exists()
+                    || ! app(ValidateEnvironmentResource::class)->ready($environment)) {
+                    return null;
+                }
+
+                return $this->run($environment);
+            });
+        } catch (Throwable $e) {
+            if (! $e instanceof ValidationException) {
+                report($e);
+            }
+            $environment->refresh();
+            $environment->deploy_on_ready = false;
+            $environment->last_error = $e instanceof ValidationException ? $e->validator->errors()->first() : 'The first deploy could not start. Check the logs, then deploy again.';
+            $environment->save();
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $environment->application->project_id,
+                type: 'environment.updated',
+                data: ['id' => $environment->id, 'application_id' => $environment->application_id],
+            ));
+
+            return null;
+        }
     }
 
     public function validate(Environment $environment): void

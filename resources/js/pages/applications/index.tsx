@@ -10,17 +10,18 @@ import { useDialog } from '@/hooks/use-dialog';
 import Layout from '@/layouts/app/layout';
 import { EmptyState } from '@/pages/applications/components/section';
 import Status from '@/pages/applications/components/status';
-import { EnvironmentSummary } from '@/types/application';
+import { ComponentOptions, EnvironmentSummary } from '@/types/application';
 import { SourceControl } from '@/types/source-control';
 
 export default function Applications() {
-  const { applications, sourceControls, canCreate } = usePage<{
+  const { applications, sourceControls, servers, canCreate } = usePage<{
     applications: InertiaTableData;
     sourceControls: SourceControl[];
+    servers: ComponentOptions['servers'];
     canCreate: boolean;
   }>().props;
   const dialog = useDialog();
-  const create = () => dialog.createApplication.open({ sourceControls });
+  const create = () => dialog.createApplication.open({ sourceControls, servers });
   usePoll(10000, { only: ['applications', 'canCreate'] });
 
   return (
@@ -44,7 +45,7 @@ export default function Applications() {
           <EmptyState
             icon={BoxesIcon}
             title="Deploy your first application"
-            description="Pick a repository and a runtime. You'll add servers and domains from its graph."
+            description="Pick a repository and a server. Vito detects the runtime, sets it up and deploys it."
             action={
               canCreate && (
                 <Button onClick={create}>

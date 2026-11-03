@@ -5,9 +5,11 @@ import { InertiaTableData } from '@forjedio/inertia-table-react';
 import {
   BoxIcon,
   DatabaseIcon,
+  GlobeIcon,
   HistoryIcon,
   KeyRoundIcon,
   LayersIcon,
+  LoaderCircleIcon,
   NetworkIcon,
   PlusIcon,
   RocketIcon,
@@ -131,6 +133,13 @@ export default function ShowEnvironment() {
         return false;
       },
     });
+  const domainTarget =
+    can.updateComponent || can.update
+      ? (topology.nodes.find((node) => node.type === 'load_balancer' && node.status === 'ready') ??
+        topology.nodes.find((node) => node.type === 'app' && node.status === 'ready' && node.capabilities.includes('web')))
+      : undefined;
+  const setupFailed = topology.nodes.some((node) => node.status_color === 'danger');
+  const needsDomain = !!environment.live_run_id && !!domainTarget && topology.nodes.every((node) => node.domains.length === 0);
   const create = {
     app: () => withProp('options', (options) => dialog.addComponent.open({ application, environment, options, type: 'app' })),
     loadBalancer: () => withProp('options', (options) => dialog.addComponent.open({ application, environment, options, type: 'load_balancer' })),
@@ -159,6 +168,30 @@ export default function ShowEnvironment() {
                 {warning}
               </div>
             ))}
+            {environment.deploy_on_ready && (
+              <div className={chip}>
+                {setupFailed ? (
+                  <TriangleAlertIcon className="text-warning size-4 shrink-0" />
+                ) : (
+                  <LoaderCircleIcon className="text-muted-foreground size-4 shrink-0 animate-spin" />
+                )}
+                {setupFailed
+                  ? 'Setup needs attention. Retry or remove the failed step and the first deploy will start.'
+                  : 'The first deploy starts automatically when setup finishes.'}
+              </div>
+            )}
+            {needsDomain && domainTarget && (
+              <Link
+                href={`${baseUrl}?component=${domainTarget.record_id}`}
+                preserveState
+                preserveScroll
+                only={panelProps}
+                className={cn(chip, 'hover:bg-muted')}
+              >
+                <GlobeIcon className="text-muted-foreground size-4 shrink-0" />
+                It's live. Add a domain to make it public.
+              </Link>
+            )}
             {lastDeployment && (
               <Link
                 href={`${baseUrl}/deployments/${lastDeployment.id}${selection}`}

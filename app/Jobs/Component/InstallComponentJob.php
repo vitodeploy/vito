@@ -30,6 +30,7 @@ class InstallComponentJob implements ShouldQueue
         if ($component?->status === ComponentStatus::READY && $component->type === ComponentType::APP) {
             app(SyncEnvironmentResourceAccess::class)->dispatch($component->environment);
             app(DeployEnvironment::class)->join($component->environment);
+            app(DeployEnvironment::class)->whenReady($component->environment);
         }
     }
 

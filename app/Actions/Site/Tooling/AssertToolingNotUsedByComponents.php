@@ -16,7 +16,7 @@ class AssertToolingNotUsedByComponents
             ->contains(function (Component $component) use ($toolId): bool {
                 $preset = $component->environment->application->presetOrNull();
 
-                return $preset === null || ($preset->tooling() === $toolId && $preset->sharedTooling());
+                return $preset === null || ($preset->tooling() === $toolId && $preset->sharedTooling()) || isset($preset->additionalTooling()[$toolId]);
             })) {
             $label = ToolingRegistry::find($toolId)?->label() ?? $toolId;
 

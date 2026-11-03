@@ -37,6 +37,9 @@ class CreateEnvironment
             foreach ($application->preset()->defaultScripts() as $stage => $content) {
                 $environment->deploymentScripts()->create(['name' => $stage, 'content' => $content]);
             }
+            foreach ($application->preset()->defaultVariables($environment, $input) as $key => $variable) {
+                $environment->variables()->create(['key' => $key, ...$variable]);
+            }
 
             return $environment;
         });

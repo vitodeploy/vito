@@ -27,6 +27,7 @@ class EnvironmentDomainResource extends JsonResource
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
             'error' => $this->error,
+            'dns_managed' => $this->dns_domain_id !== null,
         ];
     }
 }

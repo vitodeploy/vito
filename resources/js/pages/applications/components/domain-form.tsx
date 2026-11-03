@@ -1,5 +1,5 @@
 import { FormEvent } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { DialogControlProps } from '@/components/dialogs/registry';
 import { Button } from '@/components/ui/button';
@@ -31,8 +31,11 @@ export default function DomainForm({
   const page = usePage<{ application?: Application; environment?: Environment; domainOptions?: EnvironmentDomainOptions }>().props;
   const options =
     page.application?.id === application.id && page.environment?.id === environment.id ? (page.domainOptions ?? initialOptions) : initialOptions;
+  const managedDomains = domain ? [] : options.dns_domains;
   const form = useForm({
     host: domain?.host ?? '',
+    subdomain: '',
+    dns_domain_id: managedDomains[0]?.id.toString() ?? '',
     type: domain?.type ?? 'alias',
     component_id: String(domain?.component_id ?? componentId ?? ''),
     redirect_to_domain_id: domain?.redirect_to_domain_id?.toString() ?? '',
@@ -44,7 +47,11 @@ export default function DomainForm({
   const aliases = options.aliases.filter((item) => item.id !== domain?.id && (!componentId || item.component_id === componentId));
   const alias = options.aliases.find((item) => item.id.toString() === form.data.redirect_to_domain_id);
   const component = options.components.find((item) => item.id.toString() === (redirect ? alias?.component_id.toString() : form.data.component_id));
-  const host = form.data.host.trim().toLowerCase();
+  const dnsDomain = managedDomains.find((item) => item.id.toString() === form.data.dns_domain_id);
+  const typed = form.data.subdomain.trim().toLowerCase().replace(/\.+$/, '');
+  const prefix =
+    !dnsDomain || typed === dnsDomain.domain ? '' : typed.endsWith(`.${dnsDomain.domain}`) ? typed.slice(0, -dnsDomain.domain.length - 1) : typed;
+  const host = (dnsDomain ? [prefix, dnsDomain.domain].filter(Boolean).join('.') : form.data.host.trim()).toLowerCase();
   const certificates = options.certificates.filter(
     (certificate) =>
       certificate.server_id === component?.server_id &&
@@ -59,6 +66,7 @@ export default function DomainForm({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const requestOptions = { preserveScroll: true, preserveState: true, onSuccess: () => onOpenChange(false) };
+    form.transform((data) => ({ ...data, host, dns_domain_id: dnsDomain?.id ?? null }));
     if (domain) {
       form.put(`${baseUrl}/${domain.id}`, requestOptions);
     } else {
@@ -71,22 +79,82 @@ export default function DomainForm({
       <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{domain ? `Edit ${domain.host}` : 'Add domain'}</DialogTitle>
-          <DialogDescription>Traffic starts once DNS points to the server and verification passes.</DialogDescription>
+          <DialogDescription>
+            {dnsDomain
+              ? 'Vito creates the DNS record and verifies the domain for you.'
+              : 'Traffic starts once DNS points to the server and verification passes.'}
+          </DialogDescription>
         </DialogHeader>
         <Form id="environment-domain-form" className="p-4" onSubmit={submit}>
           <FormFields>
-            <FormField>
-              <Label htmlFor="environment-domain-host">Domain</Label>
-              <Input
-                id="environment-domain-host"
-                value={form.data.host}
-                onChange={(e) => form.setData('host', e.target.value)}
-                placeholder="app.example.com"
-                autoFocus
-                disabled={form.processing}
-              />
-              <InputError message={form.errors.host} />
-            </FormField>
+            {managedDomains.length > 0 && (
+              <FormField>
+                <Label htmlFor="environment-domain-dns">Domain</Label>
+                <Select
+                  value={form.data.dns_domain_id || 'other'}
+                  disabled={form.processing}
+                  onValueChange={(value) => form.setData('dns_domain_id', value === 'other' ? '' : value)}
+                >
+                  <SelectTrigger id="environment-domain-dns">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {managedDomains.map((item) => (
+                      <SelectItem key={item.id} value={item.id.toString()}>
+                        {item.domain}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="other">Another domain (manage DNS yourself)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.dns_domain_id} />
+              </FormField>
+            )}
+            {dnsDomain ? (
+              <FormField>
+                <Label htmlFor="environment-domain-subdomain">Subdomain</Label>
+                <Input
+                  id="environment-domain-subdomain"
+                  value={form.data.subdomain}
+                  onChange={(e) => form.setData('subdomain', e.target.value)}
+                  placeholder="app"
+                  autoFocus
+                  disabled={form.processing}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Creates a DNS record for <span className="text-foreground font-mono">{host}</span>
+                  {component ? (
+                    <>
+                      {' '}
+                      pointing to <span className="text-foreground font-mono">{component.server_ip}</span>
+                    </>
+                  ) : null}{' '}
+                  on {dnsDomain.provider}. Leave empty to use {dnsDomain.domain}.
+                </p>
+                <InputError message={form.errors.host} />
+              </FormField>
+            ) : (
+              <FormField>
+                <Label htmlFor="environment-domain-host">{managedDomains.length > 0 ? 'Host' : 'Domain'}</Label>
+                <Input
+                  id="environment-domain-host"
+                  value={form.data.host}
+                  onChange={(e) => form.setData('host', e.target.value)}
+                  placeholder="app.example.com"
+                  autoFocus
+                  disabled={form.processing}
+                />
+                {!domain && managedDomains.length === 0 && (
+                  <p className="text-muted-foreground text-xs">
+                    <Link href="/domains" className="underline">
+                      Add your domain
+                    </Link>{' '}
+                    to let Vito create DNS records for you.
+                  </p>
+                )}
+                <InputError message={form.errors.host} />
+              </FormField>
+            )}
             {aliases.length > 0 && (
               <FormField>
                 <Label>Behavior</Label>

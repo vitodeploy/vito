@@ -39,12 +39,13 @@ class SyncComponentRuntime
         $preset = $component->environment->application->preset();
         $version = $component->environment->runtime_version;
         $toolId = $preset->tooling();
-        if ($toolId !== null) {
-            $tool = ToolingRegistry::find($toolId);
+        $tools = [...($toolId !== null ? [$toolId => $preset->toolingVersion($version ?? '')] : []), ...$preset->additionalTooling()];
+        foreach ($tools as $id => $toolVersion) {
+            $tool = ToolingRegistry::find($id);
             if (! $tool instanceof TargetToolingInterface) {
                 throw new RuntimeException('The runtime tooling does not support components.');
             }
-            $tool->installForTarget(ToolingTargetDTO::forComponent($component), $preset->toolingVersion($version ?? ''));
+            $tool->installForTarget(ToolingTargetDTO::forComponent($component), $toolVersion);
         }
         $executables = $preset->executables($version ?? '');
         if ($executables !== []) {
