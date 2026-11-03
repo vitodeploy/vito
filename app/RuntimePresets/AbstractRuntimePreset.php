@@ -199,7 +199,7 @@ abstract class AbstractRuntimePreset
     {
         $versions = $this->versions();
         usort($versions, fn (string $a, string $b): int => version_compare($b, $a));
-        $alternatives = preg_split('/\s*\|\|?\s*/', trim(preg_replace('/([<>=^~]+)\s+/', '$1', $constraint ?? '') ?? '')) ?: [];
+        $alternatives = preg_split('/\s*\|\|?\s*/', trim(preg_replace('/([<>=^~]+)\s+/', '$1', substr($constraint ?? '', 0, 255)) ?? '')) ?: [];
         $compatible = array_filter($versions, function (string $version) use ($alternatives): bool {
             foreach ($alternatives as $alternative) {
                 if ($alternative !== '' && $this->satisfies($version, $alternative)) {

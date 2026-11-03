@@ -55,7 +55,7 @@ class ApplicationController extends Controller
         return to_route('applications.show', $application)->with('success', 'Application created.');
     }
 
-    #[Get('/detect', name: 'applications.detect')]
+    #[Get('/detect', name: 'applications.detect', middleware: 'throttle:60,1')]
     public function detect(Request $request): JsonResponse
     {
         $project = user()->currentProject;

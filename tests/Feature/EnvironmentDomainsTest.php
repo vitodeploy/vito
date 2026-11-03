@@ -474,6 +474,12 @@ describe('managed dns', function () {
         expect($domain->refresh()->dns_domain_id !== null)->toBe($managed);
     })->with([[['ttl' => 600], true], [['content' => '203.0.113.9'], false]]);
 
+    test('a malformed dns domain id is refused', function () {
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, 'dns_domain_id' => [$this->dnsDomain->id]]))->toThrow(ValidationException::class);
+
+        Http::assertNothingSent();
+    });
+
     test('a provider failure leaves nothing behind', function () {
         $this->dnsDomain->update(['provider_domain_id' => 'broken']);
         Http::fake(['api.cloudflare.com/client/v4/zones/broken/*' => Http::response(['errors' => [['message' => 'nope']]], 500)]);

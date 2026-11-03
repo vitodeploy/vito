@@ -31,7 +31,7 @@ export default function DomainForm({
   const page = usePage<{ application?: Application; environment?: Environment; domainOptions?: EnvironmentDomainOptions }>().props;
   const options =
     page.application?.id === application.id && page.environment?.id === environment.id ? (page.domainOptions ?? initialOptions) : initialOptions;
-  const managedDomains = domain ? [] : (options.dns_domains ?? []);
+  const managedDomains = domain ? [] : options.dns_domains;
   const form = useForm({
     host: domain?.host ?? '',
     subdomain: '',
@@ -48,7 +48,10 @@ export default function DomainForm({
   const alias = options.aliases.find((item) => item.id.toString() === form.data.redirect_to_domain_id);
   const component = options.components.find((item) => item.id.toString() === (redirect ? alias?.component_id.toString() : form.data.component_id));
   const dnsDomain = managedDomains.find((item) => item.id.toString() === form.data.dns_domain_id);
-  const host = (dnsDomain ? [form.data.subdomain.trim(), dnsDomain.domain].filter(Boolean).join('.') : form.data.host.trim()).toLowerCase();
+  const typed = form.data.subdomain.trim().toLowerCase().replace(/\.+$/, '');
+  const prefix =
+    !dnsDomain || typed === dnsDomain.domain ? '' : typed.endsWith(`.${dnsDomain.domain}`) ? typed.slice(0, -dnsDomain.domain.length - 1) : typed;
+  const host = (dnsDomain ? [prefix, dnsDomain.domain].filter(Boolean).join('.') : form.data.host.trim()).toLowerCase();
   const certificates = options.certificates.filter(
     (certificate) =>
       certificate.server_id === component?.server_id &&

@@ -56,7 +56,7 @@ export default function AttachResource({
     for (let suffix = 2; selected?.databases.some((database) => database.name === name); suffix++) name = `${base}_${suffix}`;
     return name;
   };
-  const preselected = services.length === 1 ? services[0] : services.find((item) => options.component_server_ids?.includes(item.server_id));
+  const preselected = services.length === 1 ? services[0] : services.find((item) => options.component_server_ids.includes(item.server_id));
   const form = useForm({
     mode: redis ? 'redis' : 'new',
     name: defaultName(preselected),
@@ -72,7 +72,7 @@ export default function AttachResource({
       name: form.data.name === defaultName(service) ? defaultName(selected) : form.data.name,
     });
   };
-  const remote = !redis && !!service && (options.component_server_ids ?? []).some((id) => id !== service.server_id);
+  const remote = !redis && !!service && options.component_server_ids.some((id) => id !== service.server_id);
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.transform((data) =>

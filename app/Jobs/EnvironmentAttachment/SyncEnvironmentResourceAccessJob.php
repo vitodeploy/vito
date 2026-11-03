@@ -36,8 +36,8 @@ class SyncEnvironmentResourceAccessJob implements ShouldQueue
         if ($synchronized && $attachment) {
             app(DeployEnvironment::class)->join($attachment->environment);
         }
-        $environment = Environment::query()->find($environmentId);
-        if ($synchronized && $environment) {
+        $environment = $synchronized && $environmentId ? Environment::query()->find($environmentId) : null;
+        if ($environment) {
             app(DeployEnvironment::class)->whenReady($environment);
         }
     }

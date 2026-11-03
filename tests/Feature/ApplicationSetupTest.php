@@ -225,6 +225,7 @@ test('a setup that cannot start creates nothing', function (Closure $mutate, str
 
         return [...$input, 'database' => true];
     }, 'database'],
+    'array app key' => [fn (array $input) => [...$input, 'environment' => [...$input['environment'], 'app_key' => ['x']]], 'environment.app_key'],
     'malformed app key' => [fn (array $input) => [...$input, 'environment' => [...$input['environment'], 'app_key' => 'not-a-key']], 'environment.app_key'],
 ]);
 

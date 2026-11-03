@@ -45,6 +45,6 @@ class NodeJS extends AbstractRuntimePreset
         }
         $engine = $files->json('package.json')['engines']['node'] ?? null;
 
-        return $this->compatibleVersions($files->get('.nvmrc') ?? $files->get('.node-version') ?? (is_string($engine) ? $engine : null));
+        return $this->compatibleVersions(($files->get('.nvmrc') ?: $files->get('.node-version')) ?: (is_string($engine) ? $engine : null));
     }
 }

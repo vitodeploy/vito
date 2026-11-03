@@ -51,9 +51,9 @@ class Laravel extends PHP
 
     public function creationRules(): array
     {
-        return ['app_key' => ['nullable', 'string', function (string $attribute, string $value, Closure $fail): void {
-            $key = str_starts_with($value, 'base64:') ? base64_decode(substr($value, 7), true) : $value;
-            if ($key === false || ! in_array(strlen($key), [16, 32], true)) {
+        return ['app_key' => ['nullable', 'string', function (string $attribute, mixed $value, Closure $fail): void {
+            $key = is_string($value) && str_starts_with($value, 'base64:') ? base64_decode(substr($value, 7), true) : $value;
+            if (! is_string($key) || ! in_array(strlen($key), [16, 32], true) || (is_string($value) && preg_match('/[^\x21-\x7e]/', $value))) {
                 $fail('Enter a valid Laravel key, such as the output of php artisan key:generate --show.');
             }
         }]];

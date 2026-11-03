@@ -66,6 +66,7 @@ export default function SelectBranch({ sourceControlId, repository, value, onVal
       )}
       {!gettingBranches && branches.length !== 0 && sourceControlId && repository && (
         <Combobox
+          id="branch"
           items={comboboxItems}
           value={value}
           searchText="Filter branches..."

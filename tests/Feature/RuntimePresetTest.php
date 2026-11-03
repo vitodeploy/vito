@@ -183,6 +183,7 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'php requires a php file' => ['php', ['index.html' => '<html>'], null],
     'node engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}'], ['24', '23']],
     'node nvmrc wins over engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}', '.nvmrc' => "v22.11.0\n"], ['22']],
+    'node empty nvmrc falls back to engines' => ['node', ['package.json' => '{"engines":{"node":">=23"}}', '.nvmrc' => "\n"], ['24', '23']],
     'node unparsable alias keeps every version' => ['node', ['package.json' => '{}', '.nvmrc' => 'lts/*'], ['24', '23', '22']],
     'node skips php repositories' => ['node', ['package.json' => '{}', 'composer.json' => '{}'], null],
     'bun lockfile' => ['bun', ['bun.lock' => '{}', 'package.json' => '{}'], (new Bun)->versions()],
@@ -264,7 +265,7 @@ test('laravel seeds environment variables and validates a pasted key', function 
         ->and((new PHP)->defaultVariables($environment, []))->toBe([]);
 });
 
-test('a pasted laravel key must be one laravel can use', function (string $key, bool $valid) {
+test('a pasted laravel key must be one laravel can use', function (mixed $key, bool $valid) {
     expect(Validator::make(['app_key' => $key], (new Laravel)->creationRules())->passes())->toBe($valid);
 })->with([
     'aes-256 base64' => ['base64:'.base64_encode(str_repeat('a', 32)), true],
@@ -273,6 +274,9 @@ test('a pasted laravel key must be one laravel can use', function (string $key, 
     'truncated base64' => ['base64:abc=', false],
     'not base64' => ['base64:!!!not-base64!!!', false],
     'wrong raw length' => ['not-a-key', false],
+    'raw with control characters' => [str_repeat('a', 31)."\n", false],
+    'raw with a space' => [str_repeat('a', 31).' ', false],
+    'array' => [['a'], false],
 ]);
 
 test('registration can override labels and serialized forms', function () {

@@ -108,7 +108,10 @@ export default function CreateApplication({
       try {
         const query = new URLSearchParams({ source_control_id: sourceControlId, repository, ...(branch ? { branch } : {}) });
         const response = await fetch(`/applications/detect?${query}`, { headers: { Accept: 'application/json' }, signal: controller.signal });
-        if (!response.ok) return;
+        if (!response.ok) {
+          setChangingRuntime(true);
+          return;
+        }
         const result = (await response.json()) as Detected;
         const resolvedBranch = branch || result.branch || '';
         detectedKey.current = [sourceControlId, repository, resolvedBranch].join('|');
@@ -270,7 +273,7 @@ export default function CreateApplication({
             <FormField>
               <Label id="application-runtime">Runtime</Label>
               {detecting ? (
-                <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                <p role="status" className="text-muted-foreground flex items-center gap-2 text-sm">
                   <LoaderCircleIcon className="size-4 animate-spin" />
                   Looking at the repository...
                 </p>
@@ -336,6 +339,7 @@ export default function CreateApplication({
                 (key) =>
                   key === 'name' ||
                   key === 'user' ||
+                  key === 'auto_deploy' ||
                   key.startsWith('capabilities') ||
                   (key.startsWith('environment.') && key !== 'environment.branch'),
               )}

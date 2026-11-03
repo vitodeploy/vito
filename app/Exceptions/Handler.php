@@ -41,6 +41,7 @@ class Handler extends ExceptionHandler
         'value',
         'content',
         'environment.app_key',
+        'app_key',
     ];
 
     /**
