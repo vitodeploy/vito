@@ -42,7 +42,7 @@ class PointDomainAtServer
         }
 
         try {
-            Cache::lock('dns-record-'.$dnsDomain->id.'-'.hash('sha256', $domain->host), 60)->block(15, fn () => $this->ensureRecord($domain, $dnsDomain));
+            Cache::lock('dns-record-'.$dnsDomain->id.'-'.hash('sha256', $domain->host), 300)->block(15, fn () => $this->ensureRecord($domain, $dnsDomain));
         } catch (LockTimeoutException) {
             throw ValidationException::withMessages(['host' => 'Another change to this DNS record is in progress. Please retry.']);
         }

@@ -17,13 +17,19 @@ class DeleteDNSRecord
         $provider = $dnsRecord->domain->dnsProvider->provider();
 
         try {
-            $provider->deleteRecord(
+            $deleted = $provider->deleteRecord(
                 $dnsRecord->domain->provider_domain_id,
                 $dnsRecord->provider_record_id
             );
         } catch (Throwable $e) {
             throw ValidationException::withMessages([
                 'record' => [$e->getMessage()],
+            ]);
+        }
+
+        if (! $deleted) {
+            throw ValidationException::withMessages([
+                'record' => ['The DNS provider could not delete the record.'],
             ]);
         }
 

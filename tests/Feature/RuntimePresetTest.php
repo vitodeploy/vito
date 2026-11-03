@@ -196,7 +196,7 @@ test('caret constraints stay within the minor for 0.x versions', function () {
     {
         public function versions(): array
         {
-            return ['1.0', '0.3', '0.2'];
+            return ['1.0', '0.3', '0.2', '0.0.3', '0.0.2'];
         }
 
         public function within(string $constraint): array
@@ -206,6 +206,7 @@ test('caret constraints stay within the minor for 0.x versions', function () {
     };
 
     expect($preset->within('^0.2'))->toBe(['0.2'])
+        ->and($preset->within('^0.0.2'))->toBe(['0.0.2'])
         ->and($preset->within('^1.0'))->toBe(['1.0']);
 });
 

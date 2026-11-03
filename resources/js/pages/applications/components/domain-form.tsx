@@ -89,6 +89,7 @@ export default function DomainForm({
                 <Label htmlFor="environment-domain-dns">Domain</Label>
                 <Select
                   value={form.data.dns_domain_id || 'other'}
+                  disabled={form.processing}
                   onValueChange={(value) => form.setData('dns_domain_id', value === 'other' ? '' : value)}
                 >
                   <SelectTrigger id="environment-domain-dns">

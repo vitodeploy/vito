@@ -213,6 +213,26 @@ abstract class AbstractRuntimePreset
         return array_values($compatible ?: $versions);
     }
 
+    /**
+     * A caret allows changes right of the first non-zero segment, so ^0.2 stays on 0.2 and ^0.0.2 on 0.0.2.
+     *
+     * @param  list<string>  $version
+     * @param  list<string>  $target
+     */
+    private function withinCaret(array $version, array $target): bool
+    {
+        foreach ($target as $index => $segment) {
+            if (isset($version[$index]) && $version[$index] !== $segment) {
+                return false;
+            }
+            if ($segment !== '0') {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
     private function satisfies(string $version, string $constraint): bool
     {
         foreach (preg_split('/[\s,]+/', $constraint, flags: PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
@@ -224,7 +244,7 @@ abstract class AbstractRuntimePreset
             $target = implode('.', array_slice(explode('.', $match[2]), 0, $precision));
             $sameMajor = (int) $version === (int) $match[2];
             $satisfied = match ($match[1]) {
-                '^' => $sameMajor && version_compare($current, $target, '>=') && ((int) $version > 0 || (explode('.', $version)[1] ?? '') === (explode('.', $match[2])[1] ?? '')),
+                '^' => $sameMajor && version_compare($current, $target, '>=') && $this->withinCaret(explode('.', $version), explode('.', $match[2])),
                 '~' => substr_count($match[2], '.') >= 2 ? version_compare($current, $target, '==') : $sameMajor && version_compare($current, $target, '>='),
                 '>=', '<=', '>', '<' => version_compare($current, $target, $match[1]),
                 default => version_compare($current, $target, '=='),

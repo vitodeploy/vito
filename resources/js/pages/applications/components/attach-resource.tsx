@@ -51,7 +51,7 @@ export default function AttachResource({
     const base = `${application.name}_${environment.slug}`
       .replace(/[^a-z0-9_]/gi, '_')
       .toLowerCase()
-      .slice(0, 59);
+      .slice(0, 56);
     let name = base;
     for (let suffix = 2; selected?.databases.some((database) => database.name === name); suffix++) name = `${base}_${suffix}`;
     return name;

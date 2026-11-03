@@ -4,6 +4,7 @@ use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\UpdateComponentCapabilities;
 use App\Actions\Domain\DeleteDNSRecord;
+use App\Actions\Domain\UpdateDNSRecord;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
@@ -424,6 +425,29 @@ describe('managed dns', function () {
 
         expect($domain->refresh()->dns_domain_id)->toBeNull();
     });
+
+    test('a failed provider delete keeps the record and the managed link', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r8']);
+        $this->dnsDomain->update(['provider_domain_id' => 'locked']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/locked/*' => Http::response(['errors' => [['message' => 'nope']]], 403)]);
+
+        expect(fn () => app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole()))->toThrow(ValidationException::class);
+
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
+        $this->assertDatabaseHas('dns_records', ['provider_record_id' => 'r8']);
+    });
+
+    test('only edits that move the record stop treating dns as managed', function (array $change, bool $managed) {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $record = $this->dnsDomain->records()->where('name', 'app.example.com')->sole();
+        $record->update(['provider_record_id' => 'r7']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/r7' => Http::response(['result' => ['id' => 'r7']])]);
+
+        app(UpdateDNSRecord::class)->update($record, ['type' => 'A', 'name' => 'app.example.com', 'content' => $this->server->ip, 'ttl' => 300, ...$change]);
+
+        expect($domain->refresh()->dns_domain_id !== null)->toBe($managed);
+    })->with([[['ttl' => 600], true], [['content' => '203.0.113.9'], false]]);
 
     test('a provider failure leaves nothing behind', function () {
         $this->dnsDomain->update(['provider_domain_id' => 'broken']);

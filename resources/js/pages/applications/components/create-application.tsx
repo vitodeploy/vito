@@ -121,6 +121,9 @@ export default function CreateApplication({
             environment: {
               ...data.environment,
               ...(switching ? environmentDefaults(nextRuntime) : {}),
+              ...(switching && versionChosen.current && nextRuntime.versions.includes(data.environment.runtime_version)
+                ? { runtime_version: data.environment.runtime_version }
+                : {}),
               name: data.environment.name,
               branch: resolvedBranch,
             },

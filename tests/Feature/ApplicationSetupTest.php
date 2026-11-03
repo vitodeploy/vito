@@ -116,7 +116,7 @@ test('detection rejects other projects source controls and read only members', f
     Http::assertNothingSent();
 });
 
-test('source control providers read repository files through their own api', function (Closure $factory, string $url) {
+test('source control providers read repository files through their own api', function (Closure $factory, string $url, string $scheme) {
     $source = $factory();
     if ($source->provider === 'github-app') {
         Cache::put('github_app_token_'.$source->external_identifier, 'token', 60);
@@ -125,14 +125,14 @@ test('source control providers read repository files through their own api', fun
 
     expect($source->provider()->getFileContents('acme/widget', 'feature/x', 'composer.json'))->toBe('{"ok":true}');
 
-    Http::assertSent(fn (Request $request): bool => $request->url() === $url && $request->hasHeader('Authorization'));
+    Http::assertSent(fn (Request $request): bool => $request->url() === $url && str_starts_with($request->header('Authorization')[0] ?? '', $scheme.' '));
 })->with([
-    'github' => [fn () => SourceControl::factory()->github()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx'],
-    'github app' => [fn () => SourceControl::factory()->githubApp()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx'],
-    'gitlab' => [fn () => SourceControl::factory()->gitlab()->create(), 'https://gitlab.com/api/v4/projects/acme%2Fwidget/repository/files/composer.json/raw?ref=feature%2Fx'],
-    'gitea' => [fn () => SourceControl::factory()->create(['provider' => 'gitea', 'url' => 'https://gitea.example.com/', 'provider_data' => ['token' => 'token']]), 'https://gitea.example.com/api/v1/repos/acme/widget/raw/composer.json?ref=feature%2Fx'],
-    'bitbucket' => [fn () => SourceControl::factory()->bitbucket()->create(), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json'],
-    'bitbucket v2' => [fn () => SourceControl::factory()->create(['provider' => 'bitbucket-v2', 'provider_data' => ['username' => 'user', 'app_password' => 'secret', 'email' => 'a@example.com', 'token' => 'token']]), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json'],
+    'github' => [fn () => SourceControl::factory()->github()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx', 'Bearer'],
+    'github app' => [fn () => SourceControl::factory()->githubApp()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx', 'Bearer'],
+    'gitlab' => [fn () => SourceControl::factory()->gitlab()->create(), 'https://gitlab.com/api/v4/projects/acme%2Fwidget/repository/files/composer.json/raw?ref=feature%2Fx', 'Bearer'],
+    'gitea' => [fn () => SourceControl::factory()->create(['provider' => 'gitea', 'url' => 'https://gitea.example.com/', 'provider_data' => ['token' => 'token']]), 'https://gitea.example.com/api/v1/repos/acme/widget/raw/composer.json?ref=feature%2Fx', 'Bearer'],
+    'bitbucket' => [fn () => SourceControl::factory()->bitbucket()->create(), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json', 'Basic'],
+    'bitbucket v2' => [fn () => SourceControl::factory()->create(['provider' => 'bitbucket-v2', 'provider_data' => ['username' => 'user', 'app_password' => 'secret', 'email' => 'a@example.com', 'token' => 'token']]), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json', 'Bearer'],
 ]);
 
 test('source control providers treat a missing file as absent and resolve their default branch', function () {
