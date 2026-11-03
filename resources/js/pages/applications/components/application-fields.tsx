@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,6 +33,7 @@ export default function ApplicationFields({
   picker?: boolean;
 }) {
   const available = usableSourceControls(sourceControls, useConfigs()!);
+  const [typedRepository, setTypedRepository] = useState(false);
 
   return (
     <>
@@ -66,8 +68,20 @@ export default function ApplicationFields({
           </Select>
         </Field>
       )}
-      <Field id={picker ? 'repository' : 'application-repository'} label="Repository" inline={inline} error={errors.repository}>
-        {picker ? (
+      <Field
+        id={picker && !typedRepository ? 'repository' : 'application-repository'}
+        label="Repository"
+        inline={inline}
+        error={errors.repository}
+        description={
+          picker && !typedRepository ? (
+            <button type="button" className="underline" onClick={() => setTypedRepository(true)}>
+              Not listed? Type it instead
+            </button>
+          ) : undefined
+        }
+      >
+        {picker && !typedRepository ? (
           <SelectRepo
             sourceControlId={data.source_control_id}
             value={data.repository}

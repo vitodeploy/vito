@@ -53,7 +53,7 @@ class SetUpEnvironment
         $charsets = $server->database()?->type_data['charsets'] ?? [];
         $charset = isset($charsets['utf8mb4']) ? 'utf8mb4' : ($server->database()?->type_data['defaultCharset'] ?? '');
         $collations = $charsets[$charset] ?? [];
-        $base = Str::limit(Str::slug($environment->application->name.' '.$environment->slug, '_'), 59, '') ?: 'app';
+        $base = Str::limit(Str::slug($environment->application->name.' '.$environment->slug, '_'), 56, '') ?: 'app';
         $name = $base;
         for ($suffix = 2; $server->databases()->where('name', $name)->exists(); $suffix++) {
             $name = $base.'_'.$suffix;

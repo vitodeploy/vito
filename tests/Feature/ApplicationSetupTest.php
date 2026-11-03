@@ -4,6 +4,7 @@ use App\Actions\Application\ValidateApplication;
 use App\Actions\Component\GetComponentOptions;
 use App\Actions\Environment\GetEnvironmentOverview;
 use App\Actions\Environment\UpdateEnvironment;
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Actions\EnvironmentDeployment\DeployEnvironment;
 use App\Actions\Site\Tooling\AssertToolingNotUsedByComponents;
 use App\Enums\ComponentStatus;
@@ -12,6 +13,7 @@ use App\Enums\EnvironmentDeploymentStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Events\SocketEvent;
+use App\Exceptions\FailedToDeployGitHook;
 use App\Facades\SSH;
 use App\Helpers\ComponentShell;
 use App\Jobs\Component\InstallComponentJob;
@@ -114,7 +116,7 @@ test('detection rejects other projects source controls and read only members', f
     Http::assertNothingSent();
 });
 
-test('source control providers read repository files through their own api', function (Closure $factory, string $url, ?string $token) {
+test('source control providers read repository files through their own api', function (Closure $factory, string $url) {
     $source = $factory();
     if ($source->provider === 'github-app') {
         Cache::put('github_app_token_'.$source->external_identifier, 'token', 60);
@@ -123,14 +125,14 @@ test('source control providers read repository files through their own api', fun
 
     expect($source->provider()->getFileContents('acme/widget', 'feature/x', 'composer.json'))->toBe('{"ok":true}');
 
-    Http::assertSent(fn (Request $request): bool => $request->url() === $url);
+    Http::assertSent(fn (Request $request): bool => $request->url() === $url && $request->hasHeader('Authorization'));
 })->with([
-    'github' => [fn () => SourceControl::factory()->github()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx', null],
-    'github app' => [fn () => SourceControl::factory()->githubApp()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx', null],
-    'gitlab' => [fn () => SourceControl::factory()->gitlab()->create(), 'https://gitlab.com/api/v4/projects/acme%2Fwidget/repository/files/composer.json/raw?ref=feature%2Fx', null],
-    'gitea' => [fn () => SourceControl::factory()->create(['provider' => 'gitea', 'url' => 'https://gitea.example.com/', 'provider_data' => ['token' => 'token']]), 'https://gitea.example.com/api/v1/repos/acme/widget/raw/composer.json?ref=feature%2Fx', null],
-    'bitbucket' => [fn () => SourceControl::factory()->bitbucket()->create(), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json', null],
-    'bitbucket v2' => [fn () => SourceControl::factory()->create(['provider' => 'bitbucket-v2', 'provider_data' => ['username' => 'user', 'app_password' => 'secret', 'email' => 'a@example.com', 'token' => 'token']]), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json', null],
+    'github' => [fn () => SourceControl::factory()->github()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx'],
+    'github app' => [fn () => SourceControl::factory()->githubApp()->create(), 'https://api.github.com/repos/acme/widget/contents/composer.json?ref=feature%2Fx'],
+    'gitlab' => [fn () => SourceControl::factory()->gitlab()->create(), 'https://gitlab.com/api/v4/projects/acme%2Fwidget/repository/files/composer.json/raw?ref=feature%2Fx'],
+    'gitea' => [fn () => SourceControl::factory()->create(['provider' => 'gitea', 'url' => 'https://gitea.example.com/', 'provider_data' => ['token' => 'token']]), 'https://gitea.example.com/api/v1/repos/acme/widget/raw/composer.json?ref=feature%2Fx'],
+    'bitbucket' => [fn () => SourceControl::factory()->bitbucket()->create(), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json'],
+    'bitbucket v2' => [fn () => SourceControl::factory()->create(['provider' => 'bitbucket-v2', 'provider_data' => ['username' => 'user', 'app_password' => 'secret', 'email' => 'a@example.com', 'token' => 'token']]), 'https://api.bitbucket.org/2.0/repositories/acme/widget/src/feature%2Fx/composer.json'],
 ]);
 
 test('source control providers treat a missing file as absent and resolve their default branch', function () {
@@ -213,6 +215,7 @@ test('a setup that cannot start creates nothing', function (Closure $mutate, str
     $this->assertDatabaseCount('databases', 0);
 })->with([
     'foreign server' => [fn (array $input) => [...$input, 'server_id' => 99999], 'server_id'],
+    'zero server id' => [fn (array $input) => [...$input, 'server_id' => 0], 'server_id'],
     'invalid server id' => [fn (array $input) => [...$input, 'server_id' => ['1']], 'server_id'],
     'bad user' => [fn (array $input) => [...$input, 'user' => '../root'], 'user'],
     'php version not installed' => [fn (array $input) => [...$input, 'environment' => [...$input['environment'], 'runtime_version' => '5.6']], 'server_id'],
@@ -343,6 +346,16 @@ describe('first deploy', function () {
         Queue::assertPushed(StartEnvironmentDeploymentJob::class, 1);
     });
 
+    test('an unexpected failure is reported without failing the component', function () {
+        $this->component->forceFill(['status' => ComponentStatus::READY])->save();
+        $this->mock(ValidateEnvironmentResource::class, fn ($mock) => $mock->shouldReceive('ready')->andThrow(new RuntimeException('boom')));
+
+        expect(app(DeployEnvironment::class)->whenReady($this->environment))->toBeNull()
+            ->and($this->environment->refresh()->deploy_on_ready)->toBeFalse()
+            ->and($this->environment->last_error)->toContain('first deploy could not start')
+            ->and($this->component->refresh()->status)->toBe(ComponentStatus::READY);
+    });
+
     test('installing the component starts it', function () {
         (new InstallComponentJob($this->component->id, $this->server->id))->withFakeQueueInteractions()->handle();
 
@@ -398,6 +411,27 @@ test('server options describe installed services and whether a database can be c
 
     $this->server->firewall()->update(['status' => ServiceStatus::STOPPED]);
     expect(collect(app(GetComponentOptions::class)->servers($this->server->project_id))->firstWhere('id', $this->server->id)['database'])->toBeNull();
+});
+
+test('the database option names the service setup will use', function () {
+    $this->server->database()->update(['is_default' => 1, 'status' => ServiceStatus::STOPPED]);
+    $this->server->services()->create(['type' => 'database', 'name' => 'postgresql', 'version' => '16', 'status' => ServiceStatus::READY, 'is_default' => 0]);
+
+    expect(collect(app(GetComponentOptions::class)->servers($this->server->project_id))->firstWhere('id', $this->server->id)['database'])->toBeNull();
+});
+
+test('turning deploy on push back on keeps the warning until the webhook installs', function () {
+    $this->hookResponse = Http::response(['message' => 'Forbidden'], 403);
+    $this->post(route('applications.store'), $this->input)->assertSessionDoesntHaveErrors();
+    $environment = Environment::query()->sole();
+    $input = ['name' => $environment->name, 'branch' => $environment->branch, 'runtime_version' => $environment->runtime_version, 'auto_deploy' => true];
+
+    expect(fn () => app(UpdateEnvironment::class)->update($environment, $input))->toThrow(FailedToDeployGitHook::class);
+    expect($environment->refresh()->auto_deploy_failed)->toBeTrue();
+
+    $this->hookResponse = Http::response(['id' => 77], 201);
+    app(UpdateEnvironment::class)->update($environment, $input);
+    expect($environment->refresh()->auto_deploy_failed)->toBeFalse();
 });
 
 test('the applications page offers servers only to members who can create', function () {

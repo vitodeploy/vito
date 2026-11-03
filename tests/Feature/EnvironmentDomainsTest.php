@@ -3,6 +3,7 @@
 use App\Actions\Component\DeleteComponent;
 use App\Actions\Component\SyncComponentVhost;
 use App\Actions\Component\UpdateComponentCapabilities;
+use App\Actions\Domain\DeleteDNSRecord;
 use App\Actions\EnvironmentDomain\CreateEnvironmentDomain;
 use App\Actions\EnvironmentDomain\DeleteEnvironmentDomain;
 use App\Actions\EnvironmentDomain\GetEnvironmentDomainOptions;
@@ -395,6 +396,33 @@ describe('managed dns', function () {
 
         Http::assertNotSent(fn (Request $request): bool => $request->method() === 'POST');
         $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('a conflicting record is refused even when another record already points at the server', function () use ($record) {
+        $this->records = [$record('A', $this->server->ip), $record('A', '203.0.113.9')];
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('a provider that returns no record id is refused', function () {
+        $this->dnsDomain->update(['provider_domain_id' => 'noid']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/noid/dns_records*' => fn (Request $request) => Http::response(['result' => $request->method() === 'POST' ? ['type' => 'A'] : []])]);
+
+        expect(fn () => app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]))->toThrow(ValidationException::class);
+
+        $this->assertDatabaseCount('environment_domains', 0);
+    });
+
+    test('removing the record stops treating dns as managed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $this->dnsDomain->records()->where('name', 'app.example.com')->update(['provider_record_id' => 'r9']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/r9' => Http::response(['result' => ['id' => 'r9']])]);
+
+        app(DeleteDNSRecord::class)->delete($this->dnsDomain->records()->where('name', 'app.example.com')->sole());
+
+        expect($domain->refresh()->dns_domain_id)->toBeNull();
     });
 
     test('a provider failure leaves nothing behind', function () {

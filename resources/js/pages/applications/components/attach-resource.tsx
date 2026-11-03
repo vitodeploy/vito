@@ -47,18 +47,31 @@ export default function AttachResource({
       collation: defaultCollation(selected?.charsets, charset),
     };
   };
+  const defaultName = (selected?: EnvironmentResourceOptions['services'][number]) => {
+    const base = `${application.name}_${environment.slug}`
+      .replace(/[^a-z0-9_]/gi, '_')
+      .toLowerCase()
+      .slice(0, 59);
+    let name = base;
+    for (let suffix = 2; selected?.databases.some((database) => database.name === name); suffix++) name = `${base}_${suffix}`;
+    return name;
+  };
   const preselected = services.length === 1 ? services[0] : services.find((item) => options.component_server_ids?.includes(item.server_id));
   const form = useForm({
     mode: redis ? 'redis' : 'new',
-    name: `${application.name}_${environment.slug}`
-      .replace(/[^a-z0-9_]/gi, '_')
-      .toLowerCase()
-      .slice(0, 63),
+    name: defaultName(preselected),
     alias: '',
     ...serviceDefaults(preselected),
   });
   const service = services.find((item) => item.id.toString() === form.data.service_id);
-  const selectService = (id: string) => form.setData({ ...form.data, ...serviceDefaults(services.find((item) => item.id.toString() === id)) });
+  const selectService = (id: string) => {
+    const selected = services.find((item) => item.id.toString() === id);
+    form.setData({
+      ...form.data,
+      ...serviceDefaults(selected),
+      name: form.data.name === defaultName(service) ? defaultName(selected) : form.data.name,
+    });
+  };
   const remote = !redis && !!service && (options.component_server_ids ?? []).some((id) => id !== service.server_id);
   const submit = (e: FormEvent) => {
     e.preventDefault();

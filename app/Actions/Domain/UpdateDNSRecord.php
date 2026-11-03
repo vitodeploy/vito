@@ -3,6 +3,7 @@
 namespace App\Actions\Domain;
 
 use App\Models\DNSRecord;
+use App\Models\EnvironmentDomain;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -32,6 +33,7 @@ class UpdateDNSRecord
             ]);
         }
 
+        EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
         $dnsRecord->type = $input['type'];
         $dnsRecord->name = $input['name'];
         $dnsRecord->content = $input['content'];

@@ -135,8 +135,8 @@ export default function ShowEnvironment() {
     });
   const domainTarget =
     can.updateComponent || can.update
-      ? (topology.nodes.find((node) => node.type === 'load_balancer') ??
-        topology.nodes.find((node) => node.type === 'app' && node.capabilities.includes('web')))
+      ? (topology.nodes.find((node) => node.type === 'load_balancer' && node.status === 'ready') ??
+        topology.nodes.find((node) => node.type === 'app' && node.status === 'ready' && node.capabilities.includes('web')))
       : undefined;
   const setupFailed = topology.nodes.some((node) => node.status_color === 'danger');
   const needsDomain = !!environment.live_run_id && !!domainTarget && topology.nodes.every((node) => node.domains.length === 0);

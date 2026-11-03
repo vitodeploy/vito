@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class DeployEnvironment
 {
@@ -100,7 +101,8 @@ class DeployEnvironment
 
     /**
      * Starts a first deploy queued during setup once its component and resources are ready. A
-     * first deploy that can no longer start is reported on the environment instead of retried.
+     * first deploy that can no longer start is reported on the environment instead of retried,
+     * so its failure can't mark the component or resource that triggered it as failed.
      */
     public function whenReady(Environment $environment): ?EnvironmentDeployment
     {
@@ -116,10 +118,13 @@ class DeployEnvironment
 
                 return $this->run($environment);
             });
-        } catch (ValidationException $e) {
+        } catch (Throwable $e) {
+            if (! $e instanceof ValidationException) {
+                report($e);
+            }
             $environment->refresh();
             $environment->deploy_on_ready = false;
-            $environment->last_error = $e->validator->errors()->first();
+            $environment->last_error = $e instanceof ValidationException ? $e->validator->errors()->first() : 'The first deploy could not start. Check the logs, then deploy again.';
             $environment->save();
             SocketEvent::dispatch(new SocketEventDTO(
                 projectId: $environment->application->project_id,

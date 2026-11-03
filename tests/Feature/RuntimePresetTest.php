@@ -191,6 +191,49 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'custom never detects' => ['custom', ['composer.json' => '{}'], null],
 ]);
 
+test('caret constraints stay within the minor for 0.x versions', function () {
+    $preset = new class extends Custom
+    {
+        public function versions(): array
+        {
+            return ['1.0', '0.3', '0.2'];
+        }
+
+        public function within(string $constraint): array
+        {
+            return $this->compatibleVersions($constraint);
+        }
+    };
+
+    expect($preset->within('^0.2'))->toBe(['0.2'])
+        ->and($preset->within('^1.0'))->toBe(['1.0']);
+});
+
+test('the version service is the required service that takes a version', function () {
+    $preset = new class extends Custom
+    {
+        public static function id(): string
+        {
+            return 'mixed';
+        }
+
+        public function versions(): array
+        {
+            return ['1'];
+        }
+
+        public function requiredServices(string $version): array
+        {
+            return ['redis' => null, 'php' => $version];
+        }
+    };
+    RegisterRuntimePreset::make($preset::id())->handler($preset::class)->register();
+
+    $runtimes = $this->actingAs($this->user)->getJson('/bootstrap')->assertSuccessful()->json('configs.application.runtimes');
+
+    expect(collect($runtimes)->firstWhere('id', 'mixed')['version_service'])->toBe('php');
+});
+
 test('repository files ignore oversized files and invalid json', function () {
     $reads = 0;
     $files = new RepositoryFiles(function (string $path) use (&$reads): ?string {

@@ -6,7 +6,9 @@ use App\Actions\Domain\CreateDNSRecord;
 use App\Models\Domain;
 use App\Models\Environment;
 use App\Models\EnvironmentDomain;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -39,6 +41,15 @@ class PointDomainAtServer
             throw ValidationException::withMessages(['host' => "The host must be {$dnsDomain->domain} or a subdomain of it."]);
         }
 
+        try {
+            Cache::lock('dns-record-'.$dnsDomain->id.'-'.hash('sha256', $domain->host), 60)->block(15, fn () => $this->ensureRecord($domain, $dnsDomain));
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages(['host' => 'Another change to this DNS record is in progress. Please retry.']);
+        }
+    }
+
+    private function ensureRecord(EnvironmentDomain $domain, Domain $dnsDomain): void
+    {
         $ip = $domain->component->server->ip;
         $type = str_contains($ip, ':') ? 'AAAA' : 'A';
         $relative = $domain->host === $dnsDomain->domain ? '@' : substr($domain->host, 0, -strlen($dnsDomain->domain) - 1);
@@ -46,16 +57,20 @@ class PointDomainAtServer
         try {
             $dnsDomain->syncDnsRecords();
         } catch (Throwable $e) {
+            report($e);
+
             throw ValidationException::withMessages(['host' => 'Could not read the DNS records for '.$dnsDomain->domain.'. Check the DNS provider connection and retry.']);
         }
 
         $existing = $dnsDomain->records()->whereIn('name', [$domain->host, $relative])->whereIn('type', ['A', 'AAAA', 'CNAME'])->get();
-        $domain->dns_domain_id = $dnsDomain->id;
-        if ($existing->contains(fn ($record): bool => $record->type === $type && $record->content === $ip)) {
-            return;
-        }
-        if ($conflict = $existing->first()) {
+        $points = fn ($record): bool => $record->type === $type && $record->content === $ip;
+        if ($conflict = $existing->first(fn ($record): bool => ! $points($record))) {
             throw ValidationException::withMessages(['host' => "{$domain->host} already has a {$conflict->type} record pointing to {$conflict->content}. Change it on the Domains page, or add this host as another domain and manage DNS yourself."]);
+        }
+
+        $domain->dns_domain_id = $dnsDomain->id;
+        if ($existing->isNotEmpty()) {
+            return;
         }
 
         try {

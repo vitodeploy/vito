@@ -58,6 +58,7 @@ export default function CreateApplication({
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState<Detected | null>(null);
   const [changingRuntime, setChangingRuntime] = useState(false);
+  const [typedBranch, setTypedBranch] = useState(false);
   const runtimeChosen = useRef(false);
   const versionChosen = useRef(false);
   const databaseChosen = useRef(false);
@@ -146,7 +147,7 @@ export default function CreateApplication({
     setData((data) => ({
       ...data,
       environment: versionChosen.current ? data.environment : { ...data.environment, runtime_version: nextVersion },
-      database: !!server?.database && (databaseChosen.current ? data.database : !!preset?.suggests_database),
+      database: databaseChosen.current ? data.database : !!preset?.suggests_database,
     }));
   }, [preset, server, detectedList, setData]);
 
@@ -170,6 +171,7 @@ export default function CreateApplication({
       };
     });
   };
+  const changeBranch = (value: string) => form.setData((data) => ({ ...data, environment: { ...data.environment, branch: value } }));
   const selectRuntime = (runtime: string) => {
     const next = runtimes.find((item) => item.id === runtime);
     runtimeChosen.current = true;
@@ -184,6 +186,7 @@ export default function CreateApplication({
   };
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    form.transform((data) => ({ ...data, database: data.database && !!server?.database }));
     form.post('/applications', { onSuccess: () => onOpenChange(false) });
   };
 
@@ -197,14 +200,29 @@ export default function CreateApplication({
         <Form id="create-application-form" className="p-4" onSubmit={submit}>
           <FormFields>
             <ApplicationFields picker data={form.data} errors={form.errors} onChange={change} sourceControls={sourceControls} />
-            <Field id="branch" label="Branch" error={environmentErrors.branch}>
-              <SelectBranch
-                sourceControlId={sourceControlId}
-                repository={repository}
-                value={branch}
-                onValueChange={(value) => form.setData((data) => ({ ...data, environment: { ...data.environment, branch: value } }))}
-                placeholder="main"
-              />
+            <Field
+              id="branch"
+              label="Branch"
+              error={environmentErrors.branch}
+              description={
+                !typedBranch && (
+                  <button type="button" className="underline" onClick={() => setTypedBranch(true)}>
+                    Not listed? Type it instead
+                  </button>
+                )
+              }
+            >
+              {typedBranch ? (
+                <Input id="branch" className="font-mono" value={branch} placeholder="main" onChange={(e) => changeBranch(e.target.value)} />
+              ) : (
+                <SelectBranch
+                  sourceControlId={sourceControlId}
+                  repository={repository}
+                  value={branch}
+                  onValueChange={changeBranch}
+                  placeholder="main"
+                />
+              )}
             </Field>
             <Field
               id="application-server"

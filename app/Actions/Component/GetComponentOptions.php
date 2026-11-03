@@ -38,12 +38,14 @@ class GetComponentOptions
         return Server::query()->where('project_id', $projectId)->where('status', ServerStatus::READY)->with('services')
             ->orderBy('name')->get()->map(function (Server $server): array {
                 $installed = $server->services->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED, ServiceStatus::DISABLED]);
-                $ready = fn (string $type): ?Service => $server->services->where('type', $type)->where('status', ServiceStatus::READY)->first();
+                $default = fn (string $type): ?Service => $server->services->where('type', $type)->firstWhere('is_default', 1)
+                    ?? $server->services->where('type', $type)->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])->first();
+                $ready = fn (string $type): bool => $default($type)?->status === ServiceStatus::READY;
 
                 return [
                     'id' => $server->id, 'name' => $server->name, 'ssh_user' => $server->getSshUser(),
                     'services' => $installed->groupBy('type')->map(fn ($services): array => $services->pluck('version')->values()->all())->all(),
-                    'database' => $ready('firewall') ? $ready('database')?->name : null,
+                    'database' => $ready('firewall') && $ready('database') ? $default('database')?->name : null,
                 ];
             })->all();
     }

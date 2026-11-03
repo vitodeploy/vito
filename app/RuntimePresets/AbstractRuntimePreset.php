@@ -224,7 +224,7 @@ abstract class AbstractRuntimePreset
             $target = implode('.', array_slice(explode('.', $match[2]), 0, $precision));
             $sameMajor = (int) $version === (int) $match[2];
             $satisfied = match ($match[1]) {
-                '^' => $sameMajor && version_compare($current, $target, '>='),
+                '^' => $sameMajor && version_compare($current, $target, '>=') && ((int) $version > 0 || (explode('.', $version)[1] ?? '') === (explode('.', $match[2])[1] ?? '')),
                 '~' => substr_count($match[2], '.') >= 2 ? version_compare($current, $target, '==') : $sameMajor && version_compare($current, $target, '>='),
                 '>=', '<=', '>', '<' => version_compare($current, $target, $match[1]),
                 default => version_compare($current, $target, '=='),

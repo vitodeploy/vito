@@ -22,7 +22,7 @@ class CreateApplication
         Validator::make($input, [
             'runtime' => ['required', 'string', Rule::in(array_keys(config('component.runtimes', [])))],
             'environment' => ['required', 'array'],
-            'server_id' => ['nullable', 'integer'],
+            'server_id' => ['nullable', 'integer', 'min:1'],
             'database' => ['sometimes', 'boolean'],
             'auto_deploy' => ['sometimes', 'boolean'],
         ])->validate();

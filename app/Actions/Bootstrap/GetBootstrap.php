@@ -128,7 +128,7 @@ final class GetBootstrap
                 'creation_form' => $preset->creationForm()->toArray(),
                 'capabilities' => app(GetComponentOptions::class)->forPreset($preset),
                 'required_services' => (new ComponentCapability(['capability' => Web::id()]))->handler()->requiredServices($preset),
-                'version_service' => array_key_first($preset->requiredServices($preset->versions()[0] ?? '')),
+                'version_service' => collect($preset->requiredServices($preset->versions()[0] ?? ''))->filter()->keys()->first(),
                 'suggests_database' => $preset->suggestsDatabase(),
             ];
         }
