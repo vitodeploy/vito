@@ -36,7 +36,9 @@ class DeleteDNSRecord
 
         DB::transaction(function () use ($dnsRecord): void {
             $dnsRecord->delete();
-            EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
+            if (in_array($dnsRecord->type, ['A', 'AAAA', 'CNAME'], true)) {
+                EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
+            }
         });
     }
 }

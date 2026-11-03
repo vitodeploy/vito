@@ -30,6 +30,7 @@ use App\Models\Application;
 use App\Models\Component;
 use App\Models\ComponentCapability;
 use App\Models\DNSProvider;
+use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\Environment;
 use App\Models\EnvironmentDomain;
@@ -448,6 +449,18 @@ describe('managed dns', function () {
 
         $this->assertDatabaseMissing('dns_records', ['provider_record_id' => 'r6']);
         expect($domain->refresh()->dns_domain_id)->toBeNull();
+    });
+
+    test('changing a non address record at the host keeps dns managed', function () {
+        $domain = app(CreateEnvironmentDomain::class)->create($this->environment, [...$this->input, ...$this->managedInput]);
+        $txt = DNSRecord::factory()->create(['domain_id' => $this->dnsDomain->id, 'type' => 'TXT', 'name' => 'app.example.com', 'content' => 'a', 'provider_record_id' => 'txt1']);
+        Http::fake(['api.cloudflare.com/client/v4/zones/zone/dns_records/txt1' => Http::response(['result' => ['id' => 'txt1']])]);
+
+        app(UpdateDNSRecord::class)->update($txt, ['type' => 'TXT', 'name' => 'app.example.com', 'content' => 'b']);
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
+
+        app(DeleteDNSRecord::class)->delete($txt);
+        expect($domain->refresh()->dns_domain_id)->toBe($this->dnsDomain->id);
     });
 
     test('only edits that move the record stop treating dns as managed', function (array $change, bool $managed) {

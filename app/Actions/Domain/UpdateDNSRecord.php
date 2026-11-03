@@ -35,7 +35,7 @@ class UpdateDNSRecord
         }
 
         DB::transaction(function () use ($dnsRecord, $input, $recordData): void {
-            if ($input['type'] !== $dnsRecord->type || $input['name'] !== $dnsRecord->name || $input['content'] !== $dnsRecord->content) {
+            if (in_array($dnsRecord->type, ['A', 'AAAA', 'CNAME'], true) && ($input['type'] !== $dnsRecord->type || $input['name'] !== $dnsRecord->name || $input['content'] !== $dnsRecord->content)) {
                 EnvironmentDomain::query()->where('dns_domain_id', $dnsRecord->domain_id)->where('host', $dnsRecord->name)->update(['dns_domain_id' => null]);
             }
             $dnsRecord->type = $input['type'];
