@@ -492,6 +492,56 @@ test('package manager applications provision node and their manager with editabl
     }
 })->with(['pnpm', 'yarn']);
 
+test('compiled and python application runtimes are detected ahead of frontend assets', function (array $files, string $runtime, array $versions) {
+    $this->files = [...$files, 'package.json' => '{}', 'index.html' => '<html>'];
+
+    ($this->detect)()->assertSuccessful()->assertExactJson([
+        'branch' => 'trunk', 'runtime' => $runtime, 'versions' => $versions,
+    ]);
+
+    $this->files['composer.json'] = '{"require":{"php":"^8.4"}}';
+    ($this->detect)()->assertSuccessful()->assertJsonPath('runtime', 'php');
+})->with([
+    [['go.mod' => "module example.com/app\ngo 1.26"], 'go', ['1.27', '1.26']],
+    [['Cargo.toml' => '[package]', 'rust-toolchain' => '1.98.0'], 'rust', ['1.98']],
+    [['Cargo.toml' => '[package]', 'rust-toolchain' => "[toolchain]\nchannel = \"1.98.0\""], 'rust', ['1.98']],
+    [['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"1.98.0\""], 'rust', ['1.98']],
+    [['requirements.txt' => '', '.python-version' => '3.13'], 'python', ['3.13']],
+    [['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\""], 'python', ['3.13', '3.12']],
+]);
+
+test('compiled and python applications provision isolated tooling and editable deployment defaults', function (string $runtime, string $version, string $start) {
+    $this->post(route('applications.store'), [
+        ...$this->input,
+        'runtime' => $runtime,
+        'environment' => ['name' => 'Production', 'branch' => 'main', 'runtime_version' => $version],
+    ])->assertRedirect()->assertSessionDoesntHaveErrors()->assertSessionMissing('error');
+
+    $component = Component::query()->sole();
+    $environment = $component->environment;
+    $preset = $environment->application->preset();
+    $this->assertDatabaseHas('applications', ['id' => $environment->application_id, 'runtime' => $runtime]);
+    $this->assertDatabaseHas('environments', ['id' => $environment->id, 'runtime_version' => $version]);
+    $this->assertDatabaseHas('deployment_scripts', ['environment_id' => $environment->id, 'name' => 'build', 'content' => $preset->defaultScripts()['build']]);
+    expect($component->capabilities()->sole()->config['start_command'])->toBe($start);
+
+    (new InstallComponentJob($component->id, $this->server->id))->withFakeQueueInteractions()->handle();
+
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'ready', 'installed_runtime_version' => $version]);
+    SSH::assertExecutedContains('mise use --path '.escapeshellarg($component->path.'/mise.toml').' '.escapeshellarg($runtime.'@'.$version));
+    SSH::assertNotExecutedContains('mise use -g');
+
+    $script = base64_decode(str(ComponentShell::wrap($component->refresh(), $start))->between('$(echo ', ' | base64')->toString());
+    expect($script)->toContain('/.local/share/mise/shims');
+
+    $this->site->update(['user' => $component->user]);
+    expect(fn () => app(AssertToolingNotUsedByComponents::class)->assert($this->site, $runtime))->toThrow(ValidationException::class);
+})->with([
+    ['go', '1.27', './app'],
+    ['rust', '1.99', './target/release/app'],
+    ['python', '3.14', '.venv/bin/python main.py'],
+]);
+
 test('laravel components get node on their path and keep it from being uninstalled', function () {
     $this->post(route('applications.store'), $this->input)->assertSessionDoesntHaveErrors();
     $component = Component::query()->sole();

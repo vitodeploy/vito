@@ -14,10 +14,13 @@ use App\Plugins\RegisterRuntimePreset;
 use App\RuntimePresets\AbstractRuntimePreset;
 use App\RuntimePresets\Bun;
 use App\RuntimePresets\Custom;
+use App\RuntimePresets\Go;
 use App\RuntimePresets\Laravel;
 use App\RuntimePresets\NodeJS;
 use App\RuntimePresets\PHP;
 use App\RuntimePresets\Pnpm;
+use App\RuntimePresets\Python;
+use App\RuntimePresets\Rust;
 use App\RuntimePresets\StaticSite;
 use App\RuntimePresets\Yarn;
 use App\Support\RepositoryFiles;
@@ -61,6 +64,9 @@ test('built-in runtime presets resolve and expose public bootstrap descriptors',
     ['pnpm', Pnpm::class, WebMode::PROXY, 'node'],
     ['yarn', Yarn::class, WebMode::PROXY, 'node'],
     ['bun', Bun::class, WebMode::PROXY, 'bun'],
+    ['go', Go::class, WebMode::PROXY, 'go'],
+    ['rust', Rust::class, WebMode::PROXY, 'rust'],
+    ['python', Python::class, WebMode::PROXY, 'python'],
     ['static', StaticSite::class, WebMode::STATIC, null],
     ['custom', Custom::class, WebMode::PROXY, null],
     ['laravel', Laravel::class, WebMode::FPM, 'composer'],
@@ -82,6 +88,9 @@ test('runtime requirements use the selected version without imposing server-wide
     ['pnpm', []],
     ['yarn', []],
     ['bun', []],
+    ['go', []],
+    ['rust', []],
+    ['python', []],
     ['static', []],
     ['custom', []],
 ]);
@@ -116,6 +125,17 @@ test('suggested deployment scripts are loaded by stage without reusing site scri
         ->and((new Yarn)->defaultScripts()['post-release'])->toBe('');
 });
 
+test('compiled and python runtimes seed release-local build scripts', function (string $runtime, string $build) {
+    $preset = (new Application(['runtime' => $runtime]))->preset();
+
+    expect($preset->defaultScripts())->toBe(['build' => $build, 'pre-release' => '', 'post-release' => ''])
+        ->and($preset->sharedPaths())->toBe([]);
+})->with([
+    ['go', "go mod download\ngo build -o app .\n"],
+    ['rust', "if [ -f Cargo.lock ]; then\n  cargo build --release --locked\nelse\n  cargo build --release\nfi\n"],
+    ['python', "python -m venv .venv\nif [ -f requirements.txt ]; then\n  .venv/bin/python -m pip install -r requirements.txt\nelif [ -f pyproject.toml ] || [ -f setup.py ]; then\n  .venv/bin/python -m pip install .\nfi\n"],
+]);
+
 test('runtime suggestions are empty unless the preset supplies them', function () {
     foreach ([new StaticSite, new Custom] as $preset) {
         expect($preset->versions())->toBe([])
@@ -133,7 +153,10 @@ test('runtime suggestions are empty unless the preset supplies them', function (
         ->and((new NodeJS)->startCommand())->toBe('npm start')
         ->and((new Pnpm)->startCommand())->toBe('pnpm start')
         ->and((new Yarn)->startCommand())->toBe('yarn start')
-        ->and((new Bun)->startCommand())->toBe('bun run start');
+        ->and((new Bun)->startCommand())->toBe('bun run start')
+        ->and((new Go)->startCommand())->toBe('./app')
+        ->and((new Rust)->startCommand())->toBe('./target/release/app')
+        ->and((new Python)->startCommand())->toBe('.venv/bin/python main.py');
 });
 
 test('plugins can register runtime presets and capabilities in bootstrap', function () {
@@ -141,12 +164,12 @@ test('plugins can register runtime presets and capabilities in bootstrap', funct
     {
         public static function id(): string
         {
-            return 'python';
+            return 'plugin-runtime';
         }
 
         public static function label(): string
         {
-            return 'Python';
+            return 'Plugin runtime';
         }
 
         public function webMode(): WebMode
@@ -180,13 +203,13 @@ test('plugins can register runtime presets and capabilities in bootstrap', funct
     $runtimes = collect($response->json('configs.application.runtimes'))->keyBy('id');
     $capabilities = collect($response->json('configs.application.capabilities'))->keyBy('id');
 
-    expect($runtimes['python'])->toMatchArray([
-        'id' => 'python', 'label' => 'Python', 'versions' => [], 'web_mode' => 'proxy', 'form' => $preset->form()->toArray(),
+    expect($runtimes['plugin-runtime'])->toMatchArray([
+        'id' => 'plugin-runtime', 'label' => 'Plugin runtime', 'versions' => [], 'web_mode' => 'proxy', 'form' => $preset->form()->toArray(),
         'creation_form' => [], 'required_services' => ['webserver', 'process_manager'], 'version_service' => null, 'suggests_database' => false,
     ])
         ->and($capabilities['tasks'])->toBe(['id' => 'tasks', 'label' => 'Tasks', 'description' => '', 'surfaces' => []])
         ->and($response->json('version'))->not->toBe($version)
-        ->and((new Application(['runtime' => 'python']))->preset())->toBeInstanceOf($preset::class)
+        ->and((new Application(['runtime' => 'plugin-runtime']))->preset())->toBeInstanceOf($preset::class)
         ->and((new ComponentCapability(['capability' => 'tasks']))->handler())->toBeInstanceOf($capability::class);
 });
 
@@ -225,6 +248,57 @@ test('runtime detection recognizes repositories and narrows versions to their co
     'yarn skips php repositories' => ['yarn', ['package.json' => '{}', 'composer.json' => '{}', 'yarn.lock' => ''], null],
     'yarn ignores empty metadata' => ['yarn', ['package.json' => '{"packageManager":""}', 'yarn.lock' => ''], ['24', '23', '22']],
     'bun lockfile' => ['bun', ['bun.lock' => '{}', 'package.json' => '{}'], (new Bun)->versions()],
+    'go minimum version' => ['go', ['go.mod' => "module example.com/app\n\ngo 1.26.0\n"], ['1.27', '1.26']],
+    'go pinned version wins' => ['go', ['go.mod' => "module example.com/app\ngo 1.25", '.go-version' => "1.26.3\n"], ['1.26']],
+    'go invalid hint keeps choices' => ['go', ['go.mod' => 'module example.com/app', '.go-version' => 'latest'], ['1.27', '1.26', '1.25']],
+    'go requires a manifest' => ['go', ['.go-version' => '1.27'], null],
+    'go skips php repositories' => ['go', ['go.mod' => '', 'composer.json' => '{}'], null],
+    'rust manifest' => ['rust', ['Cargo.toml' => '[package]'], ['1.99', '1.98', '1.97']],
+    'rust pinned toolchain' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => "1.98.0\n"], ['1.98']],
+    'rust legacy filename with toml' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => "[toolchain]\nchannel = \"1.98.0\"\n"], ['1.98']],
+    'rust toml filename' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"1.98.0\"\n"], ['1.98']],
+    'rust legacy file takes precedence' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => '1.97.1', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"1.98.0\""], ['1.97']],
+    'rust toml literal with comments' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain] # pinned\r\n  channel = '1.98.0' # stable release\r\n"], ['1.98']],
+    'rust ignores other tables' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nprofile = \"minimal\"\n[other]\nchannel = \"1.98.0\""], ['1.99', '1.98', '1.97']],
+    'rust invalid toml keeps choices' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"1.98.0"], ['1.99', '1.98', '1.97']],
+    'rust toml stable keeps choices' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"stable\""], ['1.99', '1.98', '1.97']],
+    'rust stable keeps choices' => ['rust', ['Cargo.toml' => '[package]', 'rust-toolchain' => 'stable'], ['1.99', '1.98', '1.97']],
+    'rust requires a manifest' => ['rust', ['rust-toolchain' => '1.99'], null],
+    'rust skips php repositories' => ['rust', ['Cargo.toml' => '', 'composer.json' => '{}'], null],
+    'python requirements' => ['python', ['requirements.txt' => 'gunicorn'], ['3.14', '3.13', '3.12', '3.11']],
+    'python pyproject with version' => ['python', ['pyproject.toml' => '[project]', '.python-version' => "3.12.4\n"], ['3.12']],
+    'python project bounded range' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\""], ['3.13', '3.12']],
+    'python project compatible release' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \"~=3.12.0\""], ['3.12']],
+    'python project compatible minor' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \"~= 3.12\""], ['3.14', '3.13', '3.12']],
+    'python project wildcard equality' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \"==3.12.*\""], ['3.12']],
+    'python project excluded minor' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">= 3.12, != 3.14.*\""], ['3.13', '3.12']],
+    'python exact patch exclusion keeps the minor series' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.13,<3.14,!=3.13.0\""], ['3.13']],
+    'python patch wildcard exclusion keeps later patches' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.13,<3.14,!=3.13.0.*\""], ['3.13']],
+    'python ignores hints inside multiline basic strings' => ['python', ['pyproject.toml' => "[project]\nreadme = { text = \"\"\"\nrequires-python = \"<3.14\"\n\"\"\", content-type = \"text/plain\" }\nrequires-python = \">=3.14\""], ['3.14']],
+    'python ignores hints inside multiline literal strings' => ['python', ['pyproject.toml' => "[project]\nreadme = { text = '''\nrequires-python = \"<3.14\"\n''', content-type = \"text/plain\" }\nrequires-python = \">=3.14\""], ['3.14']],
+    'python ignores table headers inside multiline strings' => ['python', ['pyproject.toml' => "[tool.example]\ntemplate = \"\"\"\n[project]\nrequires-python = \"<3.14\"\n\"\"\"\n[project]\nrequires-python = \">=3.14\""], ['3.14']],
+    'python ignores string delimiters inside comments and literal strings' => ['python', ['pyproject.toml' => "# \"\"\"\n[project]\ndescription = '\"\"\"'\nrequires-python = \">=3.14\""], ['3.14']],
+    'python explicit pin wins over project range' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\"", '.python-version' => '3.12.4'], ['3.12']],
+    'python invalid pin still keeps choices' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\"", '.python-version' => 'latest'], ['3.14', '3.13', '3.12', '3.11']],
+    'python empty pin still keeps choices' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\"", '.python-version' => ''], ['3.14', '3.13', '3.12', '3.11']],
+    'python literal range with comments' => ['python', ['pyproject.toml' => "[project] # metadata\r\n  requires-python = '>=3.12,<3.14' # supported\r\n"], ['3.13', '3.12']],
+    'python ignores commented hints' => ['python', ['pyproject.toml' => "[project]\n# requires-python = \"<3.14\""], ['3.14', '3.13', '3.12', '3.11']],
+    'python ignores other tables' => ['python', ['pyproject.toml' => "[project]\nname = \"app\"\n[tool.other]\nrequires-python = \"<3.14\""], ['3.14', '3.13', '3.12', '3.11']],
+    'python invalid project range keeps choices' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \"not-a-version\""], ['3.14', '3.13', '3.12', '3.11']],
+    'python malformed numeric suffix keeps choices' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \"~=3.12oops\""], ['3.14', '3.13', '3.12', '3.11']],
+    'python prerelease constraint' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=3.13.0rc1\""], ['3.14', '3.13']],
+    'php stability suffix' => ['php', ['composer.json' => '{"require":{"php":"^8.4@dev"}}'], ['8.5', '8.4']],
+    'node wildcard version' => ['node', ['package.json' => '{"engines":{"node":"24.x"}}'], ['24']],
+    'node repeated x wildcard' => ['node', ['package.json' => '{"engines":{"node":"22.x.x"}}'], ['22']],
+    'node repeated star wildcard' => ['node', ['package.json' => '{"engines":{"node":"22.*.*"}}'], ['22']],
+    'node prerelease constraint' => ['node', ['package.json' => '{"engines":{"node":">=23.0.0-rc.1"}}'], ['24', '23']],
+    'node combined prerelease metadata' => ['node', ['package.json' => '{"engines":{"node":">=23.0.0-rc.1+build.1"}}'], ['24', '23']],
+    'php combined stability suffix' => ['php', ['composer.json' => '{"require":{"php":"^8.4.0-beta1@dev"}}'], ['8.5', '8.4']],
+    'python unsupported project range keeps choices' => ['python', ['pyproject.toml' => "[project]\nrequires-python = \">=4.0\""], ['3.14', '3.13', '3.12', '3.11']],
+    'python setup' => ['python', ['setup.py' => 'from setuptools import setup'], ['3.14', '3.13', '3.12', '3.11']],
+    'python invalid hint keeps choices' => ['python', ['requirements.txt' => '', '.python-version' => 'not-a-version'], ['3.14', '3.13', '3.12', '3.11']],
+    'python requires a manifest' => ['python', ['.python-version' => '3.14'], null],
+    'python skips php repositories' => ['python', ['requirements.txt' => '', 'composer.json' => '{}'], null],
     'static index' => ['static', ['index.html' => '<html>'], []],
     'static skips built projects' => ['static', ['index.html' => '<html>', 'package.json' => '{}'], null],
     'custom never detects' => ['custom', ['composer.json' => '{}'], null],

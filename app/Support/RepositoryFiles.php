@@ -35,6 +35,28 @@ final class RepositoryFiles
     }
 
     /**
+     * Reads single-line quoted hints from a TOML table, ignoring multiline string bodies.
+     */
+    public function tomlString(string $path, string $table, string $key): ?string
+    {
+        $contents = preg_replace(
+            <<<'REGEX'
+            /"""(?:\\.|(?!""").)*"""|'''.*?'''|(?:"(?:\\.|[^"\\\r\n])*"|'[^'\r\n]*'|#[^\r\n]*)(*SKIP)(*F)/s
+            REGEX,
+            '',
+            $this->get($path) ?? '',
+        ) ?? '';
+        if (! preg_match('/^\h*\[\h*'.preg_quote($table, '/').'\h*\]\h*(?:#[^\r\n]*)?\r?$(.*?)(?=^\h*\[|\z)/ms', $contents, $section)) {
+            return null;
+        }
+        if (! preg_match('/^\h*'.preg_quote($key, '/').'\h*=\h*(["\'])([^"\'\r\n]*)\1\h*(?:#[^\r\n]*)?\r?$/m', $section[1], $value)) {
+            return null;
+        }
+
+        return $value[2];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function json(string $path): array

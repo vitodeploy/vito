@@ -190,7 +190,7 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * Versions satisfying a Composer or npm style constraint, newest first. An empty, unparsable or
+     * Versions satisfying a Composer, npm or Python style constraint, newest first. An empty, unparsable or
      * unsatisfiable constraint returns every version, so detection never removes the user's choices.
      *
      * @return list<string>
@@ -236,7 +236,7 @@ abstract class AbstractRuntimePreset
     private function satisfies(string $version, string $constraint): bool
     {
         foreach (preg_split('/[\s,]+/', $constraint, flags: PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
-            if (! preg_match('/\A(\^|~|>=|<=|>|<|=)?v?(\d+(?:\.\d+)*)/', $part, $match)) {
+            if (! preg_match('/\A(\^|~=|~|>=|<=|!=|==|>|<|=)?v?(\d+(?:\.\d+)*)(?:\.[x*])*(?:[-+@][0-9a-z.+@-]+|[._]?(?:a|b|rc|post|dev)\d+)?\z/i', $part, $match)) {
                 return false;
             }
             $precision = min(substr_count($version, '.'), substr_count($match[2], '.')) + 1;
@@ -245,7 +245,8 @@ abstract class AbstractRuntimePreset
             $sameMajor = (int) $version === (int) $match[2];
             $satisfied = match ($match[1]) {
                 '^' => $sameMajor && version_compare($current, $target, '>=') && $this->withinCaret(explode('.', $version), explode('.', $match[2])),
-                '~' => substr_count($match[2], '.') >= 2 ? version_compare($current, $target, '==') : $sameMajor && version_compare($current, $target, '>='),
+                '~', '~=' => substr_count($match[2], '.') >= 2 ? version_compare($current, $target, '==') : $sameMajor && version_compare($current, $target, '>='),
+                '!=' => substr_count($match[2], '.') > substr_count($version, '.') || version_compare($current, $target, '!='),
                 '>=', '<=', '>', '<' => version_compare($current, $target, $match[1]),
                 default => version_compare($current, $target, '=='),
             };
