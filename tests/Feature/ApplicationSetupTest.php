@@ -504,7 +504,10 @@ test('compiled and python application runtimes are detected ahead of frontend as
 })->with([
     [['go.mod' => "module example.com/app\ngo 1.26"], 'go', ['1.27', '1.26']],
     [['Cargo.toml' => '[package]', 'rust-toolchain' => '1.98.0'], 'rust', ['1.98']],
+    [['Cargo.toml' => '[package]', 'rust-toolchain' => "[toolchain]\nchannel = \"1.98.0\""], 'rust', ['1.98']],
+    [['Cargo.toml' => '[package]', 'rust-toolchain.toml' => "[toolchain]\nchannel = \"1.98.0\""], 'rust', ['1.98']],
     [['requirements.txt' => '', '.python-version' => '3.13'], 'python', ['3.13']],
+    [['pyproject.toml' => "[project]\nrequires-python = \">=3.12,<3.14\""], 'python', ['3.13', '3.12']],
 ]);
 
 test('compiled and python applications provision isolated tooling and editable deployment defaults', function (string $runtime, string $version, string $start) {

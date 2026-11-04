@@ -44,6 +44,6 @@ class Python extends AbstractRuntimePreset
             return null;
         }
 
-        return $this->compatibleVersions($files->get('.python-version'));
+        return $this->compatibleVersions($files->get('.python-version') ?? $files->tomlString('pyproject.toml', 'project', 'requires-python'));
     }
 }

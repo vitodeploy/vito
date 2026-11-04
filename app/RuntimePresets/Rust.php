@@ -44,6 +44,9 @@ class Rust extends AbstractRuntimePreset
             return null;
         }
 
-        return $this->compatibleVersions($files->get('rust-toolchain'));
+        $file = $files->has('rust-toolchain') ? 'rust-toolchain' : 'rust-toolchain.toml';
+        $constraint = $files->tomlString($file, 'toolchain', 'channel') ?? ($file === 'rust-toolchain' ? $files->get($file) : null);
+
+        return $this->compatibleVersions($constraint);
     }
 }
