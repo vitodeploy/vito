@@ -1,0 +1,1 @@
+import{r as e,t}from"./jsx-runtime-D71uMYU6.js";import{t as n}from"./use-dialog-Cg_u8335.js";import{a as r}from"./dropdown-menu-CRbThtkQ.js";var i=e({default:()=>o}),a=t();function o({service:e,configPath:t}){let i=n();return(0,a.jsxs)(r,{onSelect:()=>i.serviceConfigFile.open({service:e,configPath:t}),children:[`Edit `,t.name]})}export{i as n,o as t};

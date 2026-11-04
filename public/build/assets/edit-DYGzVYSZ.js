@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-D71uMYU6.js";import{t}from"./use-dialog-y0wWRFPC.js";import{a as n}from"./dropdown-menu-DtcnwnM-.js";var r=e();function i({storageProvider:e}){let i=t();return(0,r.jsx)(n,{onSelect:()=>i.storageProviderEdit.open({storageProvider:e}),children:`Edit`})}export{i as default};

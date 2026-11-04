@@ -1,1 +1,0 @@
-import{r as e,t}from"./jsx-runtime-D71uMYU6.js";import{t as n}from"./use-dialog-y0wWRFPC.js";import{a as r}from"./dropdown-menu-DtcnwnM-.js";var i=e({default:()=>o}),a=t();function o({service:e}){let t=n();return(0,a.jsx)(r,{onSelect:()=>t.phpExtensions.open({service:e}),children:`Extensions`})}export{i as n,o as t};
