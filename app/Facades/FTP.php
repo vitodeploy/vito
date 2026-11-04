@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static void close(bool|Connection $connection)
  * @method static bool passive(bool|Connection $connection, bool $passive)
  * @method static bool delete(bool|Connection $connection, string $path)
+ * @method static int size(bool|Connection $connection, string $path)
+ * @method static void streamDownload(bool|Connection $connection, string $path)
  * @method static void assertConnected(string $host)
  */
 class FTP extends Facade

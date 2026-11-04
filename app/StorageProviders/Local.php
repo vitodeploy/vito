@@ -3,6 +3,7 @@
 namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 
@@ -44,6 +45,11 @@ class Local extends AbstractStorageProvider
     public function connect(array $credentials): bool
     {
         return true;
+    }
+
+    public function download(BackupFile $backupFile): array
+    {
+        return $this->sftpDownload($backupFile->backup->server->ssh(), $backupFile->path());
     }
 
     public function ssh(Server $server): Storage

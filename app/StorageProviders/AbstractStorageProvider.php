@@ -2,8 +2,13 @@
 
 namespace App\StorageProviders;
 
+use App\Helpers\SSH;
+use App\Models\BackupFile;
 use App\Models\StorageProvider;
 use App\StorageProviders\StorageProvider as StorageProviderContract;
+use Closure;
+use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 abstract class AbstractStorageProvider implements StorageProviderContract
 {
@@ -15,6 +20,60 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     }
 
     public function forgetCachedState(): void {}
+
+    public function download(BackupFile $backupFile): array
+    {
+        abort(404, 'Downloading from this storage provider is not supported.');
+    }
+
+    /**
+     * @return array{size: int, stream: Closure(): void}
+     */
+    protected function sftpDownload(SSH $ssh, string $path): array
+    {
+        $size = $ssh->fileSize($path);
+        abort_if($size === null, 404, 'The backup file does not exist.');
+
+        return [
+            'size' => $size,
+            'stream' => static function () use ($ssh, $path, $size): void {
+                try {
+                    $ssh->streamDownload($path, static function (string $chunk): void {
+                        echo $chunk;
+                        flush();
+                    }, $size);
+                } finally {
+                    $ssh->disconnect();
+                }
+            },
+        ];
+    }
+
+    /**
+     * @return array{size: int, stream: Closure(): void}
+     */
+    protected function httpDownload(StreamInterface $body, int $size): array
+    {
+        return [
+            'size' => $size,
+            'stream' => static function () use ($body, $size): void {
+                $bytes = 0;
+                try {
+                    while (! $body->eof()) {
+                        $chunk = $body->read(65536);
+                        $bytes += strlen($chunk);
+                        echo $chunk;
+                        flush();
+                    }
+                    if ($bytes !== $size) {
+                        throw new RuntimeException('The backup download was interrupted.');
+                    }
+                } finally {
+                    $body->close();
+                }
+            },
+        ];
+    }
 
     /**
      * Credential keys that are safe to send back to the client for editing.

@@ -70,9 +70,11 @@ Database backups created in **v3.x are stored as `.zip` and cannot be restored i
 
 To keep an offline copy of a backup, open the backup's **Files** page and select **Download** from the actions menu of a completed backup file.
 
-Downloading is currently supported for Vito's built-in **Local** storage provider. Database backups are downloaded as `.sql.gz` files, and file/directory backups as `.tar.gz` archives.
+Downloading is supported for all built-in storage providers: **Local**, **FTP**, **SFTP**, **Amazon S3 / S3-compatible**, and **Dropbox**. Database backups are downloaded as `.sql.gz` files, and file/directory backups as `.tar.gz` archives. Downloads are available for files with status `created`, `restored`, or `restore_failed`.
 
-Vito streams the existing archive from the managed server directly to your browser over an authenticated request. No restore takes place, and the original backup is left unchanged. Only members authorized to view backup files can download them.
+Vito streams the existing archive to your browser over an authenticated request, without staging a copy on the Vito controller or loading the entire archive into memory. Local archives are read from the managed server over SFTP; other archives are read directly from the configured storage provider. The Vito controller must be able to reach that server or provider. No restore takes place, and the original backup is left unchanged. Only members authorized to view backup files can download them.
+
+Missing archives return a not-found error. Downloads include the archive's size so browsers can detect interrupted transfers. Changing a storage provider's path does not move existing archives; keep the path pointing at the archives you want to download.
 
 :::warning
 Keep downloaded archives secure: database dumps and site file backups may contain personal data, credentials, and other sensitive information. Consider encrypting your off-server copies.

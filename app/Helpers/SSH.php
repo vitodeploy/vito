@@ -286,14 +286,26 @@ class SSH
         $sftp->get($remote, $local);
     }
 
-    /**
-     * Check that the requested remote path is a regular file before streaming a response.
-     *
-     * @throws SSHConnectionError
-     */
-    public function isRegularFile(string $remote): bool
+    public function connectToSftp(string $host, int $port, string $username, string $password): self
     {
-        return $this->ensureSftp()->is_file($remote);
+        $this->connection = new SFTP(str_contains($host, ':') ? '['.trim($host, '[]').']' : $host, $port);
+        if (! $this->connection->login($username, $password)) {
+            throw new SSHAuthenticationError('Unable to authenticate with SFTP storage.');
+        }
+
+        return $this;
+    }
+
+    public function fileSize(string $remote): ?int
+    {
+        $sftp = $this->ensureSftp();
+        $sftp->clearStatCache();
+        if (! $sftp->is_file($remote)) {
+            return null;
+        }
+        $size = $sftp->filesize($remote);
+
+        return $size === false ? null : (int) $size;
     }
 
     /**
@@ -304,12 +316,18 @@ class SSH
      *
      * @throws SSHError
      */
-    public function streamDownload(string $remote, callable $onChunk): void
+    public function streamDownload(string $remote, callable $onChunk, int $expectedSize): void
     {
-        $downloaded = $this->ensureSftp()->get($remote, $onChunk);
+        $sftp = $this->ensureSftp();
+        $sftp->setTimeout(0);
+        $bytes = 0;
+        $downloaded = $sftp->get($remote, static function (string $chunk) use ($onChunk, &$bytes): void {
+            $bytes += strlen($chunk);
+            $onChunk($chunk);
+        });
 
-        if ($downloaded === false) {
-            throw new SSHError('Failed to stream file from the server.');
+        if ($downloaded === false || $bytes !== $expectedSize) {
+            throw new SSHError('Failed to stream the complete backup file.');
         }
     }
 

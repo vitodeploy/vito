@@ -3,9 +3,14 @@
 namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
+use App\Facades\FTP as FTPFacade;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 use FTP\Connection;
+use GuzzleHttp\Psr7\UriResolver;
+use RuntimeException;
+use Throwable;
 
 class FTP extends AbstractStorageProvider
 {
@@ -97,6 +102,38 @@ class FTP extends AbstractStorageProvider
         }
 
         return $isConnected;
+    }
+
+    public function download(BackupFile $backupFile): array
+    {
+        $credentials = $this->storageProvider->credentials;
+        $connection = $this->connection($credentials);
+        if (! $connection) {
+            throw new RuntimeException('Unable to connect to FTP storage.');
+        }
+
+        try {
+            if (! $this->login($connection, $credentials) || ! FTPFacade::passive($connection, (bool) $credentials['passive'])) {
+                throw new RuntimeException('Unable to authenticate or configure FTP storage.');
+            }
+            $path = rawurldecode(substr(UriResolver::removeDotSegments('/'.$backupFile->path()), 1));
+            $size = FTPFacade::size($connection, $path);
+            abort_if($size < 0, 404, 'The backup file does not exist or its size is unavailable.');
+        } catch (Throwable $e) {
+            FTPFacade::close($connection);
+            throw $e;
+        }
+
+        return [
+            'size' => $size,
+            'stream' => static function () use ($connection, $path): void {
+                try {
+                    FTPFacade::streamDownload($connection, $path);
+                } finally {
+                    FTPFacade::close($connection);
+                }
+            },
+        ];
     }
 
     public function ssh(Server $server): Storage

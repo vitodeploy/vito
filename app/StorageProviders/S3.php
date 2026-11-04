@@ -3,6 +3,7 @@
 namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\Models\StorageProvider;
 use App\SSH\Storage\S3 as S3Storage;
@@ -143,6 +144,27 @@ class S3 extends AbstractStorageProvider
 
             return false;
         }
+    }
+
+    public function download(BackupFile $backupFile): array
+    {
+        $this->buildClientConfig();
+        $this->clientConfig['response_checksum_validation'] = 'when_required';
+        $this->clientConfig['use_path_style_endpoint'] = ! empty($this->storageProvider->credentials['api_url']);
+        $storage = new S3Storage($backupFile->backup->server, $this->storageProvider);
+
+        try {
+            $result = $this->getClient()->getObject([
+                'Bucket' => $this->storageProvider->credentials['bucket'],
+                'Key' => $storage->prepareS3Path($backupFile->path()),
+                '@http' => ['stream' => true],
+            ]);
+        } catch (S3Exception $e) {
+            abort_if($e->getStatusCode() === 404, 404, 'The backup file does not exist.');
+            throw $e;
+        }
+
+        return $this->httpDownload($result['Body'], (int) $result['ContentLength']);
     }
 
     public function ssh(Server $server): Storage
