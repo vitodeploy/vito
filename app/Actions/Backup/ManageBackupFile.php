@@ -27,9 +27,19 @@ class ManageBackupFile
             return;
         }
 
-        $file->status = BackupFileStatus::DELETING;
-        $file->message = null;
-        $file->save();
+        $claimed = BackupFile::query()
+            ->whereKey($file->id)
+            ->where('status', '!=', BackupFileStatus::DELETING)
+            ->update([
+                'status' => BackupFileStatus::DELETING,
+                'message' => null,
+            ]);
+
+        if ($claimed === 0) {
+            return;
+        }
+
+        $file->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $server->project_id,
