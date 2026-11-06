@@ -54,23 +54,20 @@ class BackupFile extends AbstractModel
     protected static function booted(): void
     {
         static::created(function (BackupFile $backupFile): void {
-            $keep = $backupFile->backup->keep_backups;
-            if ($backupFile->backup->files()->count() > $keep) {
-                /** @var ?BackupFile $lastFileToKeep */
-                $lastFileToKeep = $backupFile->backup->files()->orderByDesc('id')->skip($keep)->first();
-                if ($lastFileToKeep) {
-                    $files = $backupFile->backup->files()
-                        ->where('id', '<=', $lastFileToKeep->id)
-                        ->whereNotIn('status', [
-                            BackupFileStatus::DELETING,
-                            BackupFileStatus::DELETE_FAILED,
-                        ])
-                        ->get();
-                    /** @var BackupFile $file */
-                    foreach ($files as $file) {
-                        app(ManageBackupFile::class)->delete($file);
-                    }
-                }
+            $retained = fn () => $backupFile->backup->files()->whereNotIn('status', [
+                BackupFileStatus::DELETING,
+                BackupFileStatus::DELETE_FAILED,
+            ]);
+
+            /** @var ?BackupFile $newestExpired */
+            $newestExpired = $retained()->orderByDesc('id')->skip($backupFile->backup->keep_backups)->first();
+            if (! $newestExpired) {
+                return;
+            }
+
+            /** @var BackupFile $file */
+            foreach ($retained()->where('id', '<=', $newestExpired->id)->get() as $file) {
+                app(ManageBackupFile::class)->delete($file);
             }
         });
     }

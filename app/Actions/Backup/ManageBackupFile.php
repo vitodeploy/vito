@@ -15,14 +15,6 @@ class ManageBackupFile
 {
     public function delete(BackupFile $file): void
     {
-        // Skip files that are already being deleted. Without this guard the
-        // retention logic can dispatch duplicate DeleteFileJob instances for
-        // the same file on every backup run, which floods the queue when the
-        // server or storage provider is unreachable and deletions never settle.
-        if ($file->status === BackupFileStatus::DELETING) {
-            return;
-        }
-
         $server = Server::find($file->backup->server_id);
 
         if ($server === null) {
@@ -35,9 +27,19 @@ class ManageBackupFile
             return;
         }
 
-        $file->status = BackupFileStatus::DELETING;
-        $file->message = null;
-        $file->save();
+        $claimed = BackupFile::query()
+            ->whereKey($file->id)
+            ->where('status', '!=', BackupFileStatus::DELETING)
+            ->update([
+                'status' => BackupFileStatus::DELETING,
+                'message' => null,
+            ]);
+
+        if ($claimed === 0) {
+            return;
+        }
+
+        $file->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $server->project_id,
