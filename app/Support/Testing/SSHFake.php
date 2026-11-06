@@ -101,6 +101,26 @@ class SSHFake extends SSH
 
     public function download(string $local, string $remote, ?string $log = null, ?int $siteId = null): void {}
 
+    protected bool $remoteFileMissing = false;
+
+    public function remoteFileWillBeMissing(): void
+    {
+        $this->remoteFileMissing = true;
+    }
+
+    public function isRegularFile(string $remote): bool
+    {
+        $this->commands[] = 'sftp:is-file '.$remote;
+
+        return ! $this->remoteFileMissing;
+    }
+
+    public function streamDownload(string $remote, callable $onChunk): void
+    {
+        $this->commands[] = 'sftp:stream '.$remote;
+        $onChunk($this->output ?? 'fake output');
+    }
+
     /**
      * @param  array<string>|string  $commands
      */

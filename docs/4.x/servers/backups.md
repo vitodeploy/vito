@@ -66,6 +66,18 @@ You can restore a database backup to another database.
 Database backups created in **v3.x are stored as `.zip` and cannot be restored in v4.x**. v4 stores database backups as compressed `.sql.gz` archives and can only restore backups created in v4. After upgrading, take a fresh database backup so you have a restorable v4 copy. See [Breaking Changes](../prologue/breaking-changes#database-backup-format) for details. (File/directory backups are unaffected.)
 :::
 
+## Download Backup Files
+
+To keep an offline copy of a backup, open the backup's **Files** page and select **Download** from the actions menu of a completed backup file.
+
+Downloading is currently supported for Vito's built-in **Local** storage provider. Database backups are downloaded as `.sql.gz` files, and file/directory backups as `.tar.gz` archives.
+
+Vito streams the existing archive from the managed server directly to your browser over an authenticated request. No restore takes place, and the original backup is left unchanged. Only members authorized to view backup files can download them.
+
+:::warning
+Keep downloaded archives secure: database dumps and site file backups may contain personal data, credentials, and other sensitive information. Consider encrypting your off-server copies.
+:::
+
 ## File/Directory Backups
 
 Navigate to the `Backups` section in the server's menu and click on the `Create Backup` button. Select `File Backup` as backup type and then enter the path on your server that you want to backup and storage provider and how many backups you want vito to keep and then backup interval and start the backup.
