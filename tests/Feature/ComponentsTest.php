@@ -118,6 +118,8 @@ test('isolated user removal leaves accounts vito did not create in place', funct
     $script = view('ssh.os.delete-isolated-user', ['user' => 'deploy', 'serverUser' => 'vito'])->render();
 
     expect(strpos($script, "grep -Fxq 'deploy'"))->toBeLessThan(strpos($script, 'sudo userdel -r -f'))
+        ->and(strpos($script, 'sudo userdel -r -f'))->toBeLessThan(strpos($script, 'sudo groupdel deploy'))
+        ->and($script)->not->toContain('gpasswd')
         ->and($script)->toContain('was not created by Vito, leaving it in place.');
 });
 
