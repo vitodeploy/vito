@@ -237,7 +237,11 @@ test('a setup that cannot start creates nothing', function (Closure $mutate, str
     'zero server id' => [fn (array $input) => [...$input, 'server_id' => 0], 'server_id'],
     'invalid server id' => [fn (array $input) => [...$input, 'server_id' => ['1']], 'server_id'],
     'bad user' => [fn (array $input) => [...$input, 'user' => '../root'], 'user'],
-    'ssh user' => [fn (array $input, $server) => [...$input, 'user' => $server->getSshUser()], 'user'],
+    'ssh user' => [function (array $input, $server) {
+        $server->update(['ssh_user' => 'deploy']);
+
+        return [...$input, 'user' => 'deploy'];
+    }, 'user'],
     'php version not installed' => [fn (array $input) => [...$input, 'environment' => [...$input['environment'], 'runtime_version' => '5.6']], 'server_id'],
     'unknown capability' => [fn (array $input) => [...$input, 'capabilities' => [['capability' => 'nope']]], 'capabilities.0.capability'],
     'database without firewall' => [function (array $input, $server) {

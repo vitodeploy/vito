@@ -19,6 +19,7 @@ use App\Models\Environment;
 use App\Models\IsolatedUser;
 use App\Models\Server;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -72,14 +73,11 @@ class CreateComponent
             $environment->setRelation('application', $application);
             $this->validate($environment, $server, $input);
 
-            if ($derivedUser && ($server->isolatedUsers()->where('username', $input['user'])->lockForUpdate()->exists()
-                || $server->sites()->where('user', $input['user'])->lockForUpdate()->exists())) {
-                throw ValidationException::withMessages(['user' => 'Another operation claimed this Linux user. Please retry.']);
-            }
-
-            $isolatedUser = $input['type'] === ComponentType::LOAD_BALANCER->value ? null : IsolatedUser::query()->firstOrCreate([
-                'server_id' => $server->id, 'username' => $input['user'],
-            ]);
+            $isolatedUser = match (true) {
+                $input['type'] === ComponentType::LOAD_BALANCER->value => null,
+                $derivedUser => $this->claimUser($server, $input['user']),
+                default => IsolatedUser::query()->firstOrCreate(['server_id' => $server->id, 'username' => $input['user']]),
+            };
             $component = new Component([
                 'environment_id' => $environment->id,
                 'server_id' => $server->id,
@@ -117,6 +115,23 @@ class CreateComponent
 
             return $component;
         });
+    }
+
+    /**
+     * Creates the isolated user for a derived name, relying on the unique index so a concurrent claim is never shared.
+     */
+    private function claimUser(Server $server, string $username): IsolatedUser
+    {
+        $claimed = ValidationException::withMessages(['user' => 'Another operation claimed this Linux user. Please retry.']);
+        if ($server->sites()->where('user', $username)->exists()) {
+            throw $claimed;
+        }
+
+        try {
+            return IsolatedUser::query()->create(['server_id' => $server->id, 'username' => $username]);
+        } catch (UniqueConstraintViolationException) {
+            throw $claimed;
+        }
     }
 
     /**

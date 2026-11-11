@@ -91,13 +91,34 @@ test('default users are valid linux names that avoid users already on the server
     'no usable characters' => ['!!!', [], 'app'],
     'too long' => [str_repeat('a', 40), [], str_repeat('a', 32)],
     'too long and taken' => [str_repeat('a', 40), [str_repeat('a', 32)], str_repeat('a', 30).'-2'],
+    'default php pool name' => ['WWW', [], 'www-2'],
+    'existing group name' => ['Docker', [], 'docker-2'],
 ]);
 
-test('isolated user setup refuses to take over system or sudo-enabled accounts', function () {
+test('isolated user setup only adopts unprivileged accounts vito created', function () {
     $script = view('ssh.os.create-isolated-user', ['user' => 'shop', 'serverUser' => 'vito', 'password' => 'secret', 'key' => "'ssh-ed25519 AAAA'"])->render();
+    $guard = substr($script, 0, strpos($script, 'already exists, reasserting'));
 
-    expect($script)->toContain('[ "$(id -u shop)" -lt 1000 ] || ! LC_ALL=C sudo -n -l -U shop 2>&1 | grep -q "is not allowed to run sudo"')
-        ->and(strpos($script, 'VITO_SSH_ERROR'))->toBeLessThan(strpos($script, 'already exists, reasserting'));
+    expect($guard)->toContain('[ "$(id -u shop)" -lt 1000 ]')
+        ->toContain("! id -nG vito | tr ' ' '\\n' | grep -qx shop")
+        ->toContain("grep -qxE 'root|sudo|admin|wheel|docker|lxd|incus|disk|shadow'")
+        ->toContain('! LC_ALL=C sudo -n -l -U shop 2>&1 | grep -q "is not allowed to run sudo"')
+        ->toContain('VITO_SSH_ERROR');
+});
+
+test('isolated user home setup never writes through user owned paths as root', function () {
+    $script = view('ssh.os.create-isolated-user', ['user' => 'shop', 'serverUser' => 'vito', 'password' => 'secret', 'key' => "'ssh-ed25519 AAAA'"])->render();
+    $asUser = substr($script, strpos($script, "sudo -u shop bash -s -- 'ssh-ed25519 AAAA' <<'VITO_ISOLATED_HOME'"));
+
+    expect($asUser)->toContain('.ssh/authorized_keys', '.bashrc', '.profile', 'chmod 700 .ssh .logs tmp');
+    expect($script)->not->toMatch('#sudo (tee|touch|grep|chmod|mkdir -p|chown -R)[^\n]*/home/shop/#');
+});
+
+test('isolated user removal leaves accounts vito did not create in place', function () {
+    $script = view('ssh.os.delete-isolated-user', ['user' => 'deploy', 'serverUser' => 'vito'])->render();
+
+    expect(strpos($script, "grep -Fxq 'deploy'"))->toBeLessThan(strpos($script, 'sudo userdel -r -f'))
+        ->and($script)->toContain('was not created by Vito, leaving it in place.');
 });
 
 test('a derived user claimed after it was chosen is never shared', function () {
