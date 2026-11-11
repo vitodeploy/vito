@@ -22,6 +22,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -35,17 +36,26 @@ class CreateComponent
         Validator::make($input, [
             'server_id' => ['required', 'integer', Rule::exists('servers', 'id')->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY->value)],
             'type' => ['required', Rule::enum(ComponentType::class)],
-            'user' => ($input['type'] ?? null) === ComponentType::LOAD_BALANCER->value ? ['nullable', 'string'] : ['required', 'string', 'regex:/\A[a-z_][a-z0-9_-]*[a-z0-9]\z/', 'min:3', 'max:32'],
+            'user' => ($input['type'] ?? null) === ComponentType::LOAD_BALANCER->value ? ['nullable', 'string'] : ['nullable', 'string', 'regex:/\A[a-z_][a-z0-9_-]*[a-z0-9]\z/', 'min:3', 'max:32'],
         ])->validate();
 
         try {
             $component = Cache::lock('unique-queue:server-'.$input['server_id'], 600)->block(10, function () use ($environment, $input): Component {
                 $server = Server::query()->findOrFail($input['server_id']);
+                $derived = $input['type'] !== ComponentType::LOAD_BALANCER->value && ! filled($input['user'] ?? null);
                 if ($input['type'] === ComponentType::LOAD_BALANCER->value) {
                     $input['user'] = $server->getSshUser();
+                } elseif ($derived) {
+                    $input['user'] = $this->defaultUser($environment, $server);
                 }
 
-                return $server->isolatedUserLock($input['user'])->block(30, fn (): Component => $this->attach($environment, $input));
+                return $server->isolatedUserLock($input['user'])->block(30, function () use ($environment, $server, $input, $derived): Component {
+                    if ($derived && in_array($input['user'], $this->takenUsers($server), true)) {
+                        throw ValidationException::withMessages(['user' => 'Another operation on this Linux user is in progress. Please retry.']);
+                    }
+
+                    return $this->attach($environment, $input);
+                });
             });
         } catch (LockTimeoutException) {
             throw ValidationException::withMessages(['server_id' => 'Another operation on this server or Linux user is in progress. Please retry.']);
@@ -68,7 +78,7 @@ class CreateComponent
             $environment->setRelation('application', $application);
             $this->validate($environment, $server, $input);
 
-            $isolatedUser = $input['user'] === $server->getSshUser() ? null : IsolatedUser::query()->firstOrCreate([
+            $isolatedUser = $input['type'] === ComponentType::LOAD_BALANCER->value ? null : IsolatedUser::query()->firstOrCreate([
                 'server_id' => $server->id, 'username' => $input['user'],
             ]);
             $component = new Component([
@@ -111,6 +121,30 @@ class CreateComponent
     }
 
     /**
+     * Names a new isolated Linux user after the application, avoiding users already taken on the server.
+     */
+    private function defaultUser(Environment $environment, Server $server): string
+    {
+        $slug = Str::slug($environment->application->name);
+        $base = preg_match('/\A[a-z][a-z0-9-]{2,}\z/', $slug) === 1 ? $slug : rtrim('app-'.$slug, '-');
+        $taken = $this->takenUsers($server);
+        $user = rtrim(Str::limit($base, 32, ''), '-');
+        for ($suffix = 2; in_array($user, $taken, true); $suffix++) {
+            $user = rtrim(Str::limit($base, 31 - strlen((string) $suffix), ''), '-').'-'.$suffix;
+        }
+
+        return $user;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function takenUsers(Server $server): array
+    {
+        return array_values(array_unique([...$server->reservedUserNames(), ...$server->getSshUsers()]));
+    }
+
+    /**
      * @param  array<string, mixed>  $input
      */
     private function validate(Environment $environment, Server $server, array $input): void
@@ -119,13 +153,15 @@ class CreateComponent
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', Rule::unique('components')->where('environment_id', $environment->id)],
             'server_id' => [Rule::exists('servers', 'id')->where('project_id', $environment->application->project_id)->where('status', ServerStatus::READY->value)],
-            'user' => [Rule::notIn(array_diff(config('core.reserved_user_names'), [$server->getSshUser()])),
+            'user' => [...$loadBalancer ? [] : [Rule::notIn($server->reservedUserNames())],
                 Rule::unique('components')->where('environment_id', $environment->id)->where('server_id', $server->id)->where('type', $input['type']),
             ],
             'capabilities' => $loadBalancer ? ['prohibited'] : ['sometimes', 'array', 'list'],
             'capabilities.*' => ['array:capability,config'],
             'capabilities.*.capability' => ['required', 'string', 'distinct', Rule::in(array_keys(config('component.capabilities', [])))],
             'capabilities.*.config' => ['sometimes', 'nullable', 'array'],
+        ], $loadBalancer ? [] : [
+            'user.not_in' => 'This user is reserved or has sudo access. Apps must run as an isolated user.',
         ])->validate();
 
         if ($environment->status !== EnvironmentStatus::READY || $environment->application->status !== ApplicationStatus::READY) {

@@ -59,9 +59,15 @@ beforeEach(function () {
     $this->environment = Environment::factory()->for($this->application)->create(['runtime_version' => '22']);
 });
 
-function installCapabilityComponent(array $capabilities = [], string $user = 'runtime'): Component
+function installCapabilityComponent(array $capabilities = [], bool $legacySshUser = false): Component
 {
-    return app(CreateComponent::class)->create(test()->environment, ['name' => 'Runtime', 'server_id' => test()->server->id, 'user' => $user, 'type' => 'app', 'capabilities' => $capabilities]);
+    $component = app(CreateComponent::class)->create(test()->environment, ['name' => 'Runtime', 'server_id' => test()->server->id, 'user' => 'runtime', 'type' => 'app', 'capabilities' => $capabilities]);
+    if ($legacySshUser) {
+        $user = test()->server->getSshUser();
+        $component->forceFill(['user' => $user, 'isolated_user_id' => null, 'path' => '/home/'.$user.'/'.basename($component->path)])->save();
+    }
+
+    return $component;
 }
 
 test('proxy install creates one stopped managed app for non-framework runtimes and can uninstall', function (string $runtime) {
@@ -115,7 +121,7 @@ test('static web creates no pool or process', function () {
 test('fpm capability skips the default user and provisions only the requested version', function (bool $defaultUser) {
     $this->application->update(['runtime' => 'php']);
     $this->environment->update(['runtime_version' => '8.2']);
-    $component = installCapabilityComponent([['capability' => 'web']], $defaultUser ? $this->server->getSshUser() : 'runtime');
+    $component = installCapabilityComponent([['capability' => 'web']], $defaultUser);
     $capability = $component->capabilities()->sole();
     $pool = $this->mock(EnsureFpmPool::class);
     if ($defaultUser) {
@@ -129,7 +135,7 @@ test('fpm capability skips the default user and provisions only the requested ve
 test('php components provision Composer and the selected CLI before becoming ready', function (string $runtime, bool $defaultUser) {
     $this->application->update(['runtime' => $runtime]);
     $this->environment->update(['runtime_version' => '8.2']);
-    $component = installCapabilityComponent([], $defaultUser ? $this->server->getSshUser() : 'runtime');
+    $component = installCapabilityComponent([], $defaultUser);
 
     app(InstallComponent::class)->install($component->id);
 

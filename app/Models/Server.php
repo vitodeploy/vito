@@ -457,6 +457,16 @@ class Server extends AbstractModel
     }
 
     /**
+     * Linux users that can never become an isolated user here: system and service accounts plus the sudo-enabled SSH user.
+     *
+     * @return list<string>
+     */
+    public function reservedUserNames(): array
+    {
+        return array_values(array_unique([...config('core.reserved_user_names'), $this->getSshUser()]));
+    }
+
+    /**
      * @return array<string>
      */
     public function getSshUsers(): array

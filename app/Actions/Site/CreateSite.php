@@ -188,10 +188,7 @@ class CreateSite
                 'regex:'.self::ISOLATED_USER_PATTERN,
                 'min:3',
                 'max:32',
-                Rule::notIn(array_unique(array_merge(
-                    config('core.reserved_user_names'),
-                    [$server->getSshUser()]
-                ))),
+                Rule::notIn($server->reservedUserNames()),
             ],
         ];
 

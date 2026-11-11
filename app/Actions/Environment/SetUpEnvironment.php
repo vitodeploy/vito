@@ -31,7 +31,7 @@ class SetUpEnvironment
             'name' => 'web',
             'type' => ComponentType::APP->value,
             'server_id' => $input['server_id'],
-            'user' => ($input['user'] ?? null) ?: $server?->getSshUser(),
+            'user' => $input['user'] ?? null,
             'capabilities' => $input['capabilities'] ?? [['capability' => Web::id(), 'config' => []]],
         ]);
 
