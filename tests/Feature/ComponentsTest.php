@@ -96,8 +96,21 @@ test('default users are valid linux names that avoid users already on the server
 test('isolated user setup refuses to take over system or sudo-enabled accounts', function () {
     $script = view('ssh.os.create-isolated-user', ['user' => 'shop', 'serverUser' => 'vito', 'password' => 'secret', 'key' => "'ssh-ed25519 AAAA'"])->render();
 
-    expect($script)->toContain('[ "$(id -u shop)" -lt 1000 ] || LC_ALL=C sudo -l -U shop')
+    expect($script)->toContain('[ "$(id -u shop)" -lt 1000 ] || ! LC_ALL=C sudo -n -l -U shop 2>&1 | grep -q "is not allowed to run sudo"')
         ->and(strpos($script, 'VITO_SSH_ERROR'))->toBeLessThan(strpos($script, 'already exists, reasserting'));
+});
+
+test('a derived user claimed after it was chosen is never shared', function () {
+    $this->application->update(['name' => 'My Shop']);
+    $this->environment->load('application');
+    Application::retrieved(function (): void {
+        IsolatedUser::query()->firstOrCreate(['server_id' => $this->server->id, 'username' => 'my-shop']);
+    });
+
+    expect(fn () => app(CreateComponent::class)->create($this->environment, array_replace($this->input, ['user' => null])))
+        ->toThrow(ValidationException::class, 'Another operation claimed this Linux user. Please retry.');
+    $this->assertDatabaseCount('components', 0);
+    Queue::assertNothingPushed();
 });
 
 test('maximum length environment names produce distinct bounded component paths', function () {

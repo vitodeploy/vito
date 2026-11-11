@@ -49,13 +49,7 @@ class CreateComponent
                     $input['user'] = $this->defaultUser($environment, $server);
                 }
 
-                return $server->isolatedUserLock($input['user'])->block(30, function () use ($environment, $server, $input, $derived): Component {
-                    if ($derived && in_array($input['user'], $this->takenUsers($server), true)) {
-                        throw ValidationException::withMessages(['user' => 'Another operation on this Linux user is in progress. Please retry.']);
-                    }
-
-                    return $this->attach($environment, $input);
-                });
+                return $server->isolatedUserLock($input['user'])->block(30, fn (): Component => $this->attach($environment, $input, $derived));
             });
         } catch (LockTimeoutException) {
             throw ValidationException::withMessages(['server_id' => 'Another operation on this server or Linux user is in progress. Please retry.']);
@@ -69,14 +63,19 @@ class CreateComponent
     /**
      * @param  array<string, mixed>  $input
      */
-    private function attach(Environment $environment, array $input): Component
+    private function attach(Environment $environment, array $input, bool $derivedUser): Component
     {
-        return DB::transaction(function () use ($environment, $input): Component {
+        return DB::transaction(function () use ($environment, $input, $derivedUser): Component {
             $application = Application::query()->lockForUpdate()->findOrFail($environment->application_id);
             $environment = Environment::query()->lockForUpdate()->findOrFail($environment->id);
             $server = Server::query()->lockForUpdate()->findOrFail($input['server_id']);
             $environment->setRelation('application', $application);
             $this->validate($environment, $server, $input);
+
+            if ($derivedUser && ($server->isolatedUsers()->where('username', $input['user'])->lockForUpdate()->exists()
+                || $server->sites()->where('user', $input['user'])->lockForUpdate()->exists())) {
+                throw ValidationException::withMessages(['user' => 'Another operation claimed this Linux user. Please retry.']);
+            }
 
             $isolatedUser = $input['type'] === ComponentType::LOAD_BALANCER->value ? null : IsolatedUser::query()->firstOrCreate([
                 'server_id' => $server->id, 'username' => $input['user'],
@@ -127,21 +126,13 @@ class CreateComponent
     {
         $slug = Str::slug($environment->application->name);
         $base = preg_match('/\A[a-z][a-z0-9-]{2,}\z/', $slug) === 1 ? $slug : rtrim('app-'.$slug, '-');
-        $taken = $this->takenUsers($server);
+        $taken = [...$server->reservedUserNames(), ...$server->getSshUsers()];
         $user = rtrim(Str::limit($base, 32, ''), '-');
         for ($suffix = 2; in_array($user, $taken, true); $suffix++) {
             $user = rtrim(Str::limit($base, 31 - strlen((string) $suffix), ''), '-').'-'.$suffix;
         }
 
         return $user;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function takenUsers(Server $server): array
-    {
-        return array_values(array_unique([...$server->reservedUserNames(), ...$server->getSshUsers()]));
     }
 
     /**

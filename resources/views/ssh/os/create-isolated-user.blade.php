@@ -1,7 +1,7 @@
 export DEBIAN_FRONTEND=noninteractive
 if id -u {{ $user }} >/dev/null 2>&1; then
-    if [ "$(id -u {{ $user }})" -lt 1000 ] || LC_ALL=C sudo -l -U {{ $user }} 2>/dev/null | grep -q "may run the following"; then
-        echo "User {{ $user }} is a system or sudo-enabled account and cannot be used as an isolated user."
+    if [ "$(id -u {{ $user }})" -lt 1000 ] || ! LC_ALL=C sudo -n -l -U {{ $user }} 2>&1 | grep -q "is not allowed to run sudo"; then
+        echo "User {{ $user }} is a system account, has sudo access, or its sudo access could not be checked, so it cannot be used as an isolated user."
         echo 'VITO_SSH_ERROR' && exit 1
     fi
     echo "User {{ $user }} already exists, reasserting directories and permissions."
