@@ -37,13 +37,12 @@ export default function AddComponent({
   const form = useForm({
     name: uniqueName(loadBalancer ? 'load-balancer' : 'web'),
     server_id: server ? String(server.id) : '',
-    user: server?.ssh_user ?? '',
+    user: '',
     type,
     capabilities: (!loadBalancer && web
       ? [{ capability: web.id, config: Object.fromEntries(web.form.map((field) => [field.name, field.default ?? ''])) }]
       : []) as CapabilityConfiguration[],
   });
-  const sshUser = (id: string) => options.servers.find((item) => String(item.id) === id)?.ssh_user ?? '';
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.post(`/applications/${application.id}/environments/${environment.id}/components`, { onSuccess: () => onOpenChange(false) });
@@ -80,13 +79,7 @@ export default function AddComponent({
             >
               <Select
                 value={form.data.server_id}
-                onValueChange={(value) =>
-                  form.setData((data) => ({
-                    ...data,
-                    server_id: value,
-                    user: loadBalancer || !data.user || data.user === sshUser(data.server_id) ? sshUser(value) : data.user,
-                  }))
-                }
+                onValueChange={(value) => form.setData('server_id', value)}
               >
                 <SelectTrigger id="component-server">
                   <SelectValue placeholder="Select a server" />
@@ -108,7 +101,7 @@ export default function AddComponent({
                 <Field
                   id="component-user"
                   label="Run as"
-                  description="The server's SSH user, or a new name to create an isolated user."
+                  description="An isolated user without sudo access. Leave empty to name it after the application."
                   error={form.errors.user}
                 >
                   <Input

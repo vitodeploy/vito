@@ -379,13 +379,12 @@ export default function CreateApplication({
                 <Field
                   id="application-user"
                   label="Run as"
-                  description="The server's SSH user, or a new name to create an isolated user."
+                  description="An isolated user without sudo access. Leave empty to name it after the application."
                   error={form.errors.user}
                 >
                   <Input
                     id="application-user"
                     value={form.data.user}
-                    placeholder={server.ssh_user}
                     onChange={(e) => form.setData('user', e.target.value)}
                     autoComplete="off"
                     className="font-mono"

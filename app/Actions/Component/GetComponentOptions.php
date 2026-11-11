@@ -31,7 +31,7 @@ class GetComponentOptions
      * Ready project servers with what is installed on them. `database` names the service a new
      * resource can use, which needs a ready firewall as well as a ready database.
      *
-     * @return list<array{id: int, name: string, ssh_user: string, services: array<string, list<string>>, database: ?string}>
+     * @return list<array{id: int, name: string, services: array<string, list<string>>, database: ?string}>
      */
     public function servers(int $projectId): array
     {
@@ -43,7 +43,7 @@ class GetComponentOptions
                 $ready = fn (string $type): bool => $default($type)?->status === ServiceStatus::READY;
 
                 return [
-                    'id' => $server->id, 'name' => $server->name, 'ssh_user' => $server->getSshUser(),
+                    'id' => $server->id, 'name' => $server->name,
                     'services' => $installed->groupBy('type')->map(fn ($services): array => $services->pluck('version')->values()->all())->all(),
                     'database' => $ready('firewall') && $ready('database') ? $default('database')?->name : null,
                 ];

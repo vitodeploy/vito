@@ -19,6 +19,7 @@ use App\Jobs\Component\InstallComponentJob;
 use App\Models\Application;
 use App\Models\Component;
 use App\Models\Environment;
+use App\Models\IsolatedUser;
 use App\Models\Project;
 use App\Models\Server;
 use App\Plugins\RegisterComponentCapability;
@@ -44,17 +45,96 @@ beforeEach(function () {
     $this->input = ['name' => 'Web', 'server_id' => $this->server->id, 'user' => 'runtime', 'type' => 'app', 'capabilities' => [['capability' => 'web', 'config' => []]]];
 });
 
-test('components create atomically with normalized capabilities and a first primary', function (bool $defaultUser) {
-    $input = array_replace($this->input, ['user' => $defaultUser ? $this->server->getSshUser() : 'runtime', 'path' => '/etc', 'status' => 'ready']);
+test('components create atomically with normalized capabilities and a first primary', function (?string $user, string $expected) {
+    $this->application->update(['name' => 'My Shop']);
+    $input = array_replace($this->input, ['user' => $user, 'path' => '/etc', 'status' => 'ready']);
     $component = app(CreateComponent::class)->create($this->environment, $input);
 
-    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending', 'user' => $input['user'], 'path' => '/home/'.$input['user'].'/app-'.$this->application->id.'-'.$this->environment->id]);
+    $this->assertDatabaseHas('components', ['id' => $component->id, 'status' => 'pending', 'user' => $expected, 'path' => '/home/'.$expected.'/app-'.$this->application->id.'-'.$this->environment->id]);
     $this->assertDatabaseHas('component_capabilities', ['component_id' => $component->id, 'capability' => 'web', 'config->port' => 10000, 'status' => 'pending']);
     $this->assertDatabaseHas('environments', ['id' => $this->environment->id, 'primary_component_id' => $component->id, 'primary_component_initialized' => true]);
-    expect($component->isolated_user_id === null)->toBe($defaultUser);
+    $this->assertDatabaseHas('isolated_users', ['id' => $component->isolated_user_id, 'server_id' => $this->server->id, 'username' => $expected]);
     Queue::assertPushed(InstallComponentJob::class);
     expect(SSH::getExecutedCommands())->toBeEmpty();
-})->with([false, true]);
+})->with([
+    'typed user' => ['runtime', 'runtime'],
+    'missing user' => [null, 'my-shop'],
+    'empty user' => ['', 'my-shop'],
+]);
+
+test('app components never run as the sudo-enabled ssh user', function () {
+    $this->server->update(['ssh_user' => 'deploy']);
+
+    expect(fn () => app(CreateComponent::class)->create($this->environment, array_replace($this->input, ['user' => 'deploy'])))
+        ->toThrow(ValidationException::class, 'Apps must run as an isolated user.');
+    $this->assertDatabaseCount('components', 0);
+    $this->assertDatabaseCount('isolated_users', 0);
+});
+
+test('default users are valid linux names that avoid users already on the server', function (string $name, array $taken, string $expected) {
+    $this->application->update(['name' => $name]);
+    foreach ($taken as $username) {
+        IsolatedUser::factory()->create(['server_id' => $this->server->id, 'username' => $username]);
+    }
+    $this->site->update(['user' => 'shop-2']);
+
+    $component = app(CreateComponent::class)->create($this->environment, array_replace($this->input, ['user' => null]));
+
+    expect($component->user)->toBe($expected)->toMatch('/\A[a-z_][a-z0-9_-]*[a-z0-9]\z/')
+        ->and(strlen($component->user))->toBeLessThanOrEqual(32);
+})->with([
+    'taken by isolated user and site' => ['Shop', ['shop'], 'shop-3'],
+    'reserved name' => ['Admin', [], 'admin-2'],
+    'cloud default account' => ['EC2 User', [], 'ec2-user-2'],
+    'leading digit' => ['1 Shop', [], 'app-1-shop'],
+    'too short' => ['ab', [], 'app-ab'],
+    'no usable characters' => ['!!!', [], 'app'],
+    'too long' => [str_repeat('a', 40), [], str_repeat('a', 32)],
+    'too long and taken' => [str_repeat('a', 40), [str_repeat('a', 32)], str_repeat('a', 30).'-2'],
+    'default php pool name' => ['WWW', [], 'www-2'],
+    'existing group name' => ['Docker', [], 'docker-2'],
+]);
+
+test('isolated user setup only adopts unprivileged accounts vito created', function () {
+    $script = view('ssh.os.create-isolated-user', ['user' => 'shop', 'serverUser' => 'vito', 'password' => 'secret', 'key' => "'ssh-ed25519 AAAA'"])->render();
+    $guard = substr($script, 0, strpos($script, 'already exists, reasserting'));
+
+    expect($guard)->toContain('[ "$(id -u shop)" -lt 1000 ]')
+        ->toContain("! id -nG vito | tr ' ' '\\n' | grep -qx shop")
+        ->toContain("grep -qxE 'root|sudo|admin|wheel|docker|lxd|incus|disk|shadow'")
+        ->toContain('! LC_ALL=C sudo -n -l -U shop 2>&1 | grep -q "is not allowed to run sudo"')
+        ->toContain('VITO_SSH_ERROR');
+});
+
+test('isolated user home setup never writes through user owned paths as root', function () {
+    $script = view('ssh.os.create-isolated-user', ['user' => 'shop', 'serverUser' => 'vito', 'password' => 'secret', 'key' => "'ssh-ed25519 AAAA'"])->render();
+    $asUser = substr($script, strpos($script, "sudo -u shop bash -s -- 'ssh-ed25519 AAAA' <<'VITO_ISOLATED_HOME'"));
+
+    expect($asUser)->toContain('.ssh/authorized_keys', '.bashrc', '.profile', 'chmod 700 .ssh .logs tmp');
+    expect($script)->not->toMatch('#sudo (tee|touch|grep|chmod|mkdir -p|chown -R)[^\n]*/home/shop/#');
+});
+
+test('isolated user removal leaves accounts vito did not create in place', function () {
+    $script = view('ssh.os.delete-isolated-user', ['user' => 'deploy', 'serverUser' => 'vito'])->render();
+
+    expect(strpos($script, "grep -Fxq 'deploy'"))->toBeLessThan(strpos($script, 'sudo userdel -r -f'))
+        ->and(strpos($script, 'sudo userdel -r -f'))->toBeLessThan(strpos($script, 'sudo rm -rf /home/deploy'))
+        ->and(strpos($script, 'sudo rm -rf /home/deploy'))->toBeLessThan(strpos($script, 'sudo groupdel deploy'))
+        ->and($script)->toContain('was not created by Vito, leaving it in place.');
+});
+
+test('a derived user claimed after it was chosen is never shared', function () {
+    $this->application->update(['name' => 'My Shop']);
+    $this->environment->load('application');
+    Application::retrieved(function (): void {
+        IsolatedUser::query()->firstOrCreate(['server_id' => $this->server->id, 'username' => 'my-shop']);
+    });
+
+    expect(fn () => app(CreateComponent::class)->create($this->environment, array_replace($this->input, ['user' => null])))
+        ->toThrow(ValidationException::class, 'Another operation claimed this Linux user. Please retry.');
+    $this->assertDatabaseCount('components', 0);
+    Queue::assertNothingPushed();
+});
 
 test('maximum length environment names produce distinct bounded component paths', function () {
     $paths = [];

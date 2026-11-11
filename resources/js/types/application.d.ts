@@ -208,7 +208,7 @@ export interface ComponentBackend {
 export type BackendTarget = { id: number; name: string; server_name: string };
 
 export interface ComponentOptions {
-  servers: { id: number; name: string; ssh_user: string; services: Record<string, string[]>; database: string | null }[];
+  servers: { id: number; name: string; services: Record<string, string[]>; database: string | null }[];
   component_names: string[];
   capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
 }

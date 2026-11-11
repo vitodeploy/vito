@@ -176,7 +176,8 @@ test('creating an application with a server sets everything up and queues the fi
         ->and($environment->last_error)->toBeNull()
         ->and($environment->primary_component_id)->toBe($component->id)
         ->and($component->name)->toBe('web')
-        ->and($component->user)->toBe($this->server->getSshUser())
+        ->and($component->user)->toBe('shop')
+        ->and($component->isolated_user_id)->not->toBeNull()
         ->and($component->capabilities()->sole()->capability)->toBe('web')
         ->and($environment->variables()->pluck('key')->sort()->values()->all())->toBe(['APP_DEBUG', 'APP_ENV', 'APP_KEY']);
     $this->assertDatabaseHas('databases', ['server_id' => $this->server->id, 'name' => 'shop_production']);
@@ -236,6 +237,11 @@ test('a setup that cannot start creates nothing', function (Closure $mutate, str
     'zero server id' => [fn (array $input) => [...$input, 'server_id' => 0], 'server_id'],
     'invalid server id' => [fn (array $input) => [...$input, 'server_id' => ['1']], 'server_id'],
     'bad user' => [fn (array $input) => [...$input, 'user' => '../root'], 'user'],
+    'ssh user' => [function (array $input, $server) {
+        $server->update(['ssh_user' => 'deploy']);
+
+        return [...$input, 'user' => 'deploy'];
+    }, 'user'],
     'php version not installed' => [fn (array $input) => [...$input, 'environment' => [...$input['environment'], 'runtime_version' => '5.6']], 'server_id'],
     'unknown capability' => [fn (array $input) => [...$input, 'capabilities' => [['capability' => 'nope']]], 'capabilities.0.capability'],
     'database without firewall' => [function (array $input, $server) {
