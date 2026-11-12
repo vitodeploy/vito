@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class McpController extends Controller
 {
     /**
-     * Throttling is left to the API route each tool call is replayed through, so a call counts once.
+     * MCP messages use their own limiter; a replayed tool call also counts once against the `api` limiter.
      */
     #[Post('api/mcp', name: 'api.mcp', middleware: [
         ValidateOrigin::class,
@@ -27,6 +27,7 @@ class McpController extends Controller
         ValidateMcpHeaders::class,
         'auth:sanctum',
         'ability:read',
+        ThrottleRequests::class.':mcp',
     ], withoutMiddleware: ThrottleRequests::class.':api')]
     public function __invoke(Request $request): Response|StreamedResponse
     {

@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Project } from '@/types/project';
 import { MultiSelect } from '@/components/multi-select';
 import CopyableField from '@/components/copyable-field';
+import { toast } from 'sonner';
 
 type ApiKeyForm = {
   name: string;
@@ -35,12 +36,19 @@ export default function CreateApiKey({ children, projects }: { children: ReactNo
   const mcpUrl = token ? `${window.location.origin}/api/mcp` : '';
   const copyToClipboard = () => {
     tokenInputRef.current?.select();
-    navigator.clipboard.writeText(token || '').then(() => {
-      setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
-    });
+    if (!navigator.clipboard) {
+      toast.error('The clipboard is not available in this browser');
+      return;
+    }
+    navigator.clipboard
+      .writeText(token || '')
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => {
+          setCopySuccess(false);
+        }, 2000);
+      })
+      .catch(() => toast.error('Could not copy to clipboard'));
   };
 
   const form = useForm<Required<ApiKeyForm>>({

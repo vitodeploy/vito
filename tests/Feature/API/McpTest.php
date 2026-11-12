@@ -42,8 +42,9 @@ test('rejects unauthenticated requests', function () {
         ->assertHeader('WWW-Authenticate');
 });
 
-test('leaves throttling to the api route a tool call is replayed through', function () {
+test('throttles mcp messages separately from the api routes tool calls replay through', function () {
     expect(app('router')->gatherRouteMiddleware(Route::getRoutes()->getByName('api.mcp')))
+        ->toContain(ThrottleRequests::class.':mcp')
         ->not->toContain(ThrottleRequests::class.':api');
 });
 
