@@ -4,6 +4,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Facades\SSH;
 use App\Models\FirewallRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -160,4 +161,73 @@ test('delete firewall rule', function () {
     $this->assertDatabaseMissing('firewall_rules', [
         'id' => $rule->id,
     ]);
+});
+
+test('create firewall rules from multiple sources', function () {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->post(route('firewall.store', ['server' => $this->server]), [
+        'name' => 'Office',
+        'type' => 'allow',
+        'protocol' => 'tcp',
+        'port' => '443',
+        'source_any' => false,
+        'sources' => "203.0.113.4\n198.51.100.0/24, 2001:db8::/32\n203.0.113.4/32",
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect(FirewallRule::query()->where('name', 'Office')->count())->toBe(3);
+    $this->assertDatabaseHas('firewall_rules', ['source' => '203.0.113.4', 'mask' => '32', 'status' => FirewallRuleStatus::READY]);
+    $this->assertDatabaseHas('firewall_rules', ['source' => '198.51.100.0', 'mask' => '24', 'status' => FirewallRuleStatus::READY]);
+    $this->assertDatabaseHas('firewall_rules', ['source' => '2001:db8::', 'mask' => '32', 'status' => FirewallRuleStatus::READY]);
+    SSH::assertExecutedContains('198.51.100.0/24');
+});
+
+test('create firewall rules rejects invalid sources', function (string $sources) {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $this->post(route('firewall.store', ['server' => $this->server]), [
+        'name' => 'Office',
+        'type' => 'allow',
+        'protocol' => 'tcp',
+        'port' => '443',
+        'source_any' => false,
+        'sources' => $sources,
+    ])
+        ->assertSessionHasErrors('sources');
+
+    $this->assertDatabaseMissing('firewall_rules', ['name' => 'Office']);
+})->with([
+    'empty' => [''],
+    'invalid ip' => ["203.0.113.4\nnot-an-ip"],
+    'zero prefix' => ['0.0.0.0/0'],
+    'prefix too large' => ['10.0.0.0/33'],
+]);
+
+test('get cloudflare ips', function () {
+    Http::fake([
+        'api.cloudflare.com/*' => Http::response([
+            'result' => ['ipv4_cidrs' => ['173.245.48.0/20', 'invalid'], 'ipv6_cidrs' => ['2400:cb00::/32']],
+        ]),
+    ]);
+
+    $this->actingAs($this->user);
+
+    $this->getJson(route('firewall.cloudflare-ips', ['server' => $this->server]))
+        ->assertSuccessful()
+        ->assertExactJson(['173.245.48.0/20', '2400:cb00::/32']);
+});
+
+test('get cloudflare ips falls back to bundled list', function () {
+    Http::fake(['api.cloudflare.com/*' => Http::response(null, 500)]);
+
+    $this->actingAs($this->user);
+
+    $this->getJson(route('firewall.cloudflare-ips', ['server' => $this->server]))
+        ->assertSuccessful()
+        ->assertJsonFragment(['173.245.48.0/20']);
 });

@@ -20,7 +20,10 @@ class ApplyRulesJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected FirewallRule $rule) {}
+    /**
+     * @param  array<int, int>  $batchIds  ids of rules created together with $rule, marked ready after the same apply
+     */
+    public function __construct(protected FirewallRule $rule, protected array $batchIds = []) {}
 
     public function handle(): void
     {
@@ -45,9 +48,23 @@ class ApplyRulesJob implements ShouldQueue
                 return;
             }
 
-            $this->rule->status = FirewallRuleStatus::READY;
-            $this->rule->save();
-            $this->broadcastRuleUpdate();
+            if ($this->batchIds === []) {
+                $this->rule->status = FirewallRuleStatus::READY;
+                $this->rule->save();
+                $this->broadcastRuleUpdate($this->rule);
+
+                return;
+            }
+
+            $this->rule->server->firewallRules()
+                ->whereKey($this->batchIds)
+                ->where('status', FirewallRuleStatus::CREATING)
+                ->get()
+                ->each(function (FirewallRule $rule): void {
+                    $rule->status = FirewallRuleStatus::READY;
+                    $rule->save();
+                    $this->broadcastRuleUpdate($rule);
+                });
         });
     }
 
@@ -75,14 +92,14 @@ class ApplyRulesJob implements ShouldQueue
         ServerLog::log($this->rule->server, 'apply-firewall-rules-failed', $e->getMessage());
     }
 
-    private function broadcastRuleUpdate(): void
+    private function broadcastRuleUpdate(FirewallRule $rule): void
     {
-        $this->rule->refresh();
+        $rule->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $this->rule->server->project_id,
+            projectId: $rule->server->project_id,
             type: 'firewall-rule.updated',
-            data: new FirewallRuleResource($this->rule),
+            data: new FirewallRuleResource($rule),
         ));
     }
 }
