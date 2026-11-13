@@ -7,6 +7,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Events\SocketEvent;
 use App\Http\Resources\FirewallRuleResource;
 use App\Models\FirewallRule;
+use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Services\Firewall\Firewall;
@@ -21,61 +22,52 @@ class ApplyRulesJob implements ShouldQueue
     use UniqueQueue;
 
     /**
-     * @param  array<int, int>  $batchIds  ids of rules created together with $rule, marked ready after the same apply
+     * @param  array<int, int>  $ruleIds  rules whose pending status is settled after the apply; ids are carried instead of models so the job survives a rule being deleted while queued
      */
-    public function __construct(protected FirewallRule $rule, protected array $batchIds = []) {}
+    public function __construct(protected Server $server, protected array $ruleIds) {}
 
     public function handle(): void
     {
-        $this->run("server-{$this->rule->server_id}", function () {
+        $this->run("server-{$this->server->id}", function () {
             /** @var Service $service */
-            $service = $this->rule->server->firewall();
+            $service = $this->server->firewall();
             /** @var Firewall $handler */
             $handler = $service->handler();
             $handler->applyRules();
 
-            if ($this->rule->status === FirewallRuleStatus::DELETING) {
-                $projectId = $this->rule->server->project_id;
-                $ruleId = $this->rule->id;
-                $this->rule->delete();
+            foreach ($this->server->firewallRules()->whereKey($this->ruleIds)->get() as $rule) {
+                if ($rule->status === FirewallRuleStatus::DELETING) {
+                    $rule->delete();
 
-                SocketEvent::dispatch(new SocketEventDTO(
-                    projectId: $projectId,
-                    type: 'firewall-rule.deleted',
-                    data: ['id' => $ruleId],
-                ));
+                    SocketEvent::dispatch(new SocketEventDTO(
+                        projectId: $this->server->project_id,
+                        type: 'firewall-rule.deleted',
+                        data: ['id' => $rule->id],
+                    ));
 
-                return;
-            }
+                    continue;
+                }
 
-            if ($this->batchIds === []) {
-                $this->rule->status = FirewallRuleStatus::READY;
-                $this->rule->save();
-                $this->broadcastRuleUpdate($this->rule);
+                $updated = FirewallRule::query()
+                    ->whereKey($rule->id)
+                    ->whereIn('status', [FirewallRuleStatus::CREATING, FirewallRuleStatus::UPDATING])
+                    ->update(['status' => FirewallRuleStatus::READY]);
 
-                return;
-            }
-
-            $this->rule->server->firewallRules()
-                ->whereKey($this->batchIds)
-                ->where('status', FirewallRuleStatus::CREATING)
-                ->get()
-                ->each(function (FirewallRule $rule): void {
-                    $rule->status = FirewallRuleStatus::READY;
-                    $rule->save();
+                if ($updated > 0) {
                     $this->broadcastRuleUpdate($rule);
-                });
+                }
+            }
         });
     }
 
     public function failed(Exception $e): void
     {
-        $failedRules = $this->rule->server->firewallRules()
+        $failedRules = $this->server->firewallRules()
             ->where('component_managed', false)
             ->where('status', '!=', FirewallRuleStatus::READY)
             ->get();
 
-        $this->rule->server->firewallRules()
+        $this->server->firewallRules()
             ->where('component_managed', false)
             ->where('status', '!=', FirewallRuleStatus::READY)
             ->update(['status' => FirewallRuleStatus::FAILED]);
@@ -83,13 +75,13 @@ class ApplyRulesJob implements ShouldQueue
         foreach ($failedRules as $rule) {
             $rule->status = FirewallRuleStatus::FAILED;
             SocketEvent::dispatch(new SocketEventDTO(
-                projectId: $rule->server->project_id,
+                projectId: $this->server->project_id,
                 type: 'firewall-rule.updated',
                 data: new FirewallRuleResource($rule),
             ));
         }
 
-        ServerLog::log($this->rule->server, 'apply-firewall-rules-failed', $e->getMessage());
+        ServerLog::log($this->server, 'apply-firewall-rules-failed', $e->getMessage());
     }
 
     private function broadcastRuleUpdate(FirewallRule $rule): void

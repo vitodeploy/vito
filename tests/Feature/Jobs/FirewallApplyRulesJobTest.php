@@ -24,7 +24,7 @@ test('apply rules job failed sets non ready rules to failed and logs', function 
         'status' => FirewallRuleStatus::DELETING,
     ]);
 
-    $job = new ApplyRulesJob($creatingRule);
+    $job = new ApplyRulesJob($this->server, [$creatingRule->id]);
     $job->failed(new Exception('Firewall error'));
 
     $creatingRule->refresh();
@@ -41,7 +41,7 @@ test('apply rules job failed sets non ready rules to failed and logs', function 
     ]);
 });
 
-test('apply rules job marks only still creating batch rules ready', function () {
+test('apply rules job settles every batch rule even when one is being deleted', function () {
     SSH::fake();
 
     $creatingRule = FirewallRule::factory()->create([
@@ -54,8 +54,14 @@ test('apply rules job marks only still creating batch rules ready', function () 
         'status' => FirewallRuleStatus::DELETING,
     ]);
 
-    (new ApplyRulesJob($creatingRule, [$creatingRule->id, $deletingRule->id]))->handle();
+    $readyRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::READY,
+    ]);
+
+    (new ApplyRulesJob($this->server, [$deletingRule->id, $creatingRule->id, $readyRule->id, 999999]))->handle();
 
     expect($creatingRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
-    expect($deletingRule->refresh()->status)->toEqual(FirewallRuleStatus::DELETING);
+    $this->assertDatabaseMissing('firewall_rules', ['id' => $deletingRule->id]);
+    expect($readyRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
 });

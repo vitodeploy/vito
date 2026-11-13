@@ -536,7 +536,7 @@ test('ordinary firewall failure cannot reactivate managed cleanup and managed mu
     app(ManageRule::class)->delete($managed);
     Queue::assertNotPushed(ApplyRulesJob::class);
     $ordinary = FirewallRule::factory()->for($this->server)->create(['status' => FirewallRuleStatus::UPDATING]);
-    (new ApplyRulesJob($ordinary))->failed(new Exception('Failed'));
+    (new ApplyRulesJob($this->server, [$ordinary->id]))->failed(new Exception('Failed'));
     $this->assertDatabaseHas('firewall_rules', ['id' => $managed->id, 'status' => FirewallRuleStatus::DELETING]);
     $this->assertDatabaseHas('firewall_rules', ['id' => $ordinary->id, 'status' => FirewallRuleStatus::FAILED]);
 });

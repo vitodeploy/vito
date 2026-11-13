@@ -8,8 +8,8 @@ use App\Models\EnvironmentAttachment;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Support\Cidr;
-use Closure;
 use App\ValidationRules\PortOrPortRangeRule;
+use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -75,7 +75,8 @@ class ManageRule
         ])->validate();
 
         $rules = DB::transaction(fn (): Collection => collect($input['sources'])
-            ->unique(fn (string $source): string => Cidr::address($source).'/'.Cidr::prefix($source))
+            ->map(fn (string $source): string => Cidr::network(Cidr::address($source).'/'.Cidr::bits($source)).'/'.Cidr::prefix($source))
+            ->unique()
             ->map(fn (string $source): FirewallRule => $this->persist($server, [
                 ...$input,
                 'source_any' => false,
@@ -84,7 +85,7 @@ class ManageRule
             ]))
             ->values());
 
-        dispatch(new ApplyRulesJob($rules->first(), $rules->pluck('id')->all()))->onQueue('ssh');
+        dispatch(new ApplyRulesJob($server, $rules->pluck('id')->all()))->onQueue('ssh');
 
         return $rules;
     }
@@ -219,6 +220,6 @@ class ManageRule
 
     private function queueApply(FirewallRule $rule): void
     {
-        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
+        dispatch(new ApplyRulesJob($rule->server, [$rule->id]))->onQueue('ssh');
     }
 }

@@ -174,7 +174,7 @@ test('create firewall rules from multiple sources', function () {
         'protocol' => 'tcp',
         'port' => '443',
         'source_any' => false,
-        'sources' => "203.0.113.4\n198.51.100.0/24, 2001:db8::/32\n203.0.113.4/32",
+        'sources' => "203.0.113.4\n198.51.100.0/24, 2001:db8::/32\n203.0.113.4/32 2001:0db8:0:0::/32",
     ])
         ->assertSessionDoesntHaveErrors();
 
