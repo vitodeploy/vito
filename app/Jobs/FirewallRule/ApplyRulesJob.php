@@ -50,7 +50,7 @@ class ApplyRulesJob implements ShouldQueue
 
                 $updated = FirewallRule::query()
                     ->whereKey($rule->id)
-                    ->whereIn('status', [FirewallRuleStatus::CREATING, FirewallRuleStatus::UPDATING])
+                    ->whereIn('status', [FirewallRuleStatus::CREATING, FirewallRuleStatus::UPDATING, FirewallRuleStatus::FAILED])
                     ->update(['status' => FirewallRuleStatus::READY]);
 
                 if ($updated > 0) {

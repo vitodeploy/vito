@@ -59,7 +59,14 @@ test('apply rules job settles every batch rule even when one is being deleted', 
         'status' => FirewallRuleStatus::READY,
     ]);
 
-    (new ApplyRulesJob($this->server, [$deletingRule->id, $creatingRule->id, $readyRule->id, 999999]))->handle();
+    $failedRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::FAILED,
+    ]);
+
+    (new ApplyRulesJob($this->server, [$deletingRule->id, $creatingRule->id, $readyRule->id, $failedRule->id, 999999]))->handle();
+
+    expect($failedRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
 
     expect($creatingRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
     $this->assertDatabaseMissing('firewall_rules', ['id' => $deletingRule->id]);
