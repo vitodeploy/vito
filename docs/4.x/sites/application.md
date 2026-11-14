@@ -158,7 +158,8 @@ commit SHA in CI first. Omitting `commit_hash` keeps the configured-branch behav
 and the site's branch setting is never changed by this request.
 
 The deployment records the resolved commit and exports it as `COMMIT_ID`. Modern
-deployments check out the requested commit before running the build. Classic
+deployments check out the requested commit before running the build, so it must be
+reachable from the repository's branches or tags. Classic
 deployments run your script as-is, so update its Git section to honor `COMMIT_ID`:
 
 ```bash

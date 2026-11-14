@@ -31,11 +31,11 @@ class Deploy
      */
     public function run(Site $site, bool $modern = true, array $input = []): Deployment
     {
-        Validator::make($input, [
+        $validated = Validator::make($input, [
             'commit_hash' => ['sometimes', 'required', 'string', 'regex:/\A[a-f0-9]{40}\z/i'],
         ])->validate();
 
-        $commitHash = isset($input['commit_hash']) ? strtolower($input['commit_hash']) : null;
+        $commitHash = isset($validated['commit_hash']) ? strtolower($validated['commit_hash']) : null;
         if ($commitHash !== null && ! $site->sourceControl) {
             throw ValidationException::withMessages([
                 'commit_hash' => 'A source control connection is required to deploy a specific commit.',
@@ -83,7 +83,7 @@ class Deploy
             return $this->deployClassic($site, $deployment, $log);
         }
 
-        return $this->deployModern($site, $deployment, $log, $commitHash !== null);
+        return $this->deployModern($site, $deployment, $log, $commitHash);
     }
 
     /**
@@ -113,7 +113,7 @@ class Deploy
         } catch (RepositoryNotFound) {
             $commit = null;
         } catch (RequestException $e) {
-            if ($e->response->status() !== 422) {
+            if (! $e->response->clientError() || $e->response->status() === 429) {
                 throw $e;
             }
             $commit = null;
@@ -148,7 +148,7 @@ class Deploy
         return $deployment;
     }
 
-    private function deployModern(Site $site, Deployment $deployment, ServerLog $log, bool $checkoutCommit): Deployment
+    private function deployModern(Site $site, Deployment $deployment, ServerLog $log, ?string $checkoutCommit): Deployment
     {
         $deployment->release = now()->format('YmdHis');
         $deployment->save();

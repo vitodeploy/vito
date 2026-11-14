@@ -211,7 +211,7 @@ test('deployment API distinguishes unknown commits from provider failures', func
         'site' => $this->site,
     ]), ['commit_hash' => str_repeat('a', 40)]);
     $response->assertStatus($expectedStatus);
-    if (in_array($providerStatus, [404, 422], true)) {
+    if ($expectedStatus === 422) {
         $response->assertJsonValidationErrors('commit_hash');
     }
 
@@ -221,7 +221,9 @@ test('deployment API distinguishes unknown commits from provider failures', func
 })->with([
     'unknown commit' => [404, 422],
     'github unknown sha' => [422, 422],
+    'provider rejects ref' => [409, 422],
     'provider permission denied' => [403, 500],
+    'provider rate limited' => [429, 500],
 ]);
 
 test('deployment API requires source control for an explicit commit', function () {
