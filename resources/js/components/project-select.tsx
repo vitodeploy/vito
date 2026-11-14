@@ -40,7 +40,7 @@ export function ProjectSelect({
   const { data, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<Project[]>({
     queryKey: ['projects', query],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await axios.get(route('projects.json', { query: query || '', page: pageParam }));
+      const response = await axios.get('/settings/projects/json', { params: { query: query || '', page: pageParam } });
       return response.data;
     },
     enabled: open,

@@ -34,7 +34,7 @@ export default function Files() {
 
   const runBackupForm = useForm();
   const runBackup = () => {
-    runBackupForm.post(route('backups.run', { server: page.props.server.id, backup: page.props.backup.id }));
+    runBackupForm.post(`/servers/${page.props.server.id}/backups/${page.props.backup.id}/run`);
   };
 
   return (

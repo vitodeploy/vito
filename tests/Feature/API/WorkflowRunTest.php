@@ -3,18 +3,27 @@
 use App\Actions\Workflow\RunWorkflow;
 use App\Enums\UserRole;
 use App\Enums\WorkflowRunStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Jobs\Workflow\RunJob;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
+use App\WorkflowActions\General\RunCommand;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Http::fake();
+    Event::fake([SocketEvent::class]);
     $this->user = User::factory()->create();
     $this->project = Project::factory()->create();
     $this->project->users()->create([
@@ -172,7 +181,7 @@ test('returns empty log when no log file exists', function () {
     $this->assertStringContainsString("Log file doesn't exist or is empty!", $response->getContent());
 });
 
-test('cannot access workflow run from different workflow', function () {
+test('cannot access workflow run from different workflow', function (string $suffix) {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
     $otherWorkflow = Workflow::factory()->create([
@@ -187,12 +196,12 @@ test('cannot access workflow run from different workflow', function () {
         'verbose' => true,
     ]);
 
-    $response = $this->getJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs/{$otherWorkflowRun->id}");
+    $response = $this->getJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs/{$otherWorkflowRun->id}{$suffix}");
 
     $response->assertNotFound();
-});
+})->with(['', '/log']);
 
-test('cannot access workflow run from different project', function () {
+test('cannot access workflow run from different project', function (string $suffix) {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
     $otherProject = Project::factory()->create();
@@ -211,10 +220,10 @@ test('cannot access workflow run from different project', function () {
         'verbose' => true,
     ]);
 
-    $response = $this->getJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs/{$otherWorkflowRun->id}");
+    $response = $this->getJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs/{$otherWorkflowRun->id}{$suffix}");
 
     $response->assertNotFound();
-});
+})->with(['', '/log']);
 
 test('cannot access workflow run from different user', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);
@@ -335,3 +344,96 @@ test('pagination works correctly', function () {
     // Should have pagination links since we have more than 25 workflow runs
     expect($response->json('links.next'))->not->toBeNull();
 });
+
+test('serialized workflow jobs enforce the initiating bearer token on resolved resources', function (string $scope, bool $allowed, bool $invalidToken) {
+    SSH::fake();
+    Storage::fake('server-logs');
+    Queue::fake([RunJob::class]);
+    $targetProject = $this->server->project;
+    if ($scope !== 'non-member') {
+        $targetProject->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    }
+    $abilities = ['read', 'write', 'project:'.$this->project->id];
+    if ($scope !== 'excluded') {
+        $abilities[] = 'project:'.$targetProject->id;
+    }
+    if (in_array($scope, ['unrestricted', 'non-member'], true)) {
+        $abilities = ['read', 'write'];
+    }
+    $token = $this->user->createToken('workflow', $abilities);
+    $this->workflow->update(['payload' => [
+        'nodes' => [[
+            'id' => 'command',
+            'data' => ['action' => [
+                'label' => 'Run command',
+                'handler' => RunCommand::class,
+                'starting' => true,
+                'inputs' => [],
+                'outputs' => [],
+            ]],
+        ]],
+        'edges' => [],
+    ]]);
+
+    $response = $this->withToken($token->plainTextToken)
+        ->postJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs", [
+            'inputs' => [
+                'target_server_id' => $this->server->id,
+                'server_id' => '{{target_server_id}}',
+                'command' => 'echo workflow-token-scope',
+                'user' => null,
+            ],
+        ])->assertCreated();
+
+    Queue::assertPushed(RunJob::class);
+    $serialized = serialize(Queue::pushed(RunJob::class)->first());
+    expect($serialized)->not->toContain($token->plainTextToken)
+        ->not->toContain($token->accessToken->token);
+
+    match ($scope) {
+        'revoked' => $token->accessToken->delete(),
+        'expired' => $token->accessToken->forceFill(['expires_at' => now()->subMinute()])->save(),
+        'lifetime-expired' => $token->accessToken->forceFill(['created_at' => now()->subHours(2)])->save(),
+        'mismatched' => $token->accessToken->forceFill(['tokenable_id' => $this->server->user_id])->save(),
+        'narrowed' => $token->accessToken->forceFill(['abilities' => ['write', 'project:'.$this->project->id]])->save(),
+        'workflow-excluded' => $token->accessToken->forceFill(['abilities' => ['write', 'project:'.$targetProject->id]])->save(),
+        'read-only' => $token->accessToken->forceFill(['abilities' => ['read']])->save(),
+        default => null,
+    };
+    if ($scope === 'lifetime-expired') {
+        config()->set('sanctum.expiration', 60);
+    }
+    $job = unserialize($serialized);
+    $job->withFakeQueueInteractions()->handle();
+
+    if ($allowed) {
+        SSH::assertExecutedContains('echo workflow-token-scope');
+    } else {
+        SSH::assertNotExecutedContains('echo workflow-token-scope');
+    }
+    if ($invalidToken) {
+        $job->assertFailedWith(AuthorizationException::class);
+    } else {
+        $job->assertNotFailed();
+        $this->assertDatabaseHas('workflow_runs', [
+            'id' => $response->json('id'),
+            'status' => WorkflowRunStatus::COMPLETED->value,
+        ]);
+    }
+    expect((new ReflectionProperty($job, 'user'))->getValue($job)->currentAccessToken())->toBeNull();
+    $run = WorkflowRun::query()->findOrFail($response->json('id'));
+    expect($run->getLogContent())->not->toContain($token->plainTextToken)
+        ->not->toContain($token->accessToken->token);
+})->with([
+    'excluded project' => ['excluded', false, false],
+    'both projects scoped' => ['allowed', true, false],
+    'unrestricted token' => ['unrestricted', true, false],
+    'non-member' => ['non-member', false, false],
+    'revoked token' => ['revoked', false, true],
+    'expired token' => ['expired', false, true],
+    'expired token lifetime' => ['lifetime-expired', false, true],
+    'changed token owner' => ['mismatched', false, true],
+    'narrowed token scope' => ['narrowed', false, false],
+    'workflow removed from scope' => ['workflow-excluded', false, true],
+    'removed write ability' => ['read-only', false, true],
+]);

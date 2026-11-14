@@ -14,3 +14,7 @@ Important to know that Redis has its default port `6379` and it is closed on the
 as a separate service that you can install from the [Services](./services) page as a drop-in
 alternative to Redis. A server can run Redis or Valkey, and they behave the same from the application's
 point of view.
+
+:::info
+Valkey is not available on Debian 12.
+:::

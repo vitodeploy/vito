@@ -59,8 +59,8 @@ export default function Workflows() {
                     <Run workflow={workflow}>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Run</DropdownMenuItem>
                     </Run>
-                    <DropdownMenuItem onSelect={() => router.visit(route('workflow-runs', { workflow: workflow.id }))}>History</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.visit(route('workflows.show', { workflow: workflow.id }))}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.visit(`/workflows/${workflow.id}/runs`)}>History</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.visit(`/workflows/${workflow.id}`)}>Edit</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DeleteWorkflow workflow={workflow}>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">

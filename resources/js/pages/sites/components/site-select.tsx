@@ -78,7 +78,7 @@ export default function SiteSelect({
   const { data, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<Site[]>({
     queryKey: ['sites', serverId, debouncedQuery],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await axios.get(route('sites.json', { server: serverId, query: debouncedQuery || '', page: pageParam }));
+      const response = await axios.get(`/servers/${serverId}/sites-json`, { params: { query: debouncedQuery || '', page: pageParam } });
       return response.data;
     },
     enabled: open && prefetch !== false && !!serverId,

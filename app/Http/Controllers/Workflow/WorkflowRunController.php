@@ -49,6 +49,10 @@ class WorkflowRunController extends Controller
     {
         $this->authorize('view', $workflow);
 
+        if ($workflowRun->workflow_id !== $workflow->id) {
+            abort(404, 'Workflow run not found for this workflow');
+        }
+
         return inertia('workflow-runs/show', [
             'workflow' => WorkflowResource::make($workflow),
             'workflowRun' => WorkflowRunResource::make($workflowRun),
@@ -59,6 +63,10 @@ class WorkflowRunController extends Controller
     public function log(Workflow $workflow, WorkflowRun $workflowRun): string
     {
         $this->authorize('view', $workflow);
+
+        if ($workflowRun->workflow_id !== $workflow->id) {
+            abort(404, 'Workflow run not found for this workflow');
+        }
 
         return $workflowRun->getLogContent();
     }

@@ -22,7 +22,7 @@ export default function DataRetentionDialog({ open, onOpenChange, server, dataRe
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('monitoring.update', server.id), {
+    form.patch(`/servers/${server.id}/monitoring/update`, {
       onSuccess: () => onOpenChange(false),
       preserveScroll: true,
       preserveState: true,

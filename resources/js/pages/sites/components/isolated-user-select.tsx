@@ -29,7 +29,7 @@ export default function IsolatedUserSelect({ serverId, value, onValueChange, onS
   const query = useQuery<IsolatedUserOption[]>({
     queryKey: ['isolated-users', serverId],
     queryFn: async () => {
-      return (await axios.get(route('sites.isolated-users', { server: serverId }))).data;
+      return (await axios.get(`/servers/${serverId}/isolated-users`)).data;
     },
     enabled: !!serverId,
   });

@@ -1,80 +1,66 @@
 # Contribution Guide
 
-## Environment Setup
+Vito is developed and maintained by its author, so **pull requests are not accepted**. You can still make a real
+difference by reporting bugs, sharing ideas, and giving detailed feedback. Clear, well-described issues are the most
+valuable contribution you can make.
 
-Set up your local environment by following
-the [installation documentation](../getting-started/installation.md#install-locally)
+Everything goes through [GitHub Issues](https://github.com/vitodeploy/vito/issues/new/choose). Pick the template that
+matches your case:
 
-## Where to start?
+| Template          | Use it for                                                |
+|-------------------|-----------------------------------------------------------|
+| 🐞 Bug Report      | Something is broken or behaves incorrectly                |
+| ✨ Feature Request | Something new that Vito doesn't do yet                    |
+| 🔧 Improvement     | Making an existing feature work better or easier to use   |
+| 📚 Documentation   | Missing, outdated or unclear documentation                |
+| ❓ Question        | Asking how to do something with Vito                      |
 
-If you want to start right away, we recommend you to start from the open issues in the `Todo` state.
+Before opening a new issue, search the [existing issues](https://github.com/vitodeploy/vito/issues) and add your details
+to a matching one instead of creating a duplicate.
 
-You can find them [here](https://github.com/orgs/vitodeploy/projects/5/views/12)
+## Reporting Bugs
 
-They're sorted by priority. So feel free to pick an unassigned one. Drop a comment so we can assign it to you.
+Open a [bug report](https://github.com/vitodeploy/vito/issues/new?template=1_bug_report.yaml). Please fill in every
+required field so the issue can be reproduced and fixed quickly:
+
+- **Installation type and Vito version** — hover over the Vito icon in your dashboard to see the version.
+- **Area and server environment** — which part of Vito is affected, and the OS, provider and services involved.
+- **What happened** — a clear description of the bug.
+- **Steps to reproduce** — the exact steps that trigger the issue.
+- **Expected behavior** — what you expected to happen instead.
+- **Logs** — relevant sections from `Vito Logs` (bottom left corner of the dashboard) and failed jobs from the
+  `Horizon Dashboard`.
+- **Screenshots or recordings** — whenever they help explain the problem.
 
 :::warning
-If you want to work on something which is not listed in the `ToDo` issues. Please read the below section!
+Remove any secrets, tokens, passwords, or private keys from logs and screenshots before posting them.
 :::
 
-## Development Discussion
+## Suggesting Features and Improvements
 
-You may propose new features or improvements of existing behavior in the
-repository's [Discussion Board](https://github.com/vitodeploy/vito/discussions). If you propose a new feature,
-please be willing to implement at least some of the code that would be needed to complete the feature.
+Open a [feature request](https://github.com/vitodeploy/vito/issues/new?template=2_feature_request.yaml) for something
+new, or an [improvement](https://github.com/vitodeploy/vito/issues/new?template=3_improvement.yaml) for an existing
+feature. A good proposal explains:
 
-Informal discussion regarding bugs, new features, and implementation of existing features takes place in the #ideas
-channel of our [Discord](https://discord.gg/uZeeHZZnm5) server.
+- The problem you are trying to solve and why it matters to you.
+- How you would expect the feature to work.
+- Any workarounds or alternatives you have considered.
 
-:::warning
-Please do not refactor any existing code without discussing it with the maintainers first.
-:::
+You can follow what is planned on the [Roadmap](https://github.com/orgs/vitodeploy/projects/5).
 
-## Which Branch?
+## Getting Help
 
-All bug fixes should be sent to the latest version that supports bug fixes (currently `3.x`).
-
-Minor features that are fully backward compatible with the current release may be sent to the latest stable branch (
-currently `3.x`).
-
-Major new features or features with breaking changes should always be sent to the `main` branch, which contains the
-upcoming major release.
+Open a [question](https://github.com/vitodeploy/vito/issues/new?template=5_question.yaml) or join the community on
+[Discord](https://discord.gg/uZeeHZZnm5).
 
 ## Security Vulnerabilities
 
-If you discover a security vulnerability within VitoDeploy, please email to Saeed Vaziry at sa.vaziry@gmail.com.
-All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within VitoDeploy, please do not open a public issue. Email Saeed Vaziry at
+sa.vaziry@gmail.com instead. All security vulnerabilities will be promptly addressed.
 
-## Coding Style
+## Sponsoring
 
-The coding style is already hardcoded in configurations inside the project.
-
-For PHP codes you may run `./vendor/bin/pint` to fix your coding styles.
-
-And for the frontend codes and bash scripts you may run `npm run format` to fix your frontend coding styles.
-
-Code style is enforced by the CI pipeline, so please ensure your code passes the checks before submitting a pull
-request.
-
-## Code Quality
-
-We use [PHPStan](https://phpstan.org/) for static analysis of the PHP code and [ESLint](https://eslint.org/) for the
-frontend code.
-
-You can run the static analysis tools locally by running the following commands:
-
-```bash
-# For PHP code
-./vendor/bin/phpstan analyse
-# For JavaScript/TypeScript code
-npm run lint
-```
-
-Code quality is enforced by the CI pipeline, so please ensure your code passes the checks before submitting a pull
-
-## Pre Commit
-
-To ensure all the actions will pass, you can locally run `composer pre-commit` command which will format your code and run tests and check phpstan before you commit your changes.
+If Vito is useful to you, you can support its development by [sponsoring the project](https://github.com/sponsors/saeedvaziry).
 
 ## Code of Conduct
 

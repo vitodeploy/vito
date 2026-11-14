@@ -29,7 +29,7 @@ function Delete({ template, onTemplateDeleted }: { template: ServerTemplate; onT
   const form = useForm({});
 
   const submit = () => {
-    form.delete(route('server-templates.destroy', { id: template.id }), {
+    form.delete(`/server-templates/${template.id}`, {
       onSuccess: () => {
         setOpen(false);
         onTemplateDeleted(template);
@@ -95,7 +95,7 @@ function Save({
 
   const save = () => {
     if (form.data.new) {
-      form.post(route('server-templates.store'), {
+      form.post('/server-templates', {
         onSuccess: () => {
           form.reset();
           setOpen(false);
@@ -114,7 +114,7 @@ function Save({
       return;
     }
 
-    form.put(route('server-templates.update', { id: form.data.id }), {
+    form.put(`/server-templates/${encodeURIComponent(form.data.id)}`, {
       onSuccess: () => {
         form.reset();
         setOpen(false);
@@ -182,7 +182,7 @@ export default function ServerTemplates({
   const query = useQuery<ServerTemplate[]>({
     queryKey: ['server-templates'],
     queryFn: async () => {
-      return (await axios.get(route('server-templates.index'))).data?.templates || [];
+      return (await axios.get('/server-templates')).data?.templates || [];
     },
   });
 

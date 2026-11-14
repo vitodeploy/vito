@@ -47,6 +47,7 @@ abstract class CreateSite extends AbstractWorkflowAction
         $site = app(\App\Actions\Site\CreateSite::class)->create(
             $server,
             $input,
+            $this->user,
         );
 
         return [

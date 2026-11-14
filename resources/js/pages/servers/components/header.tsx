@@ -37,7 +37,7 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
       return;
     }
 
-    statusForm.patch(route('servers.status', { server: server.id }));
+    statusForm.patch(`/servers/${server.id}/status`);
   };
 
   const [ipCopied, setIpCopied] = useState(false);
@@ -174,7 +174,7 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
               size="icon"
               className="h-8 w-8 p-0"
               onClick={() => {
-                const url = route('console', { server: server.id });
+                const url = `/servers/${server.id}/console`;
                 window.open(url, `terminal-${server.id}`, 'width=900,height=600,menubar=no,toolbar=no,location=no,status=no');
               }}
             >

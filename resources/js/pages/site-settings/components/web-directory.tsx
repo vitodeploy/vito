@@ -28,7 +28,7 @@ export default function WebDirectory({ site, children }: { site: Site; children:
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-web-directory', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/web-directory`, {
       onSuccess: () => {
         setOpen(false);
       },

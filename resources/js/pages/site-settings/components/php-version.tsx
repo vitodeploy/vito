@@ -28,7 +28,7 @@ export default function ChangePHPVersion({ site, children }: { site: Site; child
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-php-version', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/php-version`, {
       onSuccess: () => {
         setOpen(false);
       },

@@ -71,7 +71,7 @@ export default function BasicAuth({ site, children }: { site: Site; children: Re
       enabled: data.enabled,
       users: data.users.map(({ username, password }) => ({ username, password })),
     }));
-    form.patch(route('site-settings.update-basic-auth', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/basic-auth`, {
       preserveScroll: true,
       onSuccess: () => setOpen(false),
     });

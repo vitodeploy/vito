@@ -3,6 +3,10 @@ export interface CronJob {
   name: string | null;
   server_id: number;
   site_id: number | null;
+  component_id: number | null;
+  component_url?: string | null;
+  component_name?: string | null;
+  managed: boolean;
   command: string;
   user: string;
   frequency: string;

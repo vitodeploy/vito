@@ -15,7 +15,7 @@ export default function Delete({ ipAddress }: { ipAddress: ServerIpAddress }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('servers.network.ips.destroy', { server: ipAddress.server_id, serverIpAddress: ipAddress.id }),
+          url: `/servers/${ipAddress.server_id}/network/ips/${ipAddress.id}`,
         })
       }
     >

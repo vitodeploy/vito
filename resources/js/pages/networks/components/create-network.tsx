@@ -59,7 +59,7 @@ export default function CreateNetwork({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('networks.store'), {
+    form.post('/networks', {
       onSuccess: () => {
         onOpenChange(false);
         form.reset();

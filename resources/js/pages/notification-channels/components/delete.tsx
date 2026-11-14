@@ -15,7 +15,7 @@ export default function Delete({ notificationChannel }: { notificationChannel: N
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('notification-channels.destroy', notificationChannel.id),
+          url: `/settings/notification-channels/${notificationChannel.id}`,
         })
       }
     >

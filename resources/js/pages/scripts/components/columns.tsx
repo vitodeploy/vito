@@ -26,7 +26,7 @@ function Delete({ script }: { script: Script }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('scripts.destroy', { server: script.server_id, site: script.site_id, script: script.id }),
+          url: `/scripts/${script.id}`,
         })
       }
     >
@@ -63,11 +63,7 @@ export const columns: ColumnDef<Script>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <Edit script={row.original} />
-              <Link
-                href={route('scripts.show', {
-                  script: row.original.id,
-                })}
-              >
+              <Link href={`/scripts/${row.original.id}`}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Executions</DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />

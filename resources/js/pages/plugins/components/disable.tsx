@@ -15,7 +15,7 @@ export default function Disable({ plugin }: { plugin: Plugin }) {
           variant: 'destructive',
           confirmLabel: 'Disable',
           method: 'patch',
-          url: route('plugins.disable'),
+          url: '/admin/plugins/disable',
           data: { id: plugin.id },
         })
       }

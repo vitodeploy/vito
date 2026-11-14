@@ -1,0 +1,25 @@
+name: ❓ Question
+description: Ask how to do something with Vito
+title: "[Question]: "
+labels: ["question", "needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the [documentation](https://vitodeploy.com/docs) first. For quick community help you can also ask on [Discord](https://discord.gg/uZeeHZZnm5).
+
+  - type: input
+    id: vito_version
+    attributes:
+      label: Vito Version
+      description: Hover over the Vito icon in your dashboard to see your version.
+      placeholder: e.g., 4.2.0
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to achieve, and what have you tried so far?
+    validations:
+      required: true

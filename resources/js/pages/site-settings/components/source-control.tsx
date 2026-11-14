@@ -28,7 +28,7 @@ export default function ChangeSourceControl({ site, children }: { site: Site; ch
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-source-control', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/source-control`, {
       onSuccess: () => {
         setOpen(false);
       },

@@ -75,7 +75,7 @@ class SiteController extends Controller
     {
         $this->authorize('create', [Site::class, $server]);
 
-        $site = app(CreateSite::class)->create($server, $request->all());
+        $site = app(CreateSite::class)->create($server, $request->all(), $request->user());
 
         return redirect()->route('application', ['server' => $server, 'site' => $site])
             ->with('info', 'Installing site, please wait...');

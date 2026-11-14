@@ -15,5 +15,4 @@ sail
 resources/views/ssh/
 resources/views/wireguard/
 resources/views/scribe/
-resources/js/ziggy.js
 resources/views/mail/*

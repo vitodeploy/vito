@@ -18,6 +18,7 @@ use App\Models\Database;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\StorageProvider;
+use App\Models\User;
 use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -45,6 +46,56 @@ beforeEach(function () {
         'status' => BackupFileStatus::CREATED,
     ]);
 });
+
+test('backup creation rejects inaccessible storage before dispatching work', function (string $scope) {
+    SSH::fake();
+    Http::fake();
+    Bus::fake();
+
+    $storage = StorageProvider::factory()->create([
+        'user_id' => $scope === 'foreign-owner' ? User::factory()->create()->id : $this->user->id,
+        'project_id' => $scope === 'foreign-project' ? Project::factory()->create()->id : null,
+    ]);
+
+    $response = $this->actingAs($this->user)->post(route('backups.store', ['server' => $this->server]), [
+        'type' => BackupType::FILE->value,
+        'path' => '/home/vito/private',
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => 10,
+    ]);
+
+    if ($scope === 'foreign-owner') {
+        $response->assertForbidden();
+    } else {
+        $response->assertSessionHasErrors('storage');
+    }
+
+    $this->assertDatabaseMissing('backups', ['storage_id' => $storage->id]);
+    Bus::assertNothingDispatched();
+    Http::assertNothingSent();
+})->with(['foreign-owner', 'foreign-project']);
+
+test('backup creation accepts owned storage in the server project or globally', function (bool $global) {
+    SSH::fake();
+    Http::fake();
+    Bus::fake();
+
+    $storage = StorageProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $global ? null : $this->server->project_id,
+    ]);
+
+    $this->actingAs($this->user)->post(route('backups.store', ['server' => $this->server]), [
+        'type' => BackupType::FILE->value,
+        'path' => '/home/vito/private',
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => 10,
+    ])->assertSessionDoesntHaveErrors()->assertRedirect();
+
+    $this->assertDatabaseHas('backups', ['storage_id' => $storage->id, 'server_id' => $this->server->id]);
+})->with([true, false]);
 
 test('backup model can have path field', function () {
     $server = Server::factory()->create();
@@ -1092,4 +1143,73 @@ dataset('data', function () {
         ['mariadb', '10.11'],
         ['postgresql', '16'],
     ];
+});
+
+test('retention does not re-dispatch deletion for files already being deleted', function () {
+    Bus::fake();
+
+    $backup = Backup::factory()->create([
+        'type' => BackupType::FILE,
+        'server_id' => $this->server->id,
+        'storage_id' => $this->storageProvider->id,
+        'path' => '/home/vito/example.com',
+        'status' => null,
+        'keep_backups' => 1,
+    ]);
+
+    $old = BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    expect($old->refresh()->status)->toBe(BackupFileStatus::DELETING);
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
+
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 2);
+});
+
+test('retention neither re-dispatches nor counts failed files toward the keep limit', function () {
+    Bus::fake();
+
+    $this->backup->update(['keep_backups' => 2]);
+    $failed = BackupFile::factory()->create([
+        'backup_id' => $this->backup->id,
+        'status' => BackupFileStatus::DELETE_FAILED,
+    ]);
+
+    BackupFile::factory()->create([
+        'backup_id' => $this->backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    $this->assertDatabaseHas('backup_files', [
+        'id' => $this->backupFile->id,
+        'status' => BackupFileStatus::CREATED->value,
+    ]);
+    $this->assertDatabaseHas('backup_files', [
+        'id' => $failed->id,
+        'status' => BackupFileStatus::DELETE_FAILED->value,
+    ]);
+    Bus::assertNotDispatched(DeleteFileJob::class);
+});
+
+test('delete backup file is claimed once when called with a stale model', function () {
+    Bus::fake();
+
+    $staleFile = $this->backupFile->fresh();
+
+    app(ManageBackupFile::class)->delete($this->backupFile);
+    app(ManageBackupFile::class)->delete($staleFile);
+
+    expect($staleFile->status)->toBe(BackupFileStatus::CREATED);
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
 });

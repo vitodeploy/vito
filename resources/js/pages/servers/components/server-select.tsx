@@ -69,7 +69,7 @@ export default function ServerSelect({
   const { data, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<Server[]>({
     queryKey: ['servers', page.props.auth.currentProject?.id, debouncedQuery],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await axios.get(route('servers.json', { query: debouncedQuery || '', page: pageParam }));
+      const response = await axios.get('/servers/json', { params: { query: debouncedQuery || '', page: pageParam } });
       return response.data;
     },
     enabled: open && prefetch !== false,

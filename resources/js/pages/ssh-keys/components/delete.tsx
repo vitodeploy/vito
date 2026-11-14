@@ -15,7 +15,7 @@ export default function Delete({ sshKey }: { sshKey: SshKey }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('ssh-keys.destroy', sshKey.id),
+          url: `/settings/ssh-keys/${sshKey.id}`,
         })
       }
     >

@@ -2,7 +2,6 @@
 
 namespace App\SourceControlProviders;
 
-use App\Exceptions\FailedToDeleteDeployKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -76,9 +75,6 @@ interface SourceControlProvider
      */
     public function deployKey(string $title, string $repo, string $key): string;
 
-    /**
-     * @throws FailedToDeleteDeployKey
-     */
     public function deleteDeployKey(string $keyId, string $repo): void;
 
     /**

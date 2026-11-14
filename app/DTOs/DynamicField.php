@@ -18,6 +18,7 @@ class DynamicField
         private ?array $link = null,
         private ?string $className = null,
         private ?array $componentProps = null,
+        private ?string $width = null,
     ) {}
 
     public static function make(string $name): self
@@ -81,6 +82,30 @@ class DynamicField
         return $this;
     }
 
+    /**
+     * An alert with a button that opens a step-by-step setup guide.
+     *
+     * @param  array<int, array{title: string, description?: string, code?: string}>  $steps
+     */
+    public function guide(array $steps): self
+    {
+        $this->type = 'guide';
+
+        return $this->withGuide($steps);
+    }
+
+    /**
+     * Adds a button inside the input that opens a step-by-step guide.
+     *
+     * @param  array<int, array{title: string, description?: string, code?: string}>  $steps
+     */
+    public function withGuide(array $steps): self
+    {
+        $this->componentProps = ['steps' => $steps];
+
+        return $this;
+    }
+
     public function tooling(): self
     {
         $this->type = 'tooling';
@@ -137,6 +162,23 @@ class DynamicField
         } elseif ($this->default === null && $this->options !== []) {
             $this->default = $this->options[0];
         }
+
+        return $this;
+    }
+
+    /**
+     * Layout hint for forms rendered in columns; fields are full width by default.
+     */
+    public function half(): self
+    {
+        $this->width = 'half';
+
+        return $this;
+    }
+
+    public function third(): self
+    {
+        $this->width = 'third';
 
         return $this;
     }
@@ -227,6 +269,7 @@ class DynamicField
             'link' => $this->link,
             'className' => $this->className,
             'componentProps' => $this->componentProps,
+            'width' => $this->width,
         ];
     }
 }

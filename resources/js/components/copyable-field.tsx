@@ -8,11 +8,18 @@ export default function CopyableField({ value, className, mono = true }: { value
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      toast.success('Copied to clipboard');
-      setTimeout(() => setCopied(false), 1500);
-    });
+    if (!navigator.clipboard) {
+      toast.error('The clipboard is not available in this browser');
+      return;
+    }
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setCopied(true);
+        toast.success('Copied to clipboard');
+        setTimeout(() => setCopied(false), 1500);
+      })
+      .catch(() => toast.error('Could not copy to clipboard'));
   };
 
   return (

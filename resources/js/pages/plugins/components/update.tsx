@@ -13,7 +13,7 @@ export default function UpdatePlugin({ plugin }: { plugin: Plugin }) {
           description: `Are you sure you want to update the plugin ${plugin.name ?? plugin.folder} to the latest released version?`,
           confirmLabel: 'Update',
           method: 'patch',
-          url: route('plugins.update'),
+          url: '/admin/plugins/update',
           data: { id: plugin.id },
         })
       }

@@ -70,7 +70,7 @@ export default function NetworkPeers() {
                             'Generate a new key pair for this peer. Its current configuration will stop working until the peer is reconfigured.',
                           confirmLabel: 'Regenerate',
                           method: 'post',
-                          url: route('networks.peers.regenerate', { network: network.id, networkPeer: peer.id }),
+                          url: `/networks/${network.id}/peers/${peer.id}/regenerate`,
                         })
                       }
                     >
@@ -85,7 +85,7 @@ export default function NetworkPeers() {
                             : 'Remove this peer from every member configuration. Its IP address stays reserved.',
                           confirmLabel: disabled ? 'Enable' : 'Disable',
                           method: 'put',
-                          url: route('networks.peers.update', { network: network.id, networkPeer: peer.id }),
+                          url: `/networks/${network.id}/peers/${peer.id}`,
                           data: { name: peer.name, enabled: disabled },
                         })
                       }
@@ -102,7 +102,7 @@ export default function NetworkPeers() {
                           variant: 'destructive',
                           confirmLabel: 'Remove',
                           method: 'delete',
-                          url: route('networks.peers.destroy', { network: network.id, networkPeer: peer.id }),
+                          url: `/networks/${network.id}/peers/${peer.id}`,
                         })
                       }
                     >

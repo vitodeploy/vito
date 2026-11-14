@@ -57,7 +57,7 @@ export default function LoadBalancer() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('application.update-load-balancer', { server: page.props.server.id, site: page.props.site.id }), {
+    form.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/load-balancer`, {
       preserveScroll: true,
     });
   };

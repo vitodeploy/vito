@@ -23,7 +23,7 @@ export default function DatabaseUserSelect({
   const query = useQuery<DatabaseUser[]>({
     queryKey: ['database-users', serverId],
     queryFn: async () => {
-      return (await axios.get(route('database-users.json', { server: serverId }))).data;
+      return (await axios.get(`/servers/${serverId}/database/users/json`)).data;
     },
   });
 

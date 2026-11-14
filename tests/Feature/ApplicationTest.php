@@ -16,6 +16,7 @@ use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
@@ -101,6 +102,26 @@ test('update deployment script', function () {
     expect($deploymentScript->shouldRestartWorkers())->toBeTrue();
 });
 
+test('cannot update a deployment script belonging to another site', function () {
+    $foreignSite = Site::factory()->create(['server_id' => $this->server->id]);
+    $script = $foreignSite->deploymentScript;
+    $originalContent = $script->content;
+
+    $this->actingAs($this->user)
+        ->put(route('application.update-deployment-script', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'deploymentScript' => $script,
+        ]), ['script' => 'unauthorized replacement'])
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('deployment_scripts', [
+        'id' => $script->id,
+        'site_id' => $foreignSite->id,
+        'content' => $originalContent,
+    ]);
+});
+
 test('deploy classic', function () {
     SSH::fake('fake output');
     Http::fake([
@@ -133,11 +154,33 @@ test('deploy classic', function () {
         'status' => DeploymentStatus::FINISHED,
     ]);
 
-    SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
+    SSH::assertExecutedContains('cd -- '.escapeshellarg('/home/vito/'.$this->site->domain));
     SSH::assertExecutedContains('git pull');
 
     Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
 });
+
+test('deploy proceeds when the source control API is temporarily unavailable', function (int $status) {
+    SSH::fake('fake output');
+    Http::fake(['github.com/*' => Http::response(['message' => 'unavailable'], $status)]);
+    Notification::fake();
+    Log::spy();
+
+    $this->site->deploymentScript->update(['content' => 'git pull']);
+
+    $this->actingAs($this->user)->post(route('application.deploy', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('deployments', [
+        'site_id' => $this->site->id,
+        'status' => DeploymentStatus::FINISHED,
+        'commit_id' => null,
+    ]);
+    SSH::assertExecutedContains('git pull');
+    Log::shouldHaveReceived('warning')->twice();
+})->with([503, 429]);
 
 test('deploy broadcasts deployment created', function () {
     vitoPestFeatureApplicationTestAssertBroadcastsDeploymentCreated(function (): void {
@@ -404,7 +447,7 @@ test('delete release', function () {
         'id' => $oldRelease->id,
     ]);
 
-    SSH::assertExecutedContains('rm -rf '.$this->site->basePath().'/releases/20240901000000');
+    SSH::assertExecutedContains('rm -rf -- '.escapeshellarg($this->site->basePath().'/releases/20240901000000'));
 });
 
 test('disable auto deployment', function () {
@@ -437,7 +480,7 @@ test('disable auto deployment even if hook destroy fails', function () {
         'api.github.com/repos/organization/repository' => Http::response([
             'id' => '123',
         ], 200),
-        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 404),
+        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 503),
     ]);
 
     $this->actingAs($this->user);

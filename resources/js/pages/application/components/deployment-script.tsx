@@ -48,7 +48,7 @@ export default function DeploymentScript({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('application.update-deployment-script', { server: site.server_id, site: site.id, deploymentScript: script.id }), {
+    form.put(`/servers/${site.server_id}/sites/${site.id}/deployment-scripts/${script.id}`, {
       onSuccess: () => {
         handleOpenChange(false);
       },
@@ -91,7 +91,7 @@ export default function DeploymentScript({
                         </Fragment>
                       ))}{' '}
                       command(s) in your script will use the version installed for this site. Install or change tooling via the{' '}
-                      <Link href={route('site-tooling', { server: site.server_id, site: site.id })} className="underline">
+                      <Link href={`/servers/${site.server_id}/sites/${site.id}/tooling`} className="underline">
                         Tooling area
                       </Link>
                       .

@@ -2,14 +2,25 @@
 
 namespace App\Models;
 
+use App\Enums\DeploymentStage;
 use App\Enums\DeploymentStatus;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\DeploymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int $site_id
- * @property int $deployment_script_id
+ * @property ?int $environment_deployment_id
+ * @property ?EnvironmentDeployment $environmentDeployment
+ * @property ?DeploymentStage $current_stage
+ * @property ?int $previous_deployment_id
+ * @property ?Deployment $previousDeployment
+ * @property bool $release_started
+ * @property ?int $site_id
+ * @property ?int $component_id
+ * @property ?string $component_name
+ * @property ?string $server_name
+ * @property ?int $deployment_script_id
  * @property int $log_id
  * @property string $commit_id
  * @property string $commit_id_short
@@ -17,12 +28,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property DeploymentStatus $status
  * @property ?string $release
  * @property bool $active
- * @property Site $site
- * @property DeploymentScript $deploymentScript
+ * @property ?Component $component
+ * @property ?Site $site
+ * @property ?DeploymentScript $deploymentScript
  * @property ?ServerLog $log
  */
 class Deployment extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<DeploymentFactory> */
     use HasFactory;
 
@@ -39,17 +53,39 @@ class Deployment extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'component_id' => 'integer',
         'deployment_script_id' => 'integer',
         'log_id' => 'integer',
         'commit_data' => 'json',
         'active' => 'boolean',
         'status' => DeploymentStatus::class,
+        'environment_deployment_id' => 'integer',
+        'current_stage' => DeploymentStage::class,
+        'previous_deployment_id' => 'integer',
+        'release_started' => 'boolean',
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return true;
+    }
 
     protected static function booted(): void
     {
         static::created(function (Deployment $deployment): void {
             $site = $deployment->site;
+            if (! $site) {
+                return;
+            }
+
             $keep = $site->type_data['modern_deployment_history'] ?? 10;
             if ($site->deployments()->whereNotNull('release')->count() > $keep) {
                 /** @var ?Deployment $lastDeploymentToKeep */
@@ -65,6 +101,14 @@ class Deployment extends AbstractModel
                 }
             }
         });
+    }
+
+    /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
     }
 
     /**
@@ -91,16 +135,45 @@ class Deployment extends AbstractModel
         return $this->belongsTo(ServerLog::class, 'log_id');
     }
 
+    /** @return BelongsTo<EnvironmentDeployment, covariant $this> */
+    public function environmentDeployment(): BelongsTo
+    {
+        return $this->belongsTo(EnvironmentDeployment::class);
+    }
+
+    /** @return BelongsTo<Deployment, covariant $this> */
+    public function previousDeployment(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'previous_deployment_id');
+    }
+
     public function path(): string
     {
-        return $this->site->basePath().($this->release ? '/releases/'.$this->release : '');
+        return ($this->component ?? $this->site)->basePath().($this->release ? '/releases/'.$this->release : '');
     }
 
     public function remove(bool $onlyRelease = false): void
     {
+        if ($this->component && ($this->active || ! $this->environmentDeployment?->status->isTerminal())) {
+            return;
+        }
+        if ($this->component && $this->release && (
+            $this->component->deployments()->where('release', $this->release)->where('active', true)->exists()
+            || $this->component->environment->deployments()->blocking()->where(fn ($query) => $query->where('release', $this->release)
+                ->orWhereHas('deployments.previousDeployment', fn ($query) => $query->where('component_id', $this->component_id)->where('release', $this->release)))->exists()
+        )) {
+            return;
+        }
         if ($this->release) {
-            $site = $this->site;
-            $site->server->ssh($site->user)->exec('rm -rf '.$this->path());
+            $owner = $this->component ?? $this->site;
+            $command = 'rm -rf -- '.escapeshellarg($this->path());
+            if ($this->component) {
+                $command .= ' && rm -f -- '.escapeshellarg($this->component->sharedPath().'/.env-'.$this->id.'.prepared');
+            }
+            $owner->server->ssh($owner->user)->exec($command);
+            if ($this->component) {
+                $this->component->deployments()->where('release', $this->release)->update(['release' => null]);
+            }
             $this->release = null;
         }
 
@@ -113,9 +186,23 @@ class Deployment extends AbstractModel
         $this->delete();
     }
 
+    public function pruneOldReleases(): void
+    {
+        if (! $this->component || ! $this->environmentDeployment?->status->isTerminal()) {
+            return;
+        }
+        $releases = $this->component->deployments()->with('environmentDeployment')->whereNotNull('release')->orderByDesc('id')->get();
+        $protected = $releases->filter(fn (Deployment $deployment): bool => ! $deployment->environmentDeployment?->status->isTerminal())->pluck('previous_deployment_id');
+        foreach ($releases->unique('release')->skip($this->component->environment->keep_releases) as $deployment) {
+            if (! $protected->contains($deployment->id)) {
+                $deployment->remove(true);
+            }
+        }
+    }
+
     public function activate(): void
     {
-        $this->site->deployments()->update(['active' => false]);
+        ($this->component ?? $this->site)->deployments()->update(['active' => false]);
         $this->active = true;
         $this->save();
     }

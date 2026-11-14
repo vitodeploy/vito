@@ -24,7 +24,7 @@ export default function ImportVito() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('vito-settings.import'));
+    form.post('/admin/vito/import');
   };
 
   return (

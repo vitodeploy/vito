@@ -488,6 +488,9 @@ return [
             'ubuntu_20' => 'linode/ubuntu20.04',
             'ubuntu_22' => 'linode/ubuntu22.04',
             'ubuntu_24' => 'linode/ubuntu24.04',
+            'ubuntu_26' => 'linode/ubuntu26.04',
+            'debian_12' => 'linode/debian12',
+            'debian_13' => 'linode/debian13',
         ],
     ],
     'digitalocean' => [
@@ -945,6 +948,9 @@ return [
             'ubuntu_20' => 'ubuntu-20.04',
             'ubuntu_22' => 'ubuntu-22.04',
             'ubuntu_24' => 'ubuntu-24.04',
+            'ubuntu_26' => 'ubuntu-26.04',
+            'debian_12' => 'debian-12',
+            'debian_13' => 'debian-13',
         ],
     ],
 ];

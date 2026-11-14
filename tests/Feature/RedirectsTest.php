@@ -3,6 +3,8 @@
 use App\Enums\RedirectStatus;
 use App\Facades\SSH;
 use App\Models\Redirect;
+use App\Models\Server;
+use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 
@@ -203,4 +205,23 @@ test('update redirect away from proxy forces websocket off', function () {
         'mode' => 301,
         'websocket' => false,
     ]);
+});
+
+test('redirect listing rejects a site from another server', function () {
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $service = $this->server->webserver()->replicate();
+    $service->server_id = $otherServer->id;
+    $service->save();
+    $site = Site::factory()->create(['server_id' => $otherServer->id]);
+    $redirect = Redirect::factory()->create(['site_id' => $site->id]);
+
+    $this->actingAs($this->user)->get(route('redirects', [
+        'server' => $this->server,
+        'site' => $site,
+    ]))->assertForbidden();
+
+    $this->assertDatabaseHas('redirects', ['id' => $redirect->id, 'site_id' => $site->id]);
 });

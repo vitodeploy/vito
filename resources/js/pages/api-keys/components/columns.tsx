@@ -21,7 +21,7 @@ function Delete({ apiKey }: { apiKey: ApiKey }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('api-keys.destroy', apiKey.id),
+          url: `/settings/api-keys/${apiKey.id}`,
         })
       }
     >

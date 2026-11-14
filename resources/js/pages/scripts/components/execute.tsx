@@ -31,7 +31,7 @@ export default function Execute({ script, children }: { script: Script; children
   });
 
   const submit = () => {
-    form.post(route('scripts.execute', { script: script.id }), {
+    form.post(`/scripts/${script.id}/execute`, {
       onSuccess: () => {
         setOpen(false);
       },

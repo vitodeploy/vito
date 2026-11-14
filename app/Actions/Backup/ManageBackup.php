@@ -8,8 +8,11 @@ use App\Enums\DatabaseStatus;
 use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
+use App\Models\StorageProvider;
+use App\Models\User;
 use App\ValidationRules\CronRule;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -22,9 +25,11 @@ class ManageBackup
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function create(Server $server, array $input): Backup
+    public function create(Server $server, array $input, User $actor): Backup
     {
         $this->validate($server, $input);
+
+        Gate::forUser($actor)->authorize('view', StorageProvider::query()->findOrFail($input['storage']));
 
         $backupType = BackupType::from($input['type'] ?? BackupType::DATABASE->value);
 
@@ -95,7 +100,8 @@ class ManageBackup
             ],
             'storage' => [
                 'required',
-                Rule::exists('storage_providers', 'id'),
+                Rule::exists('storage_providers', 'id')
+                    ->where(fn ($query) => $query->where('project_id', $server->project_id)->orWhereNull('project_id')),
             ],
             'keep' => [
                 'required',

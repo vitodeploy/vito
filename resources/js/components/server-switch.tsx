@@ -25,7 +25,7 @@ export function ServerSwitch() {
   const handleServerChange = (value: string, server: Server) => {
     setSelected(value);
     setOpen(false);
-    form.post(route('servers.switch', { server: server.id }));
+    form.post(`/servers/${server.id}/switch`);
   };
 
   const footer = (

@@ -39,3 +39,6 @@ opencode.json
 !.claude/agents/
 !.claude/commands/
 .opencode
+.agents/
+skills-lock.json
+.plans/

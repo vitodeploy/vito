@@ -120,7 +120,7 @@ function StatsView({ server, site }: { server: Server; site: Site }) {
   const refresh = () => {
     setRefreshing(true);
     router.post(
-      route('site-stats.refresh', { server: server.id, site: site.id }),
+      `/servers/${server.id}/sites/${site.id}/stats/refresh`,
       {},
       {
         preserveScroll: true,

@@ -1,9 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
+import { Link } from '@inertiajs/react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
-import FormSuccessful from '@/components/form-successful';
+import { LockKeyholeIcon, MoreVerticalIcon } from 'lucide-react';
 import { CronJob } from '@/types/cronjob';
 import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
@@ -12,26 +11,19 @@ import { Site } from '@/types/site';
 import { useDialog } from '@/hooks/use-dialog';
 
 function Action({ type, cronJob, site }: { type: 'enable' | 'disable'; cronJob: CronJob; site?: Site }) {
-  const form = useForm();
-
-  const submit = () => {
-    const routeName = site
-      ? type === 'enable'
-        ? 'cronjobs.site.enable'
-        : 'cronjobs.site.disable'
-      : type === 'enable'
-        ? 'cronjobs.enable'
-        : 'cronjobs.disable';
-
-    const routeParams = site ? { server: cronJob.server_id, site: site.id, cronJob: cronJob.id } : { server: cronJob.server_id, cronJob: cronJob.id };
-
-    form.post(route(routeName, routeParams));
-  };
+  const dialog = useDialog();
 
   return (
-    <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={submit} disabled={form.processing}>
-      {form.processing && <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />}
-      <FormSuccessful successful={form.recentlySuccessful} />
+    <DropdownMenuItem
+      onSelect={() =>
+        dialog.confirm.open({
+          title: `${type === 'enable' ? 'Enable' : 'Disable'} cron job`,
+          description: `Are you sure you want to ${type} this cron job?`,
+          method: 'post',
+          url: `${cronJob.component_url ?? `/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}`}/cronjobs/${cronJob.id}/${type}`,
+        })
+      }
+    >
       {type === 'enable' ? 'Enable' : 'Disable'}
     </DropdownMenuItem>
   );
@@ -50,10 +42,7 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route(
-            site ? 'cronjobs.site.destroy' : 'cronjobs.destroy',
-            site ? { server: cronJob.server_id, site: site.id, cronJob: cronJob } : { server: cronJob.server_id, cronJob: cronJob },
-          ),
+          url: `${cronJob.component_url ?? `/servers/${cronJob.server_id}${site ? `/sites/${site.id}` : ''}`}/cronjobs/${cronJob.id}`,
         })
       }
     >
@@ -62,8 +51,17 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
   );
 }
 
-function Actions({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
+export function Actions({ cronJob, site, canManage = true }: { cronJob: CronJob; site?: Site; canManage?: boolean }) {
   const dialog = useDialog();
+
+  if (cronJob.managed)
+    return (
+      <span className="text-muted-foreground flex items-center justify-end gap-2 text-sm">
+        <LockKeyholeIcon className="size-4" />
+        Capability managed
+      </span>
+    );
+  if (!canManage) return null;
 
   return (
     <div className="flex items-center justify-end">
@@ -125,6 +123,20 @@ function getColumns(site?: Site, sites?: Array<{ id: number; domain: string }>):
         const site = sites?.find((s) => s.id === siteId);
         return <span>{site ? site.domain : `Site #${siteId}`}</span>;
       },
+    },
+    {
+      accessorKey: 'component_name',
+      header: 'Component',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) =>
+        row.original.component_url ? (
+          <Link href={row.original.component_url} className="hover:underline">
+            {row.original.component_name ?? `Component #${row.original.component_id}`}
+          </Link>
+        ) : (
+          <span>-</span>
+        ),
     },
     {
       accessorKey: 'frequency',

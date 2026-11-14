@@ -34,3 +34,7 @@ fi
 if ! sudo ufw reload; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
+@if($isDebian)
+
+sudo systemctl start ufw
+@endif

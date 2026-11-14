@@ -57,7 +57,7 @@ test('collect dedupes path entries from multiple mise tools', function () {
 });
 
 test('collect returns empty when site user is empty', function () {
-    $site = new Site(['user' => '']);
+    $site = new Site(['server_id' => $this->server->id, 'user' => '']);
 
     expect(SiteShellEnvironment::collect($site))->toBe([]);
 });

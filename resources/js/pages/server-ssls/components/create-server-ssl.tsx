@@ -53,7 +53,7 @@ export default function CreateServerSsl({ server, domains, children }: { server:
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('server-ssls.store', { server: server.id }), {
+    form.post(`/servers/${server.id}/ssl`, {
       onSuccess: () => {
         form.reset();
         setOpen(false);

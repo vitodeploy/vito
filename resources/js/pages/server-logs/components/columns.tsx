@@ -19,7 +19,7 @@ export function View({ serverLog, label = 'View' }: { serverLog: ServerLog; labe
 
 export function Download({ serverLog, children }: { serverLog: ServerLog; children: ReactNode }) {
   return (
-    <a href={route('logs.download', { server: serverLog.server_id, log: serverLog.id })} target="_blank">
+    <a href={`/servers/${serverLog.server_id}/logs/${serverLog.id}/download`} target="_blank">
       {children}
     </a>
   );
@@ -36,7 +36,7 @@ function Clear({ serverLog }: { serverLog: ServerLog }) {
           description: `Are you sure you want to clear the contents of ${serverLog.name}? This will remove all content from the log file but keep the file itself.`,
           confirmLabel: 'Clear',
           method: 'post',
-          url: route('logs.clear', { server: serverLog.server_id, log: serverLog.id }),
+          url: `/servers/${serverLog.server_id}/logs/${serverLog.id}/clear`,
         })
       }
     >
@@ -58,7 +58,7 @@ function Delete({ serverLog }: { serverLog: ServerLog }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('logs.destroy', { server: serverLog.server_id, log: serverLog.id }),
+          url: `/servers/${serverLog.server_id}/logs/${serverLog.id}`,
         })
       }
     >

@@ -15,7 +15,7 @@ export default function Delete({ firewallRule }: { firewallRule: FirewallRule })
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('firewall.destroy', { server: firewallRule.server_id, firewallRule: firewallRule }),
+          url: `/servers/${firewallRule.server_id}/firewall/${firewallRule.id}`,
         })
       }
     >

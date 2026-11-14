@@ -21,11 +21,8 @@ export default function AutoDeployment({ site, children }: { site: Site; childre
 
   const submit = () => {
     const url = site.auto_deploy
-      ? route('application.disable-auto-deployment', {
-          server: site.server_id,
-          site: site.id,
-        })
-      : route('application.enable-auto-deployment', { server: site.server_id, site: site.id });
+      ? `/servers/${site.server_id}/sites/${site.id}/disable-auto-deployment`
+      : `/servers/${site.server_id}/sites/${site.id}/enable-auto-deployment`;
     form.post(url, {
       onSuccess: () => {
         setOpen(false);

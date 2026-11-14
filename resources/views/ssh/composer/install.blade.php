@@ -1,4 +1,8 @@
+@if ($configDir !== null)
+INSTALL_DIR={!! escapeshellarg($configDir.'/'.$installDir) !!}
+@else
 INSTALL_DIR="$HOME/{{ $installDir }}"
+@endif
 mkdir -p "$INSTALL_DIR"
 cd "$HOME"
 
@@ -13,6 +17,7 @@ php{{ $phpVersion }} composer-setup.php --{{ $majorVersion }} --install-dir="$IN
 
 rm -f composer-setup.php
 
+@if ($configDir === null)
 ACTIVATION_LINE='export PATH="$HOME/{{ $installDir }}:$PATH"'
 for FILE in "$HOME/.bashrc" "$HOME/.profile"; do
     touch "$FILE"
@@ -20,5 +25,6 @@ for FILE in "$HOME/.bashrc" "$HOME/.profile"; do
         printf '\n%s\n' "$ACTIVATION_LINE" >> "$FILE"
     fi
 done
+@endif
 
-"$INSTALL_DIR/composer" --version
+php{{ $phpVersion }} "$INSTALL_DIR/composer" --version

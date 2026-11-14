@@ -42,7 +42,7 @@ type SocketStore = {
 
 async function requestEventsToken(csrfToken: string): Promise<{ token: string; url: string } | null> {
   try {
-    const response = await fetch(route('events.token'), {
+    const response = await fetch('/events/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,1 +1,0 @@
-import{f as e,t}from"./utils-CLRpjyzU.js";var n=e();function r({className:e,children:r}){return(0,n.jsx)(`div`,{className:t(`container mx-auto space-y-5 px-4 py-5`,e),children:r})}export{r as t};

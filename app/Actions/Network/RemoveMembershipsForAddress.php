@@ -46,7 +46,7 @@ class RemoveMembershipsForAddress
                 ->whereIn('network_id', $networkIds)
                 ->where('server_id', $serverId)
                 ->get()
-                ->each(fn (NetworkServer $member) => $this->remove->remove($member));
+                ->each(fn (NetworkServer $member) => $this->remove->remove($member, observed: true));
         });
     }
 }

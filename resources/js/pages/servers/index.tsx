@@ -64,7 +64,7 @@ export default function Servers() {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <Link href={route('servers.show', { server: row.id })} prefetch>
+                <Link href={`/servers/${encodeURIComponent(row.id)}`} prefetch>
                   <Button variant="outline" size="sm">
                     <EyeIcon />
                   </Button>

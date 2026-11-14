@@ -3,6 +3,7 @@
 namespace App\Services\LogAnalysis\GoAccess;
 
 use App\Actions\CronJob\DeleteCronJob;
+use App\Actions\CronJob\SyncCronJobs;
 use App\Actions\SiteStats\SyncGoAccessServer;
 use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
@@ -161,7 +162,7 @@ class GoAccess extends AbstractService
         $cron->status = $status;
         $cron->save();
 
-        $server->cron()->update('root', CronJob::crontab($server, 'root'));
+        $server->cron()->update('root', app(SyncCronJobs::class)->crontab($server, 'root'));
 
         return true;
     }
@@ -173,7 +174,7 @@ class GoAccess extends AbstractService
     {
         if ($this->statsCron()) {
             $server = $this->service->server;
-            $server->cron()->update('root', CronJob::crontab($server, 'root'));
+            $server->cron()->update('root', app(SyncCronJobs::class)->crontab($server, 'root'));
         }
 
         return true;

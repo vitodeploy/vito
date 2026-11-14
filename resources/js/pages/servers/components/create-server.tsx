@@ -44,6 +44,8 @@ import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSocketListener } from '@/hooks/use-socket-events';
+import DynamicField, { dynamicFieldSpan } from '@/components/ui/dynamic-field';
+import { DynamicFieldValue } from '@/types/dynamic-field-config';
 
 type PlanOption = {
   label: string;
@@ -62,6 +64,7 @@ type CreateServerForm = {
   region: string;
   plan: string;
   services: Service[];
+  [key: string]: DynamicFieldValue | Service[];
 };
 
 function AddService() {
@@ -291,7 +294,7 @@ export default function CreateServer({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('servers'));
+    form.post('/servers');
   };
 
   const [copySuccess, setCopySuccess] = useState(false);
@@ -311,7 +314,7 @@ export default function CreateServer({
 
   const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);
   const fetchServerProviders = async () => {
-    const serverProviders = await axios.get(route('server-providers.json'));
+    const serverProviders = await axios.get('/settings/server-providers/json');
     setServerProviders(serverProviders.data);
   };
 
@@ -327,12 +330,21 @@ export default function CreateServer({
     }
   });
 
+  const operatingSystemsFor = (provider: string): string[] =>
+    configs.server_provider.providers[provider]?.operating_systems ?? configs.operating_systems;
+
   const providerValue = form.data.provider === 'custom' ? 'custom' : form.data.server_provider ? form.data.server_provider.toString() : '';
 
   const selectCombinedProvider = async (value: string) => {
     form.clearErrors();
     form.setData('region', '');
     form.setData('plan', '');
+    const staleFields = configs.server_provider.providers[form.data.provider]?.create_form ?? [];
+    form.setData((data) => {
+      const next = { ...data };
+      staleFields.forEach((field) => delete next[field.name]);
+      return next;
+    });
     setRegions({});
     setPlans({});
 
@@ -349,6 +361,9 @@ export default function CreateServer({
 
     form.setData('provider', connection.provider);
     form.setData('server_provider', connection.id);
+    if (!operatingSystemsFor(connection.provider).includes(form.data.os)) {
+      form.setData('os', '');
+    }
     await fetchRegions(connection.id);
   };
 
@@ -357,7 +372,7 @@ export default function CreateServer({
 
   const [regions, setRegions] = useState<{ [key: string]: string }>({});
   const fetchRegions = async (serverProvider: number) => {
-    const regions = await axios.get(route('server-providers.regions', { serverProvider: serverProvider }));
+    const regions = await axios.get(`/settings/server-providers/${serverProvider}/regions`);
     setRegions(regions.data);
   };
   const selectRegion = async (region: string) => {
@@ -369,7 +384,7 @@ export default function CreateServer({
 
   const [plans, setPlans] = useState<{ [key: string]: string | PlanOption }>({});
   const fetchPlans = async (serverProvider: number, region: string) => {
-    const plans = await axios.get(route('server-providers.plans', { serverProvider: serverProvider, region: region }));
+    const plans = await axios.get(`/settings/server-providers/${serverProvider}/regions/${encodeURIComponent(region)}/plans`);
     setPlans(plans.data);
   };
   const selectPlan = (plan: string) => {
@@ -530,6 +545,21 @@ export default function CreateServer({
               </div>
             )}
 
+            {!!configs.server_provider.providers[form.data.provider]?.create_form?.length && (
+              <div className="grid items-start gap-6 sm:grid-cols-6">
+                {configs.server_provider.providers[form.data.provider].create_form!.map((field) => (
+                  <div key={`${form.data.server_provider}-${field.name}`} className={dynamicFieldSpan(field)}>
+                    <DynamicField
+                      value={form.data[field.name] as DynamicFieldValue | undefined}
+                      onChange={(value) => form.setData(field.name, value)}
+                      config={field}
+                      error={form.errors[field.name]}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
             {form.data.provider === 'custom' && (
               <>
                 <Alert>
@@ -570,7 +600,7 @@ export default function CreateServer({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {configs.operating_systems.map((value) => (
+                      {operatingSystemsFor(form.data.provider).map((value) => (
                         <SelectItem key={`os-${value}`} value={value}>
                           {value}
                         </SelectItem>

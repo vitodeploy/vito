@@ -122,7 +122,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       }));
     }
 
-    form.put(route('application.update-env', { server: site.server_id, site: site.id }), {
+    form.put(`/servers/${site.server_id}/sites/${site.id}/env`, {
       onSuccess: () => handleOpenChange(false),
     });
   };
@@ -130,13 +130,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
   const query = useQuery({
     queryKey: ['application.env', site.server_id, site.id, committedPath],
     queryFn: async () => {
-      const response = await axios.get(
-        route('application.env', {
-          server: site.server_id,
-          site: site.id,
-          env: committedPath,
-        }),
-      );
+      const response = await axios.get(`/servers/${site.server_id}/sites/${site.id}/env`, {
+        params: { env: committedPath },
+      });
       return response.data;
     },
     retry: false,
@@ -189,13 +185,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
   };
 
   const parseRawContent = async (content: string) => {
-    const response = await axios.post(
-      route('application.parse-env', {
-        server: site.server_id,
-        site: site.id,
-      }),
-      { content },
-    );
+    const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/parse`, { content });
 
     if (response.data?.representable === false) {
       throw new Error(
@@ -219,15 +209,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
 
       setIsSwitching(true);
       try {
-        const response = await axios.post(
-          route('application.stringify-env', {
-            server: site.server_id,
-            site: site.id,
-          }),
-          {
-            variables: variables.map((v) => ({ key: v.key, value: v.value })),
-          },
-        );
+        const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/stringify`, {
+          variables: variables.map((v) => ({ key: v.key, value: v.value })),
+        });
         setRawContent(response.data?.env ?? '');
         setMode('classic');
       } catch (error) {

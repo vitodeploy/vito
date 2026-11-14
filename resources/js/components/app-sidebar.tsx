@@ -35,54 +35,64 @@ import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useConfigs } from '@/stores/bootstrap-store';
+import { Badge } from '@/components/ui/badge';
+import { BoxesIcon } from 'lucide-react';
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
   const page = usePage<SharedData>();
+  const dashboardUrls = useConfigs()?.dashboard_urls;
 
   const mainNavItems: NavItem[] = [
     {
       title: 'Networks',
-      href: route('networks'),
+      href: '/networks',
       icon: NetworkIcon,
     },
     {
       title: 'Servers',
-      href: route('servers'),
+      href: '/servers',
       icon: ServerIcon,
     },
     {
       title: 'Sites',
-      href: route('sites.all'),
+      href: '/sites',
       icon: MousePointerClickIcon,
     },
     {
+      title: 'Applications',
+      href: '/applications',
+      icon: BoxesIcon,
+      badge: 'Beta',
+    },
+    {
       title: 'Backups',
-      href: route('backups.all'),
+      href: '/backups',
       icon: CloudUploadIcon,
     },
     {
       title: 'Scripts',
-      href: route('scripts'),
+      href: '/scripts',
       icon: ZapIcon,
     },
     {
       title: 'Workflows',
-      href: route('workflows'),
+      href: '/workflows',
       icon: WorkflowIcon,
     },
     {
       title: 'Domains',
-      href: route('domains'),
+      href: '/domains',
       icon: Globe,
     },
     {
       title: 'Settings',
-      href: route('settings'),
+      href: '/settings',
       icon: CogIcon,
     },
     {
       title: 'Admin',
-      href: route('admin'),
+      href: '/admin',
       icon: Settings2Icon,
       hidden: !page.props.auth.user?.is_admin,
     },
@@ -91,15 +101,15 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
   const footerNavItems: NavItem[] = [
     {
       title: 'Horizon Dashboard',
-      href: route('horizon.index'),
+      href: dashboardUrls?.horizon ?? '#',
       icon: ListEndIcon,
-      hidden: !page.props.auth.user?.is_admin,
+      hidden: !page.props.auth.user?.is_admin || !dashboardUrls,
     },
     {
       title: 'Vito Logs',
-      href: route('log-viewer.index'),
+      href: dashboardUrls?.logs ?? '#',
       icon: LogsIcon,
-      hidden: !page.props.auth.user?.is_admin,
+      hidden: !page.props.auth.user?.is_admin || !dashboardUrls,
     },
     {
       title: 'Repository',
@@ -123,7 +133,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <Link href={route('servers')} prefetch>
+                <Link href="/servers" prefetch>
                   <Tooltip>
                     <TooltipTrigger>
                       <AppLogo />
@@ -143,8 +153,16 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                   <SidebarMenuItem key={`${item.title}-${item.href}`}>
                     <SidebarMenuButton
                       asChild
-                      isActive={item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href)}
-                      tooltip={{ children: item.title, hidden: false }}
+                      isActive={item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href)}
+                      tooltip={{
+                        children: (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
+                        ),
+                        hidden: false,
+                      }}
                       hidden={item.hidden}
                     >
                       {item.external ? (
@@ -155,7 +173,10 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       ) : (
                         <Link href={item.href}>
                           {item.icon && <item.icon />}
-                          <span>{item.title}</span>
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
                         </Link>
                       )}
                     </SidebarMenuButton>
@@ -197,7 +218,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
               <SidebarGroupContent>
                 <SidebarMenu>
                   {secondNavItems.map((item) => {
-                    const isActive = item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href);
+                    const isActive = item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href);
 
                     if (item.children && item.children.length > 0) {
                       const groupActive =
@@ -207,7 +228,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                             ? false
                             : childItem.onlyActivePath
                               ? currentPath() === childItem.href
-                              : window.location.href.startsWith(childItem.href),
+                              : currentPath().startsWith(childItem.href),
                         );
 
                       return (
@@ -227,7 +248,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                                     <SidebarMenuButton
                                       asChild
                                       isActive={
-                                        childItem.onlyActivePath ? currentPath() === childItem.href : window.location.href.startsWith(childItem.href)
+                                        childItem.onlyActivePath ? currentPath() === childItem.href : currentPath().startsWith(childItem.href)
                                       }
                                     >
                                       {childItem.external ? (

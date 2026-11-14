@@ -21,7 +21,7 @@ function Remove({ domain }: { domain: Domain }) {
           variant: 'destructive',
           confirmLabel: 'Remove',
           method: 'delete',
-          url: route('domains.destroy', domain.id),
+          url: `/domains/${domain.id}`,
         })
       }
     >
@@ -83,7 +83,7 @@ export const columns: ColumnDef<Domain>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => router.visit(route('domains.show', row.original.id))}>Manage Records</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.visit(`/domains/${row.original.id}`)}>Manage Records</DropdownMenuItem>
               <DropdownMenuSeparator />
               <Remove domain={row.original} />
             </DropdownMenuContent>

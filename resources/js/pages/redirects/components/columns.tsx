@@ -26,7 +26,7 @@ function Delete({ redirect }: { redirect: Redirect }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('redirects.destroy', { server: redirect.server_id, site: redirect.site_id, redirect: redirect.id }),
+          url: `/servers/${redirect.server_id}/sites/${redirect.site_id}/redirects/${redirect.id}`,
         })
       }
     >

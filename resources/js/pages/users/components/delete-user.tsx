@@ -20,7 +20,7 @@ export default function DeleteUser({ user, children }: { user: User; children: R
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.delete(route('users.destroy', user.id), {
+    form.delete(`/admin/users/${user.id}`, {
       onSuccess: () => {
         setOpen(false);
       },

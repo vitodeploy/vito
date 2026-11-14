@@ -15,7 +15,7 @@ export default function Delete({ dnsProvider }: { dnsProvider: DNSProvider }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('dns-providers.destroy', dnsProvider.id),
+          url: `/settings/dns-providers/${dnsProvider.id}`,
         })
       }
     >

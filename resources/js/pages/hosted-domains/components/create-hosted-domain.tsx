@@ -51,15 +51,9 @@ export default function CreateHostedDomain({ open, onOpenChange, site }: { open:
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(
-      route('hosted-domains.store', {
-        server: site.server_id,
-        site: site.id,
-      }),
-      {
-        onSuccess: () => onOpenChange(false),
-      },
-    );
+    form.post(`/servers/${site.server_id}/sites/${site.id}/domains`, {
+      onSuccess: () => onOpenChange(false),
+    });
   };
 
   return (

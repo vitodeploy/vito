@@ -126,7 +126,7 @@ function ToolingRow({
     setSubmittingInstall(true);
     onSubmit?.();
     router.post(
-      route('site-tooling.install', { server: site.server_id, site: site.id, tool: tool.id }),
+      `/servers/${site.server_id}/sites/${site.id}/tooling/${encodeURIComponent(tool.id)}`,
       { version: selected },
       {
         preserveScroll: true,
@@ -141,7 +141,7 @@ function ToolingRow({
     setSubmittingUninstall(true);
     setConfirmOpen(false);
     onSubmit?.();
-    router.delete(route('site-tooling.uninstall', { server: site.server_id, site: site.id, tool: tool.id }), {
+    router.delete(`/servers/${site.server_id}/sites/${site.id}/tooling/${encodeURIComponent(tool.id)}`, {
       preserveScroll: true,
       preserveState: true,
       onFinish: () => setSubmittingUninstall(false),

@@ -38,7 +38,7 @@ export default function ServicesIndex() {
   }, [refreshing]);
 
   const refresh = () => {
-    form.post(route('services.refresh', { server: server.id }), { preserveScroll: true });
+    form.post(`/servers/${server.id}/services/refresh`, { preserveScroll: true });
   };
 
   const busy = refreshing || form.processing;

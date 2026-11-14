@@ -12,7 +12,7 @@ export default function DatabaseLayout({ server, children }: { server: Server; c
   const navItems: NavItem[] = [
     {
       title: 'Databases',
-      href: route('databases', { server: server.id }),
+      href: `/servers/${server.id}/database`,
       icon: DatabaseIcon,
     },
     {
@@ -37,7 +37,7 @@ export default function DatabaseLayout({ server, children }: { server: Server; c
                 <NavigationMenuLink
                   key={item.title}
                   asChild
-                  className={(item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href)) ? 'bg-muted' : ''}
+                  className={(item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href)) ? 'bg-muted' : ''}
                 >
                   <Link href={item.href}>
                     <div className="flex items-center gap-2">

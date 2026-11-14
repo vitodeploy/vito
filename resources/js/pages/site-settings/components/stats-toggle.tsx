@@ -21,8 +21,7 @@ export default function StatsToggle({ site, children }: { site: Site; children: 
   const enabled = site.stats_enabled;
 
   const submit = () => {
-    const routeName = enabled ? 'site-settings.disable-stats' : 'site-settings.enable-stats';
-    form.post(route(routeName, { server: site.server_id, site: site.id }), {
+    form.post(`/servers/${site.server_id}/sites/${site.id}/settings/stats/${enabled ? 'disable' : 'enable'}`, {
       preserveScroll: true,
       onSuccess: () => setOpen(false),
     });

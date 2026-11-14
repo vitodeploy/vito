@@ -2,10 +2,14 @@
 
 namespace App\Jobs\ServerIp;
 
+use App\Actions\Network\CheckEnvironmentResourceNetwork;
+use App\Actions\Network\CheckLoadBalancerNetwork;
 use App\Actions\ServerIp\RefreshServerIps;
 use App\DTOs\SocketEventDTO;
 use App\Enums\IpAddressStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\SSHCommandError;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerIpAddress;
 use App\Models\ServerLog;
@@ -15,6 +19,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PersistServerIpsJob implements ShouldQueue
 {
@@ -23,11 +28,19 @@ class PersistServerIpsJob implements ShouldQueue
 
     private const NETPLAN_PATH = '/etc/netplan/60-vito.yaml';
 
+    private const SYSTEMD_UNIT_PATH = '/etc/systemd/system/vito-ips.service';
+
+    private const BACKEND_MARKER = 'VITO_NETWORK_BACKEND=';
+
     public function __construct(protected Server $server) {}
 
     public function handle(): void
     {
         $this->run("server-{$this->server->id}", function (): void {
+            foreach ($this->server->ipAddresses()->where('status', IpAddressStatus::DELETING)->get() as $address) {
+                app(CheckLoadBalancerNetwork::class)->address($address);
+                app(CheckEnvironmentResourceNetwork::class)->address($address);
+            }
             app(RefreshServerIps::class)->handle($this->server);
 
             $managed = $this->server->ipAddresses()
@@ -35,23 +48,11 @@ class PersistServerIpsJob implements ShouldQueue
                 ->where('status', '!=', IpAddressStatus::DELETING)
                 ->get();
 
-            $hasManaged = $managed->isNotEmpty();
-
-            if ($hasManaged) {
-                $this->server->os()->write(
-                    self::NETPLAN_PATH,
-                    view('ssh.network.netplan', [
-                        'interfaces' => $this->buildInterfaces($managed),
-                        'managedIps' => $managed->pluck('ip')->values()->all(),
-                    ])->render(),
-                    'root'
-                );
+            if ($this->server->os->isDebian()) {
+                $this->applySystemdUnit($managed);
+            } else {
+                $this->applyNetplan($managed);
             }
-
-            $this->server->ssh()->exec(
-                view('ssh.network.apply-netplan', ['hasManaged' => $hasManaged]),
-                'apply-netplan'
-            );
 
             $this->finalize();
         });
@@ -70,6 +71,68 @@ class PersistServerIpsJob implements ShouldQueue
         ));
 
         ServerLog::log($this->server, 'apply-server-ips-failed', $e->getMessage());
+    }
+
+    /**
+     * @param  Collection<int, ServerIpAddress>  $managed
+     */
+    private function applyNetplan(Collection $managed): void
+    {
+        $hasManaged = $managed->isNotEmpty();
+
+        if ($hasManaged) {
+            $this->server->os()->write(
+                self::NETPLAN_PATH,
+                view('ssh.network.netplan', [
+                    'interfaces' => $this->buildInterfaces($managed),
+                    'managedIps' => $managed->pluck('ip')->values()->all(),
+                ])->render(),
+                'root'
+            );
+        }
+
+        $this->server->ssh()->exec(
+            view('ssh.network.apply-netplan', ['hasManaged' => $hasManaged]),
+            'apply-netplan'
+        );
+    }
+
+    /**
+     * Debian images name their netplan definitions differently, and a second
+     * definition for the same interface replaces the first one's DHCP config and
+     * takes the server offline. A systemd unit adds the addresses without touching
+     * the network config. Rows that already failed stay out of it so they can't
+     * block the addresses that work.
+     *
+     * @param  Collection<int, ServerIpAddress>  $managed
+     *
+     * @throws SSHError
+     */
+    private function applySystemdUnit(Collection $managed): void
+    {
+        $output = $this->server->ssh()->exec(view('ssh.network.detect-backend'), 'detect-network-backend');
+
+        if (trim(Str::afterLast($output, self::BACKEND_MARKER)) !== 'systemd') {
+            throw new SSHCommandError(message: 'This server does not run systemd with the ip command, so Vito cannot persist its IP addresses.');
+        }
+
+        $addresses = $managed->where('status', '!=', IpAddressStatus::FAILED)->whereNotNull('interface');
+
+        if ($addresses->isNotEmpty()) {
+            $this->server->os()->write(
+                self::SYSTEMD_UNIT_PATH,
+                view('ssh.network.systemd-ips', ['addresses' => $addresses])->render(),
+                'root'
+            );
+        }
+
+        $this->server->ssh()->exec(
+            view('ssh.network.apply-systemd-ips', [
+                'addresses' => $addresses,
+                'removed' => $this->server->ipAddresses()->where('status', IpAddressStatus::DELETING)->whereNotNull('interface')->get(),
+            ]),
+            'apply-systemd-ips'
+        );
     }
 
     /**

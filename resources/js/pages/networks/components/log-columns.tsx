@@ -13,7 +13,7 @@ const serverColumn: ColumnDef<ServerLog> = {
     const name = row.original.server_name ?? `#${row.original.server_id}`;
 
     return (
-      <Link href={route('servers.show', { server: row.original.server_id })} className="text-foreground" prefetch>
+      <Link href={`/servers/${row.original.server_id}`} className="text-foreground" prefetch>
         <span title={name}>{truncate(name, SERVER_NAME_LIMIT)}</span>
       </Link>
     );

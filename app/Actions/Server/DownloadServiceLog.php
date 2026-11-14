@@ -48,6 +48,7 @@ class DownloadServiceLog
                 $output = $server->ssh()->exec(view('ssh.os.copy-as-user', [
                     'source' => $log->target,
                     'dest' => $remoteTmp,
+                    'user' => $log->user,
                 ]));
                 abort_if(
                     trim($output) === OS::FILE_NOT_FOUND,

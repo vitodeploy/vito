@@ -26,7 +26,7 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('backups.update', { server: backup.server_id, backup: backup.id }), {
+    form.patch(`/servers/${backup.server_id}/backups/${backup.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

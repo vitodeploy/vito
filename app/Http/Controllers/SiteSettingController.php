@@ -48,6 +48,8 @@ class SiteSettingController extends Controller
     #[Get('/', name: 'site-settings')]
     public function index(Server $server, Site $site): Response
     {
+        $this->authorize('view', [$site, $server]);
+
         return Inertia::render('site-settings/index', [
             'sourceControl' => $site->sourceControl ? SourceControlResource::make($site->sourceControl) : null,
         ]);
@@ -71,7 +73,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        app(UpdateSourceControl::class)->update($site, $request->input());
+        app(UpdateSourceControl::class)->update($site, $request->input(), $request->user());
 
         return back()->with('success', 'Source control updated successfully.');
     }
@@ -361,9 +363,12 @@ class SiteSettingController extends Controller
     {
         $this->authorize('delete', [$site, $server]);
 
-        app(DeleteSite::class)->delete($site, $request->input());
+        $redirect = redirect()->route('sites', ['server' => $server]);
 
-        return redirect()->route('sites', ['server' => $server])
-            ->with('success', 'Site deleted successfully.');
+        if (! app(DeleteSite::class)->delete($site, $request->input())) {
+            return $redirect->with('warning', 'Site deleted, but its deploy key could not be removed from the repository. Remove it manually.');
+        }
+
+        return $redirect->with('success', 'Site deleted successfully.');
     }
 }

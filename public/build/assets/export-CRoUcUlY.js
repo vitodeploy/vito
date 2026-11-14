@@ -1,1 +1,0 @@
-import{f as e}from"./utils-CLRpjyzU.js";import{t}from"./download-D1t3T9vC.js";import{t as n}from"./button-Cfk6_DO5.js";var r=e();function i(){return(0,r.jsxs)(n,{onClick:()=>{window.open(route(`vito-settings.export`),`_blank`)},children:[(0,r.jsx)(t,{}),`Export`]})}export{i as default};

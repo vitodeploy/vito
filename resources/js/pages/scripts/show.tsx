@@ -23,11 +23,11 @@ export default function Show() {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Scripts',
-      href: route('scripts'),
+      href: '/scripts',
     },
     {
       title: page.props.script.name,
-      href: route('scripts.show', { script: page.props.script.id }),
+      href: `/scripts/${page.props.script.id}`,
     },
   ];
 

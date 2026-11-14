@@ -37,7 +37,7 @@ export default function DeployKey({ children }: { children: ReactNode }) {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('server-ssh-keys.store', { server: page.props.server.id }), {
+    form.post(`/servers/${page.props.server.id}/ssh-keys`, {
       onSuccess: () => {
         setOpen(false);
       },

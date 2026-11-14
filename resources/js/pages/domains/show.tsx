@@ -34,11 +34,11 @@ export default function DomainShow() {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Domains',
-      href: route('domains'),
+      href: '/domains',
     },
     {
       title: domain.domain,
-      href: route('domains.show', { domain: domain.id }),
+      href: `/domains/${domain.id}`,
     },
   ];
 

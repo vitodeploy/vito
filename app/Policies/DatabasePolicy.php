@@ -45,11 +45,12 @@ class DatabasePolicy
             $server->database();
     }
 
-    public function delete(User $user, Database $database): bool
+    public function delete(User $user, Database $database, ?Server $server = null): bool
     {
-        $server = $database->server;
+        $server ??= $database->server;
 
-        return $this->hasWriteAccess($user, $server->project) &&
+        return $database->server_id === $server->id &&
+            $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
             $server->database();
     }

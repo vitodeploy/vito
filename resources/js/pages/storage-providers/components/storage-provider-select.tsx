@@ -19,7 +19,7 @@ export default function StorageProviderSelect({
   const query = useQuery<StorageProvider[]>({
     queryKey: ['storageProvider'],
     queryFn: async () => {
-      return (await axios.get(route('storage-providers.json'))).data;
+      return (await axios.get('/settings/storage-providers/json')).data;
     },
   });
 

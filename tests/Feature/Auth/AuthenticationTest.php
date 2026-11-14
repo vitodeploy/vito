@@ -2,13 +2,26 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Ssr\Gateway;
+use Inertia\Testing\AssertableInertia;
+use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
 
-test('login screen can be rendered', function () {
-    $response = $this->get(route('login'));
+test('login screen can be rendered', function (bool $ssrEnabled) {
+    config()->set('inertia.ssr.enabled', $ssrEnabled);
+    $this->mock(Gateway::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('dispatch')->andReturnNull();
+    });
 
-    $response->assertStatus(200);
+    $this->get('/login')
+        ->assertSuccessful()
+        ->assertDontSee('/ziggy/', false)
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('auth/login')->missing('ziggy'));
+})->with([false, true]);
+
+test('client route catalogue is not served', function () {
+    $this->get('/ziggy/deadbeef.js')->assertNotFound();
 });
 
 test('users can authenticate using the login screen', function () {

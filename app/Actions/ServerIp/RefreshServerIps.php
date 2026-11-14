@@ -28,7 +28,7 @@ class RefreshServerIps
     public function handle(Server $server): void
     {
         $output = $server->ssh()->exec(
-            view('ssh.network.list-network-addresses'),
+            view('ssh.network.list-network-addresses', ['isDebian' => $server->os->isDebian()]),
             'list-network-addresses'
         );
 

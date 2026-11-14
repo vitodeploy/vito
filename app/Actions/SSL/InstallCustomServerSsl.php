@@ -24,7 +24,7 @@ class InstallCustomServerSsl
         $certData = CertificateParser::parse($input['certificate']);
 
         $server->ssls()
-            ->whereNull('site_id')
+            ->whereNull('site_id')->whereNull('environment_id')
             ->where('type', 'custom')
             ->where('status', SslStatus::FAILED)
             ->delete();

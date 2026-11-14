@@ -49,7 +49,7 @@ export default function ConnectNotificationChannel({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('notification-channels.store'), {
+    form.post('/settings/notification-channels', {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {

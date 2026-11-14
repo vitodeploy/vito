@@ -82,7 +82,7 @@ class CommandController extends Controller
     #[Post('/{command}/execute', name: 'commands.execute')]
     public function execute(Request $request, Server $server, Site $site, Command $command): RedirectResponse
     {
-        $this->authorize('update', [$site, $server]);
+        $this->authorize('update', [$command, $site, $server]);
 
         app(ExecuteCommand::class)->execute($command, user(), $request->input());
 

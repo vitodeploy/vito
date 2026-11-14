@@ -28,7 +28,7 @@ export default function ChangeBranch({ site, children }: { site: Site; children:
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-branch', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/branch`, {
       onSuccess: () => {
         setOpen(false);
       },

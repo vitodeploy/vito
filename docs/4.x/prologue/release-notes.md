@@ -8,9 +8,10 @@ releases.
 
 ### Inertia context shrinking
 
-Inertia responses previously shipped ~120 KB+ of mostly-static shared data on every request (the
-Ziggy route table, the provider/service catalogue, and more). A new cached bootstrap endpoint now
-serves this once and hydrates it on the frontend, cutting typical responses down to a few KB.
+Inertia responses previously shipped ~120 KB+ of mostly-static shared data on every request. The
+frontend now uses URL paths directly, without a client-side route catalogue or route-script cache.
+A cached bootstrap endpoint serves the provider/service catalogue once and hydrates it on the
+frontend, cutting typical responses down to a few KB.
 
 ## Realtime websocket Updates
 

@@ -171,11 +171,7 @@ export default function AppWithDeployment() {
                             description: `Are you sure you want to rollback your site to version [${deployment.release}]?`,
                             confirmLabel: 'Rollback',
                             method: 'post',
-                            url: route('application.rollback', {
-                              server: deployment.server_id,
-                              site: deployment.site_id,
-                              deployment: deployment.id,
-                            }),
+                            url: `/servers/${site.server_id}/sites/${deployment.site_id}/rollback/${deployment.id}`,
                           })
                         }
                       >
@@ -191,11 +187,7 @@ export default function AppWithDeployment() {
                           variant: 'destructive',
                           confirmLabel: 'Delete',
                           method: 'delete',
-                          url: route('application.deployments.destroy', {
-                            server: deployment.server_id,
-                            site: deployment.site_id,
-                            deployment: deployment.id,
-                          }),
+                          url: `/servers/${site.server_id}/sites/${deployment.site_id}/deployments/${deployment.id}`,
                         })
                       }
                     >

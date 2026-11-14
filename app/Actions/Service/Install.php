@@ -7,6 +7,7 @@ use App\Exceptions\SSHError;
 use App\Jobs\Service\InstallJob;
 use App\Models\Server;
 use App\Models\Service;
+use App\ValidationRules\ServiceVersionAvailableRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +20,7 @@ class Install
      */
     public function install(Server $server, array $input): Service
     {
-        $this->validate($input);
+        $this->validate($server, $input);
 
         $name = $input['name'];
         $input['type'] = config("service.services.$name.type");
@@ -48,7 +49,7 @@ class Install
         return $service;
     }
 
-    private function validate(array $input): void
+    private function validate(Server $server, array $input): void
     {
         $installable = collect(config('service.services'))
             ->reject(fn (array $service): bool => ($service['type'] ?? null) === 'vpn')
@@ -62,6 +63,7 @@ class Install
             ],
             'version' => [
                 'required',
+                new ServiceVersionAvailableRule($server->os),
             ],
         ];
         if (isset($input['name'])) {

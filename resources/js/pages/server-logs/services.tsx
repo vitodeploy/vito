@@ -79,7 +79,7 @@ export default function ServiceLogs() {
 
     axios
       .post(
-        route('logs.services.read', { server: server.id }),
+        `/servers/${server.id}/logs/services/read`,
         { key: selectedKey, lines: Number(lines), search: debouncedSearch || null },
         { signal: controller.signal },
       )
@@ -113,7 +113,8 @@ export default function ServiceLogs() {
     if (!selectedKey || isDownloading) return;
     setIsDownloading(true);
     try {
-      const response = await axios.get(route('logs.services.download', { server: server.id, key: selectedKey }), {
+      const response = await axios.get(`/servers/${server.id}/logs/services/download`, {
+        params: { key: selectedKey },
         responseType: 'blob',
       });
 
@@ -181,7 +182,7 @@ export default function ServiceLogs() {
           <Card>
             <CardContent className="text-muted-foreground p-10 text-center text-sm">
               No services with logs are installed on this server yet.{' '}
-              <Link href={route('services', { server: server.id })} className="text-foreground underline underline-offset-4">
+              <Link href={`/servers/${server.id}/services`} className="text-foreground underline underline-offset-4">
                 Manage services
               </Link>
               .
@@ -307,7 +308,7 @@ function ClearButton({ serverId, logKey, target, onCleared }: { serverId: number
   const form = useForm({ key: logKey });
 
   const submit = () => {
-    form.post(route('logs.services.clear', { server: serverId }), {
+    form.post(`/servers/${serverId}/logs/services/clear`, {
       preserveScroll: true,
       onSuccess: () => {
         setOpen(false);

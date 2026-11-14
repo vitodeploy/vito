@@ -14,7 +14,7 @@ export default function DefaultCli({ service }: { service: Service }) {
           description: `Are you sure you want to make PHP ${service.version} the default cli?`,
           confirmLabel: 'Save',
           method: 'post',
-          url: route('php.default-cli', { server: service.server_id, service: service.id }),
+          url: `/servers/${service.server_id}/php/${service.id}/default-cli`,
           data: { version: service.version },
         })
       }

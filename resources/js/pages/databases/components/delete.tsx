@@ -15,7 +15,7 @@ export default function Delete({ database }: { database: Database }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('databases.destroy', { server: database.server_id, database: database }),
+          url: `/servers/${database.server_id}/database/${database.id}`,
         })
       }
     >

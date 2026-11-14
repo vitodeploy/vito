@@ -26,7 +26,7 @@ export default function Port({ site, children }: { site: Site; children: ReactNo
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-port', { server: site.server_id, site: site.id }), {
+    form.patch(`/servers/${site.server_id}/sites/${site.id}/settings/port`, {
       onSuccess: () => setOpen(false),
     });
   };

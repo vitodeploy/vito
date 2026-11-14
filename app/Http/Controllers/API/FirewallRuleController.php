@@ -47,9 +47,9 @@ class FirewallRuleController extends Controller
     #[Put('{firewallRule}', name: 'api.projects.servers.firewall-rules.edit', middleware: 'ability:write')]
     public function edit(Request $request, Project $project, Server $server, FirewallRule $firewallRule): FirewallRuleResource
     {
-        $this->authorize('update', [FirewallRule::class, $firewallRule]);
+        $this->validateRoute($project, $server, $firewallRule);
 
-        $this->validateRoute($project, $server);
+        $this->authorize('update', [FirewallRule::class, $firewallRule]);
 
         $firewallRule = app(ManageRule::class)->update($firewallRule, $request->all());
 

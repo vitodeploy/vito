@@ -3,6 +3,8 @@
 namespace App\Services\PHP;
 
 use App\DTOs\ServiceLog;
+use App\Enums\ComponentType;
+use App\Enums\WebMode;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
@@ -52,6 +54,9 @@ class PHP extends AbstractService implements HasLogs
                     if ($hasSite) {
                         $fail('Some sites are using this PHP version.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Some components are using this PHP version.');
+                    }
                 },
             ],
         ];
@@ -69,6 +74,7 @@ class PHP extends AbstractService implements HasLogs
                 view('ssh.services.php.install-php', [
                     'version' => $this->service->version,
                     'user' => $server->getSshUser(),
+                    'useSury' => $this->usesSuryRepository(),
                 ]),
                 'install-php-'.$this->service->version
             );
@@ -218,6 +224,16 @@ class PHP extends AbstractService implements HasLogs
             $domainsByUser[$user][] = $site->domain;
         }
 
+        $this->service->server->loadMissing('components.environment.application');
+        foreach ($this->service->server->components->sortBy('id') as $component) {
+            if ($component->type !== ComponentType::APP
+                || ! in_array($version, [$component->environment->runtime_version, $component->installed_runtime_version], true)
+                || $component->environment->application->presetOrNull()?->webMode() !== WebMode::FPM) {
+                continue;
+            }
+            $domainsByUser[$component->user][] = $component->name.' (component #'.$component->id.')';
+        }
+
         foreach ($domainsByUser as $user => $domains) {
             $logs[] = new ServiceLog(
                 key: 'php:'.$version.':user:'.$user,
@@ -225,9 +241,21 @@ class PHP extends AbstractService implements HasLogs
                 label: 'FPM pool '.$user.' ('.implode(', ', $domains).')',
                 source: ServiceLog::SOURCE_FILE,
                 target: '/home/'.$user.'/.logs/php_errors.log',
+                user: $user,
             );
         }
 
         return $logs;
+    }
+
+    /**
+     * Ondřej's Launchpad PPA only serves Ubuntu and stops at 24.04; Debian and
+     * later Ubuntu releases get PHP from its successor, packages.sury.org.
+     */
+    private function usesSuryRepository(): bool
+    {
+        $os = $this->service->server->os;
+
+        return $os->isDebian() || version_compare($os->getVersion(), '26.04', '>=');
     }
 }

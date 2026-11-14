@@ -30,6 +30,7 @@ class FirewallRuleTable extends Table
             Column::data('id'),
             Column::data('server_id'),
             Column::data('mask'),
+            Column::data('component_managed'),
             ActionsColumn::make(),
         ];
     }

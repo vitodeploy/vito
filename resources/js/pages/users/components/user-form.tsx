@@ -34,11 +34,11 @@ export default function UserForm({ user, children }: { user?: User; children: Re
     e.preventDefault();
 
     if (user) {
-      form.patch(route('users.update', user.id));
+      form.patch(`/admin/users/${user.id}`);
       return;
     }
 
-    form.post(route('users.store'), {
+    form.post('/admin/users', {
       onSuccess() {
         setOpen(false);
       },

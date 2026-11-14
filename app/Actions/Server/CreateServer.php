@@ -2,6 +2,7 @@
 
 namespace App\Actions\Server;
 
+use App\Enums\OperatingSystem;
 use App\Jobs\Server\InstallJob;
 use App\Models\Project;
 use App\Models\Server;
@@ -9,6 +10,7 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
+use App\ValidationRules\ServiceVersionAvailableRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Validator;
@@ -38,7 +40,7 @@ class CreateServer
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
-            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_user') ?? 'root',
+            'ssh_user' => $this->defaultUser($input),
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
@@ -84,6 +86,17 @@ class CreateServer
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function defaultUser(array $input): string
+    {
+        $provider = config('server-provider.providers')[$input['provider']] ?? [];
+        $debianUser = OperatingSystem::from($input['os'])->isDebian() ? ($provider['debian_default_user'] ?? null) : null;
+
+        return $debianUser ?? $provider['default_user'] ?? 'root';
+    }
+
     private function validate(Project $project, array $input): void
     {
         $rules = [
@@ -96,7 +109,12 @@ class CreateServer
             ],
             'os' => [
                 'required',
-                Rule::in(config('core.operating_systems')),
+                Rule::in(array_intersect(
+                    is_string($input['provider'] ?? null)
+                        ? config('server-provider.providers')[$input['provider']]['operating_systems'] ?? config('core.operating_systems')
+                        : config('core.operating_systems'),
+                    config('core.operating_systems'),
+                )),
             ],
             'server_provider' => [
                 Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != Custom::id(), [
@@ -137,6 +155,7 @@ class CreateServer
             'services.*.version' => [
                 'string',
                 Rule::in(collect(config('service.services'))->pluck('versions')->flatten()->toArray()),
+                new ServiceVersionAvailableRule(is_string($input['os'] ?? null) ? OperatingSystem::tryFrom($input['os']) : null),
             ],
         ];
 

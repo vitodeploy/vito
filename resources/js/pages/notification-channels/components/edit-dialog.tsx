@@ -27,7 +27,7 @@ export default function NotificationChannelEditDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('notification-channels.update', notificationChannel.id), {
+    form.patch(`/settings/notification-channels/${notificationChannel.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

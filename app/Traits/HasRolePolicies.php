@@ -10,7 +10,7 @@ trait HasRolePolicies
 {
     protected function hasReadAccess(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [
+        return $user->tokenAllowsProject($project->id) && $project->hasRoles($user, [
             UserRole::OWNER,
             UserRole::ADMIN,
             UserRole::USER,
@@ -19,7 +19,7 @@ trait HasRolePolicies
 
     protected function hasWriteAccess(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [
+        return $user->tokenAllowsProject($project->id, write: true) && $project->hasRoles($user, [
             UserRole::OWNER,
             UserRole::ADMIN,
         ]);
@@ -27,7 +27,7 @@ trait HasRolePolicies
 
     protected function hasOwnerAccess(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [
+        return $user->tokenAllowsProject($project->id, write: true) && $project->hasRoles($user, [
             UserRole::OWNER,
         ]);
     }

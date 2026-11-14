@@ -24,7 +24,7 @@ export default function Console() {
   const requestToken = useCallback(
     async (sshUser: string): Promise<{ token: string; url: string } | null> => {
       try {
-        const response = await fetch(route('console.token', { server: server.id }), {
+        const response = await fetch(`/servers/${server.id}/console/token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

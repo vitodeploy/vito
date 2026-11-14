@@ -49,7 +49,7 @@ export default function ConnectDNSProvider({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('dns-providers.store'), {
+    form.post('/settings/dns-providers', {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {

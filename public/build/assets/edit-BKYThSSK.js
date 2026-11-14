@@ -1,1 +1,0 @@
-import{f as e}from"./utils-CLRpjyzU.js";import{a as t}from"./dropdown-menu-C3r-zD7T.js";import{t as n}from"./use-dialog-DUWi9Wbw.js";var r=e();function i({serverProvider:e}){let i=n();return(0,r.jsx)(t,{onSelect:()=>i.serverProviderEdit.open({serverProvider:e}),children:`Edit`})}export{i as default};

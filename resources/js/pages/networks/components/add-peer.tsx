@@ -28,7 +28,7 @@ export default function AddNetworkPeer({
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.transform((data) => ({ name: data.name, public_key: byo ? data.public_key : '' }));
-    form.post(route('networks.peers.store', { network: networkId }), {
+    form.post(`/networks/${networkId}/peers`, {
       onSuccess: () => {
         form.reset();
         setByo(false);

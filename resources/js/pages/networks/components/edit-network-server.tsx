@@ -28,7 +28,7 @@ export default function EditNetworkServer({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('networks.servers.update', { network: networkId, networkServer: member.id }), {
+    form.put(`/networks/${networkId}/servers/${member.id}`, {
       preserveScroll: true,
       onSuccess: () => onOpenChange(false),
     });

@@ -24,7 +24,7 @@ export default function Execute({ command, children }: { command: Command; child
   const form = useForm<Record<string, string>>({});
 
   const submit = () => {
-    form.post(route('commands.execute', { server: command.server_id, site: command.site_id, command: command.id }), {
+    form.post(`/servers/${command.server_id}/sites/${command.site_id}/commands/${command.id}/execute`, {
       onSuccess: () => {
         setOpen(false);
       },

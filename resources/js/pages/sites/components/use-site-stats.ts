@@ -7,7 +7,7 @@ export function useSiteStats(server: Server, site: Site, month?: string) {
   return useQuery<SiteStatsResponse>({
     queryKey: ['site-stats', site.id, month ?? 'current'],
     queryFn: async () => {
-      const response = await fetch(route('site-stats.json', { server: server.id, site: site.id, month }));
+      const response = await fetch(`/servers/${server.id}/sites/${site.id}/stats/json?${new URLSearchParams(month ? { month } : {})}`);
       if (!response.ok) {
         throw new Error('Failed to fetch site statistics');
       }

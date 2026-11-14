@@ -15,7 +15,7 @@ function ToggleEnabled({ backup }: { backup: Backup }) {
   const form = useForm();
 
   const submit = () => {
-    form.post(route(backup.enabled ? 'backups.disable' : 'backups.enable', { server: backup.server_id, backup: backup.id }), {
+    form.post(`/servers/${backup.server_id}/backups/${backup.id}/${backup.enabled ? 'disable' : 'enable'}`, {
       preserveScroll: true,
     });
   };
@@ -41,7 +41,7 @@ function Delete({ backup }: { backup: Backup }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('backups.destroy', { server: backup.server_id, backup: backup.id }),
+          url: `/servers/${backup.server_id}/backups/${backup.id}`,
         })
       }
     >
@@ -69,7 +69,7 @@ export default function BackupActions({ backup }: { backup: Backup }) {
             <Edit backup={backup} />
             <ToggleEnabled backup={backup} />
             <DropdownMenuItem asChild>
-              <Link href={route('backup-files', { server: backup.server_id, backup: backup.id })}>Files</Link>
+              <Link href={`/servers/${backup.server_id}/backups/${backup.id}/files`}>Files</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <Delete backup={backup} />

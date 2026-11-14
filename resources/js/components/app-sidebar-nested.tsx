@@ -55,56 +55,56 @@ export function AppSidebar() {
   const mainNavItems: NavItem[] = [
     {
       title: 'Servers',
-      href: route('servers'),
+      href: '/servers',
       icon: ServerIcon,
       children: [
         {
           title: 'Overview',
-          href: route('servers.show', { server: page.props.server?.id || 0 }),
-          onlyActivePath: route('servers.show', { server: page.props.server?.id || 0 }),
+          href: `/servers/${page.props.server?.id || 0}`,
+          onlyActivePath: `/servers/${page.props.server?.id || 0}`,
           icon: HomeIcon,
           isDisabled: isServerMenuDisabled,
         },
         {
           title: 'Database',
-          href: route('databases', { server: page.props.server?.id || 0 }),
+          href: `/servers/${page.props.server?.id || 0}/database`,
           icon: DatabaseIcon,
           isDisabled: isServerMenuDisabled,
           children: [
             {
               title: 'Databases',
-              href: route('databases', { server: page.props.server?.id || 0 }),
-              onlyActivePath: route('databases', { server: page.props.server?.id || 0 }),
+              href: `/servers/${page.props.server?.id || 0}/database`,
+              onlyActivePath: `/servers/${page.props.server?.id || 0}/database`,
               icon: DatabaseIcon,
             },
             {
               title: 'Users',
-              href: route('database-users', { server: page.props.server?.id || 0 }),
+              href: `/servers/${page.props.server?.id || 0}/database/users`,
               icon: UsersIcon,
             },
             {
               title: 'Backups',
-              href: route('backups', { server: page.props.server?.id || 0 }),
+              href: `/servers/${page.props.server?.id || 0}/backups`,
               icon: CloudUploadIcon,
             },
           ],
         },
         {
           title: 'Sites',
-          href: route('sites', { server: page.props.server?.id || 0 }),
+          href: `/servers/${page.props.server?.id || 0}/sites`,
           icon: MousePointerClickIcon,
           isDisabled: isServerMenuDisabled,
           children: page.props.site
             ? [
                 {
                   title: 'All sites',
-                  href: route('sites', { server: page.props.server?.id || 0 }),
-                  onlyActivePath: route('sites', { server: page.props.server?.id || 0 }),
+                  href: `/servers/${page.props.server?.id || 0}/sites`,
+                  onlyActivePath: `/servers/${page.props.server?.id || 0}/sites`,
                   icon: ArrowLeftIcon,
                 },
                 {
                   title: 'Application',
-                  href: route('application', { server: page.props.server?.id || 0, site: page.props.site?.id || 0 }),
+                  href: `/servers/${page.props.server?.id || 0}/sites/${page.props.site?.id || 0}`,
                   icon: RocketIcon,
                 },
               ]
@@ -112,13 +112,13 @@ export function AppSidebar() {
         },
         {
           title: 'Firewall',
-          href: route('firewall', { server: page.props.server?.id || 0 }),
+          href: `/servers/${page.props.server?.id || 0}/firewall`,
           icon: FlameIcon,
           isDisabled: isServerMenuDisabled,
         },
         {
           title: 'CronJobs',
-          href: route('cronjobs', { server: page.props.server?.id || 0 }),
+          href: `/servers/${page.props.server?.id || 0}/cronjobs`,
           icon: ClockIcon,
           isDisabled: isServerMenuDisabled,
         },
@@ -161,62 +161,62 @@ export function AppSidebar() {
     },
     {
       title: 'Sites',
-      href: route('sites.all'),
+      href: '/sites',
       icon: MousePointerClickIcon,
     },
     {
       title: 'Settings',
-      href: route('settings'),
+      href: '/settings',
       icon: CogIcon,
       children: [
         {
           title: 'Profile',
-          href: route('profile'),
+          href: '/settings/profile',
           icon: UserIcon,
         },
         {
           title: 'Users',
-          href: route('users'),
+          href: '/admin/users',
           icon: UsersIcon,
         },
         {
           title: 'Projects',
-          href: route('projects'),
+          href: '/settings/projects',
           icon: ListIcon,
         },
         {
           title: 'Server Providers',
-          href: route('server-providers'),
+          href: '/settings/server-providers',
           icon: CloudIcon,
         },
         {
           title: 'Source Controls',
-          href: route('source-controls'),
+          href: '/settings/source-controls',
           icon: CodeIcon,
         },
         {
           title: 'Storage Providers',
-          href: route('storage-providers'),
+          href: '/settings/storage-providers',
           icon: DatabaseIcon,
         },
         {
           title: 'Notification Channels',
-          href: route('notification-channels'),
+          href: '/settings/notification-channels',
           icon: BellIcon,
         },
         {
           title: 'SSH Keys',
-          href: route('ssh-keys'),
+          href: '/settings/ssh-keys',
           icon: KeyIcon,
         },
         {
           title: 'Tags',
-          href: route('tags'),
+          href: '/tags',
           icon: TagIcon,
         },
         {
           title: 'API Keys',
-          href: route('api-keys'),
+          href: '/settings/api-keys',
           icon: PlugIcon,
         },
       ],
@@ -238,7 +238,7 @@ export function AppSidebar() {
 
   const getMenuItems = (items: NavItem[]) => {
     return items.map((item) => {
-      const isActive = item.onlyActivePath ? currentPath() === item.href : window.location.href.startsWith(item.href);
+      const isActive = item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href);
 
       if (item.children && item.children.length > 0) {
         return (
@@ -276,7 +276,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="sm" asChild>
-              <Link href={route('servers')} prefetch>
+              <Link href="/servers" prefetch>
                 <AppLogo />
               </Link>
             </SidebarMenuButton>

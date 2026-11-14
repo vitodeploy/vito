@@ -54,7 +54,7 @@ export default function DeleteServer({ server, children }: { server: Server; chi
       name: data.name,
       ...(isCustom ? {} : { delete_from_provider: data.delete_from_provider === 'yes' }),
     }));
-    form.delete(route('servers.destroy', server.id), {
+    form.delete(`/servers/${server.id}`, {
       onSuccess: () => setOpen(false),
     });
   };

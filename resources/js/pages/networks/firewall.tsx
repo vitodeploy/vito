@@ -70,7 +70,7 @@ export default function NetworkFirewall() {
                           variant: 'destructive',
                           confirmLabel: 'Delete',
                           method: 'delete',
-                          url: route('networks.firewall.destroy', { network: network.id, networkFirewallRule: rule.id }),
+                          url: `/networks/${network.id}/firewall/${rule.id}`,
                         })
                       }
                     >

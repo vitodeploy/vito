@@ -41,7 +41,7 @@ export default function AddServer({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('networks.servers.store', { network: networkId }), {
+    form.post(`/networks/${networkId}/servers`, {
       onSuccess: () => {
         onOpenChange(false);
         form.reset();

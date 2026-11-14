@@ -1,8 +1,13 @@
 export DEBIAN_FRONTEND=noninteractive
 
+@if($isDebian)
+sudo apt-get update -y
+sudo apt-get install -y fail2ban python3-systemd nftables
+@else
 sudo add-apt-repository -y universe
 sudo apt-get update -y
 sudo apt-get install -y fail2ban
+@endif
 
 @include('ssh.services.fail2ban.jail')
 

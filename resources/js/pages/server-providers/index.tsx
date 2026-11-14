@@ -45,7 +45,7 @@ export default function ServerProviders() {
         <VitoTable
           tableData={page.props.serverProviders}
           actions={(row: Row) => {
-            const serverProvider = asRow<ServerProvider>(row, ['id', 'name', 'global']);
+            const serverProvider = asRow<ServerProvider>(row, ['id', 'name', 'global', 'provider', 'editable_data']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

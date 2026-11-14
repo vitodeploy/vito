@@ -33,7 +33,7 @@ export default function AddSshKey({ children, onKeyAdded }: { children: ReactNod
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('ssh-keys.store'), {
+    form.post('/settings/ssh-keys', {
       onSuccess: () => {
         setOpen(false);
         if (onKeyAdded) {

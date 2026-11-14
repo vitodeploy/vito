@@ -5,6 +5,7 @@ import { dialogs, type DialogRegistry, type ConsumerProps } from '@/components/d
 type DialogAccessor = {
   -readonly [K in keyof DialogRegistry]: {
     open: (props: ConsumerProps<DialogRegistry[K]>) => void;
+    openNested: (props: ConsumerProps<DialogRegistry[K]>) => void;
     close: () => void;
   };
 };
@@ -12,6 +13,7 @@ type DialogAccessor = {
 function entryFor<K extends keyof DialogRegistry>(key: K) {
   return {
     open: (props: ConsumerProps<DialogRegistry[K]>) => useDialogStore.getState().open(key, props),
+    openNested: (props: ConsumerProps<DialogRegistry[K]>) => useDialogStore.getState().openNested(key, props),
     close: () => useDialogStore.getState().close(),
   };
 }

@@ -37,7 +37,7 @@ export default function CreateCommand({ children }: { children: ReactNode }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('commands.store', { server: page.props.server.id, site: page.props.site.id }), {
+    form.post(`/servers/${page.props.server.id}/sites/${page.props.site.id}/commands`, {
       onSuccess: () => {
         setOpen(false);
       },

@@ -2,6 +2,13 @@
 
 use App\Contracts\VitoEnum;
 use App\Models\AbstractModel;
+use App\Models\CronJob;
+use App\Models\Deployment;
+use App\Models\DeploymentScript;
+use App\Models\GitHook;
+use App\Models\Ssl;
+use App\Models\Worker;
+use App\Traits\HasExclusiveOwner;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Tests\ArchTestCase;
@@ -15,6 +22,17 @@ arch('models extend AbstractModel')
         ...ArchTestCase::except('models.foreign-base-class'),
         ...ArchTestCase::except('models.not-on-abstract-model'),
     ]);
+
+arch('shared owner models enforce exclusive ownership')
+    ->expect([
+        Deployment::class,
+        DeploymentScript::class,
+        Worker::class,
+        CronJob::class,
+        GitHook::class,
+        Ssl::class,
+    ])
+    ->toUseTrait(HasExclusiveOwner::class);
 
 arch('eloquent models only live in the models namespace')
     ->expect('App')

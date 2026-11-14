@@ -72,7 +72,7 @@ class SiteResource extends JsonResource
     }
 
     /**
-     * Strip basic-auth password hashes from type_data before sending to the client.
+     * Strip installation passwords and basic-auth hashes before sending to the client.
      *
      * @return array<string, mixed>
      */
@@ -80,7 +80,7 @@ class SiteResource extends JsonResource
     {
         $typeData = $this->type_data ?? [];
 
-        unset($typeData['php']);
+        unset($typeData['php'], $typeData['password'], $typeData['database_password']);
 
         if (isset($typeData['basic_auth']['users']) && is_array($typeData['basic_auth']['users'])) {
             $typeData['basic_auth']['users'] = array_map(

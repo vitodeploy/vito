@@ -29,6 +29,8 @@ class CreateServerProvider
 
         try {
             $provider->connect($input);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception) {
             throw ValidationException::withMessages([
                 'provider' => [

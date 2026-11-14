@@ -1,3 +1,3 @@
-ln -sfn {{ $releasePath }} {{ $site->basePath() }}/current
+ln -sfn -- {!! escapeshellarg($releasePath) !!} {!! escapeshellarg($basePath.'/current') !!}
 
-echo "Version {{ basename($releasePath) }} activated! 🎉"
+printf '%s\n' {!! escapeshellarg('Version '.basename($releasePath).' activated! 🎉') !!}

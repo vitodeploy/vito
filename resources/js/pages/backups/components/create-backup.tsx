@@ -42,7 +42,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
     if (!activeServer) {
       return;
     }
-    form.post(route('backups.store', { server: activeServer.id }), {
+    form.post(`/servers/${activeServer.id}/backups`, {
       onSuccess: () => onOpenChange(false),
     });
   };

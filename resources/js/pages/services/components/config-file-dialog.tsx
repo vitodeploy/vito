@@ -40,7 +40,7 @@ export default function ServiceConfigFileDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('services.config.update', { server: service.server_id, service: service.id }), {
+    form.patch(`/servers/${service.server_id}/services/${service.id}/config`, {
       onSuccess: () => onOpenChange(false),
     });
   };
@@ -48,13 +48,9 @@ export default function ServiceConfigFileDialog({
   const query = useQuery({
     queryKey: ['services.config', service.server_id, service.id, configPath.name],
     queryFn: async () => {
-      const response = await axios.get(
-        route('services.config', {
-          server: service.server_id,
-          service: service.id,
-          config_name: configPath.name,
-        }),
-      );
+      const response = await axios.get(`/servers/${service.server_id}/services/${service.id}/config`, {
+        params: { config_name: configPath.name },
+      });
       if (typeof response.data?.content === 'string') {
         form.setData('content', response.data.content);
       }

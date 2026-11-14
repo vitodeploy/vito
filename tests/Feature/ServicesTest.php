@@ -1,16 +1,44 @@
 <?php
 
+use App\Actions\Service\Uninstall;
+use App\Enums\ComponentStatus;
+use App\Enums\OperatingSystem;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Jobs\Service\UninstallJob;
+use App\Models\Component;
+use App\Models\ComponentCapability;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
+
+test('process manager removal protects worker capabilities before any workers exist', function () {
+    SSH::fake();
+    Queue::fake();
+    $component = Component::factory()->create(['server_id' => $this->server->id, 'status' => ComponentStatus::READY]);
+    $capability = ComponentCapability::factory()->for($component)->create(['capability' => 'worker', 'status' => ComponentStatus::READY]);
+    $service = $this->server->processManager();
+    $this->assertDatabaseCount('workers', 0);
+
+    expect(fn () => app(Uninstall::class)->uninstall($service))->toThrow(ValidationException::class);
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'status' => ServiceStatus::READY]);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+
+    $capability->delete();
+    app(Uninstall::class)->uninstall($service);
+    Queue::assertPushed(UninstallJob::class);
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'status' => ServiceStatus::UNINSTALLING]);
+});
 
 test('see services list', function () {
     $this->actingAs($this->user);
@@ -334,6 +362,115 @@ test('install service creates installation log', function () {
     expect($service->type_data['networking_effective'] ?? null)->toBeNull('Install never observes the live bind state, so it must not claim one.');
     expect($service->type_data['networking_checked_at'] ?? null)->toBeNull();
     $this->assertArrayNotHasKey('networking', $service->type_data);
+});
+
+test('cannot install mariadb versions unavailable on ubuntu 26', function (string|float $version) {
+    SSH::fake();
+
+    $this->actingAs($this->user);
+
+    $server = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'os' => OperatingSystem::UBUNTU26,
+    ]);
+
+    $this->post(route('services.store', [
+        'server' => $server,
+    ]), [
+        'name' => 'mariadb',
+        'version' => $version,
+    ])
+        ->assertSessionHasErrors(['version' => "MariaDB $version is not available on Ubuntu 26.04."]);
+
+    $this->assertDatabaseMissing('services', [
+        'server_id' => $server->id,
+        'name' => 'mariadb',
+    ]);
+})->with(['10.11', '11.4', 11.4]);
+
+test('debian service installs use debian packaging', function (string $service, string $type, string $version, string $expected, ?string $unexpected) {
+    SSH::fake('Active: active');
+    Event::fake();
+
+    $this->server->update(['os' => OperatingSystem::DEBIAN13]);
+
+    $handler = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'type' => $type,
+        'name' => $service,
+        'version' => $version,
+        'status' => ServiceStatus::READY,
+    ]);
+
+    $handler->handler()->install();
+
+    SSH::assertExecutedContains($expected);
+    if ($unexpected !== null) {
+        SSH::assertNotExecutedContains($unexpected);
+    }
+})->with([
+    'mysql' => ['mysql', 'database', '8.4', 'http://repo.mysql.com/apt/debian ${CODENAME}', 'repo.mysql.com/apt/ubuntu'],
+    'postgresql' => ['postgresql', 'database', '17', "sudo sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen", null],
+    'fail2ban' => ['fail2ban', 'firewall', 'latest', 'apt-get install -y fail2ban python3-systemd nftables', 'add-apt-repository'],
+]);
+
+test('ubuntu service installs keep ubuntu packaging', function (string $service, string $type, string $version, string $expected, ?string $unexpected) {
+    SSH::fake('Active: active');
+    Event::fake();
+
+    $this->server->update(['os' => OperatingSystem::UBUNTU24]);
+
+    $handler = Service::factory()->create([
+        'server_id' => $this->server->id,
+        'type' => $type,
+        'name' => $service,
+        'version' => $version,
+        'status' => ServiceStatus::READY,
+    ]);
+
+    $handler->handler()->install();
+
+    SSH::assertExecutedContains($expected);
+    SSH::assertNotExecutedContains($unexpected);
+})->with([
+    'mysql' => ['mysql', 'database', '8.4', 'http://repo.mysql.com/apt/ubuntu ${CODENAME}', 'repo.mysql.com/apt/debian'],
+    'postgresql' => ['postgresql', 'database', '17', 'sudo locale-gen en_US.UTF-8', '/etc/locale.gen'],
+    'fail2ban' => ['fail2ban', 'firewall', 'latest', 'add-apt-repository -y universe', 'python3-systemd'],
+]);
+
+test('install mariadb on ubuntu 26 skips the maxscale repository', function () {
+    SSH::fake('Active: active');
+
+    $this->actingAs($this->user);
+
+    $server = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'os' => OperatingSystem::UBUNTU26,
+    ]);
+
+    $keys = $server->sshKey();
+    if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
+        $server->provider()->generateKeyPair();
+    }
+
+    $this->post(route('services.store', [
+        'server' => $server,
+    ]), [
+        'name' => 'mariadb',
+        'version' => '11.8',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('services', [
+        'server_id' => $server->id,
+        'name' => 'mariadb',
+        'version' => '11.8',
+        'status' => ServiceStatus::READY,
+    ]);
+
+    SSH::assertExecutedContains('--skip-maxscale');
 });
 
 test('parse php installed version', function (string $sshOutput, string $expectedVersion) {

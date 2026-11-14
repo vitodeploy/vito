@@ -6,47 +6,47 @@ import Layout from '@/layouts/app/layout';
 const sidebarNavItems: NavItem[] = [
   {
     title: 'Profile',
-    href: route('profile'),
+    href: '/settings/profile',
     icon: UserIcon,
   },
   {
     title: 'Projects',
-    href: route('projects'),
+    href: '/settings/projects',
     icon: ListIcon,
   },
   {
     title: 'Server Providers',
-    href: route('server-providers'),
+    href: '/settings/server-providers',
     icon: CloudIcon,
   },
   {
     title: 'Source Controls',
-    href: route('source-controls'),
+    href: '/settings/source-controls',
     icon: CodeIcon,
   },
   {
     title: 'Storage Providers',
-    href: route('storage-providers'),
+    href: '/settings/storage-providers',
     icon: DatabaseIcon,
   },
   {
     title: 'DNS Providers',
-    href: route('dns-providers'),
+    href: '/settings/dns-providers',
     icon: GlobeIcon,
   },
   {
     title: 'Notification Channels',
-    href: route('notification-channels'),
+    href: '/settings/notification-channels',
     icon: BellIcon,
   },
   {
     title: 'SSH Keys',
-    href: route('ssh-keys'),
+    href: '/settings/ssh-keys',
     icon: KeyIcon,
   },
   {
     title: 'API Keys',
-    href: route('api-keys'),
+    href: '/settings/api-keys',
     icon: CommandIcon,
   },
 ];

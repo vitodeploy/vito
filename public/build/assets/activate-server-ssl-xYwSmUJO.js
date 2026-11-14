@@ -1,0 +1,1 @@
+import{r as e,t}from"./jsx-runtime-D71uMYU6.js";import{t as n}from"./use-dialog-Cg_u8335.js";import{a as r}from"./dropdown-menu-CRbThtkQ.js";var i=e({default:()=>o}),a=t();function o({ssl:e}){let t=n();return(0,a.jsx)(r,{onSelect:()=>t.activateServerSsl.open({serverId:e.server_id,sslId:e.id}),children:`Activate`})}export{i as n,o as t};

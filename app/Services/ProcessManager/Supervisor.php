@@ -5,8 +5,11 @@ namespace App\Services\ProcessManager;
 use App\DTOs\ServiceLog;
 use App\Enums\WorkerStatus;
 use App\Exceptions\SSHError;
+use App\Helpers\ComponentShell;
 use App\Models\Worker;
 use App\Services\HasLogs;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager implements HasLogs
@@ -74,21 +77,44 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function writeConfig(Worker $worker): void
     {
+        $logFile = $worker->getLogFile();
+        $previousLogFile = null;
+        if (! $this->isRootSafeLogPath($logFile)) {
+            $previousLogFile = $logFile;
+            $logFile = $worker->defaultLogFile();
+        }
+
+        if ($logFile === $worker->defaultLogFile()) {
+            $this->service->server->ssh()->exec(
+                view('ssh.services.process-manager.supervisor.prepare-log', [
+                    'logFile' => $logFile,
+                    'previousLogFile' => $previousLogFile,
+                    'user' => $worker->user,
+                ])
+            );
+        }
+
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/{$worker->id}.conf",
             view('ssh.services.process-manager.supervisor.worker', [
                 'name' => (string) $worker->id,
-                'directory' => $worker->site?->path,
-                'command' => $worker->command,
+                'directory' => $worker->component_id === null ? $worker->site?->path : null,
+                'command' => $worker->component ? new HtmlString(ComponentShell::wrap($worker->component, $worker->command)) : $worker->command,
                 'user' => $worker->user,
                 'autoStart' => var_export($worker->auto_start, true),
                 'autoRestart' => var_export($worker->auto_restart, true),
                 'numprocs' => (string) $worker->numprocs,
-                'logFile' => $worker->getLogFile(),
-                'environment' => self::formatEnvironment($worker->effectiveEnvironment()),
+                'logFile' => new HtmlString($logFile),
+                'environment' => $worker->component_id === null ? self::formatEnvironment($worker->effectiveEnvironment()) : '',
             ]),
             'root'
         );
+
+        if ($worker->getOriginal('stdout_logfile') !== $logFile) {
+            Worker::query()->whereKey($worker->id)->update(['stdout_logfile' => $logFile]);
+            $worker->stdout_logfile = $logFile;
+            $worker->syncOriginalAttribute('stdout_logfile');
+        }
     }
 
     /**
@@ -96,13 +122,13 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function create(Worker $worker): void
     {
+        $worker->stdout_logfile = $worker->defaultLogFile();
         $this->writeConfig($worker);
 
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.create-worker', [
                 'id' => $worker->id,
-                'logFile' => $worker->getLogFile(),
-                'user' => $worker->user,
+                'start' => $worker->component_id === null || $worker->auto_start,
             ]),
             'create-worker',
             $worker->site_id
@@ -114,13 +140,31 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function delete(int $id, ?int $siteId = null): void
     {
+        $worker = Worker::query()->find($id);
+        $logFile = $worker?->getLogFile();
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.delete-worker', [
                 'id' => $id,
+                'component' => $worker?->component_id !== null,
+                'logFile' => $logFile !== null && $this->isRootSafeLogPath($logFile)
+                    && ($worker->status === WorkerStatus::DELETING || $logFile !== $worker->defaultLogFile()) ? $logFile : null,
             ]),
             'delete-worker',
             $siteId
         );
+    }
+
+    /**
+     * Whether root can open or remove the path without following symlinks an unprivileged user planted.
+     * Legacy logs inside an isolated user's home are not safe: that user owns the directory.
+     */
+    private function isRootSafeLogPath(string $logFile): bool
+    {
+        return Str::startsWith($logFile, [
+            '/var/log/vito/workers/',
+            '/root/',
+            '/home/'.$this->service->server->getSshUser().'/',
+        ]);
     }
 
     /**
@@ -191,9 +235,10 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function restartAll(?int $siteId = null): void
     {
-        if ($siteId !== null) {
+        if ($siteId !== null || $this->service->server->components()->exists()) {
             $ids = $this->service->server->workers()
-                ->where('site_id', $siteId)
+                ->whereNull('component_id')
+                ->when($siteId !== null, fn ($query) => $query->where('site_id', $siteId))
                 ->whereNotIn('status', [WorkerStatus::CREATING, WorkerStatus::DELETING])
                 ->pluck('id')
                 ->all();
@@ -252,8 +297,8 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function getLogs(string $user, string $logPath): string
     {
-        return $this->service->server->ssh($user)->exec(
-            "tail -100 $logPath"
+        return $this->service->server->ssh($this->isRootSafeLogPath($logPath) ? 'root' : $user)->exec(
+            'tail -100 -- '.escapeshellarg($logPath)
         );
     }
 

@@ -26,7 +26,7 @@ function Delete({ sourceControl }: { sourceControl: SourceControl }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('source-controls.destroy', sourceControl.id),
+          url: `/settings/source-controls/${sourceControl.id}`,
         })
       }
     >

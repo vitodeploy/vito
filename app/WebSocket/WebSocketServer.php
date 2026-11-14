@@ -2,7 +2,6 @@
 
 namespace App\WebSocket;
 
-use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Message;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\RequestInterface;
@@ -43,7 +42,7 @@ class WebSocketServer
     ) {
         $this->negotiator = new ServerNegotiator(
             new RequestVerifier,
-            new HttpFactory,
+            new HandshakeResponseFactory,
         );
         $this->maxConnections = $maxConnections;
 

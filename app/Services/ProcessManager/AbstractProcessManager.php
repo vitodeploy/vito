@@ -31,6 +31,9 @@ abstract class AbstractProcessManager extends AbstractService implements Process
                     if ($hasWorker) {
                         $fail('You have worker(s) on the server.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Application components still require this service.');
+                    }
                 },
             ],
         ];

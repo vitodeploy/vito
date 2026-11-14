@@ -42,7 +42,7 @@ export default function ServerIpForm({
       prefix_length: customMask ? data.prefix_length : '',
       ip_last: addRange ? data.ip_last : '',
     }));
-    form.post(route('servers.network.ips.store', { server: serverId }), {
+    form.post(`/servers/${serverId}/network/ips`, {
       onSuccess: () => onOpenChange(false),
     });
   };

@@ -41,7 +41,7 @@ export default function Run({ workflow, children }: { workflow: Workflow; childr
 
   const submit = () => {
     validateInputs();
-    form.post(route('workflow-runs.store', { workflow: workflow.id }));
+    form.post(`/workflows/${workflow.id}/runs`);
   };
 
   const validateInputs = () => {

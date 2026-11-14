@@ -10,9 +10,13 @@ export function rowId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
 }
 
-// current absolute URL without its query string or hash, for exact nav-active matching
+export function loadBalancerMethodLabel(method: string | null): string {
+  const labels: Record<string, string> = { 'round-robin': 'Round robin', 'least-connections': 'Least connections', 'ip-hash': 'IP hash' };
+  return labels[method ?? 'round-robin'] ?? method ?? 'Round robin';
+}
+
 export function currentPath(): string {
-  return window.location.href.split(/[?#]/)[0];
+  return window.location.pathname;
 }
 
 // convert kb to gb

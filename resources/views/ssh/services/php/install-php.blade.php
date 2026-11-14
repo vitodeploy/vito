@@ -1,4 +1,9 @@
+@if($useSury)
+sudo curl -fsSLo /usr/share/keyrings/sury-php-archive-keyring.gpg https://packages.sury.org/php/apt.gpg
+echo "deb [signed-by=/usr/share/keyrings/sury-php-archive-keyring.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
+@else
 sudo add-apt-repository ppa:ondrej/php -y
+@endif
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update -o Acquire::AllowReleaseInfoChange::Label=true
 
@@ -12,4 +17,4 @@ fi
 
 sudo systemctl enable php{{ $version }}-fpm
 
-sudo systemctl start php{{ $version }}-fpm
+sudo systemctl restart php{{ $version }}-fpm

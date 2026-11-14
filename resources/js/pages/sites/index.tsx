@@ -66,7 +66,7 @@ export default function Sites() {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <Link href={route('application', { server: row.server_id, site: row.id })} prefetch>
+                <Link href={`/servers/${encodeURIComponent(String(row.server_id))}/sites/${encodeURIComponent(row.id)}`} prefetch>
                   <Button variant="outline" size="sm">
                     <EyeIcon />
                   </Button>

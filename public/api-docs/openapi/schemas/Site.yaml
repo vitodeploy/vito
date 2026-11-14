@@ -20,6 +20,7 @@ properties:
   type_data:
     type: object
     nullable: true
+    description: 'Site-specific metadata. Installation passwords and basic-auth password hashes are never returned.'
   basic_auth:
     type: object
     description: 'Basic authentication configuration. Password hashes are never returned.'

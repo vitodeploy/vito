@@ -30,7 +30,7 @@ function Delete({ file }: { file: BackupFile }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('backup-files.destroy', { server: file.server_id, backup: file.backup_id, backupFile: file.id }),
+          url: `/servers/${file.server_id}/backups/${file.backup_id}/files/${file.id}`,
         })
       }
     >

@@ -20,7 +20,7 @@ export default function Delete({ sshKey }: { sshKey: SshKey }) {
           variant: 'destructive',
           confirmLabel: 'Delete',
           method: 'delete',
-          url: route('server-ssh-keys.destroy', { server: page.props.server.id, sshKey: sshKey.id }),
+          url: `/servers/${page.props.server.id}/ssh-keys/${sshKey.id}`,
         })
       }
     >

@@ -32,6 +32,10 @@ properties:
     type: string
     nullable: true
     example: 'Allow SSH access from anywhere'
+  component_managed:
+    type: boolean
+    readOnly: true
+    description: Whether this rule is managed by an application load balancer or environment resource and cannot be edited directly.
   status:
     type: string
     enum: ['creating', 'updating', 'ready', 'deleting', 'failed']

@@ -1,10 +1,10 @@
 import { LucideIcon } from 'lucide-react';
-import type { Config } from 'ziggy-js';
 import type { Server } from '@/types/server';
 import { Project } from '@/types/project';
 import { User } from '@/types/user';
 import { Site, SiteType } from '@/types/site';
 import { DynamicFieldConfig } from './dynamic-field-config';
+import { Application, Environment } from '@/types/application';
 
 export interface Auth {
   user: User;
@@ -31,6 +31,7 @@ export interface NavItem {
   children?: NavItem[];
   hidden?: boolean;
   external?: boolean;
+  badge?: string;
 }
 
 export interface Configs {
@@ -48,6 +49,9 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        create_form?: DynamicFieldConfig[];
+        edit_form?: DynamicFieldConfig[];
+        operating_systems?: string[];
       };
     };
   };
@@ -102,6 +106,7 @@ export interface Configs {
         handler: string;
         form?: DynamicFieldConfig[];
         versions: string[];
+        unavailable_versions: Record<string, string[]>;
         data?: {
           extensions?: string[];
         };
@@ -114,10 +119,34 @@ export interface Configs {
     };
     reserved_user_names: string[];
   };
+  application: {
+    runtimes: {
+      id: string;
+      label: string;
+      versions: string[];
+      web_mode: 'fpm' | 'proxy' | 'static';
+      form: DynamicFieldConfig[];
+      creation_form: DynamicFieldConfig[];
+      capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
+      required_services: string[];
+      version_service: string | null;
+      suggests_database: boolean;
+    }[];
+    capabilities: {
+      id: string;
+      label: string;
+      description: string;
+      surfaces: string[];
+    }[];
+  };
   github_app: {
     installed: boolean;
   };
   tooling: ToolingDescriptor[];
+  dashboard_urls: {
+    horizon: string;
+    logs: string;
+  };
 
   [key: string]: unknown;
 }
@@ -137,9 +166,11 @@ export interface SharedData {
   demo: boolean;
   quote: { message: string; author: string };
   auth: Auth;
-  ziggy?: Config & { location: string };
   server?: Server;
   site?: Site;
+  application?: Application;
+  projectApplications?: { id: number; name: string }[];
+  environment?: Environment;
   csrf_token: string;
   bootstrap_version: string;
   flash?: {

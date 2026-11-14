@@ -24,7 +24,7 @@ export const columns: ColumnDef<ScriptExecution>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       return row.original.server ? (
-        <Link href={route('servers.show', { server: row.original.server_id })} className="hover:underline">
+        <Link href={`/servers/${row.original.server_id}`} className="hover:underline">
           {row.original.server.name} ({row.original.server.ip})
         </Link>
       ) : (

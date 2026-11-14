@@ -17,7 +17,7 @@ export default function EditRedirect({ open, onOpenChange, redirect }: { open: b
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('redirects.update', { server: redirect.server_id, site: redirect.site_id, redirect: redirect.id }), {
+    form.put(`/servers/${redirect.server_id}/sites/${redirect.site_id}/redirects/${redirect.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

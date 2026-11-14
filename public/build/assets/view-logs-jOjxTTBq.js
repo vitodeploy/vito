@@ -1,0 +1,1 @@
+import{r as e,t}from"./jsx-runtime-D71uMYU6.js";import{t as n}from"./use-dialog-Cg_u8335.js";import{a as r}from"./dropdown-menu-CRbThtkQ.js";var i=e({default:()=>o}),a=t();function o({plugin:e}){let t=n();return(0,a.jsx)(r,{onSelect:()=>t.pluginLogs.open({name:e.name??e.folder,errors:e.errors}),children:`View Logs`})}export{i as n,o as t};

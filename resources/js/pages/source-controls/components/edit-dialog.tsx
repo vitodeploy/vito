@@ -42,7 +42,7 @@ export default function SourceControlEditDialog({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('source-controls.update', sourceControl.id), {
+    form.patch(`/settings/source-controls/${sourceControl.id}`, {
       onSuccess: () => onOpenChange(false),
     });
   };

@@ -2,6 +2,7 @@
 
 namespace App\Tooling;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Models\Site;
 
 abstract class AbstractTooling implements ToolingInterface
@@ -21,12 +22,25 @@ abstract class AbstractTooling implements ToolingInterface
 
     public function installedVersion(Site $site): ?string
     {
-        $version = $site->isolatedUser?->toolingVersion(static::id());
+        return $this->installedVersionForTarget(ToolingTargetDTO::forSite($site));
+    }
+
+    public function installedVersionForTarget(ToolingTargetDTO $target): ?string
+    {
+        $version = $target->isolatedUser?->toolingVersion(static::id());
 
         return $version === 'none' ? null : $version;
     }
 
     public function pathContributions(Site $site): array
+    {
+        return $this->pathContributionsForTarget(ToolingTargetDTO::forSite($site));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function pathContributionsForTarget(ToolingTargetDTO $target): array
     {
         return [];
     }

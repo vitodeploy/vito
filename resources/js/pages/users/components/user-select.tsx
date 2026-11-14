@@ -24,7 +24,7 @@ export default function UserSelect({ value, onValueChange }: { value: string; on
   } = useQuery<User[]>({
     queryKey: ['users', query],
     queryFn: async () => {
-      const response = await axios.get(route('users.json', { query: query }));
+      const response = await axios.get('/admin/users/json', { params: { query } });
       return response.data;
     },
     enabled: false,

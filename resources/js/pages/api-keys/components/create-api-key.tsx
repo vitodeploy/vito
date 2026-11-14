@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Project } from '@/types/project';
 import { MultiSelect } from '@/components/multi-select';
+import CopyableField from '@/components/copyable-field';
+import { toast } from 'sonner';
 
 type ApiKeyForm = {
   name: string;
@@ -31,14 +33,22 @@ export default function CreateApiKey({ children, projects }: { children: ReactNo
   const [token, setToken] = useState<string | undefined>();
   const tokenInputRef = useRef<HTMLInputElement>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const mcpUrl = token ? `${window.location.origin}/api/mcp` : '';
   const copyToClipboard = () => {
     tokenInputRef.current?.select();
-    navigator.clipboard.writeText(token || '').then(() => {
-      setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
-    });
+    if (!navigator.clipboard) {
+      toast.error('The clipboard is not available in this browser');
+      return;
+    }
+    navigator.clipboard
+      .writeText(token || '')
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => {
+          setCopySuccess(false);
+        }, 2000);
+      })
+      .catch(() => toast.error('Could not copy to clipboard'));
   };
 
   const form = useForm<Required<ApiKeyForm>>({
@@ -49,7 +59,7 @@ export default function CreateApiKey({ children, projects }: { children: ReactNo
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('api-keys.store'), {
+    form.post('/settings/api-keys', {
       onSuccess: (page) => {
         const flash = page.props.flash as { data?: { token?: string } };
         setToken(flash.data?.token);
@@ -86,6 +96,14 @@ export default function CreateApiKey({ children, projects }: { children: ReactNo
                   Token {copySuccess ? <ClipboardCheckIcon className="text-success! size-4" /> : <ClipboardIcon className="size-4" />}
                 </Label>
                 <Input ref={tokenInputRef} id="token" onClick={copyToClipboard} type="text" value={token || ''} className="cursor-pointer" />
+              </FormField>
+              <FormField>
+                <Label>MCP server</Label>
+                <CopyableField value={mcpUrl} />
+                <p className="text-muted-foreground text-xs">
+                  Connect any MCP client to this URL with the header <code>Authorization: Bearer &lt;token&gt;</code>. For Claude Code:
+                </p>
+                <CopyableField value={`claude mcp add --transport http vito ${mcpUrl} --header "Authorization: Bearer ${token}"`} />
               </FormField>
             </FormFields>
           ) : (

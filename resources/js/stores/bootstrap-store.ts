@@ -22,12 +22,21 @@ type CachedBootstrap = {
   public_key_text: string;
 };
 
+function isCompatible(payload: CachedBootstrap): boolean {
+  return (
+    !!payload?.version &&
+    !!payload.configs &&
+    Array.isArray(payload.configs.application?.runtimes) &&
+    Array.isArray(payload.configs.application?.capabilities)
+  );
+}
+
 function readCache(): CachedBootstrap | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CachedBootstrap;
-    if (!parsed.version || !parsed.configs) return null;
+    if (!isCompatible(parsed)) return null;
     return parsed;
   } catch {
     return null;
@@ -76,12 +85,13 @@ export const useBootstrapStore = create<BootstrapState>((set, get) => {
       set({ status: get().status === 'ready' ? 'ready' : 'loading' });
       inflight = (async () => {
         try {
-          const response = await fetch(route('bootstrap.show'), {
+          const response = await fetch('/bootstrap', {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
           });
           if (!response.ok) throw new Error(`bootstrap fetch failed: ${response.status}`);
           const payload = (await response.json()) as CachedBootstrap;
+          if (!isCompatible(payload)) throw new Error('Incompatible bootstrap catalogue');
           writeCache(payload);
           set({
             version: payload.version,

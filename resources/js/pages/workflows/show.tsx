@@ -167,7 +167,7 @@ export default function Show() {
   };
 
   const saveWorkflow = () => {
-    form.put(route('workflows.update', page.props.workflow.id));
+    form.put(`/workflows/${page.props.workflow.id}`);
   };
 
   return (

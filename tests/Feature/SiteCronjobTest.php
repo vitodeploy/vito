@@ -3,7 +3,10 @@
 use App\Enums\CronjobStatus;
 use App\Facades\SSH;
 use App\Models\CronJob;
+use App\Models\Server;
+use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -249,3 +252,85 @@ test('update site cronjob', function () {
     SSH::assertExecutedContains("echo '0 * * * * bash -lc '\\''php artisan schedule:run'\\''' | sudo -u vito crontab -");
     SSH::assertExecutedContains('sudo -u vito crontab -l');
 });
+
+test('site cronjob routes reject a site from another server', function (string $method, string $route) {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $service = $this->server->webserver()->replicate();
+    $service->server_id = $otherServer->id;
+    $service->save();
+    $site = Site::factory()->create(['server_id' => $otherServer->id]);
+
+    $this->actingAs($this->user)->json($method, route($route, [
+        'server' => $this->server,
+        'site' => $site,
+    ]), [
+        'command' => 'ls -la',
+        'user' => 'vito',
+        'frequency' => '* * * * *',
+    ])->assertForbidden();
+
+    $this->assertDatabaseCount('cron_jobs', 0);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([
+    ['GET', 'cronjobs.site'],
+    ['POST', 'cronjobs.site.store'],
+]);
+
+test('site cronjob routes reject a cronjob from another site', function (string $method, string $route) {
+    $ssh = SSH::fake();
+    Queue::fake();
+
+    $site = Site::factory()->create(['server_id' => $this->server->id]);
+    $cronjob = CronJob::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'user' => 'vito',
+    ]);
+    $attributes = $cronjob->refresh()->getAttributes();
+
+    $this->actingAs($this->user)->json($method, route($route, [
+        'server' => $this->server,
+        'site' => $site,
+        'cronJob' => $cronjob,
+    ]), [
+        'command' => 'pwd',
+        'user' => 'vito',
+        'frequency' => '* * * * *',
+    ])->assertForbidden();
+
+    $this->assertDatabaseHas('cron_jobs', ['id' => $cronjob->id]);
+    expect($cronjob->refresh()->getAttributes())->toBe($attributes);
+    expect($ssh->getExecutedCommands())->toBeEmpty();
+    Queue::assertNothingPushed();
+})->with([
+    ['PUT', 'cronjobs.site.update'],
+    ['POST', 'cronjobs.site.enable'],
+    ['POST', 'cronjobs.site.disable'],
+    ['DELETE', 'cronjobs.site.destroy'],
+]);
+
+test('cronjob policies validate site ownership while preserving server contexts', function (string $ability) {
+    $resource = CronJob::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+    ]);
+    $subject = in_array($ability, ['viewAny', 'create', 'manage']) ? CronJob::class : $resource;
+
+    expect($this->user->can($ability, [$subject, $this->server]))->toBeTrue();
+    expect($this->user->can($ability, [$subject, $this->server, $this->site]))->toBeTrue();
+
+    $otherServer = Server::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->server->project_id,
+    ]);
+    $this->site->update(['server_id' => $otherServer->id]);
+
+    expect($this->user->can($ability, [$subject, $this->server, $this->site]))->toBeFalse();
+})->with(['viewAny', 'create', 'view', 'update', 'delete']);

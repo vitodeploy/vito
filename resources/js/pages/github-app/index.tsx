@@ -202,7 +202,7 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('github-app.manual'), {
+    form.post('/admin/github-app/manual', {
       preserveScroll: true,
       onSuccess: () => form.reset(),
     });
@@ -385,7 +385,7 @@ function ConfiguredCard({ app, installPath }: { app: GithubAppData; installPath:
         <CardRow>
           <span>Install on a GitHub organization</span>
           {installPath && (
-            <a href={route('github-app.install')}>
+            <a href="/admin/github-app/install">
               <Button>
                 <GithubIcon />
                 Install
@@ -412,7 +412,7 @@ function SyncButton() {
   const form = useForm();
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('github-app.sync'), {
+    form.post('/admin/github-app/sync', {
       preserveScroll: true,
     });
   };
@@ -427,7 +427,7 @@ function SyncButton() {
 function RemoveButton() {
   const [open, setOpen] = useState(false);
   const submit = () => {
-    router.delete(route('github-app.destroy'), {
+    router.delete('/admin/github-app', {
       onSuccess: () => setOpen(false),
     });
   };

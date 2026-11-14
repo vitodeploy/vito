@@ -58,6 +58,15 @@ class Blank extends AbstractProxiedSiteType
         return $rules;
     }
 
+    public function createFields(array $input): array
+    {
+        if (empty($input['use_source_control'])) {
+            unset($input['source_control'], $input['repository'], $input['branch']);
+        }
+
+        return parent::createFields($input);
+    }
+
     public function defaultDeploymentScript(): string
     {
         if (! $this->site->repository) {

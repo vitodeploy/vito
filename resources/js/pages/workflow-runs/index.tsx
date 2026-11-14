@@ -19,11 +19,11 @@ export default function Workflows() {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Workflows',
-      href: route('workflows'),
+      href: '/workflows',
     },
     {
       title: page.props.workflow.name,
-      href: route('workflows.show', { workflow: page.props.workflow.id }),
+      href: `/workflows/${page.props.workflow.id}`,
     },
   ];
 
@@ -42,7 +42,7 @@ export default function Workflows() {
           tableData={page.props.workflowRuns}
           onRowClick={(row: Row) => {
             const r = asRow<{ id: number; workflow_id: number }>(row, ['id', 'workflow_id']);
-            router.visit(route('workflow-runs.show', { workflow: r.workflow_id, workflowRun: r.id }));
+            router.visit(`/workflows/${r.workflow_id}/runs/${r.id}`);
           }}
         />
       </Container>
