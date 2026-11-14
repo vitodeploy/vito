@@ -3,9 +3,9 @@
 use App\Actions\HostedDomain\VerifyHostedDomain;
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Enums\HostedDomainStatus;
+use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Jobs\HostedDomain\CheckDomainJob;
-use App\Exceptions\SSHCommandError;
 use App\Models\HostedDomain;
 use App\Support\Testing\SSHFake;
 use Illuminate\Contracts\View\View;
