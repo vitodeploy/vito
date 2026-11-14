@@ -5,6 +5,7 @@ namespace App\Actions\Projects;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\UserProject;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\ValidationException;
 
 class AcceptProjectInvitation
@@ -12,11 +13,7 @@ class AcceptProjectInvitation
     public function find(Project $project, User $user, string $token): ?UserProject
     {
         /** @var ?UserProject $invitation */
-        $invitation = $project->users()
-            ->whereNull('user_id')
-            ->where('email', $user->email)
-            ->where('invitation_token', InviteToProject::hashToken($token))
-            ->first();
+        $invitation = $this->pending($project, $user, $token)->first();
 
         return $invitation;
     }
@@ -26,18 +23,14 @@ class AcceptProjectInvitation
      */
     public function accept(Project $project, User $user, string $token): void
     {
-        $invitation = $this->findOrFail($project, $user, $token);
+        $alreadyMember = $project->users()->where('user_id', $user->id)->exists();
 
-        if ($project->users()->where('user_id', $user->id)->exists()) {
-            $invitation->delete();
+        $pending = $this->pending($project, $user, $token);
+        $affected = $alreadyMember
+            ? $pending->delete()
+            : $pending->update(['email' => null, 'user_id' => $user->id, 'invitation_token' => null]);
 
-            return;
-        }
-
-        $invitation->email = null;
-        $invitation->user_id = $user->id;
-        $invitation->invitation_token = null;
-        $invitation->save();
+        $this->ensureConsumed($affected);
     }
 
     /**
@@ -45,16 +38,29 @@ class AcceptProjectInvitation
      */
     public function decline(Project $project, User $user, string $token): void
     {
-        $this->findOrFail($project, $user, $token)->delete();
+        $this->ensureConsumed($this->pending($project, $user, $token)->delete());
+    }
+
+    /**
+     * @return HasMany<UserProject, Project>
+     */
+    private function pending(Project $project, User $user, string $token): HasMany
+    {
+        return $project->users()
+            ->whereNull('user_id')
+            ->where('email', $user->email)
+            ->where('invitation_token', InviteToProject::hashToken($token));
     }
 
     /**
      * @throws ValidationException
      */
-    private function findOrFail(Project $project, User $user, string $token): UserProject
+    private function ensureConsumed(int $affected): void
     {
-        return $this->find($project, $user, $token) ?? throw ValidationException::withMessages([
-            'invitation' => __('This invitation is no longer valid.'),
-        ]);
+        if ($affected === 0) {
+            throw ValidationException::withMessages([
+                'invitation' => __('This invitation is no longer valid.'),
+            ]);
+        }
     }
 }

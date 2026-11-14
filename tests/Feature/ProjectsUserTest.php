@@ -298,6 +298,24 @@ test('invitation is rolled back when the email cannot be sent', function () {
     $this->assertDatabaseMissing('user_project', ['email' => 'new-user@example.com']);
 });
 
+test('an accepted invitation cannot be declined afterwards', function () {
+    /** @var User $owner */
+    $owner = User::factory()->create();
+    $ownerProject = $owner->ensureHasDefaultProject();
+    $ownerProject->users()->create([
+        'email' => $this->user->email,
+        'role' => UserRole::USER,
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
+
+    $this->actingAs($this->user);
+
+    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'secret-token']));
+    $this->delete(route('projects.invitations.decline', ['project' => $ownerProject, 'token' => 'secret-token']))
+        ->assertSessionHasErrors('invitation');
+
+    $this->assertDatabaseHas('user_project', ['project_id' => $ownerProject->id, 'user_id' => $this->user->id]);
+});
+
 test('leaving a project does not remove invitations in other projects', function () {
     $project = $this->user->ensureHasDefaultProject();
     $otherProject = Project::factory()->create();

@@ -108,7 +108,7 @@ class S3 extends AbstractStorageProvider
             DynamicField::make('secret')
                 ->passwordWithToggle()
                 ->label('Secret Key')
-                ->description('Leave empty to keep the current secret key. Required when changing the API URL.'),
+                ->description('Leave empty to keep the current secret key. Required when changing the API URL or region.'),
             DynamicField::make('region')
                 ->text()
                 ->label('Region'),
@@ -133,7 +133,7 @@ class S3 extends AbstractStorageProvider
 
     protected function secretDestinationFields(): array
     {
-        return ['api_url'];
+        return ['api_url', 'region'];
     }
 
     public function connect(array $credentials): bool

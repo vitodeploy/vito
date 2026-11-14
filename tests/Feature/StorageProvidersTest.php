@@ -974,3 +974,32 @@ dataset('createData', /** @return array<int, array{0: array<string, mixed>}> */ 
         ],
     ];
 });
+
+test('update requires the s3 secret again when the endpoint changes', function (array $change) {
+    $this->actingAs($this->user);
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => S3::id(),
+        'credentials' => [
+            'api_url' => 'https://s3.amazonaws.com',
+            'key' => 'key',
+            'secret' => 'original-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'bucket',
+            'path' => '/',
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        ...$change,
+        'secret' => '',
+    ])
+        ->assertSessionHasErrors('secret');
+
+    expect($storageProvider->refresh()->credentials)->toMatchArray(['api_url' => 'https://s3.amazonaws.com', 'region' => 'us-east-1']);
+})->with([
+    'api url' => [['api_url' => 'https://attacker.example']],
+    'region' => [['region' => 'x@attacker.example/']],
+]);
