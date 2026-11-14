@@ -33,6 +33,10 @@ class CheckDomainJob implements ShouldQueue
         }
 
         $this->broadcastUpdate();
+
+        if (! $result->verified) {
+            $verifier->syncVhost($this->hostedDomain->site);
+        }
     }
 
     private function broadcastUpdate(): void
