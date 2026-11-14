@@ -1,6 +1,6 @@
 @if ($newPassword)
 @php($sql = "ALTER USER '{$username}'@'{$host}' IDENTIFIED BY '".addslashes($newPassword)."'")
-if ! sudo mariadb -e {!! escapeshellarg($sql) !!}; then
+if ! sudo mariadb -e "$(echo {{ base64_encode($sql) }} | base64 -d)"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @endif
