@@ -36,6 +36,8 @@ class VerifyHostedDomain
      * Custom templates don't carry the challenge block, so they are left alone.
      * The web server is only touched when the generated vhost differs from the
      * deployed one, so the periodic pending-domain retry does not reload it.
+     * If publishing fails (e.g. the reload fails after the file was written),
+     * the previous file is put back so the next retry sees the difference again.
      */
     public function syncVhost(Site $site): void
     {
@@ -44,12 +46,21 @@ class VerifyHostedDomain
         }
 
         $webserver = $site->webserver();
+        $current = $webserver->getVHost($site);
 
-        if (trim($webserver->getVHost($site)) === trim($webserver->generateVhost($site))) {
+        if (trim($current) === trim($webserver->generateVhost($site))) {
             return;
         }
 
-        $webserver->updateVHost($site);
+        try {
+            $webserver->updateVHost($site);
+        } catch (Throwable $e) {
+            if (trim($current) !== '') {
+                rescue(fn () => $webserver->updateVHost($site, $current), report: false);
+            }
+
+            throw $e;
+        }
     }
 
     /**

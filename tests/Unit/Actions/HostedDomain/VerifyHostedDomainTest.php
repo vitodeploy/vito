@@ -5,7 +5,10 @@ use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Enums\HostedDomainStatus;
 use App\Facades\SSH;
 use App\Jobs\HostedDomain\CheckDomainJob;
+use App\Exceptions\SSHCommandError;
 use App\Models\HostedDomain;
+use App\Support\Testing\SSHFake;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -245,5 +248,34 @@ test('fails without staging the challenge when the challenge route cannot be pub
 
     expect($result->verified)->toBeFalse()
         ->and($result->failureReason)->toBe('Could not publish verification challenge on the web server.');
+    Http::assertNothingSent();
+});
+
+test('restores the previous vhost when the reload fails after the new one was written', function () {
+    $ssh = new class('previous vhost') extends SSHFake
+    {
+        public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
+        {
+            if (str_contains((string) $command, 'systemctl reload')) {
+                throw new SSHCommandError('reload failed');
+            }
+
+            return parent::exec($command, $log, $siteId, $stream, $streamCallback, $timeout);
+        }
+    };
+    SSH::swap($ssh);
+    Http::fake();
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'reload-fails.example.com',
+        'status' => HostedDomainStatus::CREATING,
+    ]);
+
+    $result = app(VerifyHostedDomain::class)->verify($domain);
+
+    expect($result->verified)->toBeFalse()
+        ->and($result->failureReason)->toBe('Could not publish verification challenge on the web server.')
+        ->and($ssh->getUploadedContent())->toBe('previous vhost');
     Http::assertNothingSent();
 });
