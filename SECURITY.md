@@ -12,4 +12,4 @@
 
 ## Reporting a Vulnerability
 
-If you see a vulnerability, please open an issue or report it directly to me (sa.vaziry@gmail.com) 
+If you find a vulnerability, please do not open a public issue. Report it privately by emailing sa.vaziry@gmail.com.

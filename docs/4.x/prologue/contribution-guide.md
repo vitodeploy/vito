@@ -4,12 +4,27 @@ Vito is developed and maintained by its author, so **pull requests are not accep
 difference by reporting bugs, sharing ideas, and giving detailed feedback. Clear, well-described issues are the most
 valuable contribution you can make.
 
+Everything goes through [GitHub Issues](https://github.com/vitodeploy/vito/issues/new/choose). Pick the template that
+matches your case:
+
+| Template          | Use it for                                                |
+|-------------------|-----------------------------------------------------------|
+| 🐞 Bug Report      | Something is broken or behaves incorrectly                |
+| ✨ Feature Request | Something new that Vito doesn't do yet                    |
+| 🔧 Improvement     | Making an existing feature work better or easier to use   |
+| 📚 Documentation   | Missing, outdated or unclear documentation                |
+| ❓ Question        | Asking how to do something with Vito                      |
+
+Before opening a new issue, search the [existing issues](https://github.com/vitodeploy/vito/issues) and add your details
+to a matching one instead of creating a duplicate.
+
 ## Reporting Bugs
 
-Open a [bug report](https://github.com/vitodeploy/vito/issues/new?template=bug_report.yaml) on GitHub. Please fill in
-every required field so the issue can be reproduced and fixed quickly:
+Open a [bug report](https://github.com/vitodeploy/vito/issues/new?template=1_bug_report.yaml). Please fill in every
+required field so the issue can be reproduced and fixed quickly:
 
 - **Installation type and Vito version** — hover over the Vito icon in your dashboard to see the version.
+- **Area and server environment** — which part of Vito is affected, and the OS, provider and services involved.
 - **What happened** — a clear description of the bug.
 - **Steps to reproduce** — the exact steps that trigger the issue.
 - **Expected behavior** — what you expected to happen instead.
@@ -21,13 +36,11 @@ every required field so the issue can be reproduced and fixed quickly:
 Remove any secrets, tokens, passwords, or private keys from logs and screenshots before posting them.
 :::
 
-Before opening a new issue, search the [existing issues](https://github.com/vitodeploy/vito/issues) and add your details
-to a matching one instead of creating a duplicate.
+## Suggesting Features and Improvements
 
-## Suggesting Features
-
-Share feature ideas and improvements on the [Discussion Board](https://github.com/vitodeploy/vito/discussions/new?category=ideas).
-A good proposal explains:
+Open a [feature request](https://github.com/vitodeploy/vito/issues/new?template=2_feature_request.yaml) for something
+new, or an [improvement](https://github.com/vitodeploy/vito/issues/new?template=3_improvement.yaml) for an existing
+feature. A good proposal explains:
 
 - The problem you are trying to solve and why it matters to you.
 - How you would expect the feature to work.
@@ -37,8 +50,8 @@ You can follow what is planned on the [Roadmap](https://github.com/orgs/vitodepl
 
 ## Getting Help
 
-Ask questions in the [Q&A discussions](https://github.com/vitodeploy/vito/discussions/new?category=q-a) or join the
-community on [Discord](https://discord.gg/uZeeHZZnm5).
+Open a [question](https://github.com/vitodeploy/vito/issues/new?template=5_question.yaml) or join the community on
+[Discord](https://discord.gg/uZeeHZZnm5).
 
 ## Security Vulnerabilities
 

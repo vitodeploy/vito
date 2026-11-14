@@ -1,0 +1,60 @@
+name: 🔧 Improvement
+description: Make an existing feature work better, faster or easier to use
+title: "[Improvement]: "
+labels: ["type: improvement", "status: needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for changes to behavior that already exists. If something is broken, open a **Bug Report** instead. If it's entirely new, open a **Feature Request**.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Vito does this relate to?
+      options:
+        - Installation & Upgrade
+        - Servers & Server Providers
+        - Services (PHP, Databases, Web Servers, etc.)
+        - Sites & Applications
+        - Deployments
+        - Domains & SSL
+        - Databases & Backups
+        - Firewall & Networks
+        - Workers & Cron Jobs
+        - Source Control
+        - DNS Providers
+        - Storage Providers
+        - Notifications
+        - Workflows, Automation & Scripts
+        - Plugins
+        - API & MCP
+        - Projects, Users & Settings
+        - User Interface
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: Current Behavior
+      description: How does it work today, and what is the limitation?
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired_behavior
+    attributes:
+      label: Desired Behavior
+      description: How should it work instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Screenshots, examples, or anything else that helps.

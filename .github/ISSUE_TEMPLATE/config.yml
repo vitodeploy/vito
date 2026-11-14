@@ -1,11 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Feature request
-    url: https://github.com/vitodeploy/vito/discussions/new?category=ideas
-    about: Share ideas for new features
-  - name: Support
-    url: https://github.com/vitodeploy/vito/discussions/new?category=q-a
-    about: Ask the community for help
-  - name: Discord
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/vitodeploy/vito/blob/4.x/SECURITY.md
+    about: Please report vulnerabilities privately, never in a public issue
+  - name: 💬 Discord
     url: https://discord.gg/uZeeHZZnm5
-    about: Join the community
+    about: Chat with the community

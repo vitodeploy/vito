@@ -1,0 +1,122 @@
+name: 🐞 Bug Report
+description: Something in Vito is broken or behaves incorrectly
+title: "[Bug]: "
+labels: ["type: bug", "status: needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please search [existing issues](https://github.com/vitodeploy/vito/issues) first and complete every required field so the issue can be reproduced.
+        **Remove any secrets, tokens, passwords or private keys** from logs and screenshots before posting.
+
+  - type: dropdown
+    id: installation_type
+    attributes:
+      label: Installation Type
+      description: How did you install your Vito instance?
+      options:
+        - VPS
+        - Docker
+        - Local
+    validations:
+      required: true
+
+  - type: input
+    id: vito_version
+    attributes:
+      label: Vito Version
+      description: Hover over the Vito icon in your dashboard to see your version.
+      placeholder: e.g., 4.2.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Vito is affected?
+      options:
+        - Installation & Upgrade
+        - Servers & Server Providers
+        - Services (PHP, Databases, Web Servers, etc.)
+        - Sites & Applications
+        - Deployments
+        - Domains & SSL
+        - Databases & Backups
+        - Firewall & Networks
+        - Workers & Cron Jobs
+        - Source Control
+        - DNS Providers
+        - Storage Providers
+        - Notifications
+        - Workflows, Automation & Scripts
+        - Plugins
+        - API & MCP
+        - Projects, Users & Settings
+        - User Interface
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: server_environment
+    attributes:
+      label: Server Environment
+      description: If the bug involves a managed server, which OS, provider and services are involved?
+      placeholder: e.g., Ubuntu 24.04 on Hetzner, Nginx, PHP 8.4, MySQL 8
+
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+      placeholder: The deployment process hangs after connecting to the server.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step guide to reproduce the issue.
+      placeholder: |
+        1. Go to 'Sites'
+        2. Click on 'Deploy'
+        3. Observe the spinner never stops
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+      placeholder: The deployment should complete successfully.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Relevant sections from:
+        - `Vito Logs` (bottom left corner of your dashboard)
+        - `Horizon Dashboard` (failed jobs or queue errors)
+        - Server logs, if the failure happened on a managed server
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add screenshots or screen recordings if they help explain the issue.
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Anything else, such as configuration, workarounds you found, or related issues.
