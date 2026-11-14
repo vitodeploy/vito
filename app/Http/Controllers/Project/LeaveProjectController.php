@@ -19,8 +19,7 @@ class LeaveProjectController extends Controller
     {
         /** @var ?UserProject $user */
         $user = $project->users()
-            ->where('user_id', user()->id)
-            ->orWhere('email', user()->email)
+            ->where(fn ($query) => $query->where('user_id', user()->id)->orWhere('email', user()->email))
             ->first();
         if (! $user) {
             abort(404);

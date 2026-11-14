@@ -310,21 +310,66 @@ test('update changes non secret credentials and reconnects', function () {
 
     $this->patch(route('storage-providers.update', $storageProvider), [
         'name' => 'updated',
-        'host' => '5.6.7.8',
+        'host' => '1.2.3.4',
         'port' => 22,
-        'path' => '/home/vito',
+        'path' => '/home/backups',
         'username' => 'username',
         'password' => '',
     ])
         ->assertSessionDoesntHaveErrors();
 
-    SFTP::assertConnected('5.6.7.8');
+    SFTP::assertConnected('1.2.3.4');
 
     $storageProvider->refresh();
 
-    expect($storageProvider->credentials['host'])->toBe('5.6.7.8')
+    expect($storageProvider->credentials['path'])->toBe('/home/backups')
         ->and($storageProvider->credentials['password'])->toBe('original-password');
 });
+
+test('update requires the password again when the destination changes', function (string $provider, array $change) {
+    $this->actingAs($this->user);
+
+    SFTP::fake();
+    FTP::fake();
+
+    $storageProvider = StorageProviderModel::factory()->create([
+        'user_id' => $this->user->id,
+        'provider' => $provider,
+        'credentials' => [
+            'host' => '1.2.3.4',
+            'port' => 22,
+            'path' => '/home/vito',
+            'username' => 'username',
+            'password' => 'original-password',
+            'ssl' => true,
+            'passive' => true,
+        ],
+    ]);
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        ...$change,
+        'password' => '',
+    ])
+        ->assertSessionHasErrors('password');
+
+    SFTP::assertNotConnected();
+    FTP::assertNotConnected();
+    expect($storageProvider->refresh()->credentials['host'])->toBe('1.2.3.4');
+
+    $this->patch(route('storage-providers.update', $storageProvider), [
+        'name' => 'updated',
+        ...$change,
+        'password' => 'password-for-new-host',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($storageProvider->refresh()->credentials['password'])->toBe('password-for-new-host');
+})->with([
+    'sftp host' => [SFTPProvider::id(), ['host' => '5.6.7.8']],
+    'sftp port' => [SFTPProvider::id(), ['port' => 2222]],
+    'ftp host' => [FTPProvider::id(), ['host' => '5.6.7.8']],
+]);
 
 test('update stores a new secret when one is provided', function () {
     $this->actingAs($this->user);

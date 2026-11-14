@@ -44,7 +44,7 @@ export default function Projects() {
 
         {page.props.invitations.data.length > 0 && (
           <>
-            <Heading title="Invitations" description="Here you can see the projects you're invited to" />
+            <Heading title="Invitations" description="Open the link in your invitation email to join a project" />
             <DataTable columns={invitationColumns} paginatedData={page.props.invitations} />
           </>
         )}

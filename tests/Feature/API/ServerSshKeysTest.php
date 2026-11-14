@@ -14,7 +14,7 @@ test('see server keys', function () {
     $sshKey = SshKey::factory()->create([
         'user_id' => $this->user->id,
         'name' => 'My first key',
-        'public_key' => 'public-key-content',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
     ]);
 
     $this->server->sshKeys()->attach($sshKey, [
@@ -59,7 +59,7 @@ test('add existing key', function () {
     $sshKey = SshKey::factory()->create([
         'user_id' => $this->user->id,
         'name' => 'My first key',
-        'public_key' => 'public-key-content',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
     ]);
 
     $this->json('POST', route('api.projects.servers.ssh-keys.create', [
@@ -84,7 +84,7 @@ test('add key to specific user', function () {
     $sshKey = SshKey::factory()->create([
         'user_id' => $this->user->id,
         'name' => 'My first key',
-        'public_key' => 'public-key-content',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
     ]);
 
     $targetUser = 'root';
@@ -117,7 +117,7 @@ test('add key to invalid user fails', function () {
     $sshKey = SshKey::factory()->create([
         'user_id' => $this->user->id,
         'name' => 'My first key',
-        'public_key' => 'public-key-content',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
     ]);
 
     $this->json('POST', route('api.projects.servers.ssh-keys.create', [
@@ -140,7 +140,7 @@ test('delete ssh key', function () {
     $sshKey = SshKey::factory()->create([
         'user_id' => $this->user->id,
         'name' => 'My first key',
-        'public_key' => 'public-key-content',
+        'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
     ]);
 
     $this->server->sshKeys()->attach($sshKey, [

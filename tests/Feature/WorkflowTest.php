@@ -5,6 +5,7 @@ use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
 use App\Models\NotificationChannel;
 use App\Models\Project;
+use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
 use App\NotificationChannels\Email;
@@ -128,6 +129,8 @@ test('workflow run routes allow runs belonging to the authorized workflow', func
             ->where('workflowRun.id', $run->id));
     $this->get(route('workflow-runs.log', ['workflow' => $workflow, 'workflowRun' => $run]))
         ->assertSuccessful()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
         ->assertSee('Authorized workflow output');
 });
 
@@ -173,7 +176,7 @@ test('workflow notification rejects foreign and token excluded channels', functi
     $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
     $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
     $channel = NotificationChannel::factory()->create([
-        'user_id' => $scope === 'foreign-owner' ? $this->notificationChannel->user_id : $this->user->id,
+        'user_id' => $scope === 'foreign-owner' ? User::factory()->create()->id : $this->user->id,
         'project_id' => $scope === 'global' ? null : $project->id,
         'provider' => Email::id(),
         'data' => ['email' => 'excluded@example.com'],

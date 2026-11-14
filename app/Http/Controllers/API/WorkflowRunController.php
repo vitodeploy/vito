@@ -71,11 +71,7 @@ class WorkflowRunController extends Controller
             abort(404, 'Workflow run not found for this workflow');
         }
 
-        $logContent = $workflowRun->getLogContent();
-
-        return response($logContent, 200, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-        ]);
+        return plain_text_response($workflowRun->getLogContent());
     }
 
     private function validateRoute(Project $project, Workflow $workflow): void

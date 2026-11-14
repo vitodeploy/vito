@@ -8,6 +8,7 @@ use App\Models\Project;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -17,16 +18,24 @@ class InviteToProject
     {
         $this->validate($project, $input);
 
+        $token = Str::random(64);
+
         $project->users()->create([
             'email' => $input['email'],
             'role' => UserRole::from($input['role']),
+            'invitation_token' => self::hashToken($token),
         ]);
 
         try {
-            Mail::to($input['email'])->send(new ProjectInvitation($project));
+            Mail::to($input['email'])->send(new ProjectInvitation($project, $token));
         } catch (Throwable) {
             //
         }
+    }
+
+    public static function hashToken(string $token): string
+    {
+        return hash('sha256', $token);
     }
 
     protected function validate(Project $project, array $input): void

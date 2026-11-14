@@ -19,6 +19,12 @@ class UpdateLog
             'path' => 'required',
         ])->validate();
 
+        if (! $serverLog->is_remote) {
+            throw ValidationException::withMessages([
+                'path' => __('Only remote logs can be renamed.'),
+            ]);
+        }
+
         $serverLog->update([
             'name' => $input['path'],
         ]);

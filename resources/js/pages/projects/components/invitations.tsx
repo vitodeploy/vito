@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreVerticalIcon } from 'lucide-react';
 import { ProjectUser } from '@/types/project-user';
@@ -19,15 +19,6 @@ function Actions({ invitation }: { invitation: ProjectUser }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onSelect={(e) => {
-              e.preventDefault();
-              window.location.href = `/settings/projects/${invitation.project_id}/invitations/accept`;
-            }}
-          >
-            Accept & Join
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
             onSelect={() =>

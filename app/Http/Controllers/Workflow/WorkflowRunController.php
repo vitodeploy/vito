@@ -11,6 +11,7 @@ use App\Models\WorkflowRun;
 use App\Tables\WorkflowRunTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -60,7 +61,7 @@ class WorkflowRunController extends Controller
     }
 
     #[Get('/{workflowRun}/log', name: 'workflow-runs.log')]
-    public function log(Workflow $workflow, WorkflowRun $workflowRun): string
+    public function log(Workflow $workflow, WorkflowRun $workflowRun): HttpResponse
     {
         $this->authorize('view', $workflow);
 
@@ -68,6 +69,6 @@ class WorkflowRunController extends Controller
             abort(404, 'Workflow run not found for this workflow');
         }
 
-        return $workflowRun->getLogContent();
+        return plain_text_response($workflowRun->getLogContent());
     }
 }

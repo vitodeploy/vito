@@ -64,3 +64,25 @@ test('password can be reset with valid token', function () {
         return true;
     });
 });
+
+test('reset password link is built from the application url, not the request host', function () {
+    Notification::fake();
+    config()->set('app.url', 'https://vito.example');
+
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.5'])
+        ->withHeader('X-Forwarded-Host', 'evil.example')
+        ->post('http://attacker.example/forgot-password', ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+        $url = $notification->toMail($user)->actionUrl;
+
+        expect($url)->toStartWith('https://vito.example/reset-password/'.$notification->token)
+            ->and($url)->not->toContain('evil.example')
+            ->and($url)->not->toContain('attacker.example');
+
+        return true;
+    });
+});
