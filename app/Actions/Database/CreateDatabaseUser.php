@@ -88,6 +88,7 @@ class CreateDatabaseUser
             'password' => [
                 'required',
                 'min:6',
+                'not_regex:/[\x00-\x1F\x7F]/',
             ],
             'permission' => [
                 'nullable',

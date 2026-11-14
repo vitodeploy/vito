@@ -132,6 +132,84 @@ test('update database user password', function () {
     expect($databaseUser->password)->toEqual('new_password');
 });
 
+test('mysql database user passwords with special characters reach the server unchanged', function () {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $password = 'a&b<c>"d\'e$f`g\\h';
+
+    $this->post(route('database-users.store', ['server' => $this->server]), [
+        'username' => 'user',
+        'password' => $password,
+    ])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('mysql -e '.escapeshellarg("CREATE USER IF NOT EXISTS 'user'@'localhost' IDENTIFIED BY '".addslashes($password)."'"));
+
+    $this->put(route('database-users.update', [
+        'server' => $this->server,
+        'databaseUser' => DatabaseUser::query()->where('username', 'user')->sole(),
+    ]), [
+        'password' => $password.'2',
+        'permission' => DatabaseUserPermission::ADMIN->value,
+    ])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('mysql -e '.escapeshellarg("ALTER USER 'user'@'localhost' IDENTIFIED BY '".addslashes($password.'2')."'"));
+});
+
+test('database user passwords with control characters are rejected', function (string $password) {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $this->post(route('database-users.store', ['server' => $this->server]), [
+        'username' => 'user',
+        'password' => $password,
+    ])->assertSessionHasErrors('password');
+
+    $databaseUser = DatabaseUser::factory()->create(['server_id' => $this->server]);
+
+    $this->put(route('database-users.update', [
+        'server' => $this->server,
+        'databaseUser' => $databaseUser,
+    ]), [
+        'password' => $password,
+        'permission' => $databaseUser->permission->value,
+    ])->assertSessionHasErrors('password');
+
+    SSH::assertNotExecutedContains('IDENTIFIED BY');
+})->with([
+    'null byte' => ["secret\0password"],
+    'newline' => ["secret\npassword"],
+]);
+
+test('postgresql database user passwords with special characters reach the server unchanged', function () {
+    $this->actingAs($this->user);
+
+    vitoPestFeatureDatabaseUserTestUsePostgresql();
+
+    SSH::fake();
+
+    $password = 'a&b<c>"d\'e$f`g\\h';
+
+    $this->post(route('database-users.store', ['server' => $this->server]), [
+        'username' => 'user',
+        'password' => $password,
+    ])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('-v password='.escapeshellarg($password)." <<'VITO_CREATE_USER'\nCREATE ROLE \"user\" WITH LOGIN PASSWORD :'password';");
+
+    $this->put(route('database-users.update', [
+        'server' => $this->server,
+        'databaseUser' => DatabaseUser::query()->where('username', 'user')->sole(),
+    ]), [
+        'password' => $password.'2',
+        'permission' => DatabaseUserPermission::ADMIN->value,
+    ])->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('-v password='.escapeshellarg($password.'2')." <<'VITO_UPDATE_USER'\nALTER ROLE \"user\" WITH PASSWORD :'password';");
+});
+
 test('update database user host', function () {
     $this->actingAs($this->user);
 

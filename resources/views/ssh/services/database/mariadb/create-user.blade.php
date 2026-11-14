@@ -1,4 +1,5 @@
-if ! sudo mariadb -e "CREATE USER IF NOT EXISTS '{{ $username }}'@'{{ $host }}' IDENTIFIED BY '{{ $password }}'"; then
+@php($sql = "CREATE USER IF NOT EXISTS '{$username}'@'{$host}' IDENTIFIED BY '".addslashes($password)."'")
+if ! sudo mariadb -e {!! escapeshellarg($sql) !!}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
