@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use RuntimeException;
 use Throwable;
 
 class UpdateSourceControl
@@ -75,7 +74,7 @@ class UpdateSourceControl
         try {
             app(SyncSiteDeployKey::class)->setup($site);
         } catch (Throwable $e) {
-            $this->swap($site, $oldSourceControl, $oldDeployKeyId);
+            $this->rollback($site, $newSourceControl, $oldSourceControl, $oldDeployKeyId);
 
             if ($e instanceof FailedToDeployGitKey) {
                 throw ValidationException::withMessages([
@@ -86,42 +85,60 @@ class UpdateSourceControl
             throw $e;
         }
 
+        try {
+            app(Git::class)->setRemote($site, $newSourceControl->provider()->fullRepoUrl($site->repository, $site->getSshKeyName()));
+        } catch (Throwable $e) {
+            $newDeployKeyId = $site->type_data['deploy_key_id'] ?? null;
+            if ($this->rollback($site, $newSourceControl, $oldSourceControl, $oldDeployKeyId) && $newDeployKeyId) {
+                $this->removeDeployKey($site, $newSourceControl, (string) $newDeployKeyId);
+            }
+
+            throw $e;
+        }
+
         if ($oldGitHook) {
             try {
                 $oldGitHook->destroyHook();
+                $site->unsetRelation('gitHook');
+                $site->enableAutoDeployment();
             } catch (Throwable $e) {
-                Log::warning('Failed to destroy old git hook on source-control swap', [
+                Log::warning('Failed to move the auto-deployment hook on source-control swap', [
                     'site_id' => $site->id,
                     'error' => $e->getMessage(),
                 ]);
             }
-        }
-
-        $newRepoUrl = $newSourceControl->provider()->fullRepoUrl(
-            $site->repository,
-            $site->getSshKeyName()
-        );
-
-        try {
-            app(Git::class)->setRemote($site, $newRepoUrl);
-        } catch (SSHError|RuntimeException $e) {
-            Log::warning('Failed to rewrite remote URL after source-control swap; keeping the old deploy key', [
-                'site_id' => $site->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return;
         }
 
         if ($oldDeployKeyId && $oldSourceControl) {
-            try {
-                app(SyncSiteDeployKey::class)->remove($oldSourceControl, $site->repository, (string) $oldDeployKeyId);
-            } catch (Throwable $e) {
-                Log::warning('Failed to delete old deploy key on source-control swap', [
-                    'site_id' => $site->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            $this->removeDeployKey($site, $oldSourceControl, (string) $oldDeployKeyId);
+        }
+    }
+
+    /**
+     * Restores the previous source control unless another request has changed it meanwhile.
+     */
+    private function rollback(Site $site, SourceControl $newSourceControl, ?SourceControl $oldSourceControl, int|string|null $oldDeployKeyId): bool
+    {
+        $site->refresh();
+        if ($site->source_control_id !== $newSourceControl->id) {
+            return false;
+        }
+
+        $this->swap($site, $oldSourceControl, $oldDeployKeyId);
+
+        return true;
+    }
+
+    private function removeDeployKey(Site $site, SourceControl $sourceControl, string $keyId): void
+    {
+        try {
+            app(SyncSiteDeployKey::class)->remove($sourceControl, $site->repository, $keyId);
+        } catch (Throwable $e) {
+            Log::warning('Failed to delete deploy key on source-control swap', [
+                'site_id' => $site->id,
+                'deploy_key_id' => $keyId,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

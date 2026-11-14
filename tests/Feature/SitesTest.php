@@ -13,6 +13,7 @@ use App\Facades\SSH;
 use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\GitHook;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Service;
@@ -902,15 +903,17 @@ test('update source control', function () {
     Http::assertSent(fn ($request): bool => $request->method() === 'POST' && str_ends_with($request->url(), '/repos/'.$this->site->repository.'/keys'));
 });
 
-test('update source control rotates the deploy key after the remote is rewritten', function (bool $remoteFails) {
-    $remoteFails ? SSH::fake()->execWillFail() : SSH::fake();
+test('update source control rotates the deploy key and auto-deployment hook to the new source control', function () {
+    SSH::fake();
     $this->actingAs($this->user);
     $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
     $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+    GitHook::factory()->create(['site_id' => $this->site->id, 'source_control_id' => $this->site->source_control_id, 'hook_id' => '77']);
     $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
     Http::fake([
         'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
-        'gitlab.com/*' => Http::response(),
+        'gitlab.com/api/v4/projects/*/hooks' => Http::response(['id' => 88], 201),
+        'gitlab.com/*' => Http::response(['id' => 1]),
         'api.github.com/*' => Http::response([], 204),
     ]);
 
@@ -919,12 +922,32 @@ test('update source control rotates the deploy key after the remote is rewritten
     ])->assertSessionDoesntHaveErrors();
 
     $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $sourceControl->id, 'type_data->deploy_key_id' => '456']);
-    $deletedOldKey = fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123');
-    $remoteFails ? Http::assertNotSent($deletedOldKey) : Http::assertSent($deletedOldKey);
-    if (! $remoteFails) {
-        SSH::assertExecutedContains('Host gitlab.com-'.$this->site->getSshKeyName());
-    }
-})->with(['remote rewritten' => false, 'remote rewrite fails' => true]);
+    $this->assertDatabaseHas('git_hooks', ['site_id' => $this->site->id, 'source_control_id' => $sourceControl->id]);
+    $this->assertDatabaseMissing('git_hooks', ['site_id' => $this->site->id, 'hook_id' => '77']);
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
+    SSH::assertExecutedContains('Host gitlab.com-'.$this->site->getSshKeyName());
+});
+
+test('update source control rolls back and removes the new deploy key when the remote cannot be rewritten', function () {
+    SSH::fake()->execWillFail();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+    $originalSource = $this->site->source_control_id;
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
+        'gitlab.com/*' => Http::response([], 204),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertServerError();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource, 'type_data->deploy_key_id' => '123']);
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/deploy_keys/456'));
+    Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
+});
 
 test('update source control keeps the site untouched when the new deploy key cannot be registered', function () {
     SSH::fake();

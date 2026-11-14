@@ -6,6 +6,10 @@ if ! cd {!! $path !!}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
+@if (empty($usesToken))
+@include('ssh.git.ssh-host')
+
+@endif
 if ! git remote set-url origin {!! $newRepoUrl !!}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
@@ -16,6 +20,4 @@ if ! git config credential.helper '!f() { test "$1" = get && printf "username=x-
 fi
 @else
 git config --unset credential.helper || true
-
-@include('ssh.git.ssh-host')
 @endif
