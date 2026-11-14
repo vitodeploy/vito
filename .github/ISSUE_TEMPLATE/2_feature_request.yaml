@@ -1,7 +1,7 @@
 name: ✨ Feature Request
 description: Suggest something new that Vito doesn't do yet
 title: "[Feature]: "
-labels: ["type: feature", "status: needs triage"]
+labels: ["feature", "needs triage"]
 
 body:
   - type: markdown

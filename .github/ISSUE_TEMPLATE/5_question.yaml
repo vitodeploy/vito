@@ -1,7 +1,7 @@
 name: ❓ Question
 description: Ask how to do something with Vito
 title: "[Question]: "
-labels: ["type: question", "status: needs triage"]
+labels: ["question", "needs triage"]
 
 body:
   - type: markdown

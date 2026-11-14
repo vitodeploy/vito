@@ -16,7 +16,7 @@ jobs:
         uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          only-labels: 'type: bug'
+          only-labels: 'bug'
           days-before-stale: 30
           days-before-close: 0
           stale-issue-message: >
@@ -27,5 +27,5 @@ jobs:
           close-issue-message: >
             This issue has been automatically closed due to inactivity. If you believe
             this is still a valid bug, please reopen or create a new issue.
-          stale-issue-label: 'status: stale'
+          stale-issue-label: 'stale'
           exempt-issue-labels: 'pinned,security'

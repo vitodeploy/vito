@@ -1,7 +1,7 @@
 name: 🔧 Improvement
 description: Make an existing feature work better, faster or easier to use
 title: "[Improvement]: "
-labels: ["type: improvement", "status: needs triage"]
+labels: ["improvement", "needs triage"]
 
 body:
   - type: markdown

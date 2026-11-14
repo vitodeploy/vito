@@ -1,7 +1,7 @@
 name: 📚 Documentation
 description: Report missing, outdated or unclear documentation
 title: "[Docs]: "
-labels: ["type: docs", "status: needs triage"]
+labels: ["documentation", "needs triage"]
 
 body:
   - type: input
