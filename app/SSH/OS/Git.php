@@ -12,7 +12,7 @@ class Git
     /**
      * @throws SSHError
      */
-    public function clone(Site $site, ?string $path = null): void
+    public function clone(Site $site, ?string $path = null, ?string $commit = null): void
     {
         $usesToken = $site->sourceControl?->isGithubApp() ?? false;
 
@@ -26,6 +26,7 @@ class Git
             port: $site->sourceControl?->provider()->getSshPort() ?? 22,
             usesToken: $usesToken,
             variables: $usesToken ? $site->environmentVariables() : [],
+            commit: $commit,
             siteId: $site->id,
         ));
     }
@@ -50,10 +51,10 @@ class Git
         );
 
         if ($target->commit !== null) {
-            $target->server->ssh($target->user)->setLog($target->log)->exec(
-                view('ssh.git.checkout', [
+            $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
+                view('ssh.git.checkout-commit', [
                     'path' => escapeshellarg($target->path),
-                    'branch' => escapeshellarg($target->commit),
+                    'commit' => escapeshellarg($target->commit),
                 ]),
                 'checkout-commit',
                 $target->siteId

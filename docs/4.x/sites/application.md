@@ -135,6 +135,47 @@ By default, Vito will read the `.env` file from your site's root directory. Howe
 This button appears when there is a deployment script! So you need to first write your deployment script and then this
 button will appear, and you will be able to click on it an execute the deployment script on the server.
 
+## Deploying a specific commit through the API
+
+Both `POST /api/projects/{project}/servers/{server}/sites/{site}/deploy` and
+`POST /api/projects/{project}/servers/{server}/sites/{site}/deployments` accept an
+optional JSON `commit_hash` field containing a full 40-character commit SHA:
+
+```shell
+curl --request POST \
+    --url "https://vito.example.com/api/projects/1/servers/1/sites/1/deployments" \
+    --header "Authorization: Bearer $VITO_API_TOKEN" \
+    --header "Accept: application/json" \
+    --header "Content-Type: application/json" \
+    --data '{"commit_hash":"0123456789abcdef0123456789abcdef01234567"}'
+```
+
+Use a project-scoped token with write access. The site must have a source control
+connection that can resolve the commit in its configured repository. Invalid input
+or an unknown commit is rejected with a `422` before a deployment is created. Branch
+names, tags, and shortened SHAs are not accepted, so resolve a release tag to its full
+commit SHA in CI first. Omitting `commit_hash` keeps the configured-branch behavior,
+and the site's branch setting is never changed by this request.
+
+The deployment records the resolved commit and exports it as `COMMIT_ID`. Modern
+deployments check out the requested commit, fetching it if the clone does not contain
+it, before running the build. Classic
+deployments run your script as-is, so update its Git section to honor `COMMIT_ID`:
+
+```bash
+if [ -n "$COMMIT_ID" ]; then
+    git fetch origin "$COMMIT_ID"
+    git reset --hard "$COMMIT_ID"
+else
+    git pull origin "$BRANCH"
+fi
+```
+
+For release-based deployment, disable push auto deployment and have your CI call
+this endpoint when publishing a release, passing the release's commit SHA. Use the
+deployment status endpoint to track completion; an accepted deployment has not
+necessarily succeeded.
+
 ## Auto Deployment
 
 You can enable auto deployment for your application by setting up git hooks.

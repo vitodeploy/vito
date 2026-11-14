@@ -6,6 +6,7 @@ use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
 use App\Events\SocketEvent;
 use App\Exceptions\DeploymentScriptIsEmptyException;
+use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\ReverseProxyNotConfiguredException;
 use App\Http\Resources\DeploymentResource;
 use App\Jobs\Site\DeployJob;
@@ -13,17 +14,34 @@ use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
 use Illuminate\Http\Client\HttpClientException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Deploy
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws DeploymentScriptIsEmptyException
      * @throws ReverseProxyNotConfiguredException
+     * @throws ValidationException
      */
-    public function run(Site $site, bool $modern = true): Deployment
+    public function run(Site $site, bool $modern = true, array $input = []): Deployment
     {
+        $validated = Validator::make($input, [
+            'commit_hash' => ['sometimes', 'required', 'string', 'regex:/\A[a-f0-9]{40}\z/i'],
+        ])->validate();
+
+        $commitHash = isset($validated['commit_hash']) ? strtolower($validated['commit_hash']) : null;
+        if ($commitHash !== null && ! $site->sourceControl) {
+            throw ValidationException::withMessages([
+                'commit_hash' => 'A source control connection is required to deploy a specific commit.',
+            ]);
+        }
+
         $site->type()->assertReadyToDeploy();
 
         if ($site->sourceControl) {
@@ -41,6 +59,8 @@ class Deploy
             throw new DeploymentScriptIsEmptyException;
         }
 
+        $lastCommit = $this->resolveCommit($site, $commitHash);
+
         $deployment = new Deployment([
             'site_id' => $site->id,
             'deployment_script_id' => $site->deploymentScript->id,
@@ -51,15 +71,6 @@ class Deploy
         $log->save();
         $deployment->log_id = $log->id;
         $deployment->save();
-        try {
-            $lastCommit = $site->sourceControl?->provider()?->getLastCommit($site->repository, $site->branch);
-        } catch (Throwable $e) {
-            $lastCommit = null;
-            Log::warning('Failed to fetch the last commit; deploying without commit details.', [
-                'site_id' => $site->id,
-                'exception' => $e::class,
-            ]);
-        }
         if ($lastCommit) {
             $deployment->commit_id = $lastCommit['commit_id'];
             $deployment->commit_data = $lastCommit['commit_data'];
@@ -72,7 +83,49 @@ class Deploy
             return $this->deployClassic($site, $deployment, $log);
         }
 
-        return $this->deployModern($site, $deployment, $log);
+        return $this->deployModern($site, $deployment, $log, $commitHash);
+    }
+
+    /**
+     * @return array{commit_id: string, commit_data: array<string, mixed>}|null
+     *
+     * @throws ValidationException
+     */
+    private function resolveCommit(Site $site, ?string $commitHash): ?array
+    {
+        $provider = $site->sourceControl?->provider();
+
+        if ($commitHash === null) {
+            try {
+                return $provider?->getLastCommit($site->repository, $site->branch);
+            } catch (Throwable $e) {
+                Log::warning('Failed to fetch the last commit; deploying without commit details.', [
+                    'site_id' => $site->id,
+                    'exception' => $e::class,
+                ]);
+
+                return null;
+            }
+        }
+
+        try {
+            $commit = $provider?->getLastCommit($site->repository, $commitHash);
+        } catch (RepositoryNotFound) {
+            $commit = null;
+        } catch (RequestException $e) {
+            if ($e->response->status() !== 422 || ! str_starts_with((string) $e->response->json('message'), 'No commit found')) {
+                throw $e;
+            }
+            $commit = null;
+        }
+
+        if (strtolower($commit['commit_id'] ?? '') !== $commitHash) {
+            throw ValidationException::withMessages([
+                'commit_hash' => 'The requested commit was not found in the site repository.',
+            ]);
+        }
+
+        return $commit;
     }
 
     private function broadcastDeploymentCreated(Site $site, Deployment $deployment): void
@@ -95,12 +148,12 @@ class Deploy
         return $deployment;
     }
 
-    private function deployModern(Site $site, Deployment $deployment, ServerLog $log): Deployment
+    private function deployModern(Site $site, Deployment $deployment, ServerLog $log, ?string $checkoutCommit): Deployment
     {
         $deployment->release = now()->format('YmdHis');
         $deployment->save();
 
-        dispatch(new DeployJob($deployment, true));
+        dispatch(new DeployJob($deployment, true, $checkoutCommit));
 
         $this->broadcastDeploymentCreated($site, $deployment);
 

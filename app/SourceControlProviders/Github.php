@@ -145,43 +145,26 @@ class Github extends AbstractSourceControlProvider implements SupportsApplicatio
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function getLastCommit(string $repo, string $branch): ?array
     {
-        try {
-            $url = self::API_BASE_URL.'/repos/'.$repo.'/commits/'.rawurlencode($branch);
-            $res = $this->getClient()->get($url);
-            $this->handleResponseErrors($res, $repo);
+        $res = $this->getClient()->get(self::API_BASE_URL.'/repos/'.$repo.'/commits/'.rawurlencode($branch));
+        $this->handleResponseErrors($res, $repo);
 
-            $commit = $res->json();
+        $commit = $res->json();
 
-            if (isset($commit['sha']) && isset($commit['commit'])) {
-                $result = [
-                    'commit_id' => $commit['sha'],
-                    'commit_data' => [
-                        'name' => $commit['commit']['committer']['name'] ?? null,
-                        'email' => $commit['commit']['committer']['email'] ?? null,
-                        'message' => $commit['commit']['message'] ?? null,
-                        'url' => $commit['html_url'] ?? null,
-                    ],
-                ];
-
-                return $result;
-            }
-
-            return null;
-
-        } catch (Throwable $e) {
-            Log::error('Failed to fetch last commit', [
-                'repo' => $repo,
-                'branch' => $branch,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw new Exception('Failed to fetch last commit: '.$e->getMessage());
+        if (isset($commit['sha'], $commit['commit'])) {
+            return [
+                'commit_id' => $commit['sha'],
+                'commit_data' => [
+                    'name' => $commit['commit']['committer']['name'] ?? null,
+                    'email' => $commit['commit']['committer']['email'] ?? null,
+                    'message' => $commit['commit']['message'] ?? null,
+                    'url' => $commit['html_url'] ?? null,
+                ],
+            ];
         }
+
+        return null;
     }
 
     /**

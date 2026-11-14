@@ -116,7 +116,7 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         try {
-            $deployment = app(Deploy::class)->run($site);
+            $deployment = app(Deploy::class)->run($site, input: $request->only('commit_hash'));
 
             return new DeploymentResource($deployment);
         } catch (DeploymentScriptIsEmptyException) {
