@@ -73,7 +73,7 @@ abstract class AbstractDNSProvider implements DNSProvider
     }
 
     /**
-     * @return array<string, mixed>
+     * @return list<array<string, mixed>>
      */
     public function getRecords(string $domainId): array
     {

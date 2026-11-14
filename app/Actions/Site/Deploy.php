@@ -13,8 +13,12 @@ use App\Jobs\Site\DeployJob;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
+use Illuminate\Http\Client\HttpClientException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class Deploy
 {
@@ -41,29 +45,21 @@ class Deploy
         $site->type()->assertReadyToDeploy();
 
         if ($site->sourceControl) {
-            $site->sourceControl->getRepo($site->repository);
+            try {
+                $site->sourceControl->getRepo($site->repository);
+            } catch (HttpClientException $e) {
+                Log::warning('Source control API unavailable; deploying without the repository check.', [
+                    'site_id' => $site->id,
+                    'exception' => $e::class,
+                ]);
+            }
         }
 
         if (! $site->deploymentScript?->content) {
             throw new DeploymentScriptIsEmptyException;
         }
 
-        try {
-            $lastCommit = $site->sourceControl?->provider()?->getLastCommit($site->repository, $commitHash ?? $site->branch);
-        } catch (RepositoryNotFound $e) {
-            if ($commitHash === null) {
-                throw $e;
-            }
-
-            throw ValidationException::withMessages([
-                'commit_hash' => 'The requested commit was not found in the site repository.',
-            ]);
-        }
-        if ($commitHash !== null && strtolower($lastCommit['commit_id'] ?? '') !== $commitHash) {
-            throw ValidationException::withMessages([
-                'commit_hash' => 'The source control provider could not resolve the requested commit.',
-            ]);
-        }
+        $lastCommit = $this->resolveCommit($site, $commitHash);
 
         $deployment = new Deployment([
             'site_id' => $site->id,
@@ -88,6 +84,48 @@ class Deploy
         }
 
         return $this->deployModern($site, $deployment, $log, $commitHash !== null);
+    }
+
+    /**
+     * @return array{commit_id: string, commit_data: array<string, mixed>}|null
+     *
+     * @throws ValidationException
+     */
+    private function resolveCommit(Site $site, ?string $commitHash): ?array
+    {
+        $provider = $site->sourceControl?->provider();
+
+        if ($commitHash === null) {
+            try {
+                return $provider?->getLastCommit($site->repository, $site->branch);
+            } catch (Throwable $e) {
+                Log::warning('Failed to fetch the last commit; deploying without commit details.', [
+                    'site_id' => $site->id,
+                    'exception' => $e::class,
+                ]);
+
+                return null;
+            }
+        }
+
+        try {
+            $commit = $provider?->getLastCommit($site->repository, $commitHash);
+        } catch (RepositoryNotFound) {
+            $commit = null;
+        } catch (RequestException $e) {
+            if ($e->response->status() !== 422) {
+                throw $e;
+            }
+            $commit = null;
+        }
+
+        if (strtolower($commit['commit_id'] ?? '') !== $commitHash) {
+            throw ValidationException::withMessages([
+                'commit_hash' => 'The requested commit was not found in the site repository.',
+            ]);
+        }
+
+        return $commit;
     }
 
     private function broadcastDeploymentCreated(Site $site, Deployment $deployment): void

@@ -1,0 +1,1 @@
+var e={getStoredSite(){let e=localStorage.getItem(`site`);return e?JSON.parse(e):null},storeSite(e){e?localStorage.setItem(`site`,JSON.stringify(e)):localStorage.removeItem(`site`)}};export{e as t};

@@ -20,7 +20,7 @@ link users to databases.
 - PostgreSQL 18
 
 :::info
-MariaDB 10.11 and 11.4 are not available on Ubuntu 26.04.
+MariaDB 10.11 and 11.4 are not available on Ubuntu 26.04 and Debian 13.
 :::
 
 ## Install database service

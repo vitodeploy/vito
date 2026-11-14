@@ -16,9 +16,7 @@ export default function VHostPreview({ site, children }: { site: Site; children:
   const query = useQuery({
     queryKey: ['site-settings.vhost', site.server_id, site.id],
     queryFn: async () => {
-      const response = await axios.get(
-        `/servers/${site.server_id}/sites/${site.id}/settings/vhost`,
-      );
+      const response = await axios.get(`/servers/${site.server_id}/sites/${site.id}/settings/vhost`);
       return response.data;
     },
     retry: false,

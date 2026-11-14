@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
 use App\Enums\NetworkServerStatus;
 use App\Enums\OperatingSystem;
@@ -9,6 +10,9 @@ use App\Enums\UserRole;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Server\InstallJob;
+use App\Models\Application;
+use App\Models\Component;
+use App\Models\Environment;
 use App\Models\Network;
 use App\Models\NetworkServer;
 use App\Models\Project;
@@ -17,19 +21,29 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Notifications\ServerAutoUpdateCompleted;
+use App\Plugins\RegisterServerProvider;
+use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
+use Aws\CommandInterface;
+use Aws\Ec2\Ec2Client;
+use Aws\MockHandler;
+use Aws\Result;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
+use Psr\Http\Message\RequestInterface;
 
 uses(RefreshDatabase::class);
 
@@ -139,6 +153,240 @@ test('create ubuntu 26 server uses the provider image', function (string $provid
     'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/ubuntu26.04'],
     'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 26],
     'vultr' => [Vultr::id(), '/instances', 'os_id', 2760],
+]);
+
+test('create debian server uses the provider image', function (string $provider, string $endpoint, string $field, int|string $image) {
+    $this->actingAs($this->user);
+
+    Queue::fake();
+    Http::fake([
+        'api.hetzner.cloud/v1/ssh_keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.hetzner.cloud/v1/servers' => Http::response(['server' => ['id' => 1, 'public_net' => ['ipv4' => ['ip' => '1.1.1.1']]]], 201),
+        'api.linode.com/v4/linode/instances' => Http::response(['id' => 1, 'ipv4' => ['1.1.1.1']]),
+        'api.digitalocean.com/v2/account/keys' => Http::response(['ssh_key' => ['id' => 1]], 201),
+        'api.digitalocean.com/v2/images*' => Http::response(['images' => [
+            ['id' => 99, 'name' => '13.10 x64', 'distribution' => 'Ubuntu', 'status' => 'available', 'regions' => ['nyc1']],
+            ['id' => 12, 'name' => '12 x64', 'distribution' => 'Debian', 'status' => 'available', 'regions' => ['nyc1']],
+            ['id' => 13, 'name' => '13 x64', 'distribution' => 'Debian', 'status' => 'available', 'regions' => ['nyc1']],
+        ]]),
+        'api.digitalocean.com/v2/droplets' => Http::response(['droplet' => ['id' => 1]], 202),
+        'api.vultr.com/v2/ssh-keys' => Http::response(['ssh_key' => ['id' => 'key']], 201),
+        'api.vultr.com/v2/os*' => Http::response(['os' => [
+            ['id' => 99, 'name' => 'Ubuntu 13.10 x64', 'arch' => 'x64', 'family' => 'ubuntu'],
+            ['id' => 1, 'name' => 'Debian 13 i386 (trixie)', 'arch' => 'x86', 'family' => 'debian'],
+            ['id' => 2625, 'name' => 'Debian 13 x64 (trixie)', 'arch' => 'x64', 'family' => 'debian'],
+        ]]),
+        'api.vultr.com/v2/instances' => Http::response(['instance' => ['id' => 'instance']], 202),
+    ]);
+
+    $serverProvider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => $provider,
+        'credentials' => ['token' => 'token'],
+    ]);
+
+    $this->post(route('servers.store'), [
+        'provider' => $provider,
+        'server_provider' => $serverProvider->id,
+        'name' => 'trixie',
+        'os' => OperatingSystem::DEBIAN13->value,
+        'region' => 'nyc1',
+        'plan' => 'small',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), $endpoint) && $request[$field] === $image);
+})->with([
+    'hetzner' => [Hetzner::id(), '/servers', 'image', 'debian-13'],
+    'linode' => [Linode::id(), '/linode/instances', 'image', 'linode/debian13'],
+    'digitalocean' => [DigitalOcean::id(), '/droplets', 'image', 13],
+    'vultr' => [Vultr::id(), '/instances', 'os_id', 2625],
+]);
+
+test('aws provisions only images compatible with the selected plan', function (OperatingSystem $os, string $plan, array $architectures, ?string $imageArchitecture) {
+    SSH::fake();
+    Queue::fake();
+    Http::preventStrayRequests();
+
+    $handler = new MockHandler([
+        new Result(['KeyMaterial' => file_get_contents($this->server->sshKey()['private_key_path'])]),
+        new Result(['GroupId' => 'sg-test']),
+        new Result,
+        new Result(['InstanceTypes' => [['ProcessorInfo' => ['SupportedArchitectures' => $architectures]]]]),
+        new Result(['Images' => [['ImageId' => 'ami-compatible', 'CreationDate' => '2026-10-01T00:00:00Z']]]),
+        new Result(['Instances' => [[
+            'InstanceId' => 'i-test', 'PrivateIpAddress' => '10.0.0.10', 'Placement' => ['AvailabilityZone' => 'eu-central-1a'],
+        ]]]),
+    ]);
+    $commands = [];
+    $this->app->bind(Ec2Client::class, function ($app, array $parameters) use ($handler, &$commands): Ec2Client {
+        return new Ec2Client(array_merge($parameters['args'], [
+            'retries' => 0,
+            'handler' => function (CommandInterface $command, RequestInterface $request) use ($handler, &$commands): PromiseInterface {
+                $commands[$command->getName()] = $command->toArray();
+
+                return $handler($command, $request);
+            },
+        ]));
+    });
+    $provider = ServerProvider::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'provider' => AWS::id(),
+        'credentials' => ['key' => 'test-key', 'secret' => 'test-secret'],
+    ]);
+
+    $response = $this->actingAs($this->user)->post(route('servers.store'), [
+        'provider' => AWS::id(), 'server_provider' => $provider->id,
+        'name' => 'aws-architecture', 'os' => $os->value, 'region' => 'eu-central-1', 'plan' => $plan,
+    ]);
+
+    expect($commands['DescribeInstanceTypes']['InstanceTypes'])->toBe([$plan]);
+
+    if ($imageArchitecture === null) {
+        $response->assertSessionHasErrors('provider');
+        expect($commands)->not->toHaveKeys(['DescribeImages', 'RunInstances']);
+        Queue::assertNotPushed(InstallJob::class);
+
+        return;
+    }
+
+    $response->assertSessionDoesntHaveErrors();
+    $filters = collect($commands['DescribeImages']['Filters'])->pluck('Values', 'Name');
+    $imageName = $os->isDebian()
+        ? 'debian-'.$os->getVersion().'-'.$imageArchitecture.'-20261001-2618'
+        : 'ubuntu/images/hvm-ssd/ubuntu-'.$os->getCodename().'-'.$os->getVersion().'-'.$imageArchitecture.'-server-20261001';
+
+    expect($filters['architecture'])->toBe($architectures)
+        ->and(fnmatch($filters['name'][0], $imageName))->toBeTrue()
+        ->and($commands['DescribeImages']['Owners'])->toBe([$os->isDebian() ? '136693071363' : '099720109477'])
+        ->and($commands['RunInstances']['ImageId'])->toBe('ami-compatible')
+        ->and($commands['RunInstances']['InstanceType'])->toBe($plan);
+    $this->assertDatabaseHas('servers', ['name' => 'aws-architecture', 'ssh_user' => $os->isDebian() ? 'admin' : 'ubuntu']);
+    Queue::assertPushed(InstallJob::class);
+})->with([
+    'debian 12 x86' => [OperatingSystem::DEBIAN12, 't3.small', ['x86_64'], 'amd64'],
+    'debian 12 arm' => [OperatingSystem::DEBIAN12, 't4g.small', ['arm64'], 'arm64'],
+    'debian 13 x86' => [OperatingSystem::DEBIAN13, 't3.small', ['x86_64'], 'amd64'],
+    'debian 13 arm' => [OperatingSystem::DEBIAN13, 't4g.small', ['arm64'], 'arm64'],
+    'ubuntu x86' => [OperatingSystem::UBUNTU24, 't3.small', ['x86_64'], 'amd64'],
+    'ubuntu arm' => [OperatingSystem::UBUNTU24, 't4g.small', ['arm64'], 'arm64'],
+    'unsupported architecture' => [OperatingSystem::DEBIAN13, 'unsupported', ['i386'], null],
+    'missing architecture' => [OperatingSystem::DEBIAN13, 'unknown', [], null],
+]);
+
+test('create debian server prepares the base system', function (OperatingSystem $os) {
+    $this->actingAs($this->user);
+
+    Storage::fake();
+    SSH::fake('user_not_found');
+
+    $this->post(route('servers.store', [
+        'provider' => Custom::id(),
+        'name' => 'debian',
+        'ip' => '1.1.1.1',
+        'port' => '22',
+        'os' => $os->value,
+        'services' => [],
+    ]))->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('sudo() { env "$@"; }');
+    SSH::assertExecutedContains('install -y sudo psmisc openssl');
+    SSH::assertExecutedContains('PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"');
+    SSH::assertExecutedContains('install -y --no-install-recommends cron');
+    SSH::assertExecutedContains('install -y wget lsb-release rsyslog logrotate curl');
+    SSH::assertNotExecutedContains('software-properties-common');
+})->with([OperatingSystem::DEBIAN12, OperatingSystem::DEBIAN13]);
+
+test('create ubuntu server keeps its base system steps', function () {
+    $this->actingAs($this->user);
+
+    Storage::fake();
+    SSH::fake('user_not_found');
+
+    $this->post(route('servers.store', [
+        'provider' => Custom::id(),
+        'name' => 'ubuntu',
+        'ip' => '1.1.1.1',
+        'port' => '22',
+        'os' => OperatingSystem::UBUNTU24->value,
+        'services' => [],
+    ]))->assertSessionDoesntHaveErrors();
+
+    SSH::assertExecutedContains('install -y software-properties-common curl');
+    SSH::assertNotExecutedContains('install -y sudo psmisc openssl');
+    SSH::assertNotExecutedContains('--no-install-recommends cron');
+    SSH::assertNotExecutedContains('/etc/environment');
+});
+
+test('create server rejects a wildcard provider', function () {
+    $this->actingAs($this->user);
+
+    $this->post(route('servers.store'), [
+        'provider' => '*',
+        'name' => 'wildcard',
+        'os' => OperatingSystem::DEBIAN13->value,
+    ])->assertSessionHasErrors('provider');
+});
+
+test('provider that does not declare debian cannot create a debian server', function () {
+    $this->actingAs($this->user);
+
+    RegisterServerProvider::make('plugin-provider')
+        ->label('Plugin')
+        ->handler(Custom::class)
+        ->defaultUser('root')
+        ->register();
+
+    expect(config('server-provider.providers.plugin-provider.operating_systems'))
+        ->toBe(['ubuntu_20', 'ubuntu_22', 'ubuntu_24', 'ubuntu_26']);
+
+    $this->post(route('servers.store'), [
+        'provider' => 'plugin-provider',
+        'name' => 'plugin',
+        'os' => OperatingSystem::DEBIAN13->value,
+    ])->assertSessionHasErrors('os');
+});
+
+test('provider cannot declare a value that is not an operating system', function () {
+    $this->actingAs($this->user);
+
+    RegisterServerProvider::make('plugin-provider')
+        ->label('Plugin')
+        ->handler(Custom::class)
+        ->operatingSystems(['freebsd_14'])
+        ->register();
+
+    $this->post(route('servers.store'), [
+        'provider' => 'plugin-provider',
+        'name' => 'plugin',
+        'os' => 'freebsd_14',
+    ])->assertSessionHasErrors('os');
+});
+
+test('cannot create debian server with an unavailable service version', function (OperatingSystem $os, string $service, string $type, string $version, string $error) {
+    $this->actingAs($this->user);
+
+    SSH::fake();
+
+    $this->post(route('servers.store'), [
+        'provider' => Custom::id(),
+        'name' => 'debian',
+        'ip' => '8.8.8.8',
+        'port' => '22',
+        'os' => $os->value,
+        'services' => [
+            [
+                'name' => $service,
+                'type' => $type,
+                'version' => $version,
+            ],
+        ],
+    ])->assertSessionHasErrors(['services.0.version' => $error]);
+})->with([
+    [OperatingSystem::DEBIAN13, 'mariadb', 'database', '11.4', 'MariaDB 11.4 is not available on Debian 13.'],
+    [OperatingSystem::DEBIAN13, 'mariadb', 'database', '10.11', 'MariaDB 10.11 is not available on Debian 13.'],
+    [OperatingSystem::DEBIAN12, 'valkey', 'memory_database', 'latest', 'Valkey latest is not available on Debian 12.'],
 ]);
 
 test('cannot create ubuntu 26 server with an unavailable service version', function () {
@@ -657,6 +905,26 @@ test('transfer server', function (UserRole $role): void {
     expect($this->user->refresh()->current_project_id)->toEqual($newProject->id);
 })->with([UserRole::OWNER, UserRole::ADMIN]);
 
+test('server transfer refreshes placement under a transaction before saving', function () {
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    Server::query()->whereKey($this->server->id)->update(['name' => 'Fresh server']);
+    $depth = DB::transactionLevel();
+    $retrieved = false;
+    Event::listen('eloquent.retrieved: '.Server::class, function () use ($depth, &$retrieved): void {
+        $retrieved = true;
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+    Event::listen('eloquent.updating: '.Server::class, function () use ($depth): void {
+        expect(DB::transactionLevel())->toBeGreaterThan($depth);
+    });
+
+    $server = app(TransferServer::class)->transfer($this->user, $this->server, ['project_id' => $project->id]);
+
+    expect($retrieved)->toBeTrue()->and($server->name)->toBe('Fresh server');
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $project->id]);
+});
+
 test('cannot transfer a server to a read-only project', function (): void {
     $project = Project::factory()->create();
     $project->users()->create([
@@ -675,6 +943,26 @@ test('cannot transfer a server to a read-only project', function (): void {
         'project_id' => $this->server->project_id,
     ]);
     expect($this->user->refresh()->current_project_id)->toBe($this->server->project_id);
+});
+
+test('cannot transfer a server hosting components and names their environments', function (): void {
+    $application = Application::factory()->create(['project_id' => $this->server->project_id, 'name' => 'Store']);
+    $environment = Environment::factory()->for($application)->create(['name' => 'Production']);
+    $otherEnvironment = Environment::factory()->for($application)->create(['name' => 'Staging']);
+    Component::factory()->for($environment)->for($this->server)->create();
+    Component::factory()->for($environment)->for($this->server)->create(['user' => 'other']);
+    Component::factory()->for($otherEnvironment, 'environment')->for($this->server)->create();
+    $project = Project::factory()->create();
+    $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+
+    $this->actingAs($this->user)->postJson(route('servers.transfer', $this->server), ['project_id' => $project->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'project_id' => 'This server hosts components in the following environments: Store / Production, Store / Staging. Remove them before transferring it.',
+        ]);
+
+    $this->assertDatabaseHas('servers', ['id' => $this->server->id, 'project_id' => $application->project_id]);
+    expect($this->user->refresh()->current_project_id)->toBe($application->project_id);
 });
 
 test('cannot transfer a server while network memberships remain', function (NetworkServerStatus $status): void {

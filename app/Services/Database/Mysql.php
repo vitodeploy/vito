@@ -41,6 +41,7 @@ class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
     {
         return view($this->getScriptView('install'), [
             'version' => $this->service->version,
+            'isDebian' => $this->service->server->os->isDebian(),
         ]);
     }
 
@@ -52,6 +53,13 @@ class Mysql extends AbstractDatabase implements HasLogs, SupportsNetworking
     protected function networkingManagesXPlugin(): bool
     {
         return true;
+    }
+
+    public function resourceXPort(): int
+    {
+        $output = $this->service->server->ssh()->clearLog()->exec("sudo mysql -N -e \"SHOW VARIABLES LIKE 'mysqlx_port'\"");
+
+        return preg_match('/^mysqlx_port\s+(\d+)$/m', trim($output), $matches) === 1 ? (int) $matches[1] : 33060;
     }
 
     public function logs(): array

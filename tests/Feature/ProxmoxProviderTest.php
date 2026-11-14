@@ -145,7 +145,7 @@ test('cannot connect proxmox with an invalid template mapping', function (array 
 
     $this->assertDatabaseMissing('server_providers', ['profile' => 'homelab']);
 })->with([
-    'no mapping' => [[], [], [], 'Map at least one Ubuntu version to a template.'],
+    'no mapping' => [[], [], [], 'Map at least one operating system to a template.'],
     'missing vm' => [['template_ubuntu_24' => '9000'], ['vmid' => 100, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'], [], 'VM 9000 was not found or the API token cannot access it.'],
     'not a template' => [['template_ubuntu_24' => '9000'], ['vmid' => 9000, 'node' => 'pve', 'template' => 0, 'type' => 'qemu'], [], 'VM 9000 is not a QEMU template.'],
     'container template' => [['template_ubuntu_24' => '9000'], ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'lxc'], [], 'VM 9000 is not a QEMU template.'],
@@ -249,6 +249,36 @@ test('create ubuntu 26 proxmox server clones its template', function () {
     ])->assertSessionDoesntHaveErrors();
 
     Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/nodes/pve/qemu/9026/clone'));
+    Queue::assertPushed(InstallJob::class);
+});
+
+test('create debian proxmox server clones its template', function () {
+    $this->actingAs($this->user);
+
+    $this->proxmox->update([
+        'credentials' => array_merge($this->proxmox->credentials, ['template_debian_13' => 9013]),
+    ]);
+
+    Queue::fake();
+    Http::fake([
+        '*/api2/json/cluster/resources*' => Http::response(['data' => [
+            ['vmid' => 9000, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+            ['vmid' => 9013, 'node' => 'pve', 'template' => 1, 'type' => 'qemu'],
+        ]]),
+        '*/api2/json/cluster/nextid' => Http::response(['data' => '102']),
+        '*/api2/json/nodes/pve/qemu/9013/clone' => Http::response(['data' => 'UPID:pve:0001:qmclone:9013:vito@pve!vito:']),
+    ]);
+
+    $this->post(route('servers.store'), [
+        'provider' => Proxmox::id(),
+        'server_provider' => $this->proxmox->id,
+        'name' => 'trixie',
+        'os' => OperatingSystem::DEBIAN13->value,
+        'region' => 'pve',
+        'plan' => 'medium',
+    ])->assertSessionDoesntHaveErrors();
+
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/nodes/pve/qemu/9013/clone'));
     Queue::assertPushed(InstallJob::class);
 });
 
@@ -444,6 +474,16 @@ test('proxmox template fields open a setup guide for their ubuntu version', func
         ->and(collect(config('server-provider.providers.proxmox.form'))->firstWhere('name', 'template_ubuntu_26')['componentProps']['steps'])->toBe($steps);
 });
 
+test('proxmox template fields open a setup guide for debian', function () {
+    $fields = collect(config('server-provider.providers.proxmox.edit_form'))->keyBy('name');
+
+    $steps = $fields['template_debian_13']['componentProps']['steps'];
+
+    expect($fields['template_debian_13']['label'])->toBe('Debian 13 Template')
+        ->and($steps[0]['code'])->toContain('https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2')
+        ->and($steps[2]['code'])->toContain('qm create 9013 --name debian-13-cloud');
+});
+
 test('edit proxmox connection updates its templates', function () {
     $this->actingAs($this->user);
 
@@ -536,7 +576,7 @@ test('proxmox connection shows its templates only to write tokens', function (ar
         ->assertOk()
         ->assertJsonPath('editable_data', $editableData);
 })->with([
-    'write token' => [['read', 'write'], ['template_ubuntu_20' => null, 'template_ubuntu_22' => null, 'template_ubuntu_24' => 9000, 'template_ubuntu_26' => null]],
+    'write token' => [['read', 'write'], ['template_ubuntu_20' => null, 'template_ubuntu_22' => null, 'template_ubuntu_24' => 9000, 'template_ubuntu_26' => null, 'template_debian_12' => null, 'template_debian_13' => null]],
     'read-only token' => [['read'], []],
 ]);
 

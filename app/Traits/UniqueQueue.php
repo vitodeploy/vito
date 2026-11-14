@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Closure;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\DetectsConcurrencyErrors;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -33,6 +34,11 @@ trait UniqueQueue
             try {
                 $callback();
             } catch (Throwable $e) {
+                if ($e instanceof LockTimeoutException) {
+                    $this->release(30);
+
+                    return;
+                }
                 if ($this->isTransientDatabaseError($e) && $this->attempts() < $this->tries) {
                     $this->release(min(30, $this->attempts() * 2));
 

@@ -23,11 +23,14 @@ class DeployJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    protected bool $checkoutCommit = false;
+
     public function __construct(
         protected Deployment $deployment,
         protected bool $isModern = true,
-        protected bool $checkoutCommit = false
+        bool $checkoutCommit = false
     ) {
+        $this->checkoutCommit = $checkoutCommit;
         $this->onQueue('ssh');
     }
 
@@ -69,7 +72,7 @@ class DeployJob implements ShouldQueue
         if ($this->isModern && $current) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
-                    'site' => $site,
+                    'basePath' => $site->basePath(),
                     'releasePath' => $current->path(),
                 ]),
                 'release',
@@ -111,12 +114,11 @@ class DeployJob implements ShouldQueue
 
     private function handleModernDeployment($site, $log): void
     {
-        app(Git::class)->clone($site, $this->deployment->path());
-
-        if (($this->checkoutCommit ?? false) && $this->deployment->commit_id) {
-            app(Git::class)->fetchOrigin($site, $this->deployment->path(), $this->deployment->commit_id);
-            app(Git::class)->checkout($site, $this->deployment->path(), $this->deployment->commit_id);
-        }
+        app(Git::class)->clone(
+            $site,
+            $this->deployment->path(),
+            $this->checkoutCommit ? $this->deployment->commit_id : null,
+        );
 
         // build
         $site->server->os()->runScript(
@@ -159,7 +161,7 @@ class DeployJob implements ShouldQueue
         // release
         $site->server->ssh($site->user)->exec(
             view('ssh.modern-deployment.release', [
-                'site' => $site,
+                'basePath' => $site->basePath(),
                 'releasePath' => $this->deployment->path(),
             ]),
             'release',

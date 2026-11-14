@@ -25,6 +25,10 @@ trait HandlesWorkerFailure
 
     protected function failWorker(Worker $worker, ?string $error, string $logType, string $logMessage, WorkerStatus $status = WorkerStatus::FAILED): void
     {
+        if ($worker->component_id !== null) {
+            $error = 'The component process operation failed. Check the command, runtime and server connectivity, then retry.';
+            $logMessage = $error;
+        }
         $worker->error = $error;
         $worker->status = $status;
         $worker->save();
@@ -83,6 +87,7 @@ trait HandlesWorkerFailure
     protected function broadcastWorkerUpdate(Worker $worker): void
     {
         $worker->refresh();
+        $worker->loadMissing('component.environment');
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $worker->server->project_id,

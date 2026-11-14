@@ -42,7 +42,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/4.x/scripts/in
 - [Install via Docker](https://vitodeploy.com/getting-started/installation.html#install-via-docker)
 - [Roadmap](https://github.com/orgs/vitodeploy/projects/5)
 - [Discord](https://discord.gg/uZeeHZZnm5)
-- [Contribution](https://vitodeploy.com/prologue/contribution-guide.html)
+- [Contribution](https://vitodeploy.com/docs/prologue/contribution-guide)
 - [Security](/SECURITY.md)
 
 ## Credits

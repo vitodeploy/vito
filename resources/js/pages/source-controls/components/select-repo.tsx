@@ -62,6 +62,7 @@ export default function SelectRepo({ sourceControlId, value, onValueChange, plac
       )}
       {!gettingRepos && repos.length !== 0 && sourceControlId && (
         <Combobox
+          id="repository"
           items={comboboxItems}
           value={value}
           searchText="Filter repositories..."

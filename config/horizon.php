@@ -208,7 +208,7 @@ return [
             'maxJobs' => env('HORIZON_SSH_MAX_JOBS', 0),
             'memory' => env('HORIZON_SSH_MEMORY', 128),
             'tries' => env('HORIZON_SSH_TRIES', 1),
-            'timeout' => env('HORIZON_SSH_TIMEOUT', 1200),
+            'timeout' => env('HORIZON_SSH_TIMEOUT', max(3600, (int) env('BACKUP_RUN_TIMEOUT', 3600)) + 30),
             'nice' => env('HORIZON_SSH_NICE', 0),
         ],
 

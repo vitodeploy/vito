@@ -287,20 +287,17 @@ test('deployment scripts receive the pinned commit and modern builds check it ou
     ]);
     SSH::assertExecutedContains("export COMMIT_ID='".$commit."'");
     if ($modern) {
-        SSH::assertExecutedContains("git fetch origin '".$commit."'");
-        SSH::assertExecutedContains("git checkout -f '".$commit."'");
         $commands = collect(SSH::getExecutedCommands());
-        $fetchIndex = $commands->search(fn (string $command) => str_contains($command, "git fetch origin '".$commit."'"));
+        $cloneIndex = $commands->search(fn (string $command) => str_contains($command, "clone -b 'main'"));
         $checkoutIndex = $commands->search(fn (string $command) => str_contains($command, "git checkout -f '".$commit."'"));
         $buildIndex = $commands->search(fn (string $command) => str_contains($command, 'echo build-release-marker'));
-        expect($fetchIndex)->not->toBeFalse();
+        expect($cloneIndex)->not->toBeFalse();
         expect($checkoutIndex)->not->toBeFalse();
         expect($buildIndex)->not->toBeFalse();
-        expect($fetchIndex)->toBeLessThan($checkoutIndex);
+        expect($cloneIndex)->toBeLessThan($checkoutIndex);
         expect($checkoutIndex)->toBeLessThan($buildIndex);
     }
 })->with([false, true]);
-
 
 test('modern deployments without a requested commit keep the branch checkout', function (bool $legacyJob) {
     SSH::fake();
@@ -324,9 +321,9 @@ test('modern deployments without a requested commit keep the branch checkout', f
     /** @var DeployJob $job */
     $job = Queue::pushed(DeployJob::class)->first();
     if ($legacyJob) {
-        (function () {
-            unset($this->checkoutCommit);
-        })->call($job);
+        $legacy = (new ReflectionClass($job))->newInstanceWithoutConstructor();
+        $legacy->__unserialize(array_diff_key($job->__serialize(), ["\0*\0checkoutCommit" => true]));
+        $job = $legacy;
     }
     $job->handle();
 

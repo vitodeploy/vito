@@ -173,7 +173,7 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
 
         if ($templates->isEmpty()) {
             throw ValidationException::withMessages([
-                last(self::templateFields()) => 'Map at least one Ubuntu version to a template.',
+                last(self::templateFields()) => 'Map at least one operating system to a template.',
             ]);
         }
 
@@ -273,7 +273,7 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
         $templateId = (int) ($credentials[self::templateField($this->server->os->value)] ?? 0);
 
         if ($templateId === 0) {
-            throw new ServerProviderError('No Proxmox template is mapped to Ubuntu '.$this->server->os->getVersion().' on this connection.');
+            throw new ServerProviderError('No Proxmox template is mapped to '.$this->server->os->getLabel().' on this connection.');
         }
 
         $this->generateKeyPair();

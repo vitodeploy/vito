@@ -13,7 +13,7 @@ class CheckSslExpiriesCommand extends Command
 {
     protected $signature = 'ssl:check-expiry';
 
-    protected $description = 'Check and sync expiry dates for site-level Let\'s Encrypt certificates';
+    protected $description = 'Check and sync expiry dates for site and environment Let\'s Encrypt certificates';
 
     public function handle(): void
     {
@@ -26,6 +26,10 @@ class CheckSslExpiriesCommand extends Command
             ->select('sites.server_id')
             ->distinct()
             ->pluck('server_id');
+
+        $serverIds = $serverIds->merge(Ssl::query()->whereNotNull('environment_id')->whereNotNull('server_id')
+            ->where('type', SslType::LETSENCRYPT)->where('status', SslStatus::CREATED)
+            ->whereNotNull('certificate_path')->distinct()->pluck('server_id'))->unique();
 
         $serverIds->each(function (int $serverId) {
             dispatch(new CheckSslExpiryJob(

@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-D71uMYU6.js";import{t}from"./use-dialog-Cg_u8335.js";import{a as n}from"./dropdown-menu-CRbThtkQ.js";var r=e();function i({notificationChannel:e}){let i=t();return(0,r.jsx)(n,{onSelect:()=>i.notificationChannelEdit.open({notificationChannel:e}),children:`Edit`})}export{i as default};

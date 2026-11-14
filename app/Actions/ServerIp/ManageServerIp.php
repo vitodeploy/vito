@@ -2,6 +2,8 @@
 
 namespace App\Actions\ServerIp;
 
+use App\Actions\Network\CheckEnvironmentResourceNetwork;
+use App\Actions\Network\CheckLoadBalancerNetwork;
 use App\Actions\Network\ResyncServerEndpoint;
 use App\DTOs\SocketEventDTO;
 use App\Enums\IpAddressFamily;
@@ -102,8 +104,14 @@ class ManageServerIp
             ]);
         }
 
-        $address->status = IpAddressStatus::DELETING;
-        $address->save();
+        DB::transaction(function () use ($address): void {
+            Server::query()->lockForUpdate()->findOrFail($address->server_id);
+            $address->refresh();
+            app(CheckLoadBalancerNetwork::class)->address($address);
+            app(CheckEnvironmentResourceNetwork::class)->address($address);
+            $address->status = IpAddressStatus::DELETING;
+            $address->save();
+        });
 
         $this->queueApply($address->server);
     }

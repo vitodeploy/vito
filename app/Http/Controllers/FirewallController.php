@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\FirewallRule\GetCloudflareIps;
 use App\Actions\FirewallRule\ManageRule;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Tables\Servers\FirewallRuleTable;
 use App\Tables\Servers\ServerNetworkRuleTable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -40,10 +42,18 @@ class FirewallController extends Controller
     {
         $this->authorize('create', [FirewallRule::class, $server]);
 
-        app(ManageRule::class)->create($server, $request->all());
+        $rules = app(ManageRule::class)->createMany($server, $request->all());
 
         return back()
-            ->with('info', 'Firewall rule is being created.');
+            ->with('info', $rules->count() > 1 ? "{$rules->count()} firewall rules are being created." : 'Firewall rule is being created.');
+    }
+
+    #[Get('/cloudflare-ips', name: 'firewall.cloudflare-ips')]
+    public function cloudflareIps(Server $server): JsonResponse
+    {
+        $this->authorize('create', [FirewallRule::class, $server]);
+
+        return response()->json(app(GetCloudflareIps::class)->handle());
     }
 
     #[Put('/{firewallRule}', name: 'firewall.update')]

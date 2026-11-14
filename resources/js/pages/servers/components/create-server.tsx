@@ -330,6 +330,9 @@ export default function CreateServer({
     }
   });
 
+  const operatingSystemsFor = (provider: string): string[] =>
+    configs.server_provider.providers[provider]?.operating_systems ?? configs.operating_systems;
+
   const providerValue = form.data.provider === 'custom' ? 'custom' : form.data.server_provider ? form.data.server_provider.toString() : '';
 
   const selectCombinedProvider = async (value: string) => {
@@ -358,6 +361,9 @@ export default function CreateServer({
 
     form.setData('provider', connection.provider);
     form.setData('server_provider', connection.id);
+    if (!operatingSystemsFor(connection.provider).includes(form.data.os)) {
+      form.setData('os', '');
+    }
     await fetchRegions(connection.id);
   };
 
@@ -594,7 +600,7 @@ export default function CreateServer({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {configs.operating_systems.map((value) => (
+                      {operatingSystemsFor(form.data.provider).map((value) => (
                         <SelectItem key={`os-${value}`} value={value}>
                           {value}
                         </SelectItem>

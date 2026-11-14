@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property User $user
  * @property Collection<int, Server> $servers
  * @property Collection<int, Site> $sites
+ * @property Collection<int, Application> $applications
  * @property Collection<int, Backup> $backups
  * @property Collection<int, UserProject> $users
  * @property Collection<int, NotificationChannel> $notificationChannels
@@ -50,6 +51,14 @@ class Project extends Model
                 $server->delete();
             });
         });
+    }
+
+    /**
+     * @return HasMany<Application, covariant $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 
     /**

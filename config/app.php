@@ -1,6 +1,7 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use App\Providers\ComponentServiceProvider;
 use App\Providers\DemoServiceProvider;
 use App\Providers\DNSProviderServiceProvider;
 use App\Providers\HorizonServiceProvider;
@@ -239,6 +240,7 @@ return [
         DNSProviderServiceProvider::class,
         NotificationChannelServiceProvider::class,
         ServiceTypeServiceProvider::class,
+        ComponentServiceProvider::class,
         HorizonServiceProvider::class,
         WorkflowServiceProvider::class,
     ],
@@ -258,7 +260,7 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
-    'version' => '4.1.1',
+    'version' => '4.3.0-beta-2',
 
     'demo' => env('APP_DEMO', false),
 

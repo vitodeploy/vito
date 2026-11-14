@@ -1,5 +1,6 @@
 @if ($newPassword)
-if ! sudo mysql -e "ALTER USER '{{ $username }}'@'{{ $host }}' IDENTIFIED BY '{{ $newPassword }}'"; then
+@php($sql = "ALTER USER '{$username}'@'{$host}' IDENTIFIED BY '".addslashes($newPassword)."';")
+if ! echo {{ base64_encode($sql) }} | base64 -d | sudo mysql; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @endif
