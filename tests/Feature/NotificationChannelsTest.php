@@ -1,13 +1,18 @@
 <?php
 
+use App\Facades\Notifier;
 use App\Models\NotificationChannel;
+use App\Models\Project;
 use App\Models\User;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
 use App\NotificationChannels\Telegram;
+use App\Notifications\ServerDisconnected;
+use App\Notifications\SiteInstallationFailed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -332,8 +337,29 @@ test('user can only see own notification channels in list', function () {
         ->assertSuccessful()
         ->assertInertia(fn (AssertableInertia $page) => $page->component('notification-channels/index'));
 
-    $response->assertInertia(fn (AssertableInertia $page) => $page->has('notificationChannels.data')
-        ->where('notificationChannels.data.0.id', $ownChannel->id)
-        ->whereNot('notificationChannels.data.0.id', $otherChannel->id)
-    );
+    $ids = collect($response->viewData('page')['props']['notificationChannels']['data'])->pluck('id');
+
+    expect($ids)->toContain($ownChannel->id)->not->toContain($otherChannel->id);
+});
+
+test('notifications only reach channels of members of the notifiable project', function () {
+    Notification::fake();
+
+    $project = $this->server->project;
+    $otherProject = Project::factory()->create();
+    $outsider = User::factory()->create();
+
+    $memberGlobal = NotificationChannel::factory()->create(['user_id' => $this->user->id, 'project_id' => null]);
+    $memberProject = NotificationChannel::factory()->create(['user_id' => $this->user->id, 'project_id' => $project->id]);
+    $memberOtherProject = NotificationChannel::factory()->create(['user_id' => $this->user->id, 'project_id' => $otherProject->id]);
+    $outsiderGlobal = NotificationChannel::factory()->create(['user_id' => $outsider->id, 'project_id' => null]);
+    $outsiderScoped = NotificationChannel::factory()->create(['user_id' => $outsider->id, 'project_id' => $project->id]);
+
+    Notifier::send($this->server, new ServerDisconnected($this->server));
+    Notifier::send($this->site, new SiteInstallationFailed($this->site));
+
+    Notification::assertSentToTimes($memberGlobal, ServerDisconnected::class, 1);
+    Notification::assertSentToTimes($memberProject, SiteInstallationFailed::class, 1);
+    Notification::assertNotSentTo([$memberOtherProject, $outsiderGlobal, $outsiderScoped], ServerDisconnected::class);
+    Notification::assertNotSentTo([$memberOtherProject, $outsiderGlobal, $outsiderScoped], SiteInstallationFailed::class);
 });

@@ -2,31 +2,48 @@
 
 namespace App\Http\Controllers\Project;
 
+use App\Actions\Projects\AcceptProjectInvitation;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Models\UserProject;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('settings/projects')]
 #[Middleware(['auth'])]
 class AcceptProjectInviteController extends Controller
 {
-    #[Get('/{project}/invitations/accept', name: 'projects.invitations.accept')]
-    public function __invoke(Project $project): RedirectResponse
+    #[Get('/{project}/invitations/{token}', name: 'projects.invitations.show')]
+    public function show(Project $project, string $token): Response
     {
-        /** @var ?UserProject $user */
-        $user = $project->users()->where('email', user()->email)->first();
-        if (! $user) {
-            abort(404);
-        }
+        $invitation = app(AcceptProjectInvitation::class)->find($project, user(), $token) ?? abort(404);
 
-        $user->email = null;
-        $user->user_id = user()->id;
-        $user->save();
+        return Inertia::render('projects/accept-invitation', [
+            'project' => ['id' => $project->id, 'name' => $project->name],
+            'role' => $invitation->role->getText(),
+            'email' => user()->email,
+            'url' => route('projects.invitations.accept', ['project' => $project, 'token' => $token], false),
+        ]);
+    }
+
+    #[Post('/{project}/invitations/{token}', name: 'projects.invitations.accept')]
+    public function accept(Project $project, string $token): RedirectResponse
+    {
+        app(AcceptProjectInvitation::class)->accept($project, user(), $token);
 
         return redirect()->route('projects')->with('success', __('You joined the project successfully.'));
+    }
+
+    #[Delete('/{project}/invitations/{token}', name: 'projects.invitations.decline')]
+    public function decline(Project $project, string $token): RedirectResponse
+    {
+        app(AcceptProjectInvitation::class)->decline($project, user(), $token);
+
+        return redirect()->route('projects')->with('success', __('You declined the invitation.'));
     }
 }

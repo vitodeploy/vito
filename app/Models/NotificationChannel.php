@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Notifications\NotificationInterface;
 use Database\Factories\NotificationChannelFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,14 +52,6 @@ class NotificationChannel extends AbstractModel
         $provider = new $class($this);
 
         return $provider;
-    }
-
-    public static function notifyAll(NotificationInterface $notification): void
-    {
-        $channels = self::all();
-        foreach ($channels as $channel) {
-            $channel->notify($notification);
-        }
     }
 
     /**

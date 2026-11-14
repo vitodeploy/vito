@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -265,6 +266,19 @@ function user(): User
     $user = Auth::user();
 
     return $user;
+}
+
+function app_url(string $path): string
+{
+    return rtrim((string) config('app.url'), '/').'/'.ltrim($path, '/');
+}
+
+function plain_text_response(?string $content): Response
+{
+    return response($content ?? '', 200, [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
 }
 
 function plugins_path(?string $path = null): string

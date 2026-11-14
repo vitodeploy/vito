@@ -59,3 +59,49 @@ test('users can logout', function () {
     $this->assertGuest();
     $response->assertRedirect(route('login'));
 });
+
+test('rotating x-forwarded-for from an untrusted client does not reset the login throttle', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    foreach (range(1, 5) as $attempt) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])
+            ->withHeader('X-Forwarded-For', '198.51.100.'.$attempt)
+            ->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password'])
+            ->assertStatus(302);
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])
+        ->withHeader('X-Forwarded-For', '198.51.100.99')
+        ->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password'])
+        ->assertTooManyRequests();
+});
+
+test('forwarded client ip is honored from a trusted private proxy', function () {
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.5'])
+        ->withHeader('X-Forwarded-For', '198.51.100.7')
+        ->get('/login');
+
+    expect(request()->ip())->toBe('198.51.100.7');
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])
+        ->withHeader('X-Forwarded-For', '198.51.100.7')
+        ->get('/login');
+
+    expect(request()->ip())->toBe('203.0.113.10');
+});
+
+test('login attempts for one email are limited across client addresses', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    foreach (range(1, 10) as $attempt) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.'.$attempt])
+            ->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password'])
+            ->assertStatus(302);
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.50'])
+        ->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password'])
+        ->assertTooManyRequests();
+});

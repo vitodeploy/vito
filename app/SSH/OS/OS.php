@@ -172,7 +172,7 @@ class OS
     {
         $this->server->ssh($user)->exec(
             view('ssh.os.deploy-ssh-key', [
-                'key' => $key,
+                'key' => str_replace(["\r", "\n"], ' ', trim($key)),
             ]),
             'deploy-ssh-key'
         );
@@ -183,9 +183,15 @@ class OS
      */
     public function deleteSSHKey(string $key, string $user): void
     {
+        $material = preg_split('/\s+/', trim($key))[1] ?? '';
+
+        if (preg_match('/^AAAA[A-Za-z0-9+\/]+={0,3}$/', $material) !== 1) {
+            throw new SSHCommandError(message: 'Invalid SSH public key');
+        }
+
         $this->server->ssh($user)->exec(
             view('ssh.os.delete-ssh-key', [
-                'key' => $key,
+                'material' => $material,
             ]),
             'delete-ssh-key'
         );

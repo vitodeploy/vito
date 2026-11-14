@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -126,11 +127,11 @@ class ServerLogController extends Controller
     }
 
     #[Get('/{log}', name: 'logs.show')]
-    public function show(Server $server, ServerLog $log): string
+    public function show(Server $server, ServerLog $log): HttpResponse
     {
         $this->authorize('view', $log);
 
-        return $log->getContent();
+        return plain_text_response($log->getContent());
     }
 
     /**

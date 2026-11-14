@@ -266,5 +266,7 @@ return [
 
     'force_https' => env('FORCE_HTTPS', false),
 
+    'trusted_proxies' => env('TRUSTED_PROXIES', '127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1,fc00::/7'),
+
     'self_hosted' => env('SELF_HOSTED', true),
 ];

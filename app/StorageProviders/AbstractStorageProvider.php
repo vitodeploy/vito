@@ -4,6 +4,7 @@ namespace App\StorageProviders;
 
 use App\Models\StorageProvider;
 use App\StorageProviders\StorageProvider as StorageProviderContract;
+use Illuminate\Validation\ValidationException;
 
 abstract class AbstractStorageProvider implements StorageProviderContract
 {
@@ -49,6 +50,17 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         return $data;
     }
 
+    /**
+     * Editable keys that decide where the secrets are sent. Changing any of
+     * them requires every secret to be submitted again.
+     *
+     * @return array<int, string>
+     */
+    protected function secretDestinationFields(): array
+    {
+        return [];
+    }
+
     public function editValidationRules(array $input): array
     {
         $createRules = $this->validationRules();
@@ -80,6 +92,7 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     {
         $credentials = $this->storageProvider->credentials;
         $needsReconnect = false;
+        $destinationChanged = false;
         $checkboxFields = static::checkboxFields();
 
         foreach ($this->editableFields() as $field) {
@@ -95,10 +108,20 @@ abstract class AbstractStorageProvider implements StorageProviderContract
 
             $credentials[$field] = $value;
             $needsReconnect = true;
+            $destinationChanged = $destinationChanged || in_array($field, $this->secretDestinationFields(), true);
         }
 
         foreach ($this->secretFields() as $field) {
             if (! isset($input[$field]) || $input[$field] === '') {
+                if ($destinationChanged) {
+                    throw ValidationException::withMessages([
+                        $field => __('Enter the :field again when changing :fields.', [
+                            'field' => $field,
+                            'fields' => implode(', ', $this->secretDestinationFields()),
+                        ]),
+                    ]);
+                }
+
                 continue;
             }
 

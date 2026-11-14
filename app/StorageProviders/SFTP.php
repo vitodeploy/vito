@@ -62,7 +62,7 @@ class SFTP extends AbstractStorageProvider
             DynamicField::make('password')
                 ->passwordWithToggle()
                 ->label('Password')
-                ->description('Leave empty to keep the current password'),
+                ->description('Leave empty to keep the current password. Required when changing the host or port.'),
         ];
     }
 
@@ -74,6 +74,11 @@ class SFTP extends AbstractStorageProvider
     protected function secretFields(): array
     {
         return ['password'];
+    }
+
+    protected function secretDestinationFields(): array
+    {
+        return ['host', 'port'];
     }
 
     public function connect(array $credentials): bool

@@ -11,18 +11,13 @@ class ProjectInvitation extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Project $project;
-
-    public function __construct(Project $project)
-    {
-        $this->project = $project;
-    }
+    public function __construct(public Project $project, protected string $token) {}
 
     public function build(): static
     {
         return $this
             ->markdown('mail.project-invitation', [
-                'acceptUrl' => route('projects.invitations.accept', ['project' => $this->project]),
+                'acceptUrl' => app_url(route('projects.invitations.show', ['project' => $this->project, 'token' => $this->token], false)),
             ])
             ->subject(__('Project Invitation'));
     }
