@@ -3,6 +3,7 @@
 use App\Actions\Site\DeleteSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\SyncSiteDeployKey;
+use App\Actions\Site\UpdateSourceControl;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
@@ -26,6 +27,8 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -33,6 +36,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -926,6 +930,43 @@ test('update source control rotates the deploy key and auto-deployment hook to t
     $this->assertDatabaseMissing('git_hooks', ['site_id' => $this->site->id, 'hook_id' => '77']);
     Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
     SSH::assertExecutedContains('Host gitlab.com-'.$this->site->getSshKeyName());
+});
+
+test('update source control drops the replacement hook record when the new provider rejects it', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    GitHook::factory()->create(['site_id' => $this->site->id, 'source_control_id' => $this->site->source_control_id]);
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
+        'gitlab.com/api/v4/projects/*/hooks' => Http::response([], 500),
+        'gitlab.com/*' => Http::response(['id' => 1]),
+        'api.github.com/*' => Http::response([], 204),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $sourceControl->id]);
+    $this->assertDatabaseMissing('git_hooks', ['site_id' => $this->site->id]);
+});
+
+test('update source control rejects concurrent updates of the same site', function () {
+    SSH::fake();
+    Http::fake(['api.github.com/*' => Http::response(['id' => 1])]);
+    $originalSource = $this->site->source_control_id;
+    $sourceControl = SourceControl::factory()->github()->create(['user_id' => $this->user->id]);
+    $lock = Mockery::mock(Lock::class);
+    $lock->shouldReceive('block')->once()->with(30, Mockery::type(Closure::class))->andThrow(new LockTimeoutException);
+    Cache::shouldReceive('lock')->once()->with('site-source-control:'.$this->site->id, 600)->andReturn($lock);
+
+    expect(fn () => app(UpdateSourceControl::class)->update($this->site, ['source_control' => $sourceControl->id], $this->user))
+        ->toThrow(ValidationException::class, 'Another source control update on this site is in progress. Please retry.');
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
+    Http::assertNotSent(fn ($request): bool => $request->method() !== 'GET');
 });
 
 test('update source control rolls back and removes the new deploy key when the remote cannot be rewritten', function () {

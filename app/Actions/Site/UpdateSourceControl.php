@@ -12,6 +12,8 @@ use App\Models\SourceControl;
 use App\Models\User;
 use App\SSH\OS\Git;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -65,6 +67,26 @@ class UpdateSourceControl
             ]);
         }
 
+        try {
+            Cache::lock('site-source-control:'.$site->id, 600)->block(30, fn () => $this->swapLocked($site, $newSourceControl));
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages([
+                'source_control' => 'Another source control update on this site is in progress. Please retry.',
+            ]);
+        }
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws Throwable
+     */
+    private function swapLocked(Site $site, SourceControl $newSourceControl): void
+    {
+        $site->refresh();
+        if ($site->source_control_id === $newSourceControl->id) {
+            return;
+        }
+
         $oldSourceControl = $site->sourceControl;
         $oldDeployKeyId = $site->type_data['deploy_key_id'] ?? null;
         $oldGitHook = $site->gitHook;
@@ -102,6 +124,8 @@ class UpdateSourceControl
                 $site->unsetRelation('gitHook');
                 $site->enableAutoDeployment();
             } catch (Throwable $e) {
+                $site->unsetRelation('gitHook');
+                $site->gitHook?->delete();
                 Log::warning('Failed to move the auto-deployment hook on source-control swap', [
                     'site_id' => $site->id,
                     'error' => $e->getMessage(),
