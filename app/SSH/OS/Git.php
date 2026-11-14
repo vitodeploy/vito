@@ -51,7 +51,7 @@ class Git
         );
 
         if ($target->commit !== null) {
-            $target->server->ssh($target->user)->setLog($target->log)->exec(
+            $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
                 view('ssh.git.checkout', [
                     'path' => escapeshellarg($target->path),
                     'branch' => escapeshellarg($target->commit),

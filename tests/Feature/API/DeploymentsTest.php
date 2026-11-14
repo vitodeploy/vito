@@ -198,7 +198,7 @@ test('deployment API distinguishes unknown commits from provider failures', func
     Http::fake([
         'https://api.github.com/repos/organization/repository/commits/*' => Http::response(
             $providerStatus === 422
-                ? ['message' => 'No commit found for SHA: '.str_repeat('a', 40)]
+                ? ['message' => $expectedStatus === 422 ? 'No commit found for SHA: '.str_repeat('a', 40) : 'Request rejected by abuse protection']
                 : [],
             $providerStatus,
         ),
@@ -221,7 +221,7 @@ test('deployment API distinguishes unknown commits from provider failures', func
 })->with([
     'unknown commit' => [404, 422],
     'github unknown sha' => [422, 422],
-    'provider rejects ref' => [409, 422],
+    'provider abuse protection' => [422, 500],
     'provider permission denied' => [403, 500],
     'provider rate limited' => [429, 500],
 ]);

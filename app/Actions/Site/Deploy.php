@@ -113,7 +113,7 @@ class Deploy
         } catch (RepositoryNotFound) {
             $commit = null;
         } catch (RequestException $e) {
-            if (! $e->response->clientError() || $e->response->status() === 429) {
+            if ($e->response->status() !== 422 || ! str_starts_with((string) $e->response->json('message'), 'No commit found')) {
                 throw $e;
             }
             $commit = null;
