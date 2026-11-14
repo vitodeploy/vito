@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -11,7 +12,8 @@ use App\Models\SourceControl;
 use App\Models\User;
 use App\SSH\OS\Git;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -26,6 +28,7 @@ class UpdateSourceControl
      * @throws AuthorizationException
      * @throws ValidationException
      * @throws SSHError
+     * @throws Throwable
      */
     public function update(Site $site, array $input, User $actor): void
     {
@@ -64,53 +67,109 @@ class UpdateSourceControl
             ]);
         }
 
+        try {
+            Cache::lock('site-source-control:'.$site->id, 600)->block(30, fn () => $this->swapLocked($site, $newSourceControl));
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages([
+                'source_control' => 'Another source control update on this site is in progress. Please retry.',
+            ]);
+        }
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws Throwable
+     */
+    private function swapLocked(Site $site, SourceControl $newSourceControl): void
+    {
+        $site->refresh();
+        if ($site->source_control_id === $newSourceControl->id) {
+            return;
+        }
+
         $oldSourceControl = $site->sourceControl;
         $oldDeployKeyId = $site->type_data['deploy_key_id'] ?? null;
         $oldGitHook = $site->gitHook;
 
-        DB::transaction(function () use ($site, $newSourceControl, $oldDeployKeyId): void {
-            $site->source_control_id = $newSourceControl->id;
-            $site->setRelation('sourceControl', $newSourceControl);
-            if ($oldDeployKeyId) {
-                $site->jsonUpdate('type_data', 'deploy_key_id', null, save: false);
-            }
-            $site->save();
-        });
+        $this->swap($site, $newSourceControl, null);
 
-        if ($oldDeployKeyId && $oldSourceControl) {
-            try {
-                app(SyncSiteDeployKey::class)->remove($oldSourceControl, $site->repository, (string) $oldDeployKeyId);
-            } catch (Throwable $e) {
-                Log::warning('Failed to delete old deploy key on source-control swap', [
-                    'site_id' => $site->id,
-                    'error' => $e->getMessage(),
+        try {
+            app(SyncSiteDeployKey::class)->setup($site);
+        } catch (Throwable $e) {
+            $this->rollback($site, $newSourceControl, $oldSourceControl, $oldDeployKeyId);
+
+            if ($e instanceof FailedToDeployGitKey) {
+                throw ValidationException::withMessages([
+                    'source_control' => 'Failed to add the deploy key to the new source control',
                 ]);
             }
+
+            throw $e;
+        }
+
+        try {
+            app(Git::class)->setRemote($site, $newSourceControl->provider()->fullRepoUrl($site->repository, $site->getSshKeyName()));
+        } catch (Throwable $e) {
+            $newDeployKeyId = $site->type_data['deploy_key_id'] ?? null;
+            if ($this->rollback($site, $newSourceControl, $oldSourceControl, $oldDeployKeyId) && $newDeployKeyId) {
+                $this->removeDeployKey($site, $newSourceControl, (string) $newDeployKeyId);
+            }
+
+            throw $e;
         }
 
         if ($oldGitHook) {
             try {
                 $oldGitHook->destroyHook();
+                $site->unsetRelation('gitHook');
+                $site->enableAutoDeployment();
             } catch (Throwable $e) {
-                Log::warning('Failed to destroy old git hook on source-control swap', [
+                $site->unsetRelation('gitHook');
+                $site->gitHook?->delete();
+                Log::warning('Failed to move the auto-deployment hook on source-control swap', [
                     'site_id' => $site->id,
                     'error' => $e->getMessage(),
                 ]);
             }
         }
 
-        $newRepoUrl = $newSourceControl->provider()->fullRepoUrl(
-            $site->repository,
-            $site->getSshKeyName()
-        );
+        if ($oldDeployKeyId && $oldSourceControl) {
+            $this->removeDeployKey($site, $oldSourceControl, (string) $oldDeployKeyId);
+        }
+    }
 
+    /**
+     * Restores the previous source control unless another request has changed it meanwhile.
+     */
+    private function rollback(Site $site, SourceControl $newSourceControl, ?SourceControl $oldSourceControl, int|string|null $oldDeployKeyId): bool
+    {
+        $site->refresh();
+        if ($site->source_control_id !== $newSourceControl->id) {
+            return false;
+        }
+
+        $this->swap($site, $oldSourceControl, $oldDeployKeyId);
+
+        return true;
+    }
+
+    private function removeDeployKey(Site $site, SourceControl $sourceControl, string $keyId): void
+    {
         try {
-            app(Git::class)->setRemote($site, $newRepoUrl);
-        } catch (SSHError $e) {
-            Log::warning('Failed to rewrite remote URL after source-control swap', [
+            app(SyncSiteDeployKey::class)->remove($sourceControl, $site->repository, $keyId);
+        } catch (Throwable $e) {
+            Log::warning('Failed to delete deploy key on source-control swap', [
                 'site_id' => $site->id,
+                'deploy_key_id' => $keyId,
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    private function swap(Site $site, ?SourceControl $sourceControl, int|string|null $deployKeyId): void
+    {
+        $site->source_control_id = $sourceControl?->id;
+        $site->setRelation('sourceControl', $sourceControl);
+        $site->jsonUpdate('type_data', 'deploy_key_id', $deployKeyId);
     }
 }

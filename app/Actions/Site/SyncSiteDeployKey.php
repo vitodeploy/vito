@@ -3,6 +3,8 @@
 namespace App\Actions\Site;
 
 use App\Actions\SourceControl\SetupDeployKey;
+use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SourceControlProviders\Github;
@@ -13,12 +15,19 @@ use Illuminate\Validation\ValidationException;
 
 class SyncSiteDeployKey
 {
+    /**
+     * @throws FailedToDeployGitKey
+     * @throws SSHError
+     * @throws ValidationException
+     */
     public function setup(Site $site): void
     {
         $sourceControl = $site->sourceControl;
         if (! $sourceControl || $sourceControl->isGithubApp()) {
             return;
         }
+
+        $this->ensureSshKey($site);
 
         $repository = $site->repository;
         $this->run($sourceControl, $repository, function () use ($site, $sourceControl, $repository): void {
@@ -65,6 +74,30 @@ class SyncSiteDeployKey
                 $sourceControl->provider()->deleteDeployKey($keyId, $repository);
             }
         });
+    }
+
+    /**
+     * @throws SSHError
+     */
+    private function ensureSshKey(Site $site): void
+    {
+        if ($site->ssh_key) {
+            return;
+        }
+
+        $keyName = $site->getSshKeyName();
+        $publicKey = app(SetupDeployKey::class)->generateKey($site->server, $site->user ?? $site->server->getSshUser(), $keyName, $site->id);
+
+        if (str_starts_with($keyName, 'iuser_') && $site->isolatedUser) {
+            $site->isolatedUser->ssh_key = $publicKey;
+            $site->isolatedUser->save();
+            $site->setRelation('isolatedUser', $site->isolatedUser->fresh());
+
+            return;
+        }
+
+        $site->ssh_key = $publicKey;
+        $site->save();
     }
 
     /** @param Closure(): void $callback */

@@ -3,6 +3,7 @@
 use App\Actions\Site\DeleteSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\SyncSiteDeployKey;
+use App\Actions\Site\UpdateSourceControl;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\ServiceStatus;
@@ -13,6 +14,7 @@ use App\Facades\SSH;
 use App\Jobs\Site\CreateJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\GitHook;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Service;
@@ -25,6 +27,8 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -32,6 +36,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -161,7 +166,7 @@ test('blank sites discard disabled source control input', function (?bool $enabl
 
 test('site source selection uses the actor rather than the server creator', function (string $operation, string $scope) {
     SSH::fake();
-    Http::fake();
+    Http::fake(['*/keys' => Http::response(['id' => 1], 201), '*' => Http::response()]);
     Queue::fake();
 
     $creator = User::factory()->create();
@@ -761,7 +766,7 @@ test('shared site deploy keys survive deleting or disconnecting either site acro
         $this->actingAs($this->user)->patch(route('site-settings.update-source-control', [$this->server, $siteA]), [
             'source_control' => $replacement->id,
         ])->assertSessionDoesntHaveErrors();
-        $this->assertDatabaseHas('sites', ['id' => $siteA->id, 'source_control_id' => $replacement->id, 'type_data->deploy_key_id' => null]);
+        $this->assertDatabaseHas('sites', ['id' => $siteA->id, 'source_control_id' => $replacement->id, 'type_data->deploy_key_id' => '321']);
     }
 
     Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE');
@@ -771,6 +776,10 @@ test('shared site deploy keys survive deleting or disconnecting either site acro
     $this->assertDatabaseHas('deployments', ['site_id' => $siteB->id]);
 
     app(DeleteSite::class)->delete($siteB->fresh(), ['domain' => $siteB->domain]);
+    if ($operation !== 'delete') {
+        Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE');
+        app(DeleteSite::class)->delete($siteA->fresh(), ['domain' => $siteA->domain]);
+    }
     Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/321'));
 })->with([false, true])->with(['delete', 'source swap'])->with([
     'same spelling' => ['owner/shared', 'owner/shared'],
@@ -873,8 +882,7 @@ test('update source control', function () {
     $this->actingAs($this->user);
 
     Http::fake([
-        'https://api.github.com/repos/*' => Http::response([
-        ], 201),
+        'https://api.github.com/repos/*' => Http::response(['id' => 456], 201),
     ]);
 
     /** @var SourceControl $sourceControl */
@@ -893,7 +901,114 @@ test('update source control', function () {
 
     $this->site->refresh();
 
-    expect($this->site->source_control_id)->toEqual($sourceControl->id);
+    expect($this->site->source_control_id)->toEqual($sourceControl->id)
+        ->and($this->site->type_data['deploy_key_id'])->toBe('456')
+        ->and($this->site->ssh_key)->not->toBeEmpty();
+    Http::assertSent(fn ($request): bool => $request->method() === 'POST' && str_ends_with($request->url(), '/repos/'.$this->site->repository.'/keys'));
+});
+
+test('update source control rotates the deploy key and auto-deployment hook to the new source control', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+    GitHook::factory()->create(['site_id' => $this->site->id, 'source_control_id' => $this->site->source_control_id, 'hook_id' => '77']);
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
+        'gitlab.com/api/v4/projects/*/hooks' => Http::response(['id' => 88], 201),
+        'gitlab.com/*' => Http::response(['id' => 1]),
+        'api.github.com/*' => Http::response([], 204),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $sourceControl->id, 'type_data->deploy_key_id' => '456']);
+    $this->assertDatabaseHas('git_hooks', ['site_id' => $this->site->id, 'source_control_id' => $sourceControl->id]);
+    $this->assertDatabaseMissing('git_hooks', ['site_id' => $this->site->id, 'hook_id' => '77']);
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
+    SSH::assertExecutedContains('Host gitlab.com-'.$this->site->getSshKeyName());
+});
+
+test('update source control drops the replacement hook record when the new provider rejects it', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    GitHook::factory()->create(['site_id' => $this->site->id, 'source_control_id' => $this->site->source_control_id]);
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
+        'gitlab.com/api/v4/projects/*/hooks' => Http::response([], 500),
+        'gitlab.com/*' => Http::response(['id' => 1]),
+        'api.github.com/*' => Http::response([], 204),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $sourceControl->id]);
+    $this->assertDatabaseMissing('git_hooks', ['site_id' => $this->site->id]);
+});
+
+test('update source control rejects concurrent updates of the same site', function () {
+    SSH::fake();
+    Http::fake(['api.github.com/*' => Http::response(['id' => 1])]);
+    $originalSource = $this->site->source_control_id;
+    $sourceControl = SourceControl::factory()->github()->create(['user_id' => $this->user->id]);
+    $lock = Mockery::mock(Lock::class);
+    $lock->shouldReceive('block')->once()->with(30, Mockery::type(Closure::class))->andThrow(new LockTimeoutException);
+    Cache::shouldReceive('lock')->once()->with('site-source-control:'.$this->site->id, 600)->andReturn($lock);
+
+    expect(fn () => app(UpdateSourceControl::class)->update($this->site, ['source_control' => $sourceControl->id], $this->user))
+        ->toThrow(ValidationException::class, 'Another source control update on this site is in progress. Please retry.');
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource]);
+    Http::assertNotSent(fn ($request): bool => $request->method() !== 'GET');
+});
+
+test('update source control rolls back and removes the new deploy key when the remote cannot be rewritten', function () {
+    SSH::fake()->execWillFail();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+    $originalSource = $this->site->source_control_id;
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys' => Http::response(['id' => 456], 201),
+        'gitlab.com/*' => Http::response([], 204),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertServerError();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource, 'type_data->deploy_key_id' => '123']);
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/deploy_keys/456'));
+    Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE' && str_ends_with($request->url(), '/keys/123'));
+});
+
+test('update source control keeps the site untouched when the new deploy key cannot be registered', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+    $this->site->update(['ssh_key' => 'ssh-ed25519 site-key']);
+    $this->site->jsonUpdate('type_data', 'deploy_key_id', '123');
+    $originalSource = $this->site->source_control_id;
+    $sourceControl = SourceControl::factory()->gitlab()->create(['user_id' => $this->user->id]);
+    Http::fake([
+        'gitlab.com/api/v4/projects/*/deploy_keys*' => Http::response([], 500),
+        'gitlab.com/*' => Http::response(),
+    ]);
+
+    $this->patch(route('site-settings.update-source-control', [$this->server, $this->site]), [
+        'source_control' => $sourceControl->id,
+    ])->assertSessionHasErrors(['source_control' => 'Failed to add the deploy key to the new source control']);
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id, 'source_control_id' => $originalSource, 'type_data->deploy_key_id' => '123']);
+    Http::assertNotSent(fn ($request): bool => $request->method() === 'DELETE');
+    expect(SSH::getExecutedCommands())->toBeEmpty();
 });
 
 test('failed to update source control', function () {

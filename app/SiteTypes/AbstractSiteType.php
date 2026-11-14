@@ -5,7 +5,6 @@ namespace App\SiteTypes;
 use App\Actions\IsolatedUser\EnsureIsolatedUser;
 use App\Actions\PHP\EnsureFpmPool;
 use App\Actions\Site\SyncSiteDeployKey;
-use App\Actions\SourceControl\SetupDeployKey;
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
@@ -129,36 +128,6 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function deployKey(): void
     {
-        if (! $this->site->sourceControl) {
-            return;
-        }
-
-        if ($this->site->sourceControl->isGithubApp()) {
-            return;
-        }
-
-        $setupDeployKey = app(SetupDeployKey::class);
-        $keyName = $this->site->getSshKeyName();
-        $user = $this->site->user ?? $this->site->server->getSshUser();
-
-        if (! $this->site->ssh_key) {
-            $publicKey = $setupDeployKey->generateKey(
-                $this->site->server,
-                $user,
-                $keyName,
-                $this->site->id,
-            );
-
-            if (str_starts_with($keyName, 'iuser_') && $this->site->isolatedUser) {
-                $this->site->isolatedUser->ssh_key = $publicKey;
-                $this->site->isolatedUser->save();
-                $this->site->setRelation('isolatedUser', $this->site->isolatedUser->fresh());
-            } else {
-                $this->site->ssh_key = $publicKey;
-                $this->site->save();
-            }
-        }
-
         app(SyncSiteDeployKey::class)->setup($this->site);
     }
 

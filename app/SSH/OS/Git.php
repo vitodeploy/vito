@@ -35,13 +35,9 @@ class Git
      */
     public function cloneRepository(GitCloneDTO $target): void
     {
-        $host = $target->usesToken ? '' : str($target->repoUrl)->after('@')->before(':')->replaceEnd('-'.$target->keyName, '')->toString();
-        if (! $target->usesToken && preg_match('/\A[a-zA-Z0-9.-]+\z/', $host) !== 1) {
-            throw new RuntimeException('Invalid SSH repository host.');
-        }
         $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
             view('ssh.git.clone', [
-                'host' => $host,
+                'host' => $this->sshHost($target->repoUrl, $target->keyName, $target->usesToken),
                 'repo' => escapeshellarg($target->repoUrl),
                 'path' => escapeshellarg($target->path),
                 'branch' => escapeshellarg($target->branch),
@@ -114,6 +110,9 @@ class Git
 
         $ssh->exec(
             view('ssh.git.set-remote', [
+                'host' => $this->sshHost($newRepoUrl, $site->getSshKeyName(), $usesToken),
+                'key' => $site->getSshKeyName(),
+                'port' => $site->sourceControl?->provider()->getSshPort() ?? 22,
                 'path' => escapeshellarg((string) $site->path),
                 'newRepoUrl' => escapeshellarg($newRepoUrl),
                 'usesToken' => $usesToken,
@@ -121,5 +120,19 @@ class Git
             'set-remote',
             $site->id
         );
+    }
+
+    private function sshHost(string $repoUrl, string $keyName, bool $usesToken): string
+    {
+        if ($usesToken) {
+            return '';
+        }
+
+        $host = str($repoUrl)->after('@')->before(':')->replaceEnd('-'.$keyName, '')->toString();
+        if (preg_match('/\A[a-zA-Z0-9.-]+\z/', $host) !== 1) {
+            throw new RuntimeException('Invalid SSH repository host.');
+        }
+
+        return $host;
     }
 }
