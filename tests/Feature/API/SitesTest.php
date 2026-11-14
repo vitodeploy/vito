@@ -12,6 +12,7 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\Models\Worker;
 use App\SiteTypes\Blank;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
@@ -63,6 +64,34 @@ test('api blank sites discard disabled source control input', function (?bool $e
     Queue::assertPushed(CreateJob::class, 1);
     Http::assertNothingSent();
 })->with([false, null]);
+
+test('api site creation rejects malformed alias input before checking hosts', function (mixed $aliases, string $field) {
+    SSH::fake();
+    Http::fake();
+    Queue::fake();
+    $token = $this->user->createToken('site-create', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->postJson(route('api.projects.servers.sites.create', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+    ]), [
+        'type' => Blank::id(),
+        'domain' => 'invalid-alias.example.com',
+        'aliases' => $aliases,
+        'user' => 'newruntime',
+        'port' => 3000,
+    ])->assertUnprocessable()->assertJsonValidationErrors($field);
+
+    $this->assertDatabaseMissing('sites', ['domain' => 'invalid-alias.example.com']);
+    Queue::assertNothingPushed();
+    expect(SSH::getExecutedCommands())->toBe([]);
+})->with([
+    'null entry' => [[null], 'aliases.0'],
+    'empty entry' => [[''], 'aliases.0'],
+    'non-string entry' => [[123], 'aliases.0'],
+    'nested entry' => [[['alias.example.com']], 'aliases.0'],
+    'scalar list' => ['alias.example.com', 'aliases'],
+]);
 
 test('api site source selection uses the token actor rather than the server creator', function (string $scope) {
     SSH::fake();
@@ -239,6 +268,127 @@ test('delete site', function () {
         ->assertSuccessful()
         ->assertNoContent();
 });
+
+test('api site deletion preserves remote resources unless cleanup is explicitly requested', function (array $input, string $user) {
+    SSH::fake();
+    Http::fake();
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => $user,
+        'source_control_id' => $this->site->source_control_id,
+        'repository' => 'organization/repository',
+        'type_data' => ['deploy_key_id' => '123'],
+    ]);
+    $token = $this->user->createToken('delete-site', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $site,
+    ]), $input)->assertNoContent();
+
+    $this->assertDatabaseMissing('sites', ['id' => $site->id]);
+    if ($site->isolated_user_id !== null) {
+        $this->assertDatabaseHas('isolated_users', ['id' => $site->isolated_user_id]);
+    }
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Http::assertNothingSent();
+})->with([[[]], [['cleanup' => false]], [['cleanup' => '0']]])->with(['vito', 'legacyuser']);
+
+test('api site deletion rejects invalid cleanup before any side effects', function (mixed $cleanup) {
+    SSH::fake();
+    Http::fake();
+    $token = $this->user->createToken('delete-site', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $this->site,
+    ]), ['cleanup' => $cleanup])->assertUnprocessable()->assertJsonValidationErrors('cleanup');
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id]);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Http::assertNothingSent();
+})->with(['invalid', 'false', null, [['nested']]]);
+
+test('api site deletion retains the existing related worker cleanup', function () {
+    SSH::fake();
+    Http::fake();
+    $worker = Worker::factory()->create(['server_id' => $this->server->id, 'site_id' => $this->site->id]);
+    $token = $this->user->createToken('delete-site', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertNoContent();
+
+    $this->assertDatabaseMissing('sites', ['id' => $this->site->id]);
+    $this->assertDatabaseMissing('workers', ['id' => $worker->id]);
+    SSH::assertExecutedContains('supervisorctl stop '.$worker->id.':*');
+    SSH::assertNotExecutedContains('/etc/nginx');
+    SSH::assertNotExecutedContains('userdel');
+    Http::assertNotSent(fn ($request) => str_starts_with($request->url(), 'https://api.github.com/'));
+});
+
+test('api site deletion requires write access to the project for both cleanup modes', function (string $restriction, bool $cleanup) {
+    SSH::fake();
+    Http::fake();
+    if ($restriction === 'role') {
+        $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    }
+    $token = $this->user->createToken('delete-site', [
+        $restriction === 'ability' ? 'read' : 'write',
+        'project:'.($restriction === 'project' ? Project::factory()->create()->id : $this->server->project_id),
+    ]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $this->site,
+    ]), ['cleanup' => $cleanup])->assertForbidden();
+
+    $this->assertDatabaseHas('sites', ['id' => $this->site->id]);
+    expect(SSH::getExecutedCommands())->toBeEmpty();
+    Http::assertNothingSent();
+})->with(['ability', 'project', 'role'])->with([false, true]);
+
+test('api site deletion tears down only unshared isolated resources', function (bool $shared) {
+    SSH::fake();
+    Http::fake();
+    $site = Site::factory()->create([
+        'server_id' => $this->server->id,
+        'user' => 'cleanupuser',
+        'php_version' => '8.2',
+        'source_control_id' => null,
+    ]);
+    if ($shared) {
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'cleanupuser',
+            'php_version' => '8.2',
+        ]);
+    }
+    $token = $this->user->createToken('delete-site', ['write', 'project:'.$this->server->project_id]);
+
+    $this->withToken($token->plainTextToken)->deleteJson(route('api.projects.servers.sites.delete', [
+        'project' => $this->server->project_id,
+        'server' => $this->server,
+        'site' => $site,
+    ]), ['cleanup' => true])->assertNoContent();
+
+    $this->assertDatabaseMissing('sites', ['id' => $site->id]);
+    SSH::assertExecutedContains('rm -rf '.$site->path);
+    if ($shared) {
+        $this->assertDatabaseHas('isolated_users', ['id' => $site->isolated_user_id]);
+        SSH::assertNotExecutedContains('rm -f /etc/php/8.2/fpm/pool.d/cleanupuser.conf');
+        SSH::assertNotExecutedContains('userdel');
+    } else {
+        $this->assertDatabaseMissing('isolated_users', ['id' => $site->isolated_user_id]);
+        SSH::assertExecutedContains('rm -f /etc/php/8.2/fpm/pool.d/cleanupuser.conf');
+        SSH::assertExecutedContains('userdel');
+    }
+})->with([false, true]);
 
 test('update web directory', function () {
     SSH::fake();

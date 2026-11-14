@@ -4,7 +4,9 @@ namespace App\Actions\Service;
 
 use App\Enums\ServiceStatus;
 use App\Jobs\Service\ManageJob;
+use App\Models\Server;
 use App\Models\Service;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class Manage
@@ -19,10 +21,8 @@ class Manage
 
     public function stop(Service $service): void
     {
-        $this->validate($service);
-        $service->status = ServiceStatus::STOPPING;
-        $service->save();
-        dispatch(new ManageJob($service, 'stop', ServiceStatus::STOPPED))->onQueue('ssh');
+        $this->stopping($service, ServiceStatus::STOPPING);
+        dispatch(new ManageJob($service, 'stop', ServiceStatus::STOPPED))->onQueue('ssh')->afterCommit();
     }
 
     public function restart(Service $service): void
@@ -51,10 +51,27 @@ class Manage
 
     public function disable(Service $service): void
     {
-        $this->validate($service);
-        $service->status = ServiceStatus::DISABLING;
-        $service->save();
-        dispatch(new ManageJob($service, 'disable', ServiceStatus::DISABLED))->onQueue('ssh');
+        $this->stopping($service, ServiceStatus::DISABLING);
+        dispatch(new ManageJob($service, 'disable', ServiceStatus::DISABLED))->onQueue('ssh')->afterCommit();
+    }
+
+    public function validateStopping(Service $service): void
+    {
+        if ($service->type === 'firewall') {
+            app(Uninstall::class)->validate($service);
+        }
+    }
+
+    private function stopping(Service $service, ServiceStatus $status): void
+    {
+        DB::transaction(function () use ($service, $status): void {
+            Server::query()->lockForUpdate()->findOrFail($service->server_id);
+            $service->refresh();
+            $this->validate($service);
+            $this->validateStopping($service);
+            $service->status = $status;
+            $service->save();
+        });
     }
 
     private function validate(Service $service): void

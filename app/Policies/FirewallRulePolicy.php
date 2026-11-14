@@ -39,7 +39,7 @@ class FirewallRulePolicy
     {
         $server = $rule->server;
 
-        return $this->hasWriteAccess($user, $server->project) &&
+        return ! $rule->component_managed && $this->hasWriteAccess($user, $server->project) &&
             $server->isReady();
     }
 
@@ -47,7 +47,7 @@ class FirewallRulePolicy
     {
         $server = $rule->server;
 
-        return $this->hasWriteAccess($user, $server->project) &&
+        return ! $rule->component_managed && $this->hasWriteAccess($user, $server->project) &&
             $server->isReady();
     }
 }

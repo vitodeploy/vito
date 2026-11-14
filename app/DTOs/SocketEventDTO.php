@@ -19,7 +19,7 @@ final readonly class SocketEventDTO
         array|JsonResource $data,
     ) {
         $this->data = $data instanceof JsonResource
-            ? $data->toArray(new Request)
+            ? $data->resolve(new Request)
             : $data;
     }
 

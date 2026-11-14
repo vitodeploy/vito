@@ -2,6 +2,7 @@
 
 namespace App\Actions\Service;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\ServiceStatus;
 use App\Jobs\Service\ToggleNetworkingJob;
 use App\Models\Service;
@@ -28,6 +29,7 @@ class ToggleNetworking
      */
     public function disable(Service $service): void
     {
+        app(ValidateEnvironmentResource::class)->unattached($service);
         $this->validate($service);
 
         $this->dispatch($service, false);

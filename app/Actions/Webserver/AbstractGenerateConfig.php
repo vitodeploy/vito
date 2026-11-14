@@ -155,8 +155,6 @@ abstract class AbstractGenerateConfig
             ->values()
             ->all();
 
-        // Domains waiting for verification must answer the HTTP challenge
-        // before they can become active and join the real server blocks.
         $data['has_pending_verification'] = $pendingDomains !== [] && ! empty($data['verification_key']);
         $data['pending_verification_domains'] = $pendingDomains;
 

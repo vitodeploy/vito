@@ -43,10 +43,10 @@ class ServiceVersionAvailableRule implements DataAwareRule, ValidationRule
         $version = (string) $value;
 
         if (in_array($version, (array) config("service.services.$service.unavailable_versions.{$this->os->value}"), true)) {
-            $fail(':service :version is not available on Ubuntu :os.')->translate([
+            $fail(':service :version is not available on :os.')->translate([
                 'service' => config("service.services.$service.label"),
                 'version' => $version,
-                'os' => $this->os->getVersion(),
+                'os' => $this->os->getLabel(),
             ]);
         }
     }

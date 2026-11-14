@@ -4,6 +4,7 @@ import { Project } from '@/types/project';
 import { User } from '@/types/user';
 import { Site, SiteType } from '@/types/site';
 import { DynamicFieldConfig } from './dynamic-field-config';
+import { Application, Environment } from '@/types/application';
 
 export interface Auth {
   user: User;
@@ -30,6 +31,7 @@ export interface NavItem {
   children?: NavItem[];
   hidden?: boolean;
   external?: boolean;
+  badge?: string;
 }
 
 export interface Configs {
@@ -49,6 +51,7 @@ export interface Configs {
         form?: DynamicFieldConfig[];
         create_form?: DynamicFieldConfig[];
         edit_form?: DynamicFieldConfig[];
+        operating_systems?: string[];
       };
     };
   };
@@ -116,6 +119,26 @@ export interface Configs {
     };
     reserved_user_names: string[];
   };
+  application: {
+    runtimes: {
+      id: string;
+      label: string;
+      versions: string[];
+      web_mode: 'fpm' | 'proxy' | 'static';
+      form: DynamicFieldConfig[];
+      creation_form: DynamicFieldConfig[];
+      capabilities: { id: string; label: string; description: string; form: DynamicFieldConfig[] }[];
+      required_services: string[];
+      version_service: string | null;
+      suggests_database: boolean;
+    }[];
+    capabilities: {
+      id: string;
+      label: string;
+      description: string;
+      surfaces: string[];
+    }[];
+  };
   github_app: {
     installed: boolean;
   };
@@ -145,6 +168,9 @@ export interface SharedData {
   auth: Auth;
   server?: Server;
   site?: Site;
+  application?: Application;
+  projectApplications?: { id: number; name: string }[];
+  environment?: Environment;
   csrf_token: string;
   bootstrap_version: string;
   flash?: {

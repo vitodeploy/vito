@@ -1,16 +1,19 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import { InfoIcon, LoaderCircleIcon } from 'lucide-react';
+import { CloudIcon, InfoIcon, LoaderCircleIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FirewallRule } from '@/types/firewall';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 export default function RuleForm({
   open,
@@ -31,6 +34,7 @@ export default function RuleForm({
     source_any: boolean;
     source: string;
     mask: string;
+    sources: string;
   }>({
     name: firewallRule?.name || '',
     type: firewallRule?.type || '',
@@ -39,7 +43,28 @@ export default function RuleForm({
     source_any: !firewallRule?.source,
     source: firewallRule?.source || '',
     mask: firewallRule?.mask?.toString() || '32',
+    sources: '',
   });
+  const [loadingCloudflare, setLoadingCloudflare] = useState(false);
+
+  const addCloudflareIps = async () => {
+    setLoadingCloudflare(true);
+    try {
+      const response = await axios.get<string[]>(`/servers/${serverId}/firewall/cloudflare-ips`);
+      form.setData((prev) => {
+        const existing = prev.sources.split(/[\s,]+/).filter(Boolean);
+        return {
+          ...prev,
+          name: prev.name || 'Cloudflare',
+          sources: [...new Set([...existing, ...response.data])].join('\n'),
+        };
+      });
+    } catch {
+      toast.error('Failed to load Cloudflare IPs');
+    } finally {
+      setLoadingCloudflare(false);
+    }
+  };
 
   const changeSource = (source: string) => {
     const hostMask = source.includes(':') ? '128' : '32';
@@ -133,7 +158,30 @@ export default function RuleForm({
               </div>
             </FormField>
 
-            {!form.data.source_any && (
+            {!form.data.source_any && !firewallRule && (
+              <FormField>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="sources">Sources</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addCloudflareIps} disabled={loadingCloudflare}>
+                    {loadingCloudflare ? <LoaderCircleIcon className="animate-spin" /> : <CloudIcon />}
+                    Add Cloudflare IPs
+                  </Button>
+                </div>
+                <Textarea
+                  id="sources"
+                  className="max-h-60 font-mono"
+                  placeholder={'203.0.113.4\n198.51.100.0/24\n2001:db8::/32'}
+                  value={form.data.sources}
+                  onChange={(e) => form.setData('sources', e.target.value)}
+                />
+                <p className="text-muted-foreground text-xs">
+                  One IP or CIDR per line (commas work too). A plain IP matches only that address. Each source is saved as its own rule.
+                </p>
+                <InputError message={form.errors.sources} />
+              </FormField>
+            )}
+
+            {!form.data.source_any && firewallRule && (
               <>
                 <FormField>
                   <Label htmlFor="source">Source</Label>

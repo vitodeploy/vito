@@ -38,6 +38,10 @@ class Handler extends ExceptionHandler
         'current_password',
         'password',
         'password_confirmation',
+        'value',
+        'content',
+        'environment.app_key',
+        'app_key',
     ];
 
     /**

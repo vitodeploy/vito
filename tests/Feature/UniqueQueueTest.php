@@ -1,9 +1,11 @@
 <?php
 
 use App\Traits\UniqueQueue;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
 
@@ -51,4 +53,16 @@ test('non transient error fails the job', function () {
     $job->setJob($queueJob);
 
     $job->execute();
+});
+
+test('nested cache lock contention releases the job and its outer lock', function () {
+    $job = vitoPestFeatureUniqueQueueTestMakeJob(fn () => throw new LockTimeoutException);
+    $queueJob = Mockery::mock(JobContract::class);
+    $queueJob->shouldReceive('release')->once()->with(30);
+    $queueJob->shouldNotReceive('fail');
+    $job->setJob($queueJob);
+
+    $job->execute();
+
+    expect(Cache::lock('unique-queue:unique-queue-test', 60)->get(fn () => true))->toBeTrue();
 });

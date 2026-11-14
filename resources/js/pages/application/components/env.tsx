@@ -185,10 +185,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
   };
 
   const parseRawContent = async (content: string) => {
-    const response = await axios.post(
-      `/servers/${site.server_id}/sites/${site.id}/env/parse`,
-      { content },
-    );
+    const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/parse`, { content });
 
     if (response.data?.representable === false) {
       throw new Error(
@@ -212,12 +209,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
 
       setIsSwitching(true);
       try {
-        const response = await axios.post(
-          `/servers/${site.server_id}/sites/${site.id}/env/stringify`,
-          {
-            variables: variables.map((v) => ({ key: v.key, value: v.value })),
-          },
-        );
+        const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/stringify`, {
+          variables: variables.map((v) => ({ key: v.key, value: v.value })),
+        });
         setRawContent(response.data?.env ?? '');
         setMode('classic');
       } catch (error) {

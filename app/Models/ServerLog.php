@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -179,15 +180,45 @@ class ServerLog extends AbstractModel
         return $query;
     }
 
-    public function write(string $buf): void
+    /**
+     * Write a message on its own line.
+     */
+    public function write(string $message): void
     {
-        if (Str::contains($buf, 'VITO_SSH_ERROR')) {
-            $buf = str_replace('VITO_SSH_ERROR', '', $buf);
-        }
-        if (Storage::disk($this->disk)->exists($this->name)) {
-            Storage::disk($this->disk)->append($this->name, $buf);
+        $this->appendContent(str_ends_with($message, "\n") ? $message : $message."\n", true);
+    }
+
+    /**
+     * Write raw streamed command output exactly as received.
+     */
+    public function writeOutput(string $chunk): void
+    {
+        $this->appendContent($chunk, false);
+    }
+
+    private function appendContent(string $buf, bool $ownLine): void
+    {
+        $buf = str_replace('VITO_SSH_ERROR', '', $buf);
+        $disk = Storage::disk($this->disk);
+        if ($disk->getAdapter() instanceof LocalFilesystemAdapter) {
+            $path = $disk->path($this->name);
+            File::ensureDirectoryExists(dirname($path));
+            $handle = fopen($path, 'c+b') ?: throw new RuntimeException('Unable to open the log file.');
+            flock($handle, LOCK_EX);
+            $previous = fseek($handle, -1, SEEK_END) === 0 ? fread($handle, 1) : '';
+            if ($ownLine && $previous !== '' && $previous !== "\n") {
+                $buf = "\n".$buf;
+            }
+            fseek($handle, 0, SEEK_END);
+            fwrite($handle, $buf);
+            flock($handle, LOCK_UN);
+            fclose($handle);
         } else {
-            Storage::disk($this->disk)->put($this->name, $buf);
+            $existing = $disk->exists($this->name) ? (string) $disk->get($this->name) : '';
+            if ($ownLine && $existing !== '' && ! str_ends_with($existing, "\n")) {
+                $buf = "\n".$buf;
+            }
+            $disk->put($this->name, $existing.$buf);
         }
 
         try {

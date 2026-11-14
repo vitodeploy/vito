@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\SourceControlProviders\GithubApp;
 use App\SourceControlProviders\SourceControlProvider;
 use App\Traits\HasProjectScopedQueries;
 use Database\Factories\SourceControlFactory;
@@ -57,9 +58,32 @@ class SourceControl extends AbstractModel
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function cloneVariables(): array
+    {
+        if (! $this->isGithubApp()) {
+            return [];
+        }
+
+        /** @var GithubApp $provider */
+        $provider = $this->provider();
+
+        return ['GIT_HTTP_TOKEN' => $provider->installationAccessToken()];
+    }
+
+    /**
      * @return array<int, mixed>
      */
     public static function siteValidationRules(Server $server): array
+    {
+        return self::repositoryValidationRules($server->project_id);
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public static function repositoryValidationRules(int $projectId): array
     {
         /** @var array<string, array<string, mixed>> $providers */
         $providers = config('source-control.providers', []);
@@ -74,8 +98,8 @@ class SourceControl extends AbstractModel
             Rule::exists('source_controls', 'id')
                 ->whereIn('provider', $usableProviders)
                 ->withoutTrashed()
-                ->where(function ($query) use ($server): void {
-                    $query->where('project_id', $server->project_id)->orWhereNull('project_id');
+                ->where(function ($query) use ($projectId): void {
+                    $query->where('project_id', $projectId)->orWhereNull('project_id');
                 }),
         ];
     }
@@ -93,6 +117,14 @@ class SourceControl extends AbstractModel
     public function getRepo(string $repo): mixed
     {
         return $this->provider()->getRepo($repo);
+    }
+
+    /**
+     * @return HasMany<Application, covariant $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 
     /**

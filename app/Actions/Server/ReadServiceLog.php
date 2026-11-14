@@ -43,10 +43,11 @@ class ReadServiceLog
             $content = $server->ssh()->exec(view('ssh.os.grep', [
                 'path' => $log->target,
                 'term' => $search,
+                'user' => $log->user,
                 'lines' => $lines,
             ]));
         } else {
-            $content = $server->os()->tail($log->target, $lines);
+            $content = $server->os()->tail($log->target, $lines, $log->user);
         }
 
         abort_if(

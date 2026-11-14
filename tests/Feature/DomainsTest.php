@@ -704,6 +704,8 @@ test('authenticated user can delete dns record', function () {
         'domain_id' => $domain->id,
     ]);
 
+    Http::fake(['*/dns_records/*' => Http::response(['result' => ['id' => $record->provider_record_id]])]);
+
     $response = $this->delete("/domains/{$domain->id}/records/{$record->id}");
 
     $response->assertRedirect()

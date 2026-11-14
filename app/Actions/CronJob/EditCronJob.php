@@ -2,8 +2,10 @@
 
 namespace App\Actions\CronJob;
 
+use App\Actions\Component\ValidateComponentProcess;
 use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
+use App\Models\Component;
 use App\Models\CronJob;
 use App\Models\Server;
 use App\Models\Site;
@@ -18,56 +20,60 @@ class EditCronJob
      *
      * @throws SSHError
      */
-    public function edit(Server $server, CronJob $cronJob, array $input, ?Site $site = null): CronJob
+    public function edit(Server $server, CronJob $cronJob, array $input, ?Site $site = null, ?Component $component = null): CronJob
     {
-        $this->validate($input, $server, $site);
+        $component ??= $cronJob->component;
 
-        // Sync before editing to preserve any manual cronjobs
-        app(SyncCronJobs::class)->sync($server);
+        return app(SyncCronJobs::class)->run($server, fn () => app(ValidateComponentProcess::class)->run($component, function () use ($server, $cronJob, $input, $site, $component): CronJob {
+            $cronJob->refresh();
+            app(ValidateComponentProcess::class)->validate($server, $input, $component, 'scheduler', $cronJob);
+            if ($component) {
+                $input['user'] = $component->user;
+            }
+            $this->validate($input, $server, $site, $component);
 
-        // Determine site_id: use provided site or from input
-        $siteId = $site?->id;
-        if (! $site && isset($input['site_id'])) {
-            $siteId = ! empty($input['site_id']) ? (int) $input['site_id'] : null;
-        }
+            app(SyncCronJobs::class)->sync($server, locked: true);
 
-        // Check if user has changed
-        $originalUser = $cronJob->user;
-        $newUser = $input['user'];
-        $userChanged = $originalUser !== $newUser;
+            $siteId = $site?->id;
+            if (! $site && isset($input['site_id'])) {
+                $siteId = ! empty($input['site_id']) ? (int) $input['site_id'] : null;
+            }
 
-        $cronJob->update([
-            'site_id' => $siteId,
-            'name' => $input['name'] ?? null,
-            'user' => $input['user'],
-            'command' => $input['command'],
-            'frequency' => $input['frequency'] == 'custom' ? $input['custom'] : $input['frequency'],
-            'status' => CronjobStatus::UPDATING,
-        ]);
-        $cronJob->save();
+            $originalUser = $cronJob->user;
+            $newUser = $input['user'];
+            $userChanged = $originalUser !== $newUser;
 
-        // If user changed, remove from original user's crontab first
-        if ($userChanged) {
-            $server->cron()->update($originalUser, CronJob::crontab($server, $originalUser));
-        }
+            $cronJob->update([
+                'site_id' => $siteId,
+                'name' => $input['name'] ?? null,
+                'user' => $input['user'],
+                'command' => $input['command'],
+                'frequency' => $input['frequency'] == 'custom' ? $input['custom'] : $input['frequency'],
+                'status' => CronjobStatus::UPDATING,
+            ]);
+            $cronJob->save();
 
-        // Update the new user's crontab
-        $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
-        $cronJob->status = CronjobStatus::READY;
-        $cronJob->save();
+            if ($userChanged) {
+                $server->cron()->update($originalUser, app(SyncCronJobs::class)->crontab($server, $originalUser));
+            }
 
-        return $cronJob;
+            $server->cron()->update($cronJob->user, app(SyncCronJobs::class)->crontab($server, $cronJob->user));
+            $cronJob->status = CronjobStatus::READY;
+            $cronJob->save();
+
+            return $cronJob;
+        }), atomic: $component !== null);
     }
 
-    private function validate(array $input, Server $server, ?Site $site = null): void
+    private function validate(array $input, Server $server, ?Site $site = null, ?Component $component = null): void
     {
         $rules = [
             'command' => [
-                'required',
+                'required', 'string', 'max:65535', 'not_regex:/\x00/',
             ],
             'user' => [
                 'required',
-                Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
+                Rule::in($component ? [$component->user] : ($site?->getSshUsers() ?? $server->getSshUsers())),
             ],
             'frequency' => [
                 'required',
@@ -80,7 +86,6 @@ class EditCronJob
             ],
         ];
 
-        // Add site_id validation if provided in input
         if (isset($input['site_id']) && ! empty($input['site_id'])) {
             $rules['site_id'] = [
                 'required',

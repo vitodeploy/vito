@@ -2,37 +2,64 @@
 
 namespace App\SSH\OS;
 
+use App\DTOs\GitCloneDTO;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use RuntimeException;
 
 class Git
 {
     /**
      * @throws SSHError
      */
-    public function clone(Site $site, ?string $path = null): void
+    public function clone(Site $site, ?string $path = null, ?string $commit = null): void
     {
         $usesToken = $site->sourceControl?->isGithubApp() ?? false;
-        $ssh = $site->server->ssh($site->user);
 
-        if ($usesToken) {
-            $ssh = $ssh->variables($site->environmentVariables());
-        }
+        $this->cloneRepository(new GitCloneDTO(
+            server: $site->server,
+            user: $site->user ?? $site->server->getSshUser(),
+            repoUrl: (string) $site->getFullRepositoryUrl(),
+            branch: (string) $site->branch,
+            path: $path ?? $site->path,
+            keyName: $site->getSshKeyName(),
+            port: $site->sourceControl?->provider()->getSshPort() ?? 22,
+            usesToken: $usesToken,
+            variables: $usesToken ? $site->environmentVariables() : [],
+            commit: $commit,
+            siteId: $site->id,
+        ));
+    }
 
-        $repoUrl = (string) $site->getFullRepositoryUrl();
-        $ssh->exec(
+    /**
+     * @throws SSHError
+     */
+    public function cloneRepository(GitCloneDTO $target): void
+    {
+        $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
             view('ssh.git.clone', [
-                'host' => $usesToken ? '' : str($repoUrl)->after('@')->before('-'),
-                'repo' => escapeshellarg($repoUrl),
-                'path' => escapeshellarg((string) ($path ?? $site->path)),
-                'branch' => escapeshellarg((string) $site->branch),
-                'key' => $site->getSshKeyName(),
-                'port' => $site->sourceControl?->provider()?->getSshPort() ?? 22,
-                'usesToken' => $usesToken,
+                'host' => $this->sshHost($target->repoUrl, $target->keyName, $target->usesToken),
+                'repo' => escapeshellarg($target->repoUrl),
+                'path' => escapeshellarg($target->path),
+                'branch' => escapeshellarg($target->branch),
+                'key' => $target->keyName,
+                'port' => $target->port,
+                'usesToken' => $target->usesToken,
             ]),
             'clone-repository',
-            $site->id
+            $target->siteId
         );
+
+        if ($target->commit !== null) {
+            $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
+                view('ssh.git.checkout-commit', [
+                    'path' => escapeshellarg($target->path),
+                    'commit' => escapeshellarg($target->commit),
+                ]),
+                'checkout-commit',
+                $target->siteId
+            );
+        }
     }
 
     /**
@@ -84,6 +111,9 @@ class Git
 
         $ssh->exec(
             view('ssh.git.set-remote', [
+                'host' => $this->sshHost($newRepoUrl, $site->getSshKeyName(), $usesToken),
+                'key' => $site->getSshKeyName(),
+                'port' => $site->sourceControl?->provider()->getSshPort() ?? 22,
                 'path' => escapeshellarg((string) $site->path),
                 'newRepoUrl' => escapeshellarg($newRepoUrl),
                 'usesToken' => $usesToken,
@@ -91,5 +121,19 @@ class Git
             'set-remote',
             $site->id
         );
+    }
+
+    private function sshHost(string $repoUrl, string $keyName, bool $usesToken): string
+    {
+        if ($usesToken) {
+            return '';
+        }
+
+        $host = str($repoUrl)->after('@')->before(':')->replaceEnd('-'.$keyName, '')->toString();
+        if (preg_match('/\A[a-zA-Z0-9.-]+\z/', $host) !== 1) {
+            throw new RuntimeException('Invalid SSH repository host.');
+        }
+
+        return $host;
     }
 }

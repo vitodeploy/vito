@@ -229,3 +229,21 @@ test('takes a renamed alias back out of the site server block when its check fai
         ->not->toContain(' renamed.example.com renamed.example.com');
     $this->assertStringNotContainsString('server_name '.$this->site->domain.' renamed.example.com', $ssh->getUploadedContent());
 });
+
+test('fails without staging the challenge when the challenge route cannot be published', function () {
+    $ssh = SSH::fake();
+    $ssh->execWillFail();
+    Http::fake();
+
+    $domain = HostedDomain::factory()->create([
+        'site_id' => $this->site->id,
+        'domain' => 'unreachable.example.com',
+        'status' => HostedDomainStatus::PENDING,
+    ]);
+
+    $result = app(VerifyHostedDomain::class)->verify($domain);
+
+    expect($result->verified)->toBeFalse()
+        ->and($result->failureReason)->toBe('Could not publish verification challenge on the web server.');
+    Http::assertNothingSent();
+});

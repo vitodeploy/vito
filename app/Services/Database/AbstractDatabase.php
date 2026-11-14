@@ -7,6 +7,7 @@ use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Models\BackupFile;
 use App\Models\DatabaseUser;
+use App\Models\EnvironmentAttachment;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Services\AbstractService;
@@ -51,6 +52,12 @@ abstract class AbstractDatabase extends AbstractService implements Database
             ->where('host', $host)
             ->when($ignore, fn ($query) => $query->whereKeyNot($ignore->id))
             ->exists();
+    }
+
+    protected function isEnvironmentManagedUser(string $username, string $host): bool
+    {
+        return $this->service->server->databaseUsers()->where('username', $username)->where('host', $host)
+            ->whereNotNull('environment_attachment_id')->exists();
     }
 
     public function creationRules(array $input): array
@@ -98,6 +105,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         return [
             'service' => [
                 function (string $attribute, mixed $value, Closure $fail): void {
+                    if (EnvironmentAttachment::forService($this->service)->exists()) {
+                        $fail('Detach environment resources and finish cleanup before removing this service.');
+                    }
                     $hasDatabase = $this->service->server->databases()->exists();
                     if ($hasDatabase) {
                         $fail('You have database(s) on the server.');
@@ -133,6 +143,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 'name' => $name,
                 'charset' => $charset,
                 'collation' => $collation,
+                'managed' => EnvironmentAttachment::query()->where('server_id', $this->service->server_id)
+                    ->whereHasMorph('attachable', [\App\Models\Database::class], fn ($query) => $query->where('name', $name))->exists(),
             ]),
             'create-database'
         );
@@ -161,6 +173,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 'username' => $username,
                 'password' => $password,
                 'host' => $host,
+                'managed' => $this->isEnvironmentManagedUser($username, $host),
+                'owner' => $this->service->server->databaseUsers()->where('username', $username)->where('host', $host)->first()?->environmentAttachment?->credentials['username'] === $username,
             ]),
             'create-user'
         );
@@ -191,6 +205,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
             view($this->getScriptView('delete-user'), [
                 'username' => $username,
                 'host' => $host,
+                'managed' => $this->isEnvironmentManagedUser($username, $host),
             ]),
             'delete-user'
         );

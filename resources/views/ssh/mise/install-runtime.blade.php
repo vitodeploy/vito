@@ -1,6 +1,11 @@
 export PATH=$HOME/.local/share/mise/shims:$PATH
 
+@if (! empty($configDir))
+mise use --path {!! escapeshellarg($configDir.'/mise.toml') !!} {!! escapeshellarg($runtime.'@'.$version) !!} --verbose
+mise trust {!! escapeshellarg($configDir.'/mise.toml') !!}
+@else
 mise use -g {{ $runtime . '@' . $version }} --verbose
+@endif
 
 # Make the mise shims available to interactive SSH sessions for this user
 # so commands like `node`/`bun`/`pnpm`/`yarn` work from a plain shell, not

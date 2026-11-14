@@ -34,6 +34,9 @@ SELECT format(
         ) s
     ), '')
 )
+@if ($managed ?? false)
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = '{{ $name }}')
+@endif
 \gexec
 EOSQL
 then

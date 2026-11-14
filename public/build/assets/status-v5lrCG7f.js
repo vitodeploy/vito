@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-D71uMYU6.js";import{o as t}from"./app-xwoWRSPd.js";var n=e();function r({server:e}){return(0,n.jsx)(t,{variant:e.status_color,children:e.status})}export{r as default};

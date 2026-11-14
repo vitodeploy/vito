@@ -1144,3 +1144,72 @@ dataset('data', function () {
         ['postgresql', '16'],
     ];
 });
+
+test('retention does not re-dispatch deletion for files already being deleted', function () {
+    Bus::fake();
+
+    $backup = Backup::factory()->create([
+        'type' => BackupType::FILE,
+        'server_id' => $this->server->id,
+        'storage_id' => $this->storageProvider->id,
+        'path' => '/home/vito/example.com',
+        'status' => null,
+        'keep_backups' => 1,
+    ]);
+
+    $old = BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    expect($old->refresh()->status)->toBe(BackupFileStatus::DELETING);
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
+
+    BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 2);
+});
+
+test('retention neither re-dispatches nor counts failed files toward the keep limit', function () {
+    Bus::fake();
+
+    $this->backup->update(['keep_backups' => 2]);
+    $failed = BackupFile::factory()->create([
+        'backup_id' => $this->backup->id,
+        'status' => BackupFileStatus::DELETE_FAILED,
+    ]);
+
+    BackupFile::factory()->create([
+        'backup_id' => $this->backup->id,
+        'status' => BackupFileStatus::CREATED,
+    ]);
+
+    $this->assertDatabaseHas('backup_files', [
+        'id' => $this->backupFile->id,
+        'status' => BackupFileStatus::CREATED->value,
+    ]);
+    $this->assertDatabaseHas('backup_files', [
+        'id' => $failed->id,
+        'status' => BackupFileStatus::DELETE_FAILED->value,
+    ]);
+    Bus::assertNotDispatched(DeleteFileJob::class);
+});
+
+test('delete backup file is claimed once when called with a stale model', function () {
+    Bus::fake();
+
+    $staleFile = $this->backupFile->fresh();
+
+    app(ManageBackupFile::class)->delete($this->backupFile);
+    app(ManageBackupFile::class)->delete($staleFile);
+
+    expect($staleFile->status)->toBe(BackupFileStatus::CREATED);
+    Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
+});

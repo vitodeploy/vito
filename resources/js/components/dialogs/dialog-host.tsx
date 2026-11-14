@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import { router } from '@inertiajs/react';
 import { useDialogStore, type ActiveDialog } from '@/stores/dialog-store';
-import { dialogs, type DialogControlProps } from './registry';
+import { dialogs, routeDialogs, type DialogControlProps } from './registry';
 
-function HostedDialog({ dialog, id, onClose }: { dialog: ActiveDialog | null; id: number; onClose: () => void }) {
+function HostedDialog({ dialog, id, onClose }: { dialog: ActiveDialog | null; id: number; onClose: (id: number) => void }) {
   if (!dialog) {
     return null;
   }
@@ -15,7 +15,7 @@ function HostedDialog({ dialog, id, onClose }: { dialog: ActiveDialog | null; id
     return null;
   }
 
-  return <Component key={`${dialog.key}:${id}`} open onOpenChange={(o: boolean) => !o && onClose()} {...dialog.props} />;
+  return <Component key={`${dialog.key}:${id}`} open onOpenChange={(o: boolean) => !o && onClose(id)} {...dialog.props} />;
 }
 
 export default function DialogHost() {
@@ -25,13 +25,28 @@ export default function DialogHost() {
   const nestedId = useDialogStore((s) => s.nestedId);
 
   useEffect(() => {
-    return router.on('navigate', () => useDialogStore.getState().close());
+    return router.on('navigate', () => {
+      const store = useDialogStore.getState();
+      if (!store.active || !routeDialogs.includes(store.active.key)) store.close();
+    });
   }, []);
 
   return (
     <>
-      <HostedDialog dialog={active} id={instanceId} onClose={() => useDialogStore.getState().close()} />
-      <HostedDialog dialog={nested} id={nestedId} onClose={() => useDialogStore.getState().closeNested()} />
+      <HostedDialog
+        dialog={active}
+        id={instanceId}
+        onClose={(id) => {
+          if (useDialogStore.getState().instanceId === id) useDialogStore.getState().close();
+        }}
+      />
+      <HostedDialog
+        dialog={nested}
+        id={nestedId}
+        onClose={(id) => {
+          if (useDialogStore.getState().nestedId === id) useDialogStore.getState().closeNested();
+        }}
+      />
     </>
   );
 }

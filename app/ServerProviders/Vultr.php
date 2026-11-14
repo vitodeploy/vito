@@ -374,6 +374,7 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
     private function getImageId(OperatingSystem $os): int
     {
         $version = $os->getVersion();
+        $family = strtolower($os->getDistro());
 
         try {
             /** @var array<string, mixed> $result */
@@ -386,7 +387,7 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
 
             $image = collect($os)
                 ->filter(fn (array $os): bool => str_contains((string) $os['name'], $version))
-                ->where('family', 'ubuntu')
+                ->where('family', $family)
                 ->where('arch', 'x64')
                 ->first();
 

@@ -35,6 +35,7 @@ Laravel 13 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, Pest 5 /
 Vito has a specific architecture. Match these patterns exactly:
 
 - **Models** extend `app/Models/AbstractModel.php`, NOT `Illuminate\Database\Eloquent\Model`. `AbstractModel` includes `HasTimezoneTimestamps` and `jsonUpdate()`.
+- **Shared owners**: `Deployment`, `DeploymentScript`, `Worker`, `CronJob`, `GitHook`, `Ssl` must use `HasExclusiveOwner`; extend `ownerColumns()` for new owners and never bypass its saving guard.
 - **Enums** implement `app/Contracts/VitoEnum.php` — requires `getColor(): string` and `getText(): string`. Cast enum properties to their enum class on the model.
 - **Actions** in `app/Actions/` hold ALL business logic. Methods named `create()` / `update()` / `handle()` / `run()` / `install()` etc. Validate inside the Action with `Validator::make()`; extract to a private `validate()` when rules are complex. Compose Actions instead of building monoliths.
 - **Controllers** are thin: receive request → call Action → return response. Use `Spatie\RouteAttributes` (`#[Get]`, `#[Post]`, `#[Prefix]`, `#[Middleware]`) and ALWAYS name routes (`#[Get('/', name: 'servers.index')]`). Return `Inertia::render()` for web, `JsonResource` for API. Call `$this->authorize()` for policy checks.
