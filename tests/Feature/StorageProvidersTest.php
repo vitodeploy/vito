@@ -369,6 +369,7 @@ test('update requires the password again when the destination changes', function
     'sftp host' => [SFTPProvider::id(), ['host' => '5.6.7.8']],
     'sftp port' => [SFTPProvider::id(), ['port' => 2222]],
     'ftp host' => [FTPProvider::id(), ['host' => '5.6.7.8']],
+    'ftp ssl off' => [FTPProvider::id(), ['ssl' => false]],
 ]);
 
 test('update stores a new secret when one is provided', function () {
@@ -512,14 +513,14 @@ test('update can toggle a boolean credential off', function () {
 
     $this->patch(route('storage-providers.update', $storageProvider), [
         'name' => 'updated',
-        'ssl' => false,
+        'passive' => false,
     ])
         ->assertSessionDoesntHaveErrors();
 
     $storageProvider->refresh();
 
-    expect($storageProvider->credentials['ssl'])->toBeFalse()
-        ->and($storageProvider->credentials['passive'])->toBeTrue();
+    expect($storageProvider->credentials['passive'])->toBeFalse()
+        ->and($storageProvider->credentials['ssl'])->toBeTrue();
 });
 
 test('update surfaces a connection exception as a validation error', function () {

@@ -185,7 +185,7 @@ class OS
     {
         $material = preg_split('/\s+/', trim($key))[1] ?? '';
 
-        if (preg_match('/^[A-Za-z0-9+\/]+={0,3}$/', $material) !== 1) {
+        if (preg_match('/^AAAA[A-Za-z0-9+\/]+={0,3}$/', $material) !== 1) {
             throw new SSHCommandError(message: 'Invalid SSH public key');
         }
 

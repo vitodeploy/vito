@@ -5,11 +5,13 @@ namespace App\Actions\Projects;
 use App\Enums\UserRole;
 use App\Mail\ProjectInvitation;
 use App\Models\Project;
+use App\Models\UserProject;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class InviteToProject
@@ -20,16 +22,22 @@ class InviteToProject
 
         $token = Str::random(64);
 
-        $project->users()->create([
+        /** @var UserProject $invitation */
+        $invitation = $project->users()->make([
             'email' => $input['email'],
             'role' => UserRole::from($input['role']),
-            'invitation_token' => self::hashToken($token),
         ]);
+        $invitation->invitation_token = self::hashToken($token);
+        $invitation->save();
 
         try {
             Mail::to($input['email'])->send(new ProjectInvitation($project, $token));
         } catch (Throwable) {
-            //
+            $invitation->delete();
+
+            throw ValidationException::withMessages([
+                'email' => __("Couldn't send the invitation email. Check the mail settings and try again."),
+            ]);
         }
     }
 

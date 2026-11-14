@@ -268,6 +268,11 @@ function user(): User
     return $user;
 }
 
+function app_url(string $path): string
+{
+    return rtrim((string) config('app.url'), '/').'/'.ltrim($path, '/');
+}
+
 function plain_text_response(?string $content): Response
 {
     return response($content ?? '', 200, [

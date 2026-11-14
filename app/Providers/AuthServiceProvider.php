@@ -36,18 +36,18 @@ class AuthServiceProvider extends ServiceProvider
         ]));
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor'));
 
-        ResetPassword::createUrlUsing(fn (User $user, string $token): string => rtrim((string) config('app.url'), '/').route('password.reset', [
+        ResetPassword::createUrlUsing(fn (User $user, string $token): string => app_url(route('password.reset', [
             'token' => $token,
             'email' => $user->getEmailForPasswordReset(),
-        ], false));
+        ], false)));
 
         RateLimiter::for('login', function (Request $request) {
-            $email = Str::transliterate(Str::lower((string) $request->input(Fortify::username())));
+            $email = Str::transliterate(Str::lower($request->string(Fortify::username())->toString()));
 
-            return [
+            return array_filter([
                 Limit::perMinute(5)->by($email.'|'.$request->ip()),
-                Limit::perMinute(10)->by('email|'.$email),
-            ];
+                $email !== '' ? Limit::perMinute(10)->by('email|'.$email) : null,
+            ]);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

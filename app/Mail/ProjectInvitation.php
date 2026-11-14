@@ -17,7 +17,7 @@ class ProjectInvitation extends Mailable
     {
         return $this
             ->markdown('mail.project-invitation', [
-                'acceptUrl' => route('projects.invitations.show', ['project' => $this->project, 'token' => $this->token]),
+                'acceptUrl' => app_url(route('projects.invitations.show', ['project' => $this->project, 'token' => $this->token], false)),
             ])
             ->subject(__('Project Invitation'));
     }

@@ -24,7 +24,6 @@ class UserProject extends Model
         'user_id',
         'email',
         'role',
-        'invitation_token',
     ];
 
     protected $hidden = [

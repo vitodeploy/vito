@@ -135,8 +135,7 @@ test('user can accept invitation with token', function () {
     $ownerProject->users()->create([
         'email' => $this->user->email,
         'role' => UserRole::USER,
-        'invitation_token' => InviteToProject::hashToken('secret-token'),
-    ]);
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
 
     $this->get(route('projects.invitations.show', ['project' => $ownerProject, 'token' => 'secret-token']))
         ->assertOk()
@@ -170,11 +169,16 @@ test('user cannot accept invitation without the token', function (string $token)
     $ownerProject->users()->create([
         'email' => $this->user->email,
         'role' => UserRole::ADMIN,
-        'invitation_token' => InviteToProject::hashToken('secret-token'),
-    ]);
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
 
     $this->get(route('projects.invitations.show', ['project' => $ownerProject, 'token' => $token]))->assertNotFound();
-    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => $token]))->assertNotFound();
+    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => $token]))->assertSessionHasErrors('invitation');
+    $this->delete(route('projects.invitations.decline', ['project' => $ownerProject, 'token' => $token]))->assertSessionHasErrors('invitation');
+
+    $this->assertDatabaseHas('user_project', [
+        'project_id' => $ownerProject->id,
+        'email' => $this->user->email,
+    ]);
 
     $this->assertDatabaseMissing('user_project', [
         'project_id' => $ownerProject->id,
@@ -192,10 +196,10 @@ test('user cannot accept an invitation sent to another email', function () {
     $ownerProject->users()->create([
         'email' => 'someone-else@example.com',
         'role' => UserRole::ADMIN,
-        'invitation_token' => InviteToProject::hashToken('secret-token'),
-    ]);
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
 
-    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'secret-token']))->assertNotFound();
+    $this->get(route('projects.invitations.show', ['project' => $ownerProject, 'token' => 'secret-token']))->assertNotFound();
+    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'secret-token']))->assertSessionHasErrors('invitation');
 });
 
 test('legacy invitations without a token cannot be accepted', function () {
@@ -210,12 +214,88 @@ test('legacy invitations without a token cannot be accepted', function () {
         'role' => UserRole::USER,
     ]);
 
-    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'anything']))->assertNotFound();
+    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'anything']))->assertSessionHasErrors('invitation');
 
     $this->assertDatabaseMissing('user_project', [
         'project_id' => $ownerProject->id,
         'user_id' => $this->user->id,
     ]);
+});
+
+test('user can decline an invitation with the token', function () {
+    /** @var User $owner */
+    $owner = User::factory()->create();
+    $ownerProject = $owner->ensureHasDefaultProject();
+
+    $this->actingAs($this->user);
+
+    $ownerProject->users()->create([
+        'email' => $this->user->email,
+        'role' => UserRole::USER,
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
+
+    $this->delete(route('projects.invitations.decline', ['project' => $ownerProject, 'token' => 'secret-token']))
+        ->assertRedirect(route('projects'));
+
+    $this->assertDatabaseMissing('user_project', [
+        'project_id' => $ownerProject->id,
+        'email' => $this->user->email,
+    ]);
+});
+
+test('an email-matched invitation cannot be declined through leave', function () {
+    /** @var User $owner */
+    $owner = User::factory()->create();
+    $ownerProject = $owner->ensureHasDefaultProject();
+
+    $this->actingAs($this->user);
+
+    $ownerProject->users()->create([
+        'email' => $this->user->email,
+        'role' => UserRole::USER,
+    ]);
+
+    $this->delete(route('projects.leave', ['project' => $ownerProject]))->assertNotFound();
+
+    $this->assertDatabaseHas('user_project', [
+        'project_id' => $ownerProject->id,
+        'email' => $this->user->email,
+    ]);
+});
+
+test('accepting an invitation as an existing member removes the invitation', function () {
+    /** @var User $owner */
+    $owner = User::factory()->create();
+    $ownerProject = $owner->ensureHasDefaultProject();
+    $ownerProject->users()->create(['user_id' => $this->user->id, 'role' => UserRole::USER]);
+    $ownerProject->users()->create([
+        'email' => $this->user->email,
+        'role' => UserRole::ADMIN,
+    ])->forceFill(['invitation_token' => InviteToProject::hashToken('secret-token')])->save();
+
+    $this->actingAs($this->user);
+
+    $this->post(route('projects.invitations.accept', ['project' => $ownerProject, 'token' => 'secret-token']))
+        ->assertRedirect(route('projects'));
+
+    expect($ownerProject->users()->where('user_id', $this->user->id)->count())->toBe(1)
+        ->and($ownerProject->role($this->user))->toBe(UserRole::USER)
+        ->and($ownerProject->users()->where('email', $this->user->email)->exists())->toBeFalse();
+});
+
+test('invitation is rolled back when the email cannot be sent', function () {
+    Mail::shouldReceive('to')->andThrow(new RuntimeException('mail down'));
+
+    $this->actingAs($this->user);
+
+    $project = $this->user->ensureHasDefaultProject();
+
+    $this->post(route('projects.users.store', ['project' => $project]), [
+        'email' => 'new-user@example.com',
+        'role' => UserRole::USER->value,
+    ])->assertSessionHasErrors('email');
+
+    $this->assertDatabaseMissing('user_project', ['email' => 'new-user@example.com']);
 });
 
 test('leaving a project does not remove invitations in other projects', function () {
@@ -244,7 +324,7 @@ test('user can leave project', function () {
     $this->actingAs($this->user);
 
     $ownerProject->users()->create([
-        'email' => $this->user->email,
+        'user_id' => $this->user->id,
         'role' => UserRole::USER,
     ]);
 
@@ -256,7 +336,7 @@ test('user can leave project', function () {
 
     $this->assertDatabaseMissing('user_project', [
         'project_id' => $ownerProject->id,
-        'email' => $this->user->email,
+        'user_id' => $this->user->id,
     ]);
 });
 
