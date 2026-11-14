@@ -52,9 +52,9 @@ class Git
 
         if ($target->commit !== null) {
             $target->server->ssh($target->user)->setLog($target->log)->variables($target->variables)->exec(
-                view('ssh.git.checkout', [
+                view('ssh.git.checkout-commit', [
                     'path' => escapeshellarg($target->path),
-                    'branch' => escapeshellarg($target->commit),
+                    'commit' => escapeshellarg($target->commit),
                 ]),
                 'checkout-commit',
                 $target->siteId

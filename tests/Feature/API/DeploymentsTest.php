@@ -297,6 +297,7 @@ test('deployment scripts receive the pinned commit and modern builds check it ou
         expect($checkoutIndex)->not->toBeFalse();
         expect($buildIndex)->not->toBeFalse();
         expect($cloneIndex)->toBeLessThan($checkoutIndex);
+        SSH::assertExecutedContains("git cat-file -e '".$commit."'^{commit} 2>/dev/null && ! git fetch origin '".$commit."'");
         expect($checkoutIndex)->toBeLessThan($buildIndex);
     }
 })->with([false, true]);
