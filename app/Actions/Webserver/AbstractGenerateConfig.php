@@ -151,9 +151,10 @@ abstract class AbstractGenerateConfig
 
         $pendingDomains = $site->hostedDomains
             ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::UNVERIFIED_STATUSES, true))
-            ->map(fn (HostedDomain $hd) => ['name' => $hd->domain, 'address' => 'http://'.$hd->domain])
+            ->map(fn (HostedDomain $hd) => ['name' => $hd->domain])
             ->values()
             ->all();
+        $pendingDomains = $this->transformDomains($pendingDomains, true);
 
         $data['has_pending_verification'] = $pendingDomains !== [] && ! empty($data['verification_key']);
         $data['pending_verification_domains'] = $pendingDomains;

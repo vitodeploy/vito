@@ -30,10 +30,13 @@ class CheckDomainJob implements ShouldQueue
             $this->hostedDomain->status = HostedDomainStatus::PENDING;
             $this->hostedDomain->error = $result->failureReason;
             $this->hostedDomain->save();
-            $verifier->syncVhost($this->hostedDomain->site);
         }
 
         $this->broadcastUpdate();
+
+        if (! $result->verified) {
+            $verifier->syncVhost($this->hostedDomain->site);
+        }
     }
 
     private function broadcastUpdate(): void

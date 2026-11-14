@@ -186,8 +186,7 @@ test('nginx omits the pending challenge block when every domain is active', func
     $vhost = $this->site->webserver()->generateVhost($this->site);
 
     $this->assertStringNotContainsString('server_name active.example.com;', $vhost);
-    $this->assertStringNotContainsString('location / {
-        return 404;', $vhost);
+    $this->assertStringNotContainsString('return 404;', $vhost);
 });
 
 test('nginx keeps an updating alias in the site server block instead of the challenge block', function () {

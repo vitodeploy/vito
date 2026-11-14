@@ -67,10 +67,11 @@ class VerifyHostedDomain
             $this->syncVhost($site);
 
             return true;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             Log::warning('hosted-domain verification: failed to publish challenge route', [
                 'domain' => $hostedDomain->domain,
                 'site_id' => $site->id,
+                'error' => $e->getMessage(),
             ]);
 
             return false;
