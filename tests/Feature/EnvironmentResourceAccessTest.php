@@ -434,7 +434,7 @@ test('PostgreSQL retains a nonlogin owner and preserves component roles through 
     $this->sync->sync($attachment);
     $owner = $attachment->databaseUsers()->where('host', 'localhost')->sole();
     $user = $attachment->databaseUsers()->where('host', $member->ip)->sole();
-    SSH::assertExecutedContains('CREATE ROLE "'.$owner->username.'" WITH NOLOGIN');
+    SSH::assertExecutedContains(base64_encode("SELECT 'CREATE ROLE \"{$owner->username}\" WITH NOLOGIN' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{$owner->username}')\n\\gexec\n"));
     SSH::assertExecutedContains('GRANT "'.$owner->username.'" TO "'.$user->username.'"');
     SSH::assertExecutedContains('SET role TO \''.$owner->username.'\'');
     $member->update(['ip' => '10.50.0.3']);

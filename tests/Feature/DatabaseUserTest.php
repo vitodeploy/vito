@@ -147,9 +147,9 @@ test('mysql database user passwords with special characters reach the server unc
     ])->assertSessionDoesntHaveErrors();
 
     $sql = <<<'SQL'
-    CREATE USER IF NOT EXISTS 'user'@'localhost' IDENTIFIED BY 'pä&b<c>\"d\'e$f`g\\h'
+    CREATE USER IF NOT EXISTS 'user'@'localhost' IDENTIFIED BY 'pä&b<c>\"d\'e$f`g\\h';
     SQL;
-    SSH::assertExecutedContains('mysql -e "$(echo '.base64_encode($sql).' | base64 -d)"');
+    SSH::assertExecutedContains('echo '.base64_encode($sql).' | base64 -d | sudo mysql;');
 
     $this->put(route('database-users.update', [
         'server' => $this->server,
@@ -160,9 +160,9 @@ test('mysql database user passwords with special characters reach the server unc
     ])->assertSessionDoesntHaveErrors();
 
     $sql = <<<'SQL'
-    ALTER USER 'user'@'localhost' IDENTIFIED BY 'pä&b<c>\"d\'e$f`g\\h2'
+    ALTER USER 'user'@'localhost' IDENTIFIED BY 'pä&b<c>\"d\'e$f`g\\h2';
     SQL;
-    SSH::assertExecutedContains('mysql -e "$(echo '.base64_encode($sql).' | base64 -d)"');
+    SSH::assertExecutedContains('echo '.base64_encode($sql).' | base64 -d | sudo mysql;');
 });
 
 test('database user passwords with control characters are rejected', function (string $password) {
@@ -207,7 +207,11 @@ test('postgresql database user passwords with special characters reach the serve
         'password' => $password,
     ])->assertSessionDoesntHaveErrors();
 
-    SSH::assertExecutedContains('-v password="$(echo '.base64_encode($password).' | base64 -d)"'." <<'VITO_CREATE_USER'\nCREATE ROLE \"user\" WITH LOGIN PASSWORD :'password';");
+    $sql = <<<'SQL'
+    CREATE ROLE "user" WITH LOGIN PASSWORD E'pä&b<c>"d''e$f`g\\h';
+
+    SQL;
+    SSH::assertExecutedContains('echo '.base64_encode($sql).' | base64 -d | sudo -u postgres psql');
 
     $this->put(route('database-users.update', [
         'server' => $this->server,
@@ -217,7 +221,11 @@ test('postgresql database user passwords with special characters reach the serve
         'permission' => DatabaseUserPermission::ADMIN->value,
     ])->assertSessionDoesntHaveErrors();
 
-    SSH::assertExecutedContains('-v password="$(echo '.base64_encode($password.'2').' | base64 -d)"'." <<'VITO_UPDATE_USER'\nALTER ROLE \"user\" WITH PASSWORD :'password';");
+    $sql = <<<'SQL'
+    ALTER ROLE "user" WITH PASSWORD E'pä&b<c>"d''e$f`g\\h2';
+
+    SQL;
+    SSH::assertExecutedContains('echo '.base64_encode($sql).' | base64 -d | sudo -u postgres psql');
 });
 
 test('update database user host', function () {

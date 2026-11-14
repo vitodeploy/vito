@@ -1,8 +1,6 @@
 @if ($newPassword)
-if ! sudo -u postgres psql -v ON_ERROR_STOP=1 -v password="$(echo {{ base64_encode($newPassword) }} | base64 -d)" <<'VITO_UPDATE_USER'
-ALTER ROLE "{{ $username }}" WITH PASSWORD :'password';
-VITO_UPDATE_USER
-then
+@php($sql = "ALTER ROLE \"{$username}\" WITH PASSWORD E'".str_replace(['\\', "'"], ['\\\\', "''"], $newPassword)."';\n")
+if ! echo {{ base64_encode($sql) }} | base64 -d | sudo -u postgres psql -v ON_ERROR_STOP=1; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @endif
