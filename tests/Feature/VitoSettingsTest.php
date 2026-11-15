@@ -17,6 +17,38 @@ test('export settings', function () {
     expect(is_dir(dirname($response->baseResponse->getFile()->getPathname())))->toBeFalse();
 });
 
+test('export archives the active environment file as .env', function () {
+    $root = sys_get_temp_dir().'/vito-export-test-'.Str::random(8);
+    File::makeDirectory($root);
+    File::put($root.'/.env', 'APP_KEY=default');
+    File::put($root.'/.env.production', 'APP_KEY=active');
+    app()->useEnvironmentPath($root);
+    app()->loadEnvironmentFrom('.env.production');
+    $this->actingAs($this->user);
+
+    $download = tempnam(sys_get_temp_dir(), 'vito-export-');
+    $archive = null;
+    app()->terminating(function () use (&$archive, $download): void {
+        $archive = collect(glob(sys_get_temp_dir().'/vito-*/vito-backup-*.zip') ?: [])->sortByDesc(fn (string $file): int => filemtime($file))->first();
+        File::copy($archive, $download);
+    });
+
+    try {
+        $this->get(route('vito-settings.export'))->assertDownload();
+
+        $zip = new ZipArchive;
+        $zip->open($download);
+        expect($zip->getFromName('.env'))->toBe('APP_KEY=active');
+        $zip->close();
+        expect(File::exists($archive))->toBeFalse();
+    } finally {
+        app()->useEnvironmentPath(base_path());
+        app()->loadEnvironmentFrom('.env');
+        File::deleteDirectory($root);
+        File::delete($download);
+    }
+});
+
 test('export is disabled in demo mode', function () {
     config(['app.demo' => true]);
     $this->actingAs($this->user);

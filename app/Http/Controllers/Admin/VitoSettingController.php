@@ -29,7 +29,6 @@ class VitoSettingController extends Controller
      */
     protected array $paths = [
         'storage/database.sqlite' => 'file',
-        '.env' => 'file',
         'storage/ssh-public.key' => 'file',
         'storage/ssh-private.pem' => 'file',
         'storage/app/key-pairs' => 'directory',
@@ -75,6 +74,10 @@ class VitoSettingController extends Controller
             } elseif ($type === 'directory' && File::exists($path)) {
                 $this->addDirectoryToZip($zip, $path, basename($path));
             }
+        }
+
+        if (File::exists(app()->environmentFilePath())) {
+            $zip->addFile(app()->environmentFilePath(), '.env');
         }
 
         $zip->close();
