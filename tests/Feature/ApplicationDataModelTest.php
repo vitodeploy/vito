@@ -459,7 +459,7 @@ test('all application migrations preserve a populated legacy SQLite schema and i
     $this->assertDatabaseHas('deployments', ['site_id' => $site->id, 'component_id' => null, 'status' => 'finished', 'active' => true]);
     $this->assertDatabaseHas('deployments', ['id' => $deployment->id, 'active' => false]);
 
-    $this->actingAs($this->user)->get(route('site-settings', [$this->server, $site]))->assertOk();
+    $this->actingAs($this->user, 'web')->get(route('site-settings', [$this->server, $site]))->assertOk();
     $this->get(route('workers.site', [$this->server, $site]))->assertOk();
     $this->get(route('cronjobs.site', [$this->server, $site]))->assertOk();
     $this->patch(route('site-settings.update-web-directory', [$this->server, $site]), ['web_directory' => 'public-upgraded'])

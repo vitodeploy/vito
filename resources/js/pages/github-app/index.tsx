@@ -1,5 +1,5 @@
 import AdminLayout from '@/layouts/admin/layout';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -17,17 +17,7 @@ import CopyableField from '@/components/copyable-field';
 import { AlertTriangleIcon, ExternalLinkIcon, GithubIcon, LoaderCircleIcon, RefreshCcwIcon, Trash2Icon } from 'lucide-react';
 import { FormEvent } from 'react';
 import { SourceControl } from '@/types/source-control';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useDialog } from '@/hooks/use-dialog';
 
 type GithubAppData = {
   app_id: number;
@@ -425,38 +415,25 @@ function SyncButton() {
 }
 
 function RemoveButton() {
-  const [open, setOpen] = useState(false);
-  const submit = () => {
-    router.delete('/admin/github-app', {
-      onSuccess: () => setOpen(false),
-    });
-  };
+  const dialog = useDialog();
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive">
-          <Trash2Icon />
-          Remove
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Remove GitHub App</DialogTitle>
-          <DialogDescription>
-            This clears the local app config. You should also delete the app on GitHub if you don&apos;t plan to reuse it. Installations with attached
-            sites cannot be removed.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" onClick={submit}>
-            Remove
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <Button
+      variant="destructive"
+      onClick={() =>
+        dialog.confirm.open({
+          title: 'Remove GitHub App',
+          description:
+            "This clears the local app config. You should also delete the app on GitHub if you don't plan to reuse it. Installations with attached sites cannot be removed.",
+          variant: 'destructive',
+          confirmLabel: 'Remove',
+          method: 'delete',
+          url: '/admin/github-app',
+        })
+      }
+    >
+      <Trash2Icon />
+      Remove
+    </Button>
   );
 }

@@ -344,3 +344,16 @@ test('boot method not called for disabled plugin', function () {
 
     expect($methods)->toHaveCount(0);
 });
+
+test('github install is rejected in demo mode before downloading', function () {
+    config(['app.demo' => true]);
+
+    $download = Mockery::mock(DownloadRelease::class);
+    $download->shouldNotReceive('handle');
+    app()->instance(DownloadRelease::class, $download);
+
+    expect(fn () => app(InstallGithubPlugin::class)->handle(test()->repoUrl))
+        ->toThrow(Exception::class, 'Plugins are disabled in demo mode.');
+
+    expect(Plugin::query()->count())->toBe(0);
+});

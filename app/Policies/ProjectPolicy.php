@@ -22,7 +22,7 @@ class ProjectPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->tokenAllowsProject(null, write: true);
     }
 
     public function update(User $user, Project $project): bool

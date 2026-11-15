@@ -11,7 +11,7 @@ test('user can enable two factor authentication', function () {
     $user = User::factory()->create();
     $user->ensureHasDefaultProject();
 
-    $this->actingAs($user);
+    $this->actingAs($user)->withSession(['auth.password_confirmed_at' => time()]);
 
     $this->post(route('two-factor.enable'))
         ->assertSessionDoesntHaveErrors();
@@ -36,7 +36,7 @@ test('user can disable two factor authentication', function () {
     $user = User::factory()->create();
     $user->ensureHasDefaultProject();
 
-    $this->actingAs($user);
+    $this->actingAs($user)->withSession(['auth.password_confirmed_at' => time()]);
 
     $this->post(route('two-factor.enable'))
         ->assertSessionDoesntHaveErrors();
