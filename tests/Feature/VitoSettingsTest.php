@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -28,8 +30,8 @@ test('export archives the active environment file as .env', function () {
 
     $download = tempnam(sys_get_temp_dir(), 'vito-export-');
     $archive = null;
-    app()->terminating(function () use (&$archive, $download): void {
-        $archive = collect(glob(sys_get_temp_dir().'/vito-*/vito-backup-*.zip') ?: [])->sortByDesc(fn (string $file): int => filemtime($file))->first();
+    Event::listen(RequestHandled::class, function (RequestHandled $event) use (&$archive, $download): void {
+        $archive = $event->response->getFile()->getPathname();
         File::copy($archive, $download);
     });
 
