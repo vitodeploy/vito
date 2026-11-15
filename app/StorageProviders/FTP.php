@@ -103,7 +103,7 @@ class FTP extends AbstractStorageProvider
         $isConnected = $connection && $this->login($connection, $credentials);
 
         if ($connection) {
-            \App\Facades\FTP::close($connection);
+            FTPFacade::close($connection);
         }
 
         return $isConnected;
@@ -151,7 +151,7 @@ class FTP extends AbstractStorageProvider
      */
     private function connection(array $credentials): bool|Connection
     {
-        return \App\Facades\FTP::connect(
+        return FTPFacade::connect(
             $credentials['host'],
             (int) $credentials['port'],
             (bool) $credentials['ssl']
@@ -163,7 +163,7 @@ class FTP extends AbstractStorageProvider
      */
     private function login(bool|Connection $connection, array $credentials): bool
     {
-        return \App\Facades\FTP::login(
+        return FTPFacade::login(
             $credentials['username'],
             $credentials['password'],
             $connection
