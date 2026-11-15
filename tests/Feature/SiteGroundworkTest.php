@@ -353,7 +353,7 @@ test('ssh public key reads are bounded and must be a single line', function (str
     SSH::assertExecutedContains('head -c 16385 ~/.ssh/runtime_key.pub');
     SSH::assertExecutedContains("sudo head -c 16385 '/home/vito/.ssh/id_rsa.pub'");
 })->with([
-    'oversized' => ['ssh-rsa AAAA'.str_repeat('A', OS::KEY_READ_LIMIT)],
+    'oversized' => ['ssh-rsa AAAA'.str_repeat('A', 16384)],
     'two keys' => ["ssh-rsa AAAAB3NzaC1yc2E a\nssh-rsa AAAAB3NzaC1yc2E b"],
 ]);
 

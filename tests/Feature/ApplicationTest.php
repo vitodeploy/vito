@@ -1608,9 +1608,11 @@ test('classic mode saves keep secret toggles made in variables mode', function (
     expect($this->site->fresh()->env_variables)->toEqualCanonicalizing(['DB_PASSWORD', 'UPSTREAM']);
 });
 
-test('site git hooks deploy only for pushes to the site branch', function (array $payload, bool $deploys) {
+test('site git hooks deploy only for pushes to the site branch', function (string $provider, array $payload, bool $deploys) {
     SSH::fake();
     Http::fake();
+    $this->site->update(['branch' => 'main']);
+    $this->site->sourceControl->update(['provider' => $provider]);
     GitHook::factory()->create([
         'site_id' => $this->site->id,
         'source_control_id' => $this->site->source_control_id,
@@ -1623,9 +1625,10 @@ test('site git hooks deploy only for pushes to the site branch', function (array
 
     expect($this->site->deployments()->exists())->toBe($deploys);
 })->with([
-    'tag named like the branch' => [['ref' => 'refs/tags/main'], false],
-    'branch deletion' => [['ref' => 'refs/heads/main', 'deleted' => true], false],
-    'branch push' => [['ref' => 'refs/heads/main'], true],
+    'bitbucket tag named like the branch' => ['bitbucket', ['push' => ['changes' => [['new' => ['type' => 'tag', 'name' => 'main']]]]], false],
+    'github tag named like the branch' => ['github', ['ref' => 'refs/tags/main'], false],
+    'github branch deletion' => ['github', ['ref' => 'refs/heads/main', 'deleted' => true], false],
+    'github branch push' => ['github', ['ref' => 'refs/heads/main'], true],
 ]);
 
 /**
