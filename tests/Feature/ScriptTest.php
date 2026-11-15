@@ -205,3 +205,18 @@ test('execution history omits a server the owner can no longer view', function (
             ->missing('script.last_execution.server')
             ->where('executions.data.0.server_id', $this->server->id));
 });
+
+test('script variables are substituted once and oversized expansions are rejected', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+
+    $script = Script::factory()->create(['user_id' => $this->user->id, 'content' => 'echo "${A}-${B}"']);
+    $this->post(route('scripts.execute', $script), ['server' => $this->server->id, 'user' => 'root', 'A' => '${B}${B}', 'B' => 'x'])
+        ->assertSessionDoesntHaveErrors();
+    SSH::assertExecutedContains('echo "${B}${B}-x"');
+
+    $huge = Script::factory()->create(['user_id' => $this->user->id, 'content' => str_repeat('${A}', 5000)]);
+    $this->post(route('scripts.execute', $huge), ['server' => $this->server->id, 'user' => 'root', 'A' => str_repeat('a', 255)])
+        ->assertSessionHasErrors('variables');
+    $this->assertDatabaseMissing('script_executions', ['script_id' => $huge->id]);
+});

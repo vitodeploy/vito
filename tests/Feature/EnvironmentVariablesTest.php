@@ -217,7 +217,21 @@ test('invalid imports fail atomically with safe line numbers', function (string 
     ["GOOD=ok\nBAD='sensitive-value", 2], ["GOOD=ok\nlower=sensitive-value", 2],
     ["GOOD=ok\nGOOD=sensitive-value", 2], ["GOOD=ok\nBAD=sensitive-value\0", 2],
     ["PEM=\"first\nsecond\"\nBAD=sensitive-value with spaces", 3],
+    ["# lead\n\nPEM=\"first\n\n# inside\nsecond\"\n\nBAD=sensitive-value with spaces", 8],
+    ["GOOD=ok\n\nPEM=\"sensitive-value\nstill open\n", 3],
 ]);
+
+test('import parses a long multiline value in one pass and bounds the content size', function () {
+    $content = "PEM=\"start\n".str_repeat("line of key material\n", 3000)."end\"\nAFTER=ok";
+    $started = microtime(true);
+    $this->post($this->url.'/import', ['content' => $content, 'secret_keys' => ['PEM']])->assertSessionHasNoErrors();
+
+    expect(microtime(true) - $started)->toBeLessThan(10)
+        ->and($this->environment->variables()->where('key', 'PEM')->sole()->value)->toStartWith("start\nline of key material\n")->toEndWith("\nend")
+        ->and($this->environment->variables()->where('key', 'AFTER')->sole()->value)->toBe('ok');
+
+    $this->postJson($this->url.'/preview', ['content' => 'A='.str_repeat('a', 262144)])->assertUnprocessable()->assertJsonValidationErrors('content');
+});
 
 test('import validates secret selection without reflecting invalid selections', function () {
     $this->postJson($this->url.'/import', ['content' => 'NAME=example', 'secret_keys' => ['UNKNOWN']])

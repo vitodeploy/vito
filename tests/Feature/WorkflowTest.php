@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -205,3 +206,89 @@ test('project role policies enforce the token project scope', function (string $
     expect($this->user->can($ability, $this->user->currentProject))->toBeTrue()
         ->and($this->user->can($ability, $project))->toBeFalse();
 })->with(['view', 'update', 'delete']);
+
+/**
+ * @param  array<string, mixed>  $inputs
+ * @return array<string, mixed>
+ */
+function vitoPestFeatureWorkflowTestNode(string $id, bool $starting = false, array $inputs = []): array
+{
+    return ['id' => $id, 'data' => ['action' => ['label' => $id, 'handler' => Notify::class, 'starting' => $starting, 'inputs' => $inputs, 'outputs' => []]]];
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function vitoPestFeatureWorkflowTestEdge(string $source, string $target, string $status = 'success'): array
+{
+    return ['id' => $source.'-'.$target.'-'.$status, 'source' => $source, 'target' => $target, 'data' => ['status' => $status]];
+}
+
+test('workflows with a cycle are rejected on save and on run', function (array $edges) {
+    $this->actingAs($this->user);
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+    $nodes = [vitoPestFeatureWorkflowTestNode('a', true), vitoPestFeatureWorkflowTestNode('b')];
+    $edges = array_map(fn (array $edge): array => vitoPestFeatureWorkflowTestEdge(...$edge), $edges);
+
+    $this->put(route('workflows.update', $workflow), ['name' => 'Loop', 'nodes' => $nodes, 'edges' => $edges])
+        ->assertRedirect()
+        ->assertSessionHas('error', 'The workflow contains a cycle.');
+    expect($workflow->fresh()->payload)->toBeNull();
+
+    $workflow->update(['payload' => ['nodes' => $nodes, 'edges' => $edges]]);
+    expect(fn () => $workflow->fresh()->getExecutionTree())->toThrow(ValidationException::class, 'The workflow contains a cycle.');
+    $this->post(route('workflow-runs.store', $workflow), ['inputs' => []]);
+    $this->assertDatabaseCount('workflow_runs', 0);
+})->with([
+    'self loop' => [[['a', 'a']]],
+    'two node loop' => [[['a', 'b'], ['b', 'a', 'failure']]],
+]);
+
+test('reconverging workflow branches are built once and shared', function () {
+    $nodes = [vitoPestFeatureWorkflowTestNode('n0', true)];
+    $edges = [];
+    for ($i = 0; $i < 40; $i++) {
+        array_push($nodes, vitoPestFeatureWorkflowTestNode("a{$i}"), vitoPestFeatureWorkflowTestNode("b{$i}"), vitoPestFeatureWorkflowTestNode('n'.($i + 1)));
+        array_push($edges,
+            vitoPestFeatureWorkflowTestEdge("n{$i}", "a{$i}"), vitoPestFeatureWorkflowTestEdge("n{$i}", "b{$i}", 'failure'),
+            vitoPestFeatureWorkflowTestEdge("a{$i}", 'n'.($i + 1)), vitoPestFeatureWorkflowTestEdge("b{$i}", 'n'.($i + 1)),
+        );
+    }
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id, 'payload' => ['nodes' => $nodes, 'edges' => $edges]]);
+
+    $tree = $workflow->getExecutionTree();
+
+    expect($tree->success->success)->toBe($tree->failure->success)
+        ->and($tree->success->success->id)->toBe('n1');
+});
+
+test('workflow action inputs are masked for members who cannot edit the workflow', function (string $via, ?UserRole $role) {
+    $this->user->update(['is_admin' => false]);
+    if ($role !== null) {
+        $this->user->currentProject->users()->where('user_id', $this->user->id)->update(['role' => $role]);
+    }
+    $workflow = Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'payload' => ['nodes' => [vitoPestFeatureWorkflowTestNode('a', true, ['username' => 'app', 'password' => 'db-secret-value'])], 'edges' => []],
+    ]);
+    $masked = $role === UserRole::USER || $via === 'read-token';
+
+    if ($via === 'web') {
+        $response = $this->actingAs($this->user)->get(route('workflows.show', $workflow))->assertSuccessful();
+        $nodes = $response->inertiaProps('workflow.nodes');
+        $runInputs = $response->inertiaProps('workflow.run_inputs');
+    } else {
+        $token = $this->user->createToken('workflow', $via === 'read-token' ? ['read'] : ['read', 'write'])->plainTextToken;
+        $response = $this->withToken($token)->getJson(route('api.projects.workflows.show', [$workflow->project_id, $workflow]))->assertSuccessful();
+        $nodes = $response->json('nodes');
+        $runInputs = $response->json('run_inputs');
+    }
+
+    $expected = $masked ? ['username' => '', 'password' => ''] : ['username' => 'app', 'password' => 'db-secret-value'];
+    expect($nodes[0]['data']['action']['inputs'])->toBe($expected)
+        ->and($runInputs)->toBe($expected);
+    if ($masked) {
+        $response->assertDontSee('db-secret-value');
+    }
+})->with(['web', 'read-token', 'write-token'])->with([UserRole::USER, null]);

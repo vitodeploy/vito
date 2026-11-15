@@ -12,6 +12,12 @@ class EnvParser
     private const SECRET_PATTERNS = ['PASSWORD', 'SECRET', 'TOKEN', 'KEY', 'PRIVATE'];
 
     /**
+     * Variable names phpdotenv accepts. Anything else (a newline, `=`, a space)
+     * would be written out as a different key than the one marked secret.
+     */
+    public const KEY_RULE = 'regex:/\A[A-Za-z0-9_.]+\z/';
+
+    /**
      * Check if an env key should be treated as a secret
      */
     public static function isSecretKey(string $key): bool

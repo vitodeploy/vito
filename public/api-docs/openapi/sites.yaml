@@ -729,7 +729,10 @@ paths:
                         example: "APP_NAME=MyApp\nAPP_ENV=production"
                       variables:
                         type: array
-                        description: Parsed environment variables
+                        description: >-
+                          Parsed environment variables. Callers that cannot see `env` get an empty list when the
+                          file holds content the line parser cannot represent, such as a quoted value spanning
+                          several lines.
                         items:
                           type: object
                           properties:
@@ -837,7 +840,9 @@ paths:
                     properties:
                       key:
                         type: string
-                        description: Variable name
+                        maxLength: 255
+                        pattern: '^[A-Za-z0-9_.]+$'
+                        description: Variable name. Anything other than letters, digits, `_` and `.` returns 422.
                         example: 'APP_NAME'
                       value:
                         type: string
@@ -847,6 +852,14 @@ paths:
                         type: boolean
                         description: Mark the variable as secret. Secret values are stored only on the server (never in the database) and are masked when read back.
                         example: false
+                secret_keys:
+                  type: array
+                  items:
+                    type: string
+                  description: >-
+                    Only used with `env`. Keys to mark as secret in addition to the ones already stored as secret
+                    and the ones detected by name. Keys not present in `env` are ignored.
+                  example: ['UPSTREAM_TOKEN']
                 path:
                   type: string
                   pattern: '^[a-zA-Z0-9/_.\-]+$'

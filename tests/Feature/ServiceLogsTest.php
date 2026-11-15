@@ -136,6 +136,7 @@ test('read journal source uses journalctl', function () {
     ])->assertSuccessful();
 
     SSH::assertExecutedContains("journalctl -u 'mysql.service'");
+    SSH::assertExecutedContains('2>/dev/null | tail -c 1048576');
 });
 
 test('read rejects lines above max', function () {
@@ -189,14 +190,14 @@ test('user owned log files are read and cleared as their owner', function () {
         'key' => 'php:8.2:user:vito',
     ])->assertSuccessful();
 
-    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100 '/home/vito/.logs/php_errors.log'");
+    SSH::assertExecutedContains("sudo -u 'vito' tail -c 1048576 '/home/vito/.logs/php_errors.log' | tail -n 100");
 
     $this->postJson(route('logs.services.read', $this->server), [
         'key' => 'php:8.2:user:vito',
         'search' => 'error',
     ])->assertSuccessful();
 
-    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100000 '/home/vito/.logs/php_errors.log'");
+    SSH::assertExecutedContains("sudo -u 'vito' tail -c 16777216 '/home/vito/.logs/php_errors.log'");
 
     $this->post(route('logs.services.clear', $this->server), [
         'key' => 'php:8.2:user:vito',

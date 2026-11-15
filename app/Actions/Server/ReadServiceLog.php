@@ -38,6 +38,7 @@ class ReadServiceLog
                 'unit' => $log->target,
                 'lines' => $lines,
                 'search' => $hasSearch ? $search : null,
+                'bytes' => OS::READ_LIMIT,
             ]));
         } elseif ($hasSearch) {
             $content = $server->ssh()->exec(view('ssh.os.grep', [
@@ -45,6 +46,8 @@ class ReadServiceLog
                 'term' => $search,
                 'user' => $log->user,
                 'lines' => $lines,
+                'scanBytes' => 16 * OS::READ_LIMIT,
+                'bytes' => OS::READ_LIMIT,
             ]));
         } else {
             $content = $server->os()->tail($log->target, $lines, $log->user);

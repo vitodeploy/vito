@@ -60,7 +60,7 @@ class UpdateWorkerEnvironment
     public static function nestedRules(string $attribute = 'variables'): array
     {
         return [
-            "{$attribute}.*.key" => ['required', 'string', 'max:255', 'regex:/^[A-Za-z_][A-Za-z0-9_]*$/', 'distinct'],
+            "{$attribute}.*.key" => ['required', 'string', 'max:255', 'regex:/\A[A-Za-z_][A-Za-z0-9_]*\z/', 'distinct'],
             "{$attribute}.*.value" => ['present', 'nullable', 'string', 'max:10000', 'regex:/\A[^\x00-\x1F\x7F"]*\z/'],
             "{$attribute}.*.is_secret" => ['required', 'boolean'],
         ];

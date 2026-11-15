@@ -21,7 +21,7 @@ class UpdateWorkflow
             'edges' => $input['edges'],
         ];
 
-        if (! $workflow->getStartingNode()) {
+        if (! $workflow->getExecutionTree()) {
             throw ValidationException::withMessages([
                 'nodes' => 'Starting node not found',
             ]);

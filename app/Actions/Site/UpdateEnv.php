@@ -21,9 +21,11 @@ class UpdateEnv
         Validator::make($input, [
             'env' => ['nullable', 'string'],
             'variables' => ['nullable', 'array', 'min:1'],
-            'variables.*.key' => ['required_with:variables', 'string'],
+            'variables.*.key' => ['required_with:variables', 'string', 'max:255', EnvParser::KEY_RULE],
             'variables.*.value' => ['nullable', 'string'],
             'variables.*.is_secret' => ['nullable', 'boolean'],
+            'secret_keys' => ['nullable', 'array'],
+            'secret_keys.*' => ['string'],
             'path' => ['nullable', 'string'],
         ])->validate();
 
@@ -73,9 +75,10 @@ class UpdateEnv
      * which is honoured because a real value is supplied.
      *
      * The raw-text path has no per-field secret toggle, so existing secret
-     * classifications are carried over and newly introduced keys fall back to
-     * pattern auto-detection. No secret restoration is performed on that path,
-     * so callers must supply real values.
+     * classifications are carried over, keys listed in `secret_keys` (secret
+     * toggles made before switching to raw text) are added, and other new keys
+     * fall back to pattern auto-detection. No secret restoration is performed
+     * on that path, so callers must supply real values.
      *
      * @param  array<string, mixed>  $input
      * @return array<int, array{key: string, value: string, is_secret: bool}>
@@ -110,6 +113,8 @@ class UpdateEnv
 
             return EnvParser::mergeWithLive($incoming, $live);
         }
+
+        $secretKeys += array_flip($input['secret_keys'] ?? []);
 
         return array_map(function ($variable) use ($secretKeys) {
             $variable['is_secret'] = $variable['is_secret'] || isset($secretKeys[$variable['key']]);

@@ -19,6 +19,7 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SSH\OS\Git;
+use App\SSH\OS\OS;
 use App\Support\Testing\SSHFake;
 use App\Tooling\ComposerTooling;
 use App\Tooling\NodeTooling;
@@ -46,7 +47,7 @@ test('deploy key setup generates and registers a public key', function () {
 
     expect($key)->toBe(['public_key' => 'ssh-rsa test-public-key', 'deploy_key_id' => '123']);
     SSH::assertExecutedContains('ssh-keygen -t rsa -b 4096 -N "" -f ~/.ssh/runtime_key');
-    SSH::assertExecutedContains('cat ~/.ssh/runtime_key.pub');
+    SSH::assertExecutedContains('head -c 16385 ~/.ssh/runtime_key.pub');
     Http::assertSent(fn ($request) => $request->url() === 'https://api.github.com/repos/owner/repo/keys'
         && $request['title'] === 'Runtime' && $request['key'] === $key['public_key']);
     $this->assertDatabaseHas('server_logs', ['site_id' => $this->site->id, 'type' => 'generate-ssh-key']);
@@ -342,4 +343,26 @@ test('release template accepts paths without a site', function () {
     ])->render();
 
     expect($script)->toContain("ln -sfn -- '/home/runtime/app/releases/123' '/home/runtime/app/current'", 'Version 123 activated!');
+});
+
+test('ssh public key reads are bounded and must be a single line', function (string $output) {
+    SSH::fake($output);
+
+    expect(fn () => $this->server->os()->readSSHKey('runtime_key'))->toThrow(SSHCommandError::class, 'invalid or too large')
+        ->and(fn () => $this->server->os()->getPublicKey('vito'))->toThrow(SSHCommandError::class, 'invalid or too large');
+    SSH::assertExecutedContains('head -c 16385 ~/.ssh/runtime_key.pub');
+    SSH::assertExecutedContains("sudo head -c 16385 '/home/vito/.ssh/id_rsa.pub'");
+})->with([
+    'oversized' => ['ssh-rsa AAAA'.str_repeat('A', OS::KEY_READ_LIMIT)],
+    'two keys' => ["ssh-rsa AAAAB3NzaC1yc2E a\nssh-rsa AAAAB3NzaC1yc2E b"],
+]);
+
+test('file reads refuse content over the read limit', function () {
+    SSH::fake(str_repeat('a', OS::READ_LIMIT + 1));
+
+    expect(fn () => $this->server->os()->readFile('/home/vito/site/.env'))->toThrow(SSHCommandError::class, 'larger than');
+    SSH::assertExecutedContains("sudo head -c 1048577 '/home/vito/site/.env'");
+
+    SSH::fake("APP_NAME=Vito\n");
+    expect($this->server->os()->readFile('/home/vito/site/.env'))->toBe('APP_NAME=Vito');
 });

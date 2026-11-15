@@ -80,6 +80,9 @@ return new class extends Migration
     }
 
     /**
+     * Legacy values carry no classification, so every one is migrated as
+     * secret; users can mark the harmless ones public afterwards.
+     *
      * @param  array<string, mixed>  $map
      * @return array<int, array{key: string, value: string, is_secret: bool}>
      */
@@ -91,7 +94,7 @@ return new class extends Migration
             $variables[] = [
                 'key' => $key,
                 'value' => is_scalar($value) ? (string) $value : '',
-                'is_secret' => (bool) preg_match('/PASSWORD|SECRET|TOKEN|KEY|PRIVATE/i', (string) $key),
+                'is_secret' => true,
             ];
         }
 

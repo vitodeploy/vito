@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Database\Factories\CommandExecutionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property int $id
@@ -54,16 +55,12 @@ class CommandExecution extends AbstractModel
         return $this->belongsTo(Command::class);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function getContent(): string
     {
-        $content = $this->command->command;
-        foreach ($this->variables as $variable => $value) {
-            if (is_string($value) && ($value !== '' && $value !== '0')) {
-                $content = str_replace('${'.$variable.'}', $value, $content);
-            }
-        }
-
-        return $content;
+        return substitute_variables($this->command->command, $this->variables);
     }
 
     /**

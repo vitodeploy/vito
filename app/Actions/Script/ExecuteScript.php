@@ -28,6 +28,8 @@ class ExecuteScript
             }
         }
 
+        substitute_variables($script->content, $variables);
+
         /** @var Server $server */
         $server = Server::query()->findOrFail($input['server']);
 

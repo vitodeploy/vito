@@ -1026,7 +1026,7 @@ dataset('hookData', function () {
         [
             'gitlab',
             [
-                'ref' => 'main',
+                'ref' => 'refs/heads/main',
             ],
             'gitlab.com/*',
             [
@@ -1043,7 +1043,7 @@ dataset('hookData', function () {
         [
             'gitlab',
             [
-                'ref' => 'other-branch',
+                'ref' => 'refs/heads/other-branch',
             ],
             'gitlab.com/*',
             [
@@ -1064,6 +1064,7 @@ dataset('hookData', function () {
                     'changes' => [
                         [
                             'new' => [
+                                'type' => 'branch',
                                 'name' => 'main',
                             ],
                         ],
@@ -1096,6 +1097,7 @@ dataset('hookData', function () {
                     'changes' => [
                         [
                             'new' => [
+                                'type' => 'branch',
                                 'name' => 'other-branch',
                             ],
                         ],
@@ -1562,6 +1564,69 @@ test('stringify env requires variables', function () {
         'site' => $this->site,
     ]), [])->assertSessionHasErrors('variables');
 });
+
+test('read only members get no variables for an env file the parser cannot represent', function () {
+    SSH::fake("APP_NAME=TestApp\nDB_PASSWORD=\"first-part\nLEAKED=second-part-of-secret\"");
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+    $route = route('application.env', ['server' => $this->server, 'site' => $this->site]);
+
+    $this->actingAs($this->user)->getJson($route)->assertOk()->assertJsonPath('env', "APP_NAME=TestApp\nDB_PASSWORD=\"first-part\nLEAKED=second-part-of-secret\"");
+
+    vitoPestFeatureApplicationTestMakeUserReadOnly();
+    $this->getJson($route)->assertOk()->assertJsonPath('variables', [])->assertJsonMissingPath('env')
+        ->assertDontSee('second-part-of-secret');
+
+    $token = $this->user->createToken('env', ['read'])->plainTextToken;
+    $this->withToken($token)->getJson(route('api.projects.servers.sites.env.show', [$this->server->project_id, $this->server, $this->site]))
+        ->assertOk()->assertJsonPath('data.variables', [])->assertDontSee('second-part-of-secret');
+});
+
+test('env keys that are not plain identifiers are rejected before writing', function (string $key) {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [['key' => $key, 'value' => 'secret-value', 'is_secret' => true]],
+    ])->assertSessionHasErrors('variables.0.key');
+    $this->post(route('application.stringify-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [['key' => $key, 'value' => 'secret-value']],
+    ])->assertSessionHasErrors('variables.0.key');
+
+    expect(SSH::getUploadedContent())->toBe('');
+})->with(["SECRET\nLEAKED", 'SECRET=LEAKED', 'SECRET LEAKED', 'SECRET#']);
+
+test('classic mode saves keep secret toggles made in variables mode', function () {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'env' => "APP_NAME=TestApp\nDB_PASSWORD=one\nUPSTREAM=two",
+        'secret_keys' => ['UPSTREAM', 'REMOVED'],
+    ])->assertSessionDoesntHaveErrors();
+
+    expect($this->site->fresh()->env_variables)->toEqualCanonicalizing(['DB_PASSWORD', 'UPSTREAM']);
+});
+
+test('site git hooks deploy only for pushes to the site branch', function (array $payload, bool $deploys) {
+    SSH::fake();
+    Http::fake();
+    GitHook::factory()->create([
+        'site_id' => $this->site->id,
+        'source_control_id' => $this->site->source_control_id,
+        'secret' => 'secret',
+        'events' => ['push'],
+        'actions' => ['deploy'],
+    ]);
+
+    $this->post(route('api.git-hooks', ['secret' => 'secret']), $payload)->assertOk();
+
+    expect($this->site->deployments()->exists())->toBe($deploys);
+})->with([
+    'tag named like the branch' => [['ref' => 'refs/tags/main'], false],
+    'branch deletion' => [['ref' => 'refs/heads/main', 'deleted' => true], false],
+    'branch push' => [['ref' => 'refs/heads/main'], true],
+]);
 
 /**
  * Demote the acting user to the read-only project role.

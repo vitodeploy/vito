@@ -1,1 +1,1 @@
-cat ~/.ssh/{{ $name }}.pub
+head -c {{ (int) $limit + 1 }} ~/.ssh/{{ $name }}.pub

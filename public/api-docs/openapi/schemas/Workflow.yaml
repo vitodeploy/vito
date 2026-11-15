@@ -36,6 +36,13 @@ properties:
                 starting:
                   type: boolean
                   example: true
+                inputs:
+                  type: object
+                  additionalProperties: true
+                  description: 'Saved action inputs. Values are returned as empty strings unless the caller can edit the workflow with a session or a token that has the `write` ability, because inputs can hold credentials.'
+                  example:
+                    server_id: '{server_id}'
+                    password: ''
   edges:
     type: array
     description: 'Workflow edges configuration'
@@ -56,7 +63,7 @@ properties:
               example: 'success'
   run_inputs:
     type: array
-    description: 'Inputs required for running the workflow'
+    description: 'Inputs required for running the workflow. Values are masked the same way as node inputs.'
     items:
       type: object
       properties:
