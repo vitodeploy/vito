@@ -10,6 +10,8 @@ use React\EventLoop\LoopInterface;
 
 class TerminalSession
 {
+    protected const CONNECT_TIMEOUT = 10;
+
     protected SSH2 $ssh;
 
     protected bool $closed = false;
@@ -36,8 +38,8 @@ class TerminalSession
             $ip = '['.$ip.']';
         }
 
-        $this->ssh = new SSH2($ip, $this->server->port);
-        $this->ssh->setTimeout(0);
+        $this->ssh = new SSH2($ip, $this->server->port, self::CONNECT_TIMEOUT);
+        $this->ssh->setTimeout(self::CONNECT_TIMEOUT);
 
         $privateKey = PublicKeyLoader::loadPrivateKey(
             (string) file_get_contents($this->server->sshKey()['private_key_path'])

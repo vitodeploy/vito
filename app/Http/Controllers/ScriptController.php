@@ -50,7 +50,7 @@ class ScriptController extends Controller
         return Inertia::render('scripts/show', [
             'script' => new ScriptResource($script),
             'executions' => ScriptExecutionResource::collection(
-                $script->executions()->latest()->simplePaginate(config('web.pagination_size'))
+                $script->executions()->with(['server.project', 'serverLog'])->latest()->simplePaginate(config('web.pagination_size'))
             ),
         ]);
     }

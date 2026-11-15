@@ -1,6 +1,9 @@
 <?php
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
+use App\Enums\UserRole;
+use App\Models\Project;
+use App\Models\User;
 use App\WebSocket\EventsHandler;
 use App\WebSocket\WebSocketConnection;
 use GuzzleHttp\Psr7\Request as PsrRequest;
@@ -18,6 +21,57 @@ function vitoPestFeatureEventsHandlerTestGenerateEventsToken(array $data): strin
     $result = (new GenerateWebSocketToken)->generate('events_token', $data);
 
     return $result['token'];
+}
+
+/**
+ * @return WebSocketConnection&object{sent: array<int, array<string, mixed>>, closed: bool}
+ */
+function vitoPestFeatureEventsHandlerTestFakeConnection(): WebSocketConnection
+{
+    return new class extends WebSocketConnection
+    {
+        /** @var array<int, array<string, mixed>> */
+        public array $sent = [];
+
+        public bool $closed = false;
+
+        public function __construct() {}
+
+        public function send(array $data): void
+        {
+            $this->sent[] = $data;
+        }
+
+        public function ping(): void
+        {
+            $this->sent[] = ['type' => 'ping'];
+        }
+
+        public function close(): void
+        {
+            $this->closed = true;
+        }
+    };
+}
+
+function vitoPestFeatureEventsHandlerTestOpen(EventsHandler $handler, string $connId, User $user, int $projectId): WebSocketConnection
+{
+    $token = vitoPestFeatureEventsHandlerTestGenerateEventsToken(['user_id' => $user->id, 'project_id' => $projectId]);
+    $request = new PsrRequest('GET', '/ws/events?token='.$token);
+    expect($handler->authenticate($request))->toBeNull();
+
+    $connection = vitoPestFeatureEventsHandlerTestFakeConnection();
+    $handler->onOpen($connId, $connection, $request);
+
+    return $connection;
+}
+
+function vitoPestFeatureEventsHandlerTestAddMember(Project $project): User
+{
+    $user = User::factory()->create();
+    $project->users()->create(['user_id' => $user->id, 'role' => UserRole::USER]);
+
+    return $user;
 }
 
 test('authenticate with valid token', function () {
@@ -160,4 +214,71 @@ test('broadcast to project', function () {
     ]);
 
     $handler->broadcastToProject($projectId, ['type' => 'test', 'project_id' => $projectId]);
+});
+
+test('broadcast disconnects a member removed from the project mid-session', function () {
+    $project = $this->user->currentProject;
+    $member = vitoPestFeatureEventsHandlerTestAddMember($project);
+    $handler = vitoPestFeatureEventsHandlerTestCreateHandler();
+
+    $ownerConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'owner', $this->user, $project->id);
+    $memberConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'member', $member, $project->id);
+
+    $handler->broadcastToProject($project->id, ['type' => 'server.updated']);
+    expect(collect($memberConnection->sent)->pluck('type')->all())->toBe(['connected', 'event']);
+
+    $project->users()->where('user_id', $member->id)->delete();
+    $handler->broadcastToProject($project->id, ['type' => 'server.updated', 'data' => ['secret' => 'after-removal']]);
+
+    expect(collect($ownerConnection->sent)->pluck('type')->all())->toBe(['connected', 'event', 'event'])
+        ->and(end($memberConnection->sent))->toBe(['type' => 'error', 'message' => 'Access revoked'])
+        ->and(json_encode($memberConnection->sent))->not->toContain('after-removal')
+        ->and($memberConnection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(1)
+        ->and($handler->getSubscribedProjectIds())->toBe([$project->id]);
+});
+
+test('ping disconnects an idle connection once the user is deleted', function () {
+    $project = $this->user->currentProject;
+    $member = vitoPestFeatureEventsHandlerTestAddMember($project);
+    $handler = vitoPestFeatureEventsHandlerTestCreateHandler();
+
+    $ownerConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'owner', $this->user, $project->id);
+    $memberConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'member', $member, $project->id);
+
+    $member->delete();
+    $handler->ping('owner');
+    $handler->ping('member');
+
+    expect(end($ownerConnection->sent))->toBe(['type' => 'ping'])
+        ->and($ownerConnection->closed)->toBeFalse()
+        ->and(end($memberConnection->sent))->toBe(['type' => 'error', 'message' => 'Access revoked'])
+        ->and($memberConnection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(1);
+});
+
+test('authenticate rejects a token for a project the user is not a member of', function () {
+    $otherProject = Project::factory()->create();
+    $token = vitoPestFeatureEventsHandlerTestGenerateEventsToken(['user_id' => $this->user->id, 'project_id' => $otherProject->id]);
+
+    expect(vitoPestFeatureEventsHandlerTestCreateHandler()->authenticate(new PsrRequest('GET', '/ws/events?token='.$token)))
+        ->toBe('Unauthorized for project');
+});
+
+test('user scoped events reach only that user', function () {
+    $project = $this->user->currentProject;
+    $member = vitoPestFeatureEventsHandlerTestAddMember($project);
+    $handler = vitoPestFeatureEventsHandlerTestCreateHandler();
+
+    $ownerConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'owner', $this->user, $project->id);
+    $memberConnection = vitoPestFeatureEventsHandlerTestOpen($handler, 'member', $member, $project->id);
+
+    $handler->broadcastToProject($project->id, ['type' => 'script-execution.updated'], $this->user->id);
+    $handler->broadcastToAll(['type' => 'server-provider.created'], $this->user->id);
+    $handler->broadcastToAll(['type' => 'bootstrap.invalidated']);
+
+    expect(collect($ownerConnection->sent)->pluck('data.type')->filter()->values()->all())
+        ->toBe(['script-execution.updated', 'server-provider.created', 'bootstrap.invalidated'])
+        ->and(collect($memberConnection->sent)->pluck('data.type')->filter()->values()->all())
+        ->toBe(['bootstrap.invalidated']);
 });

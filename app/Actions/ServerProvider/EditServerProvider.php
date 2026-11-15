@@ -45,6 +45,7 @@ class EditServerProvider
             $serverProvider->project_id ?? 0,
             'server-provider.updated',
             new ServerProviderResource($serverProvider),
+            $serverProvider->user_id,
         ));
 
         return $serverProvider;

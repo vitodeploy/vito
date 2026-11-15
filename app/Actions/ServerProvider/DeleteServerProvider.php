@@ -19,6 +19,7 @@ class DeleteServerProvider
 
         $id = $serverProvider->id;
         $projectId = $serverProvider->project_id ?? 0;
+        $userId = $serverProvider->user_id;
 
         $serverProvider->delete();
 
@@ -26,6 +27,7 @@ class DeleteServerProvider
             $projectId,
             'server-provider.deleted',
             ['id' => $id],
+            $userId,
         ));
     }
 }
