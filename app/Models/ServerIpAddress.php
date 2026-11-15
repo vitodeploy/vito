@@ -52,9 +52,6 @@ class ServerIpAddress extends AbstractModel
     ];
 
     /**
-     * Carried between the two events because the foreign key is nullOnDelete, so by the second
-     * nothing records which memberships this address backed.
-     *
      * @var array<int, int>
      */
     protected array $reapplyNetworkIds = [];

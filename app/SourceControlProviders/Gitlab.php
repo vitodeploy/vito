@@ -18,11 +18,11 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
 
     protected string $apiVersion = 'api/v4';
 
-    private const int CACHE_TTL = 60 * 15; // 15 minutes
+    private const int CACHE_TTL = 60 * 15;
 
-    private const int MAX_PER_PAGE = 100; // GitLab's max per_page
+    private const int MAX_PER_PAGE = 100;
 
-    private const int MAX_PAGES = 25; // Safety limit
+    private const int MAX_PAGES = 25;
 
     public static function id(): string
     {
@@ -291,7 +291,7 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
 
         try {
             $repos = $this->fetchAllPages('/projects', [
-                'membership' => true, // Only repos where user is a member
+                'membership' => true,
                 'per_page' => self::MAX_PER_PAGE,
             ]);
 
@@ -339,11 +339,7 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
     }
 
     /**
-     * Fetch all pages from GitLab API
-     * GitLab uses pagination with 'page' parameter and Link headers
-     *
-     * @param  string  $endpoint  API endpoint (without base URL)
-     * @param  array<string, mixed>  $params  Query parameters
+     * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */
     private function fetchAllPages(string $endpoint, array $params = []): Collection
@@ -372,7 +368,6 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
             } else {
                 $allData = $allData->concat($pageData);
 
-                // GitLab pagination uses Link header or X-Total-Pages header
                 $linkHeader = $response->header('Link');
                 $totalPages = (int) $response->header('X-Total-Pages');
 
@@ -381,7 +376,6 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
                 } elseif ($linkHeader && str_contains($linkHeader, 'rel="next"')) {
                     $hasMore = true;
                 } else {
-                    // If we got fewer items than per_page, we've reached the end
                     $perPage = $params['per_page'] ?? self::MAX_PER_PAGE;
                     $hasMore = count($pageData) >= $perPage;
                 }

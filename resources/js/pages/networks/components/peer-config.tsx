@@ -100,8 +100,6 @@ export default function PeerConfigDialog({
       {},
       {
         preserveScroll: true,
-        // Reload rather than close: the configuration stays available, so show the user
-        // what it looks like now that the private key is gone.
         onSuccess: () => load(),
         onError: () => toast.error('Could not conceal the private key'),
         onFinish: () => setConcealing(false),

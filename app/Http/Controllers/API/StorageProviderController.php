@@ -20,14 +20,14 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
 /**
- * @deprecated Use UserStorageProviderController instead. This controller will be removed in a future version.
+ * @deprecated
  */
 #[Prefix('api/projects/{project}/storage-providers')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
 class StorageProviderController extends Controller
 {
     /**
-     * @deprecated Use GET /api/storage-providers instead
+     * @deprecated
      */
     #[Get('/', name: 'api.projects.storage-providers', middleware: 'ability:read')]
     public function index(Project $project): ResourceCollection
@@ -40,7 +40,7 @@ class StorageProviderController extends Controller
     }
 
     /**
-     * @deprecated Use POST /api/storage-providers instead
+     * @deprecated
      */
     #[Post('/', name: 'api.projects.storage-providers.create', middleware: 'ability:write')]
     public function create(Request $request, Project $project): StorageProviderResource
@@ -57,7 +57,7 @@ class StorageProviderController extends Controller
     }
 
     /**
-     * @deprecated Use GET /api/storage-providers/{storageProvider} instead
+     * @deprecated
      */
     #[Get('{storageProvider}', name: 'api.projects.storage-providers.show', middleware: 'ability:read')]
     public function show(Project $project, StorageProvider $storageProvider): StorageProviderResource
@@ -70,7 +70,7 @@ class StorageProviderController extends Controller
     }
 
     /**
-     * @deprecated Use PUT /api/storage-providers/{storageProvider} instead
+     * @deprecated
      */
     #[Put('{storageProvider}', name: 'api.projects.storage-providers.update', middleware: 'ability:write')]
     public function update(Request $request, Project $project, StorageProvider $storageProvider): StorageProviderResource
@@ -89,7 +89,7 @@ class StorageProviderController extends Controller
     }
 
     /**
-     * @deprecated Use DELETE /api/storage-providers/{storageProvider} instead
+     * @deprecated
      */
     #[Delete('{storageProvider}', name: 'api.projects.storage-providers.delete', middleware: 'ability:write')]
     public function delete(Project $project, StorageProvider $storageProvider): Response

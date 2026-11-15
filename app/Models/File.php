@@ -104,10 +104,8 @@ class File extends AbstractModel
             ->where('server_id', $server->id)
             ->delete();
 
-        // Split output by line
         $lines = explode("\n", trim($listOutput));
 
-        // Skip the first two lines (total count and . & .. directories)
         array_shift($lines);
 
         foreach ($lines as $line) {

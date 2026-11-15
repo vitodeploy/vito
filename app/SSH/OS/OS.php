@@ -257,7 +257,7 @@ class OS
     }
 
     /**
-     * @deprecated use write() instead
+     * @deprecated
      *
      * @throws SSHError
      */
@@ -513,8 +513,6 @@ class OS
     }
 
     /**
-     * Clear a remote log file while preserving permissions and ownership
-     *
      * @throws SSHError
      */
     public function clearFile(string $path, ?string $user = null): void

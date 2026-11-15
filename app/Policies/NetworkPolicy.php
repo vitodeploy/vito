@@ -35,11 +35,6 @@ class NetworkPolicy
         return $this->hasWriteAccess($user, $network->project);
     }
 
-    /**
-     * Provider-managed networks mirror the cloud provider and are removed by sync when the
-     * VPC disappears. One that sync can never reach again — its connection deleted, or no
-     * member still identifiable at the provider — stays deletable to avoid stranding the row.
-     */
     public function delete(User $user, Network $network): bool
     {
         if ($network->type === NetworkType::PROVIDER

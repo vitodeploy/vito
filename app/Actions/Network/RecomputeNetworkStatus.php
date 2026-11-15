@@ -69,10 +69,6 @@ class RecomputeNetworkStatus
         ));
     }
 
-    /**
-     * No member is left to hold the peer's key, so it is not connected to anything. It waits
-     * for a server to join rather than reporting itself active against an empty network.
-     */
     private function holdActivePeers(Network $network): void
     {
         $network->peers()

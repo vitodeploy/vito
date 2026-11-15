@@ -108,7 +108,6 @@ function AddService() {
 
         <Form id="add-service-form" onSubmit={add} className="p-4">
           <FormFields>
-            {/*service*/}
             <FormField>
               <Label htmlFor="name">Name</Label>
               <Select
@@ -135,7 +134,6 @@ function AddService() {
               <InputError message={form.errors.type || form.errors.name} />
             </FormField>
 
-            {/*version*/}
             <FormField>
               <Label htmlFor="version">Version</Label>
               <Select value={form.data.version} onValueChange={(value) => form.setData('version', value)}>

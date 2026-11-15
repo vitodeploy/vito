@@ -295,7 +295,6 @@ test('application migration round trips while preserving site data', function ()
 
 test('all application migrations preserve a populated legacy SQLite schema and its web and api workflows', function () {
     expect(app()->environment('testing'))->toBeTrue();
-    /** SQLite schema changes must run outside the test transaction, as they do in the Migrator. */
     $this->server->getConnection()->commit();
     RefreshDatabaseState::$migrated = false;
     SSH::fake('legacy worker log');

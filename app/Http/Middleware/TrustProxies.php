@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The headers that should be used to detect proxies.
-     *
      * @var int
      */
     protected $headers =

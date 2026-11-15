@@ -80,7 +80,6 @@ test('user without read ability cannot list domains', function () {
 test('user can see all domains in their project', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create domain for current user in their project
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
@@ -92,14 +91,12 @@ test('user can see all domains in their project', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create domain for other user in the SAME project
     $otherUserDomain = Domain::factory()->create([
         'user_id' => $this->otherUser->id,
         'dns_provider_id' => $dnsProvider->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create domain for other user in a DIFFERENT project
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -116,31 +113,26 @@ test('user can see all domains in their project', function () {
 
     $response->assertOk();
 
-    // Should see both domains from the same project, regardless of who created them
     $response->assertJsonFragment(['id' => $userDomain->id]);
     $response->assertJsonFragment(['id' => $otherUserDomain->id]);
 
-    // Should NOT see domains from other projects
     $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
 });
 
 test('user can access domains created by other users in same project', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create a DNS provider for the current user's project
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create a domain for another user in the same project
     $otherUserDomain = Domain::factory()->create([
         'user_id' => $this->otherUser->id,
         'dns_provider_id' => $dnsProvider->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // User should be able to view the domain created by another user in the same project
     $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/{$otherUserDomain->id}");
 
     $response->assertOk()
@@ -158,7 +150,6 @@ test('authenticated user can create domain', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Mock the DNS provider API calls (getDomain + getRecords)
     Http::fake([
         'api.cloudflare.com/client/v4/zones/test-domain-id/dns_records*' => Http::response([
             'result' => [],
@@ -214,7 +205,6 @@ test('create domain fails when record sync fails', function () {
 
     $callCount = 0;
 
-    // First call (getDomain) succeeds, subsequent calls throw
     Http::fake(function () use (&$callCount) {
         $callCount++;
         if ($callCount === 1) {
@@ -243,7 +233,6 @@ test('create domain fails when record sync fails', function () {
     $response->assertUnprocessable()
         ->assertJsonValidationErrors('domain');
 
-    // Domain should not have been persisted due to transaction rollback
     $this->assertDatabaseMissing('domains', [
         'provider_domain_id' => 'test-domain-id',
     ]);
@@ -252,7 +241,6 @@ test('create domain fails when record sync fails', function () {
 test('user cannot create domain with dns provider from other project', function () {
     Sanctum::actingAs($this->user, ['write']);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -322,7 +310,6 @@ test('authenticated user can view domain', function () {
 test('user cannot view domains from other projects', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -365,7 +352,6 @@ test('authenticated user can delete domain', function () {
 test('user cannot delete domains from other projects', function () {
     Sanctum::actingAs($this->user, ['write']);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -420,7 +406,6 @@ test('authenticated user can get available domains from dns provider', function 
 test('user cannot get available domains from dns provider in other project', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -456,7 +441,6 @@ test('domain pagination works correctly', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create 30 domains to test pagination
     Domain::factory()->count(30)->create([
         'user_id' => $this->user->id,
         'dns_provider_id' => $dnsProvider->id,
@@ -472,32 +456,27 @@ test('domain pagination works correctly', function () {
             'meta',
         ]);
 
-    // Should have 25 items per page (as defined in controller)
     expect($response->json('data'))->toHaveCount(25);
 });
 
 test('user cannot access domains from other projects', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in the other project
     $otherProjectDomain = Domain::factory()->create([
         'user_id' => $otherUser->id,
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in current project (before switching)
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
@@ -509,15 +488,12 @@ test('user cannot access domains from other projects', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Should only see domains from current project
     $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
     $response->assertOk();
     $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
     $response->assertJsonFragment(['id' => $currentProjectDomain->id]);
 
-    // Only domains from current project
-    // Should not be able to access domain from other project
     $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}");
 
     $response->assertForbidden();
@@ -526,18 +502,15 @@ test('user cannot access domains from other projects', function () {
 test('user cannot create domain in other project', function () {
     Sanctum::actingAs($this->user, ['write']);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Try to create domain with DNS provider from other project
     $domainData = [
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'provider_domain_id' => 'test-domain-id',
@@ -551,25 +524,21 @@ test('user cannot create domain in other project', function () {
 test('user cannot delete domain from other project', function () {
     Sanctum::actingAs($this->user, ['write']);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in the other project
     $otherProjectDomain = Domain::factory()->create([
         'user_id' => $otherUser->id,
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Try to delete domain from other project
     $response = $this->deleteJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}");
 
     $response->assertForbidden();

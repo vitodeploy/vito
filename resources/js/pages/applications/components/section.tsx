@@ -150,9 +150,6 @@ export function SwitchField({
   );
 }
 
-/**
- * Keeps an untouched form in step with props refreshed by polling, so a later save never sends stale values.
- */
 export function useSyncedDefaults<T extends Record<string, unknown>>(form: InertiaFormProps<T>, values: T): void {
   const { isDirty, setDefaults, setData } = form;
   const json = JSON.stringify(values);

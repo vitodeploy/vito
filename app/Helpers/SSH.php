@@ -67,9 +67,6 @@ class SSH
         return $this;
     }
 
-    /**
-     * Ensure a server log exists when a log message is provided.
-     */
     private function ensureLog(?string $log, ?int $siteId = null): void
     {
         if (! $this->log instanceof ServerLog && $log && ! $this->logDisk && ! $this->logPath) {
@@ -81,9 +78,6 @@ class SSH
         }
     }
 
-    /**
-     * Ensure there is an active SFTP connection and return it.
-     */
     private function ensureSftp(): SFTP
     {
         if (! $this->connection instanceof SFTP) {
@@ -97,9 +91,6 @@ class SSH
         return $this->connection;
     }
 
-    /**
-     * Write a chunk of output to either a file on a disk or the server log.
-     */
     protected function writeOutput(string $chunk): void
     {
         if ($this->logDisk && $this->logPath) {
@@ -112,9 +103,6 @@ class SSH
         }
     }
 
-    /**
-     * Write a message line to either a file on a disk or the server log.
-     */
     protected function writeMessage(string $message): void
     {
         if ($this->logDisk && $this->logPath) {
@@ -132,7 +120,7 @@ class SSH
     }
 
     /**
-     * @param  ?\Closure(string): void  $outputCallback  Optional callback invoked with each output chunk
+     * @param  ?\Closure(string): void  $outputCallback
      */
     public function useLog(string $disk, string $path, ?\Closure $outputCallback = null): self
     {
@@ -174,7 +162,6 @@ class SSH
      */
     public function connect(bool $sftp = false): void
     {
-        // If the IP is an IPv6 address, we need to wrap it in square brackets
         $ip = $this->server->ip;
         if (str($ip)->contains(':')) {
             $ip = '['.$ip.']';

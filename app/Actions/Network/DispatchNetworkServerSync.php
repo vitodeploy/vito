@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\DB;
 
 class DispatchNetworkServerSync
 {
-    /**
-     * Re-push the current configuration to every already-provisioned member.
-     * Used when peer/topology data changes and existing members must rewrite
-     * their WireGuard config and firewall rules.
-     */
     public function resyncMembers(Network $network, ?int $excludeMemberId = null): void
     {
         $network->load('servers.server');

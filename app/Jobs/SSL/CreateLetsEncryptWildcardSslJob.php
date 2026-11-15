@@ -69,7 +69,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             $this->processChallenges($ssh, $basePath, $domain, $pid);
             $this->readAndStoreCertificate($ssh, $certName);
 
-            // Cleanup signal files and hook scripts
             $ssh->exec(view('ssh.ssl.wildcard-cleanup-artifacts', ['basePath' => $basePath]));
 
             Log::info('[Wildcard SSL] Job completed successfully', ['ssl_id' => $this->ssl->id]);
@@ -86,7 +85,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             'error' => $e->getMessage(),
         ]);
 
-        // Clean up any DNS records that were created
         $dnsRecordIds = ($this->ssl->csr_data ?? [])['dns_record_ids'] ?? [];
         foreach ($dnsRecordIds as $recordId) {
             $this->deleteDnsRecordSafely($recordId);
@@ -169,7 +167,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             sleep(3);
             $elapsed += 3;
 
-            // Check for new auth signals
             $nextAuth = $authProcessed + 1;
             $signalContent = trim($ssh->exec("cat {$basePath}/auth-signal-{$nextAuth} 2>/dev/null || true"));
 
@@ -200,7 +197,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
                 }
             }
 
-            // Check for cleanup signals
             $nextCleanup = $cleanupProcessed + 1;
             $cleanupContent = trim($ssh->exec("cat {$basePath}/cleanup-signal-{$nextCleanup} 2>/dev/null || true"));
 
@@ -213,7 +209,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
                 $cleanupProcessed = $nextCleanup;
             }
 
-            // Check if certbot is still running
             $processCheck = trim($ssh->exec("sudo kill -0 {$pid} 2>/dev/null && echo 'RUNNING' || echo 'STOPPED'"));
             if ($processCheck === 'STOPPED') {
                 Log::info('[Wildcard SSL] Certbot process stopped', ['elapsed' => $elapsed]);
@@ -226,7 +221,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             throw new Exception('Certbot timed out after '.$maxWait.' seconds');
         }
 
-        // Verify certbot succeeded
         $certbotLog = $ssh->exec("cat {$basePath}/certbot.log 2>/dev/null || true");
 
         if (! str_contains($certbotLog, 'Successfully received certificate')) {
@@ -271,9 +265,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
         $this->ssl->save();
     }
 
-    /**
-     * Safely delete a DNS record by ID, logging any failures.
-     */
     private function deleteDnsRecordSafely(int $recordId): void
     {
         $record = DNSRecord::query()->find($recordId);
@@ -291,10 +282,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
         }
     }
 
-    /**
-     * Delete any existing _acme-challenge TXT records for this domain
-     * left over from previous failed attempts.
-     */
     private function cleanupOrphanedDnsRecords(Domain $domain): void
     {
         $orphanedRecords = DNSRecord::query()
@@ -307,7 +294,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             try {
                 app(DeleteDNSRecord::class)->delete($record);
             } catch (\Throwable) {
-                // Best effort
             }
         }
     }

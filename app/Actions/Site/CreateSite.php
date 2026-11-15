@@ -86,7 +86,6 @@ class CreateSite
                 }
             }
 
-            // fields based on the type
             $site->fill($site->type()->createFields($input));
 
             /** @var Service $webserver */
@@ -95,7 +94,6 @@ class CreateSite
             $webserverHandler = $webserver->handler();
             $site->fill($webserverHandler->siteDefaults());
 
-            // check has access to repository
             try {
                 if ($site->sourceControl) {
                     Gate::forUser($actor)->authorize('view', $site->sourceControl);
@@ -116,10 +114,8 @@ class CreateSite
                 ]);
             }
 
-            // set type data
             $site->type_data = $site->type()->data($input);
 
-            // save
             $site->save();
 
             $defaultSslMethod = $webserverHandler->defaultSslMethod();
@@ -140,7 +136,6 @@ class CreateSite
                 ]);
             }
 
-            // create base commands if any
             $site->commands()->createMany($site->type()->baseCommands());
 
             DB::commit();

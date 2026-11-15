@@ -1,4 +1,3 @@
-/* Base */
 
 body,
 body *:not(html):not(style):not(br):not(tr):not(code) {
@@ -35,7 +34,6 @@ a img {
     border: none;
 }
 
-/* Typography */
 
 h1 {
     color: #18181b;
@@ -74,7 +72,6 @@ img {
     max-width: 100%;
 }
 
-/* Layout */
 
 .wrapper {
     -premailer-cellpadding: 0;
@@ -95,7 +92,6 @@ img {
     width: 100%;
 }
 
-/* Header */
 
 .header {
     padding: 28px 0;
@@ -109,7 +105,6 @@ img {
     text-decoration: none;
 }
 
-/* Logo */
 
 .logo {
     height: 56px;
@@ -118,7 +113,6 @@ img {
     border-radius: 12px;
 }
 
-/* Body */
 
 .body {
     -premailer-cellpadding: 0;
@@ -149,7 +143,6 @@ img {
     word-break: break-all;
 }
 
-/* Subcopy */
 
 .subcopy {
     border-top: 1px solid #e4e4e7;
@@ -161,7 +154,6 @@ img {
     font-size: 14px;
 }
 
-/* Footer */
 
 .footer {
     -premailer-cellpadding: 0;
@@ -184,7 +176,6 @@ img {
     text-decoration: underline;
 }
 
-/* Tables */
 
 .table table {
     -premailer-cellpadding: 0;
@@ -213,7 +204,6 @@ img {
     padding: 32px;
 }
 
-/* Buttons */
 
 .action {
     -premailer-cellpadding: 0;
@@ -262,7 +252,6 @@ img {
     border-top: 8px solid #dc2626;
 }
 
-/* Panels */
 
 .panel {
     border-left: #4f46e5 solid 4px;
@@ -288,7 +277,6 @@ img {
     padding-bottom: 0;
 }
 
-/* Utilities */
 
 .break-all {
     word-break: break-all;

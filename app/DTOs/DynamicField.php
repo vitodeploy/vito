@@ -83,8 +83,6 @@ class DynamicField
     }
 
     /**
-     * An alert with a button that opens a step-by-step setup guide.
-     *
      * @param  array<int, array{title: string, description?: string, code?: string}>  $steps
      */
     public function guide(array $steps): self
@@ -95,8 +93,6 @@ class DynamicField
     }
 
     /**
-     * Adds a button inside the input that opens a step-by-step guide.
-     *
      * @param  array<int, array{title: string, description?: string, code?: string}>  $steps
      */
     public function withGuide(array $steps): self
@@ -166,9 +162,6 @@ class DynamicField
         return $this;
     }
 
-    /**
-     * Layout hint for forms rendered in columns; fields are full width by default.
-     */
     public function half(): self
     {
         $this->width = 'half';

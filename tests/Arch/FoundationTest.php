@@ -80,9 +80,6 @@ it('declares an explicit return type on every method', function (): void {
 });
 
 /**
- * Every type declared under app/ — classes, interfaces, enums and traits, at any
- * nesting depth — so a method is checked in the file that declares it.
- *
  * @return array<int, class-string>
  */
 function vitoArchTypes(): array

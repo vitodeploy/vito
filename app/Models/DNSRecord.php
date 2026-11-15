@@ -53,9 +53,6 @@ class DNSRecord extends AbstractModel
         return $this->belongsTo(Domain::class);
     }
 
-    /**
-     * Get the formatted name for display
-     */
     public function getFormattedNameAttribute(): string
     {
         return $this->name === $this->domain->domain ? '@' : $this->name;

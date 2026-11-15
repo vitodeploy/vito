@@ -4,7 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class GitRepositoryNotFound extends Exception
-{
-    //
-}
+class GitRepositoryNotFound extends Exception {}

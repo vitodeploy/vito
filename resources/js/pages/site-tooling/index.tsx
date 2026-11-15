@@ -38,11 +38,6 @@ export default function SiteTooling() {
         const data = event.data as { id?: number } | null | undefined;
         if (!data || !currentIsolatedUserId || data.id !== currentIsolatedUserId) return;
 
-        // The action we just submitted broadcasts immediately after flipping
-        // the status — the POST/DELETE response already delivers those props,
-        // so swallow the echo to avoid a redundant reload. Completion
-        // broadcasts arrive later (after the SSH job finishes) and slip
-        // through this window.
         if (Date.now() - ownSubmitAt.current < 2000) {
           ownSubmitAt.current = 0;
           return;

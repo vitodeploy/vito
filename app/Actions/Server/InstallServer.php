@@ -97,7 +97,6 @@ class InstallServer
      */
     protected function createUser(): void
     {
-        // For custom servers, clear all existing keys after deploying the unique key
         $clearKeys = $this->server->provider === Custom::id();
 
         $this->server->os()->createUser(

@@ -280,7 +280,6 @@ test('api guest cannot access storage providers', function () {
 test('api insufficient scopes denies access', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Only read scope
     $data = [
         'provider' => Local::id(),
         'name' => 'test',

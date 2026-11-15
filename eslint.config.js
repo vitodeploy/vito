@@ -11,7 +11,7 @@ export default [
   ...typescript.configs.recommended,
   {
     ...react.configs.flat.recommended,
-    ...react.configs.flat['jsx-runtime'], // Required for React 17+
+    ...react.configs.flat['jsx-runtime'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -39,5 +39,5 @@ export default [
   {
     ignores: ['vendor', 'node_modules', 'public', 'storage', 'bootstrap/ssr', 'tailwind.config.js'],
   },
-  prettier, // Turn off all rules that might conflict with Prettier
+  prettier,
 ];

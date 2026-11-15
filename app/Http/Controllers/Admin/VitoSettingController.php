@@ -96,7 +96,6 @@ class VitoSettingController extends Controller
             return back()->with('error', 'Import is disabled in demo mode.');
         }
 
-        // set session driver to file
         config(['session.driver' => 'file']);
 
         $request->validate([

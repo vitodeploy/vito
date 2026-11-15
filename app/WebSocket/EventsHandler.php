@@ -38,8 +38,6 @@ class EventsHandler implements WebSocketHandler
     protected array $pendingAuth = [];
 
     /**
-     * Map of project IDs to connection IDs subscribed to that project.
-     *
      * @var array<int, array<string, true>>
      */
     protected array $projectSubscriptions = [];
@@ -77,7 +75,6 @@ class EventsHandler implements WebSocketHandler
             return 'Unauthorized for project';
         }
 
-        // Store validated data for retrieval in onOpen()
         $this->pendingAuth[$token] = [
             'user_id' => $tokenData['user_id'],
             'project_id' => $projectId,
@@ -179,9 +176,6 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
-     * Broadcast an event to the connections subscribed to a project, or only
-     * to one user's connections when a user id is given.
-     *
      * @param  array<string, mixed>  $eventData
      */
     public function broadcastToProject(int $projectId, array $eventData, ?int $userId = null): void
@@ -190,9 +184,6 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
-     * Broadcast an event to every connected client regardless of project, or
-     * only to one user's connections when a user id is given.
-     *
      * @param  array<string, mixed>  $eventData
      */
     public function broadcastToAll(array $eventData, ?int $userId = null): void
@@ -201,8 +192,6 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
-     * Get all project IDs that have active subscriptions.
-     *
      * @return array<int>
      */
     public function getSubscribedProjectIds(): array
@@ -257,14 +246,12 @@ class EventsHandler implements WebSocketHandler
             return;
         }
 
-        // Remove from old project subscription
         $oldProjectId = $entry['project_id'];
         unset($this->projectSubscriptions[$oldProjectId][$connId]);
         if (empty($this->projectSubscriptions[$oldProjectId])) {
             unset($this->projectSubscriptions[$oldProjectId]);
         }
 
-        // Add to new project subscription
         $this->connections[$connId]['project_id'] = $newProjectId;
         $this->projectSubscriptions[$newProjectId][$connId] = true;
 
@@ -275,9 +262,6 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
-     * Access is checked again on every delivery, so a removed member or a
-     * deleted user stops receiving events and is disconnected.
-     *
      * @param  array<string, array{connection: WebSocketConnection, user_id: int, project_id: int}>  $entries
      * @param  array<string, mixed>  $eventData
      */

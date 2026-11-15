@@ -99,11 +99,6 @@ class DeployEnvironment
         });
     }
 
-    /**
-     * Starts a first deploy queued during setup once its component and resources are ready. A
-     * first deploy that can no longer start is reported on the environment instead of retried,
-     * so its failure can't mark the component or resource that triggered it as failed.
-     */
     public function whenReady(Environment $environment): ?EnvironmentDeployment
     {
         try {

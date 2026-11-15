@@ -6,7 +6,17 @@ import InputError from '@/components/ui/input-error';
 import AuthLayout from '@/layouts/auth/layout';
 import { Project } from '@/types/project';
 
-export default function AcceptInvitation({ project, role, email, url }: { project: Pick<Project, 'id' | 'name'>; role: string; email: string; url: string }) {
+export default function AcceptInvitation({
+  project,
+  role,
+  email,
+  url,
+}: {
+  project: Pick<Project, 'id' | 'name'>;
+  role: string;
+  email: string;
+  url: string;
+}) {
   const form = useForm<{ invitation?: string }>({});
 
   const accept = (e: FormEvent) => {

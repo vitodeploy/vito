@@ -138,9 +138,6 @@ class UpdateSourceControl
         }
     }
 
-    /**
-     * Restores the previous source control unless another request has changed it meanwhile.
-     */
     private function rollback(Site $site, SourceControl $newSourceControl, ?SourceControl $oldSourceControl, int|string|null $oldDeployKeyId): bool
     {
         $site->refresh();

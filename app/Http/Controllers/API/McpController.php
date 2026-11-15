@@ -17,9 +17,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class McpController extends Controller
 {
-    /**
-     * MCP messages use their own limiter; a replayed tool call also counts once against the `api` limiter.
-     */
     #[Post('api/mcp', name: 'api.mcp', middleware: [
         ValidateOrigin::class,
         AddWwwAuthenticateHeader::class,

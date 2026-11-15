@@ -79,3 +79,12 @@ it('caps webserver config indentation so deep nesting stays linear', function ()
     expect(strlen($formatted))->toBeLessThan(5000 * 2 * (4 * 32 + 4))
         ->and(format_webserver_config("server {\nlisten 80;\n}"))->toBe("server {\n    listen 80;\n}\n");
 });
+
+it('normalizes absolute paths without traversing above root', function (string $path, string $expected): void {
+    expect(absolute_path($path))->toBe($expected);
+})->with([
+    ['/var//www/./app/../logs/', '/var/www/logs'],
+    ['/../../var/../tmp', '/tmp'],
+    ['var/www/../logs', '/var/logs'],
+    ['', '/'],
+]);

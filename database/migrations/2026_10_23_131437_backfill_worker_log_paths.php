@@ -20,8 +20,5 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Recorded paths remain valid when rolling back; no schema change to undo.
-     */
     public function down(): void {}
 };

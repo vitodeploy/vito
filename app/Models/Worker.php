@@ -141,9 +141,6 @@ class Worker extends AbstractModel
         return dirname($this->getLogFile());
     }
 
-    /**
-     * The recorded log path, or the default one for a worker that has not been installed yet.
-     */
     public function getLogFile(): string
     {
         return $this->stdout_logfile ?? $this->defaultLogFile();

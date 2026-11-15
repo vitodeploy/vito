@@ -45,11 +45,6 @@ use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
-/**
- * `Http::fake()` merges stubs rather than replacing them, so a per-call fake would let
- * the first registration win for every later sync. One closure reading mutable state
- * is the only way to vary the response across runs within a test.
- */
 beforeEach(function () {
     $this->networksPayload = [];
     $this->serversPayload = [];

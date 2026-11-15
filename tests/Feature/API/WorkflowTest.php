@@ -139,7 +139,6 @@ test('cannot access nonexistent workflow', function () {
 });
 
 test('requires authentication', function () {
-    // Create a fresh test case without authentication
     $this->refreshDatabase();
 
     $user = User::factory()->create();
@@ -173,7 +172,6 @@ test('requires write ability for deleting', function () {
 test('pagination works correctly', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Create additional workflows
     Workflow::factory()->count(30)->create([
         'user_id' => $this->user->id,
         'project_id' => $this->project->id,

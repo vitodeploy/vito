@@ -4,12 +4,6 @@ namespace App\Exceptions;
 
 use Exception;
 
-/**
- * Raised when discovered networks were read from the provider but could not be written. The
- * sweep continues so one bad network cannot suppress pruning for the rest, and this is thrown
- * at the end so the job reports failure rather than a silent partial sync. Carries no message
- * from the underlying database error, which can echo back the values it was given.
- */
 class PrivateNetworkPersistError extends Exception
 {
     public function __construct(

@@ -12,15 +12,10 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
 
-/**
- * Exposes one authenticated API route as an MCP tool. Calls are replayed through the
- * HTTP kernel with the caller's token, so the route's middleware, policies and
- * validation decide the outcome exactly as they do for the REST API.
- */
 class ApiRouteTool extends Tool
 {
     /**
-     * @param  array<string, mixed>  $operation  The route's OpenAPI operation, empty when undocumented.
+     * @param  array<string, mixed>  $operation
      */
     public function __construct(
         private readonly Route $route,
@@ -50,8 +45,6 @@ class ApiRouteTool extends Tool
     }
 
     /**
-     * Write tools omit destructiveHint so clients apply the MCP default (destructive) and ask before running them.
-     *
      * @return array<string, bool>
      */
     public function annotations(): array
@@ -153,8 +146,6 @@ class ApiRouteTool extends Tool
     }
 
     /**
-     * Drop OpenAPI-only keywords that strict JSON Schema validators reject.
-     *
      * @param  array<array-key, mixed>  $schema
      * @return array<array-key, mixed>
      */

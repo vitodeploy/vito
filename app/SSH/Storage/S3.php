@@ -34,7 +34,7 @@ class S3 extends AbstractStorage
         }
 
         return [
-            'size' => null, // You can parse the size from the output if needed
+            'size' => null,
         ];
     }
 

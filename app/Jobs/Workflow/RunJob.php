@@ -20,18 +20,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Encrypted because the execution tree carries the saved action inputs, which
- * can hold credentials.
- */
 class RunJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
     use UniqueQueue;
 
-    /**
-     * Jobs queued before token context was captured must fail closed.
-     */
     protected ?int $accessTokenId = 0;
 
     public function __construct(

@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 class FinalizeServerNetworkRules
 {
     /**
-     * The full ruleset was pushed successfully: the emitted rows are now live,
-     * and the rows that were dropped from the emit set are gone from the box.
-     *
      * @param  array<int, int>  $emittedIds
      * @param  array<int, int>  $deletingIds
      */

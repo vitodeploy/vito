@@ -27,25 +27,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GetEnvironmentOverview
 {
-    /**
-     * Resolves a component of the environment whose server still belongs to the application's project.
-     */
     public function component(Environment $environment, ?int $id): ?Component
     {
         return $id ? $environment->components()->whereHas('server', $this->inProject($environment))->find($id) : null;
     }
 
-    /**
-     * Resolves a resource attachment of the environment whose server still belongs to the application's project.
-     */
     public function attachment(Environment $environment, ?int $id): ?EnvironmentAttachment
     {
         return $id ? $environment->attachments()->whereHas('server', $this->inProject($environment))->find($id) : null;
     }
 
     /**
-     * Lazy props for the environment graph and its side panel, so partial reloads only compute what they request.
-     *
      * @return array<string, Closure>
      */
     public function props(Environment $environment, ?Component $component, ?EnvironmentAttachment $attachment): array
@@ -74,8 +66,6 @@ class GetEnvironmentOverview
     }
 
     /**
-     * Lazy props for the sheet opened over the graph; every sheet prop is present so partial reloads clear closed sheets.
-     *
      * @return array<string, mixed>
      */
     public function sheetProps(Environment $environment, User $user, ?string $sheet, ?EnvironmentDeployment $deployment): array

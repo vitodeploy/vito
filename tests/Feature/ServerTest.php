@@ -71,7 +71,6 @@ test('create server', function () {
     Storage::fake();
     SSH::fake('user_not_found');
 
-    // fake output for vito user check and service installations
     $this->post(route('servers.store', [
         'provider' => Custom::id(),
         'name' => 'test',
@@ -1244,19 +1243,15 @@ test('user role cannot manage server operations', function () {
 
     $this->actingAs($this->user);
 
-    // Test reboot
     $this->post(route('servers.reboot', $this->server))
         ->assertForbidden();
 
-    // Test check updates
     $this->post(route('servers.check-for-updates', $this->server))
         ->assertForbidden();
 
-    // Test update server
     $this->post(route('servers.update', $this->server))
         ->assertForbidden();
 
-    // Test update kernel
     $this->post(route('servers.update-kernel', $this->server))
         ->assertForbidden();
 });
@@ -1270,18 +1265,14 @@ test('admin role can manage server operations', function () {
 
     $this->actingAs($this->user);
 
-    // Test reboot
     $this->post(route('servers.reboot', $this->server))
         ->assertSessionDoesntHaveErrors();
 
-    // Reset server status for next test
     $this->server->update(['status' => ServerStatus::READY]);
 
-    // Test check updates
     $this->post(route('servers.check-for-updates', $this->server))
         ->assertSessionDoesntHaveErrors();
 
-    // Test update server
     SSH::fake('Available updates:0');
     $this->post(route('servers.update', $this->server))
         ->assertSessionDoesntHaveErrors();
@@ -1296,18 +1287,14 @@ test('owner role can manage server operations', function () {
 
     $this->actingAs($this->user);
 
-    // Test reboot
     $this->post(route('servers.reboot', $this->server))
         ->assertSessionDoesntHaveErrors();
 
-    // Reset server status for next test
     $this->server->update(['status' => ServerStatus::READY]);
 
-    // Test check updates
     $this->post(route('servers.check-for-updates', $this->server))
         ->assertSessionDoesntHaveErrors();
 
-    // Test update server
     SSH::fake('Available updates:0');
     $this->post(route('servers.update', $this->server))
         ->assertSessionDoesntHaveErrors();
@@ -1316,7 +1303,6 @@ test('owner role can manage server operations', function () {
 test('cannot create server with unauthorized provider', function () {
     $this->actingAs($this->user);
 
-    // Create a server provider that belongs to a different user
     $otherUser = User::factory()->create();
     $unauthorizedProvider = ServerProvider::factory()->create([
         'user_id' => $otherUser->id,

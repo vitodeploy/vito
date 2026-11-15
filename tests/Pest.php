@@ -28,9 +28,6 @@ pest()->extend(TestCase::class)->in(
 );
 
 /**
- * Every PHP file under the given sub-directory, relative to app/ unless another
- * base directory is given.
- *
  * @return array<int, SplFileInfo>
  */
 function vitoArchFiles(string $directory = '', ?string $base = null): array
@@ -44,8 +41,6 @@ function vitoArchFiles(string $directory = '', ?string $base = null): array
 }
 
 /**
- * Every concrete, autoloadable class under the given app/ sub-directory.
- *
  * @return array<int, class-string>
  */
 function vitoArchClasses(string $directory = ''): array

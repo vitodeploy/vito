@@ -84,9 +84,6 @@ class RegisterServiceType
     }
 
     /**
-     * Versions that can't be installed on an operating system, keyed by its
-     * OperatingSystem value.
-     *
      * @param  array<string, array<string>>  $unavailableVersions
      */
     public function unavailableVersions(array $unavailableVersions): self

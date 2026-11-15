@@ -71,8 +71,6 @@ class CreateServerCsr
     }
 
     /**
-     * Parse a comma-separated domain string into an array of unique domains.
-     *
      * @return array<int, string>
      */
     public static function parseDomains(string $input): array

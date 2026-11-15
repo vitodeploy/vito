@@ -12,10 +12,6 @@ use Illuminate\Validation\ValidationException;
 class AllocateNetworkBlock
 {
     /**
-     * Provider/Docker/AWS/Linode ranges to avoid on the RFC1918 opt-in path.
-     * The whole 172.16.0.0/12 (Docker/AWS default) is excluded by not listing
-     * it as an RFC1918 supernet below.
-     *
      * @var array<int, string>
      */
     private const BLOCKLIST = [
@@ -38,10 +34,6 @@ class AllocateNetworkBlock
     }
 
     /**
-     * Carve the next free canonical block from the pool, avoiding overlap with
-     * existing project networks and with any member server's observed subnets
-     * (of any type — a CGNAT-WAN interface is stored PUBLIC).
-     *
      * @param  Collection<int, string>  $existingCidrs
      * @param  Collection<int, Server>  $memberServers
      */

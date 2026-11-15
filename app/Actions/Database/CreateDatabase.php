@@ -39,7 +39,6 @@ class CreateDatabase
 
         $hasCreatedUser = false;
         if (isset($input['user']) && $input['user'] && isset($input['existing_user_id']) && $input['existing_user_id']) {
-            // Link existing database user
             $databaseUser = $server->databaseUsers()->findOrFail($input['existing_user_id']);
             $databases = $databaseUser->databases ?? [];
             $databases[] = $database->name;

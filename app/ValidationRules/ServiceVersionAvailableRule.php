@@ -8,11 +8,6 @@ use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
 
-/**
- * Rejects a service version its registration marks unavailable on the given
- * operating system. The service is read from the sibling `name` field, so the
- * rule works on both `version` and `services.*.version`.
- */
 class ServiceVersionAvailableRule implements DataAwareRule, ValidationRule
 {
     /**

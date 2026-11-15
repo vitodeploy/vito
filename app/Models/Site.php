@@ -39,7 +39,7 @@ use RuntimeException;
  * @property int $server_id
  * @property string $type
  * @property array<string, mixed> $type_data
- * @property ?array<int, string> $env_variables List of keys marked as secret; values live on the server, never in the database.
+ * @property ?array<int, string> $env_variables
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $worker_environment
  * @property string $domain
  * @property array<int, string> $aliases
@@ -402,10 +402,6 @@ class Site extends AbstractModel
         return (bool) ($this->type_data['modern_deployment'] ?? false);
     }
 
-    /**
-     * Resolve the deployment script that drives a deploy of the given mode.
-     * Modern deploys use the pre-flight script; classic deploys use the default script.
-     */
     public function deploymentScriptFor(bool $modern): ?DeploymentScript
     {
         return $modern ? $this->preFlightScript : $this->deploymentScript;

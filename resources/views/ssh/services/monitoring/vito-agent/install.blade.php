@@ -18,7 +18,6 @@ chmod +x ./$executable
 
 sudo mv ./$executable /usr/local/bin/vito-agent
 
-# create service
 export VITO_AGENT_SERVICE="
 [Unit]
 Description=Vito Agent

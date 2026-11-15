@@ -16,11 +16,6 @@ class ApplyNetworkFirewall
         private MaterializeServerNetworkRules $materialize,
     ) {}
 
-    /**
-     * Re-apply the network's firewall on each member. Reachable servers apply
-     * now (lightweight, no WireGuard bounce); an unreachable server's member is
-     * marked PENDING so the reconciler re-applies when it comes back.
-     */
     public function handle(Network $network): void
     {
         $this->materialize->forNetwork($network);

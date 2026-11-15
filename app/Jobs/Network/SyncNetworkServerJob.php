@@ -47,12 +47,6 @@ class SyncNetworkServerJob implements ShouldQueue
         });
     }
 
-    /**
-     * The membership is serialised at dispatch time, so a queued job can outlive the state
-     * it was queued for — a removal turns a pending sync stale, and a completed teardown
-     * leaves no row at all. Re-read under the per-server queue lock and only proceed while
-     * the membership still holds the status this job was dispatched to act on.
-     */
     private function claim(): bool
     {
         $fresh = NetworkServer::query()->whereKey($this->member->id)->first();

@@ -16,7 +16,6 @@ class LinkUser
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return DatabaseUser $databaseUser
      *
      * @throws ValidationException
      */

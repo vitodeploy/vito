@@ -36,10 +36,6 @@ class ServerProviderPolicy
             && $user->tokenAllowsProject($serverProvider->project_id, write: true);
     }
 
-    /**
-     * Non-secret credential values are only for callers who can already
-     * rewrite them. API tokens must additionally carry the write ability.
-     */
     public function revealCredentials(User $user, ServerProvider $serverProvider): bool
     {
         /** @var PersonalAccessToken|TransientToken|null $token */

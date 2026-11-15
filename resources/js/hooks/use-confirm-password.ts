@@ -2,9 +2,6 @@ import axios from 'axios';
 import { useCallback } from 'react';
 import { useDialog } from '@/hooks/use-dialog';
 
-/**
- * Runs `action` once the user has a recent password confirmation, asking for the password first when needed.
- */
 export function useConfirmPassword(): (action: () => void) => void {
   const dialog = useDialog();
 

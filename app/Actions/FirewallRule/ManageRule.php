@@ -20,7 +20,6 @@ class ManageRule
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return FirewallRule $rule
      */
     public function create(Server $server, array $input, bool $componentManaged = false, ?EnvironmentAttachment $attachment = null): FirewallRule
     {
@@ -41,9 +40,6 @@ class ManageRule
     }
 
     /**
-     * Creates one rule per source in `sources` (IPs or CIDRs separated by new lines,
-     * commas or spaces) and applies them in a single firewall run.
-     *
      * @param  array<string, mixed>  $input
      * @return Collection<int, FirewallRule>
      */
@@ -92,7 +88,6 @@ class ManageRule
 
     /**
      * @param  array<string, mixed>  $input
-     * @return FirewallRule $rule
      */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {

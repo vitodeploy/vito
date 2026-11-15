@@ -52,9 +52,6 @@ class EditServerProvider
     }
 
     /**
-     * Errors on fields the edit form doesn't render are reported on `provider`,
-     * so they are still shown to the user.
-     *
      * @param  array<string, mixed>  $credentials
      * @param  array<string, mixed>  $input
      *

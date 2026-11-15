@@ -56,8 +56,6 @@ class ServerNetworkRule extends AbstractModel
     ];
 
     /**
-     * Network rows first (handshakes, then rules by network), stable by id.
-     *
      * @param  Builder<ServerNetworkRule>|QueryBuilder|Relation<ServerNetworkRule, covariant AbstractModel, *>  $query
      */
     public static function applyOrder(Builder|QueryBuilder|Relation $query): void

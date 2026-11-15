@@ -11,11 +11,6 @@ class ResyncServerEndpoint
 {
     public function __construct(private DispatchNetworkServerSync $sync) {}
 
-    /**
-     * The server's public address feeds every peer's WireGuard endpoint and handshake firewall
-     * rule, so a change to it has to be pushed to the other members of each of its WireGuard
-     * networks — otherwise they keep dialling the old address.
-     */
     public function handle(Server $server): void
     {
         NetworkServer::query()

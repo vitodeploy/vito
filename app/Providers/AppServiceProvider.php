@@ -28,9 +28,6 @@ use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void {}
 
     public function boot(): void
@@ -40,7 +37,6 @@ class AppServiceProvider extends ServiceProvider
         TrimStrings::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
         ConvertEmptyStringsToNull::skipWhen(fn ($request): bool => $request->is('applications/*/environments/*/variables*'));
 
-        // facades
         $this->app->bind('ssh', fn (): SSH => new SSH);
         $this->app->bind('notifier', fn (): Notifier => new Notifier);
         $this->app->bind('ftp', fn (): FTP => new FTP);

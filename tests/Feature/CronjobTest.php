@@ -292,7 +292,7 @@ test('cannot create cronjob with invalid site id', function () {
         'command' => 'ls -la',
         'user' => 'vito',
         'frequency' => '* * * * *',
-        'site_id' => 99999, // Non-existent site ID
+        'site_id' => 99999,
     ])
         ->assertSessionHasErrors(['site_id']);
 
@@ -378,7 +378,7 @@ test('cannot edit cronjob with invalid site id', function () {
         'command' => 'updated command',
         'user' => 'vito',
         'frequency' => '* * * * *',
-        'site_id' => 99999, // Non-existent site ID
+        'site_id' => 99999,
     ])
         ->assertSessionHasErrors(['site_id']);
 

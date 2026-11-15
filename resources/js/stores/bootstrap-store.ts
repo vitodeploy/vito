@@ -47,7 +47,7 @@ function writeCache(payload: CachedBootstrap): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
-    // localStorage quota or disabled — ignore, store still works in-memory
+    return;
   }
 }
 
@@ -55,7 +55,7 @@ function clearCache(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // localStorage disabled — nothing to do
+    return;
   }
 }
 
@@ -121,11 +121,6 @@ export const useBootstrapStore = create<BootstrapState>((set, get) => {
   };
 });
 
-/**
- * Returns the configs catalogue. Layout gates render on `configs !== null`,
- * so descendants under the app layout can safely treat this as non-null.
- * Returns `null` outside the layout (e.g. on auth pages).
- */
 export function useConfigs(): Configs | null {
   return useBootstrapStore((s) => s.configs);
 }

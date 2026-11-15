@@ -38,7 +38,6 @@ test('create server', function () {
 
     SSH::fake('user_not_found');
 
-    // fake output for vito user check and service installations
     $this->json('POST', route('api.projects.servers.create', [
         'project' => $this->user->current_project_id,
     ]), [

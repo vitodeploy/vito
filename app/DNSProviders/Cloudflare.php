@@ -68,8 +68,6 @@ class Cloudflare extends AbstractDNSProvider
     public function connect(array $credentials): bool
     {
         try {
-            // Use /zones endpoint to verify token works for both user-scoped and account-scoped tokens
-            // This also verifies the token has Zone:Read permissions which we need
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$credentials['token'],
                 'Content-Type' => 'application/json',

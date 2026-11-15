@@ -34,8 +34,6 @@ class GetOpenApiSpec
     private const array COMPONENTS = ['securitySchemes', 'schemas', 'parameters', 'responses'];
 
     /**
-     * Merge the per-resource OpenAPI files into one specification.
-     *
      * @return array{
      *     openapi: string,
      *     info: array<string, string>,

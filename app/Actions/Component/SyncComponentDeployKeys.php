@@ -43,9 +43,6 @@ class SyncComponentDeployKeys
         app(BroadcastComponentUpdate::class)->broadcast($component);
     }
 
-    /**
-     * Persist ownership before remote registration so even a lost response can be reconciled on retry or teardown.
-     */
     public function sync(Component $component): void
     {
         $application = $component->environment->application;

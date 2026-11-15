@@ -63,10 +63,6 @@ class ManageServerIp
         }
     }
 
-    /**
-     * Sets the address as the server's primary. The server must be saved before
-     * the bulk is_primary update so the latter reads the new ip/local_ip.
-     */
     public function setPrimary(ServerIpAddress $address): void
     {
         $server = $address->server;

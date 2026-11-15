@@ -117,9 +117,6 @@ class CreateComponent
         });
     }
 
-    /**
-     * Creates the isolated user for a derived name, relying on the unique index so a concurrent claim is never shared.
-     */
     private function claimUser(Server $server, string $username): IsolatedUser
     {
         $claimed = ValidationException::withMessages(['user' => 'Another operation claimed this Linux user. Please retry.']);
@@ -134,9 +131,6 @@ class CreateComponent
         }
     }
 
-    /**
-     * Names a new isolated Linux user after the application, avoiding users already taken on the server.
-     */
     private function defaultUser(Environment $environment, Server $server): string
     {
         $slug = Str::slug($environment->application->name);

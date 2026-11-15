@@ -111,9 +111,6 @@ class RunComponentStage
         $this->linkShared($deployment);
     }
 
-    /**
-     * Link the environment's current shared paths and live env file into the deployment's release.
-     */
     private function linkShared(Deployment $deployment): void
     {
         $component = $deployment->component;

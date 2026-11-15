@@ -354,7 +354,6 @@ test('install service creates installation log', function () {
 
     $service = $server->services()->where('name', 'redis')->firstOrFail();
 
-    // Verify that the installation log is linked to the service
     expect($service->log_id)->not->toBeNull();
     expect($service->log)->not->toBeNull();
     expect($service->log->type)->toStartWith('install-redis');

@@ -4,7 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class FailedToDeleteServer extends Exception
-{
-    //
-}
+class FailedToDeleteServer extends Exception {}

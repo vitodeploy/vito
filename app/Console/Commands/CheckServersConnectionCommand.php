@@ -22,7 +22,6 @@ class CheckServersConnectionCommand extends Command
             /** @var Server $server */
             foreach ($servers as $server) {
                 dispatch(function () use ($server, $dispatchTime) {
-                    // check connection if dispatch time is less than 5 minutes ago
                     if ($dispatchTime->diffInMinutes(now()) > 5) {
                         return;
                     }

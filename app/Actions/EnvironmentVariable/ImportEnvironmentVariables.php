@@ -66,8 +66,6 @@ class ImportEnvironmentVariables
     }
 
     /**
-     * Parse each entry once, so a long quoted value is never re-parsed per line.
-     *
      * @return array<string, string>
      *
      * @throws ValidationException
@@ -106,12 +104,6 @@ class ImportEnvironmentVariables
     }
 
     /**
-     * Group lines into raw entries keyed by their first line number, using
-     * phpdotenv's own rules one line at a time: `Lines::process([$line])` is
-     * empty when a line opens a quoted value, and `Lines::process(['A="', $line])`
-     * is not empty when a line closes one. phpdotenv's own grouping copies the
-     * open buffer for every line, which is quadratic for long values.
-     *
      * @param  list<string>  $lines
      * @return array<int, string>
      *

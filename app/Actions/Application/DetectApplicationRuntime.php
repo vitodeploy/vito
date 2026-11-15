@@ -14,9 +14,6 @@ use Throwable;
 class DetectApplicationRuntime
 {
     /**
-     * Suggests a branch and runtime for a repository. Detection only prefills the form, so a
-     * provider failure returns no suggestion instead of blocking the user.
-     *
      * @param  array<string, mixed>  $input
      * @return array{branch: ?string, runtime: ?string, versions: list<string>}
      */

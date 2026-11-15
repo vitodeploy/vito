@@ -72,8 +72,6 @@ class SiteResource extends JsonResource
     }
 
     /**
-     * Strip installation passwords and basic-auth hashes before sending to the client.
-     *
      * @return array<string, mixed>
      */
     private function sanitisedTypeData(): array

@@ -49,9 +49,6 @@ class S3 extends AbstractStorageProvider
     }
 
     /**
-     * Build the configuration array for the S3 client.
-     * This method can be overridden by child classes to modify the configuration.
-     *
      * @param  array<string, mixed>|null  $credentials
      * @return array<string, mixed>
      */

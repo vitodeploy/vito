@@ -168,7 +168,6 @@ class BackupFile extends AbstractModel
     {
         $storage = $this->backup->storage;
 
-        // For file backups, use the path field; for database backups, use database name
         $backupName = $this->backup->type === BackupType::FILE
             ? basename($this->backup->path)
             : $this->backup->database->name;

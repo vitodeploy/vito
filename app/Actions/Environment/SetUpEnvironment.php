@@ -18,8 +18,6 @@ use Throwable;
 class SetUpEnvironment
 {
     /**
-     * Places a new environment on its first server and queues its first deploy for when setup finishes.
-     *
      * @param  array<string, mixed>  $input
      */
     public function setUp(Environment $environment, array $input): void

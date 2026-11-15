@@ -50,7 +50,7 @@ class RestartWorkers
     }
 
     /**
-     * @param  array<string, string>  $processes  process token => last reported status
+     * @param  array<string, string>  $processes
      */
     private function settle(Worker $worker, array $processes): bool
     {

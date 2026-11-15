@@ -16,7 +16,7 @@ class FileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => $this->faker->randomNumber(), //
+            'user_id' => $this->faker->randomNumber(),
             'server_id' => $this->faker->randomNumber(),
             'server_user' => $this->faker->word(),
             'path' => $this->faker->word(),

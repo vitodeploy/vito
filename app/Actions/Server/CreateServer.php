@@ -61,19 +61,14 @@ class CreateServer
 
             $this->server->provider_data = $this->server->provider()->data($input);
 
-            // save
             $this->server->save();
 
-            // create instance
             $this->server->provider()->create();
 
-            // create services
             $this->createServices($input);
 
-            // install server
             dispatch(new InstallJob($this->server))->onQueue('ssh');
 
-            // Ensure we get the default db values in the model
             $this->server->refresh();
 
             return $this->server;

@@ -226,7 +226,6 @@ test('member address outside the range is rejected when adding and updating', fu
         ]);
         $this->fail('An address outside the declared range must be rejected.');
     } catch (ValidationException) {
-        // expected
     }
 
     $member = $network->servers()->where('server_id', $first->id)->firstOrFail();

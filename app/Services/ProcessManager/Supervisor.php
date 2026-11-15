@@ -154,10 +154,6 @@ class Supervisor extends AbstractProcessManager implements HasLogs
         );
     }
 
-    /**
-     * Whether root can open or remove the path without following symlinks an unprivileged user planted.
-     * Legacy logs inside an isolated user's home are not safe: that user owns the directory.
-     */
     private function isRootSafeLogPath(string $logFile): bool
     {
         return Str::startsWith($logFile, [
@@ -216,7 +212,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
      */
     public function restartMany(array $ids, ?int $siteId = null): string
     {
-        /** @phpstan-ignore identical.alwaysFalse (defensive guard despite non-empty-array contract) */
+        /** @phpstan-ignore identical.alwaysFalse */
         if ($ids === []) {
             return '';
         }

@@ -21,14 +21,14 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
 /**
- * @deprecated Use UserSourceControlController instead. This controller will be removed in a future version.
+ * @deprecated
  */
 #[Prefix('api/projects/{project}/source-controls')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
 class SourceControlController extends Controller
 {
     /**
-     * @deprecated Use GET /api/source-controls instead
+     * @deprecated
      */
     #[Get('/', name: 'api.projects.source-controls', middleware: 'ability:read')]
     public function index(Project $project): ResourceCollection
@@ -41,7 +41,7 @@ class SourceControlController extends Controller
     }
 
     /**
-     * @deprecated Use POST /api/source-controls instead
+     * @deprecated
      */
     #[Post('/', name: 'api.projects.source-controls.create', middleware: 'ability:write')]
     public function create(Request $request, Project $project): SourceControlResource
@@ -58,7 +58,7 @@ class SourceControlController extends Controller
     }
 
     /**
-     * @deprecated Use GET /api/source-controls/{sourceControl} instead
+     * @deprecated
      */
     #[Get('{sourceControl}', name: 'api.projects.source-controls.show', middleware: 'ability:read')]
     public function show(Project $project, SourceControl $sourceControl): SourceControlResource
@@ -71,7 +71,7 @@ class SourceControlController extends Controller
     }
 
     /**
-     * @deprecated Use PUT /api/source-controls/{sourceControl} instead
+     * @deprecated
      */
     #[Put('{sourceControl}', name: 'api.projects.source-controls.update', middleware: 'ability:write')]
     public function update(Request $request, Project $project, SourceControl $sourceControl): SourceControlResource
@@ -92,7 +92,7 @@ class SourceControlController extends Controller
     }
 
     /**
-     * @deprecated Use DELETE /api/source-controls/{sourceControl} instead
+     * @deprecated
      */
     #[Delete('{sourceControl}', name: 'api.projects.source-controls.delete', middleware: 'ability:write')]
     public function delete(Project $project, SourceControl $sourceControl): Response

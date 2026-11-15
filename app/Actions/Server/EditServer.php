@@ -15,7 +15,6 @@ class EditServer
 
     /**
      * @param  array<string, mixed>  $input
-     * @return Server $server
      *
      * @throws ValidationException
      */

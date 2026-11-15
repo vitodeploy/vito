@@ -35,10 +35,6 @@ class WorkflowPolicy
         return $this->hasWriteAccess($user, $workflow->project);
     }
 
-    /**
-     * Action inputs can hold credentials, so only editors on a session or a
-     * write token see their saved values.
-     */
     public function revealInputs(User $user, Workflow $workflow): bool
     {
         /** @var PersonalAccessToken|TransientToken|null $token */

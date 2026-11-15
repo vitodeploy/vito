@@ -3,11 +3,37 @@
 use App\Models\SourceControl;
 use App\SourceControlProviders\BitbucketV2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 test('id returns bitbucket v2', function () {
     expect(BitbucketV2::id())->toBe('bitbucket-v2');
+});
+
+test('bitbucket repository discovery follows pagination and caches member repositories', function (): void {
+    Http::preventStrayRequests();
+    Http::fake([
+        'bitbucket.org/site/oauth2/access_token' => Http::response(['access_token' => 'test-token']),
+        'api.bitbucket.org/2.0/repositories*' => Http::sequence()
+            ->push([
+                'values' => [['full_name' => 'team/first']],
+                'next' => 'https://api.bitbucket.org/2.0/repositories?page=2',
+            ])
+            ->push(['values' => [['full_name' => 'team/second']]]),
+    ]);
+    $sourceControl = SourceControl::factory()->create([
+        'provider' => BitbucketV2::id(),
+        'provider_data' => ['key' => 'test-key', 'secret' => 'test-secret'],
+    ]);
+    $provider = new BitbucketV2($sourceControl);
+
+    expect($provider->getRepos())->toBe(['team/first', 'team/second'])
+        ->and($provider->getRepos())->toBe(['team/first', 'team/second']);
+
+    Http::assertSent(fn (Request $request): bool => ($request['role'] ?? null) === 'member' && $request->hasHeader('Authorization', 'Bearer test-token'));
+    Http::assertSentCount(3);
 });
 
 test('default bitbucket repo url', function () {

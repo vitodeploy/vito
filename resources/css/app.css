@@ -28,19 +28,19 @@
 }
 
 ::-webkit-scrollbar {
-  width: 8px; /* scrollbar width */
-  height: 8px; /* horizontal scrollbar height */
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* track background */
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.5); /* thumb color */
-  border-radius: 10px; /* rounded ends */
-  border: 2px solid transparent; /* padding around thumb */
-  background-clip: content-box; /* ensures border doesn’t overlap thumb */
+  background-color: rgba(100, 100, 100, 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -48,12 +48,12 @@
 }
 
 .scrollbar-hide {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Safari + Chrome */
+  display: none;
 }
 
 .react-flow__panel.react-flow__controls {

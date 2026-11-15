@@ -154,11 +154,6 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
     }
 
     /**
-     * Reconcile each linked database instead of rendering the per-user link
-     * script, so every role keeps the correct access to objects created by any
-     * other linked user (PostgreSQL default privileges are keyed by the
-     * creating role).
-     *
      * @param  array<string>  $databases
      *
      * @throws SSHError
@@ -213,11 +208,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
     }
 
     /**
-     * Render the database-wide reconcile script for every user linked to a
-     * database, granting each their role's privileges and wiring up the
-     * cross-creator default privileges that keep multiple admins in sync.
-     *
-     * @param  array<int, string>  $revokeOnly  Usernames to scrub but not grant (e.g. a user being unlinked or deleted).
+     * @param  array<int, string>  $revokeOnly
      *
      * @throws SSHError
      */

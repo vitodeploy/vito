@@ -47,10 +47,8 @@ export function registerNginxLanguage(monaco: monacoType): void {
       root: [
         [/#.*$/, 'comment'],
 
-        // Block names like server, location
         [/\b(server|location)\b/, 'keyword'],
 
-        // Keywords/directives
         [
           /\b([a-z_]+)\b(?=\s)/,
           {
@@ -61,7 +59,6 @@ export function registerNginxLanguage(monaco: monacoType): void {
           },
         ],
 
-        // Operators
         [
           /@symbols/,
           {
@@ -72,18 +69,15 @@ export function registerNginxLanguage(monaco: monacoType): void {
           },
         ],
 
-        // IPs, ports, URLs, filenames, values
         [/\d+\.\d+\.\d+\.\d+(:\d+)?/, 'number'],
         [/\/[^\s;"]*/, 'string.path'],
         [/\$[a-zA-Z_][\w]*/, 'variable'],
         [/".*?"/, 'string'],
         [/'.*?'/, 'string'],
 
-        // Braces and semicolons
         [/[{}]/, 'delimiter.bracket'],
         [/;/, 'delimiter'],
 
-        // Numbers
         [/\b\d+\b/, 'number'],
       ],
     },
@@ -120,13 +114,10 @@ export function registerCaddyLanguage(monaco: monacoType): void {
 
     tokenizer: {
       root: [
-        // Comments
         [/#.*$/, 'comment'],
 
-        // Site label (e.g. example.com)
         [/^[^\s{]+(?=\s*{)/, 'type.identifier'],
 
-        // Directives
         [
           /\b([a-z_][a-z0-9_]*)(?=\s|$)/i,
           {
@@ -137,10 +128,8 @@ export function registerCaddyLanguage(monaco: monacoType): void {
           },
         ],
 
-        // Braces
         [/[{}]/, 'delimiter.bracket'],
 
-        // Operators
         [
           /@symbols/,
           {
@@ -151,17 +140,13 @@ export function registerCaddyLanguage(monaco: monacoType): void {
           },
         ],
 
-        // Paths, values, URIs
         [/\/[^\s#"]+/, 'string.path'],
 
-        // Quoted strings
         [/".*?"/, 'string'],
         [/'.*?'/, 'string'],
 
-        // Variables (environment-style)
         [/\$\{?[a-zA-Z_][\w]*\}?/, 'variable'],
 
-        // IPs and ports
         [/\d+\.\d+\.\d+\.\d+(:\d+)?/, 'number'],
         [/\b\d{2,5}\b/, 'number'],
       ],

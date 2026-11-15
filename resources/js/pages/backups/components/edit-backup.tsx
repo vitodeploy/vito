@@ -40,7 +40,6 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
         </DialogHeader>
         <Form id="edit-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
-            {/*interval*/}
             <FormField>
               <Label htmlFor="interval">Interval</Label>
               <Select value={form.data.interval} onValueChange={(value) => form.setData('interval', value)}>
@@ -60,7 +59,6 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
               <InputError message={form.errors.interval} />
             </FormField>
 
-            {/*custom interval*/}
             {form.data.interval === 'custom' && (
               <FormField>
                 <Label htmlFor="custom_interval">Custom interval (crontab)</Label>
@@ -75,7 +73,6 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
               </FormField>
             )}
 
-            {/*backups to keep*/}
             <FormField>
               <Label htmlFor="keep">Backups to keep</Label>
               <Input id="keep" name="keep" value={form.data.keep} onChange={(e) => form.setData('keep', e.target.value)} />
