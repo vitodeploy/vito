@@ -99,6 +99,7 @@ class PersistServerIpsJob implements ShouldQueue
 
     /**
      * @param  Collection<int, ServerIpAddress>  $managed
+     *
      * @throws SSHError
      */
     private function applySystemdUnit(Collection $managed): void

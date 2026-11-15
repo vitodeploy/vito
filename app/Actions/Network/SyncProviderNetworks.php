@@ -89,7 +89,6 @@ class SyncProviderNetworks
 
     /**
      * @param  array<string, Server>  $servers
-     * @return bool
      */
     private function reconcile(Project $project, ServerProvider $connection, PrivateNetworkDTO $dto, array $servers): bool
     {

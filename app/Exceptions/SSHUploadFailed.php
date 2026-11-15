@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class SSHUploadFailed extends SSHError
-{
-}
+class SSHUploadFailed extends SSHError {}

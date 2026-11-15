@@ -29,13 +29,9 @@ abstract class AbstractService implements ServiceInterface
         return [];
     }
 
-    public function install(): void
-    {
-    }
+    public function install(): void {}
 
-    public function uninstall(): void
-    {
-    }
+    public function uninstall(): void {}
 
     public function versionCommand(): ?string
     {

@@ -120,6 +120,7 @@ function tail(string $filepath, int $lines = 1, int $maxBytes = 1048576): string
 
 /**
  * @param  array<array-key, mixed>  $variables
+ *
  * @throws ValidationException
  */
 function substitute_variables(string $content, array $variables, int $limit = 1048576): string

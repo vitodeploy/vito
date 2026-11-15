@@ -144,8 +144,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       scheduleReconnect(csrfToken, userId);
     };
 
-    socket.onerror = () => {
-    };
+    socket.onerror = () => {};
   },
 
   disconnect: () => {

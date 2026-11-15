@@ -67,6 +67,7 @@ class ImportEnvironmentVariables
 
     /**
      * @return array<string, string>
+     *
      * @throws ValidationException
      */
     private function parse(string $content): array
@@ -105,6 +106,7 @@ class ImportEnvironmentVariables
     /**
      * @param  list<string>  $lines
      * @return array<int, string>
+     *
      * @throws ValidationException
      */
     private function entries(array $lines): array

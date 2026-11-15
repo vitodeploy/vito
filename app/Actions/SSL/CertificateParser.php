@@ -9,6 +9,7 @@ class CertificateParser
 {
     /**
      * @return array{expires_at: Carbon, domains: array<int, string>}
+     *
      * @throws ValidationException
      */
     public static function parse(string $certificate): array

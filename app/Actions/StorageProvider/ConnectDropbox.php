@@ -22,7 +22,7 @@ class ConnectDropbox
 
     /**
      * @param  array<string, mixed>  $input
-     * @param  ?int  $projectId
+     *
      * @throws ValidationException
      */
     public function redirectUrl(array $input, ?int $projectId): string

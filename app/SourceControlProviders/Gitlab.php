@@ -339,7 +339,6 @@ class Gitlab extends AbstractSourceControlProvider implements SupportsApplicatio
     }
 
     /**
-     * @param  string  $endpoint
      * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */

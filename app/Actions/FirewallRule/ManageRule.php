@@ -20,7 +20,6 @@ class ManageRule
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return FirewallRule
      */
     public function create(Server $server, array $input, bool $componentManaged = false, ?EnvironmentAttachment $attachment = null): FirewallRule
     {
@@ -89,7 +88,6 @@ class ManageRule
 
     /**
      * @param  array<string, mixed>  $input
-     * @return FirewallRule
      */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {

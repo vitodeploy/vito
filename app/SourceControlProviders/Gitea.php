@@ -309,7 +309,6 @@ class Gitea extends AbstractSourceControlProvider implements SupportsApplication
     }
 
     /**
-     * @param  string  $endpoint
      * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */

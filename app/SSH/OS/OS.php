@@ -258,6 +258,7 @@ class OS
 
     /**
      * @deprecated
+     *
      * @throws SSHError
      */
     public function editFileAs(string $path, string $user, ?string $content = null): void

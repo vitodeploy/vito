@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class ServiceInstallationFailed extends Exception
-{
-}
+class ServiceInstallationFailed extends Exception {}

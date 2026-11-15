@@ -12,7 +12,6 @@ final readonly class SocketEventDTO
 
     /**
      * @param  array<string, mixed>|JsonResource  $data
-     * @param  ?int  $userId
      */
     public function __construct(
         public int $projectId,

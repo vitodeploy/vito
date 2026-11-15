@@ -72,6 +72,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
 
     /**
      * @internal
+     *
      * @param  array<int, array<string, mixed>>  $reservations
      * @param  array<int, array<string, mixed>>  $vpcs
      * @param  array<int, string>  $instanceIds

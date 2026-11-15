@@ -143,11 +143,6 @@ class BitbucketV2 extends AbstractSourceControlProvider implements SupportsAppli
         return $this->repositoryFile($res, $repo);
     }
 
-    /**
-     * @param  string  $repo
-     * @param  string  $key
-     * @return string
-     */
     public function fullRepoUrl(string $repo, string $key): string
     {
         return sprintf('git@bitbucket.org-%s:%s.git', $key, $repo);
@@ -274,7 +269,6 @@ class BitbucketV2 extends AbstractSourceControlProvider implements SupportsAppli
     }
 
     /**
-     * @param  string  $raw
      * @return array<string, string>
      */
     protected function getCommitter(string $raw): array
@@ -296,6 +290,7 @@ class BitbucketV2 extends AbstractSourceControlProvider implements SupportsAppli
 
     /**
      * @return array<string, string>
+     *
      * @throws Exception
      */
     private function getAuthenticationHeaders(): array
@@ -380,7 +375,6 @@ class BitbucketV2 extends AbstractSourceControlProvider implements SupportsAppli
     }
 
     /**
-     * @param  string  $endpoint
      * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */

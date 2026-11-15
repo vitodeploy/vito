@@ -155,6 +155,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
 
     /**
      * @param  array<string>  $databases
+     *
      * @throws SSHError
      */
     public function link(string $username, string $host, array $databases, string $permission = 'admin'): void
@@ -208,6 +209,7 @@ class Postgresql extends AbstractDatabase implements HasLogs, SupportsNetworking
 
     /**
      * @param  array<int, string>  $revokeOnly
+     *
      * @throws SSHError
      */
     private function reconcilePrivileges(string $database, array $revokeOnly = []): void

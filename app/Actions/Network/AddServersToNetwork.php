@@ -26,7 +26,6 @@ class AddServersToNetwork
 
     /**
      * @param  array<string, mixed>  $input
-     * @return ?int
      */
     public function add(Network $network, array $input): ?int
     {

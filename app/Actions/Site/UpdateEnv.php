@@ -70,6 +70,7 @@ class UpdateEnv
     /**
      * @param  array<string, mixed>  $input
      * @return array<int, array{key: string, value: string, is_secret: bool}>
+     *
      * @throws SSHError
      * @throws ValidationException
      */

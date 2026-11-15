@@ -15,7 +15,7 @@ class EditServer
 
     /**
      * @param  array<string, mixed>  $input
-     * @return Server
+     *
      * @throws ValidationException
      */
     public function edit(Server $server, array $input): Server

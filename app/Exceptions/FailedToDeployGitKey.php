@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class FailedToDeployGitKey extends Exception
-{
-}
+class FailedToDeployGitKey extends Exception {}

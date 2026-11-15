@@ -49,18 +49,15 @@ export function useLogContent({ serverId, logId, enabled = true }: UseLogContent
   }, [enabled, serverId, logId]);
 
   useSocketListener(
-    useCallback(
-      (event) => {
-        if (event.type !== 'server-log.content') return;
-        if (!event.data || (event.data as { id?: number }).id !== logIdRef.current) return;
+    useCallback((event) => {
+      if (event.type !== 'server-log.content') return;
+      if (!event.data || (event.data as { id?: number }).id !== logIdRef.current) return;
 
-        const buf = (event.data as { content?: string }).content;
-        if (buf) {
-          setContent((prev) => prev + buf);
-        }
-      },
-      [],
-    ),
+      const buf = (event.data as { content?: string }).content;
+      if (buf) {
+        setContent((prev) => prev + buf);
+      }
+    }, []),
   );
 
   return { content, isLoading, error };

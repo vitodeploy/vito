@@ -77,10 +77,7 @@ export default function AddComponent({
                 )
               }
             >
-              <Select
-                value={form.data.server_id}
-                onValueChange={(value) => form.setData('server_id', value)}
-              >
+              <Select value={form.data.server_id} onValueChange={(value) => form.setData('server_id', value)}>
                 <SelectTrigger id="component-server">
                   <SelectValue placeholder="Select a server" />
                 </SelectTrigger>

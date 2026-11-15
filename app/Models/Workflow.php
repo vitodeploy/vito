@@ -143,6 +143,7 @@ class Workflow extends Model
      * @param  array<string, SupportCollection<int, array<string, mixed>>>  $edges
      * @param  array<string, WorkflowActionDTO>  $built
      * @param  array<string, true>  $ancestors
+     *
      * @throws ValidationException
      */
     private function buildExecutionTree(string $nodeId, array $nodes, array $edges, array &$built, array $ancestors): WorkflowActionDTO

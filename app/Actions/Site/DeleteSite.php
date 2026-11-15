@@ -19,7 +19,7 @@ class DeleteSite
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return bool
+     *
      * @throws SSHError
      */
     public function delete(Site $site, array $input): bool

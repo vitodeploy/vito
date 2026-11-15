@@ -52,9 +52,7 @@ class DemoServiceProvider extends ServiceProvider
         'updated_at',
     ];
 
-    public function register(): void
-    {
-    }
+    public function register(): void {}
 
     public function boot(): void
     {

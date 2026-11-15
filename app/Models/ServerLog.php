@@ -58,6 +58,7 @@ class ServerLog extends AbstractModel
 
     /**
      * @template TReturn
+     *
      * @param  Closure(): TReturn  $callback
      * @return TReturn
      */

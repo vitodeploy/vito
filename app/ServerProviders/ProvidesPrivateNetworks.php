@@ -18,6 +18,7 @@ interface ProvidesPrivateNetworks
      * @param  array<int, string>  $instanceIds
      * @param  array<int, string>  $regions
      * @return array<int, PrivateNetworkDTO>
+     *
      * @throws PrivateNetworkSyncError
      */
     public function privateNetworks(array $instanceIds, array $regions): array;

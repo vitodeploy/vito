@@ -54,6 +54,7 @@ class EditServerProvider
     /**
      * @param  array<string, mixed>  $credentials
      * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     private function verify(ServerProvider $serverProvider, HasEditableCredentials $provider, array $credentials, array $input): void

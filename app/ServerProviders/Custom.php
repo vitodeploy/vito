@@ -95,7 +95,5 @@ class Custom extends AbstractProvider
         return true;
     }
 
-    public function delete(): void
-    {
-    }
+    public function delete(): void {}
 }

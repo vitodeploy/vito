@@ -79,13 +79,9 @@ abstract class AbstractSiteType implements SiteType
         return SiteShellEnvironment::collect($this->site);
     }
 
-    public function afterDeploy(Deployment $deployment): void
-    {
-    }
+    public function afterDeploy(Deployment $deployment): void {}
 
-    public function assertReadyToDeploy(): void
-    {
-    }
+    public function assertReadyToDeploy(): void {}
 
     public function defaultDeploymentScript(): string
     {

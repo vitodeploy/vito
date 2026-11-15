@@ -11,6 +11,7 @@ class GetEnv
 {
     /**
      * @return array{env?: string, variables: array<int, array{key: string, value: string, is_secret: bool}>}
+     *
      * @throws SSHError
      * @throws ValidationException
      */

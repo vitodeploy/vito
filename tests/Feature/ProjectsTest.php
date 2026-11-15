@@ -26,6 +26,22 @@ use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
+test('admin search combines matching projects servers and sites', function (): void {
+    $project = Project::query()->findOrFail($this->user->current_project_id);
+    $project->update(['name' => 'searchable-project']);
+    $this->server->update(['name' => 'searchable-server']);
+    $this->site->update(['domain' => 'searchable.example.com']);
+    Project::factory()->create(['name' => 'unrelated-project']);
+
+    $this->actingAs($this->user)
+        ->getJson(route('search', ['query' => 'searchable']))
+        ->assertSuccessful()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonFragment(['id' => $project->id, 'parent_id' => null, 'label' => 'searchable-project', 'type' => 'project'])
+        ->assertJsonFragment(['id' => $this->server->id, 'parent_id' => null, 'label' => 'searchable-server', 'type' => 'server'])
+        ->assertJsonFragment(['id' => $this->site->id, 'parent_id' => $this->server->id, 'label' => 'searchable.example.com', 'type' => 'site']);
+});
+
 test('create project', function () {
     $this->actingAs($this->user);
 
