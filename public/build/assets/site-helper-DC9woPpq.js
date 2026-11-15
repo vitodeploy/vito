@@ -1,0 +1,1 @@
+var e=`selected-site`,t={getStoredSite(){let t=localStorage.getItem(e);return t?JSON.parse(t):null},storeSite(t){if(localStorage.removeItem(`site`),!t){localStorage.removeItem(e);return}let{id:n,server_id:r,user:i,status:a,stats_enabled:o}=t;localStorage.setItem(e,JSON.stringify({id:n,server_id:r,user:i,status:a,stats_enabled:o}))}};export{t};

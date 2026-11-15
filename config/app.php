@@ -114,7 +114,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
     ])->toArray(),
 
-    'version' => '4.3.0-beta-2',
+    'version' => '4.3.0-beta-3',
 
     'demo' => env('APP_DEMO', false),
 
