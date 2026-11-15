@@ -316,6 +316,7 @@ class WebSocketServer
             try {
                 $entry['handler']->ping($connId);
             } catch (\Throwable) {
+                $entry['connection']->close();
                 $this->handleClose($connId);
             }
         }

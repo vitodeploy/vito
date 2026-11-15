@@ -24,10 +24,12 @@ class LimitedMessageBuffer extends MessageBuffer
             return $frame;
         }
 
-        $this->fragments = $frame->isFinal() ? 0 : $this->fragments + 1;
-
-        if ($this->fragments > self::MAX_FRAGMENTS) {
+        if (++$this->fragments > self::MAX_FRAGMENTS) {
             return $this->newCloseFrame(Frame::CLOSE_TOO_BIG, 'Too many fragments');
+        }
+
+        if ($frame->isFinal()) {
+            $this->fragments = 0;
         }
 
         return $frame;

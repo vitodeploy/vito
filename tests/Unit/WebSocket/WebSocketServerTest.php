@@ -80,12 +80,14 @@ function vitoPestUnitWebSocketServerTestConnection(): ConnectionInterface
 /**
  * @return WebSocketHandler&object{messages: array<int, string>}
  */
-function vitoPestUnitWebSocketServerTestHandler(): WebSocketHandler
+function vitoPestUnitWebSocketServerTestHandler(?Closure $onPing = null): WebSocketHandler
 {
-    return new class implements WebSocketHandler
+    return new class($onPing) implements WebSocketHandler
     {
         /** @var array<int, string> */
         public array $messages = [];
+
+        public function __construct(protected ?Closure $onPing) {}
 
         public function authenticate(RequestInterface $psrRequest): ?string
         {
@@ -101,7 +103,12 @@ function vitoPestUnitWebSocketServerTestHandler(): WebSocketHandler
 
         public function onClose(string $connId): void {}
 
-        public function ping(string $connId): void {}
+        public function ping(string $connId): void
+        {
+            if ($this->onPing) {
+                ($this->onPing)();
+            }
+        }
 
         public function getConnectionCount(): int
         {
@@ -160,18 +167,27 @@ test('origin must match scheme, host and effective port', function (string $orig
     'garbage' => ['null', ['https://vito.example.com'], false],
 ]);
 
-test('fragmented messages are delivered until they exceed the fragment cap', function () {
+test('a message may have at most the fragment cap of frames', function (int $frames, bool $accepted) {
     [$connection, $handler] = vitoPestUnitWebSocketServerTestOpen('https://vito.example.com');
 
-    $frames = vitoPestUnitWebSocketServerTestFrame('a', false, Frame::OP_TEXT);
-    for ($i = 0; $i < 10; $i++) {
-        $frames .= vitoPestUnitWebSocketServerTestFrame('', false, Frame::OP_CONTINUE);
+    $data = vitoPestUnitWebSocketServerTestFrame('a', false, Frame::OP_TEXT);
+    for ($i = 0; $i < $frames - 2; $i++) {
+        $data .= vitoPestUnitWebSocketServerTestFrame('', false, Frame::OP_CONTINUE);
     }
-    $frames .= vitoPestUnitWebSocketServerTestFrame('b', true, Frame::OP_CONTINUE);
-    $connection->emit('data', [$frames]);
+    $data .= vitoPestUnitWebSocketServerTestFrame('b', true, Frame::OP_CONTINUE);
+    $connection->emit('data', [$data.$data]);
 
-    expect($handler->messages)->toBe(['ab'])
-        ->and($connection->closed)->toBeFalse();
+    expect($handler->messages)->toBe($accepted ? ['ab', 'ab'] : [])
+        ->and($connection->closed)->toBe(! $accepted)
+        ->and(str_contains($connection->written, pack('n', Frame::CLOSE_TOO_BIG).'Too many fragments'))->toBe(! $accepted);
+})->with([
+    'single frame' => [2, true],
+    'at the cap' => [LimitedMessageBuffer::MAX_FRAGMENTS, true],
+    'one over the cap' => [LimitedMessageBuffer::MAX_FRAGMENTS + 1, false],
+]);
+
+test('an empty fragment flood closes the connection', function () {
+    [$connection, $handler] = vitoPestUnitWebSocketServerTestOpen('https://vito.example.com');
 
     $frames = vitoPestUnitWebSocketServerTestFrame('', false, Frame::OP_TEXT);
     for ($i = 0; $i < LimitedMessageBuffer::MAX_FRAGMENTS + 10; $i++) {
@@ -180,8 +196,30 @@ test('fragmented messages are delivered until they exceed the fragment cap', fun
     $connection->emit('data', [$frames]);
 
     expect($connection->closed)->toBeTrue()
-        ->and($connection->written)->toContain(pack('n', Frame::CLOSE_TOO_BIG).'Too many fragments')
-        ->and($handler->messages)->toBe(['ab']);
+        ->and($handler->messages)->toBe([]);
+});
+
+test('a ping that throws closes the transport', function () {
+    $server = new WebSocketServer(new StreamSelectLoop, 50, []);
+    $server->route('/ws/test', vitoPestUnitWebSocketServerTestHandler(fn () => throw new RuntimeException('database is down')));
+
+    $connection = vitoPestUnitWebSocketServerTestConnection();
+    $server->handleConnection($connection);
+    $connection->emit('data', [implode("\r\n", [
+        'GET /ws/test HTTP/1.1',
+        'Host: vito.example.com',
+        'Upgrade: websocket',
+        'Connection: Upgrade',
+        'Sec-WebSocket-Key: '.base64_encode(random_bytes(16)),
+        'Sec-WebSocket-Version: 13',
+    ])."\r\n\r\n"]);
+
+    expect($server->getConnectionCount())->toBe(1);
+
+    (new ReflectionMethod($server, 'pingConnections'))->invoke($server);
+
+    expect($connection->closed)->toBeTrue()
+        ->and($server->getConnectionCount())->toBe(0);
 });
 
 test('messages over the size limit close the connection', function () {
