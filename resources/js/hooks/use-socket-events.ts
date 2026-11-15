@@ -19,10 +19,11 @@ export function useSocketEvents(): { status: SocketStatus; reconnect: () => void
   const switchProject = useSocketStore((s) => s.switchProject);
 
   const projectId = auth?.currentProject?.id;
+  const userId = auth?.user?.id;
 
   useEffect(() => {
-    if (auth && csrfRef.current) {
-      connect(csrfRef.current);
+    if (auth?.user && csrfRef.current) {
+      connect(csrfRef.current, auth.user.id);
     }
   }, [auth, connect]);
 
@@ -39,10 +40,10 @@ export function useSocketEvents(): { status: SocketStatus; reconnect: () => void
   }, [auth, disconnect]);
 
   const reconnect = useCallback(() => {
-    if (csrfRef.current) {
-      storeReconnect(csrfRef.current);
+    if (csrfRef.current && userId) {
+      storeReconnect(csrfRef.current, userId);
     }
-  }, [storeReconnect]);
+  }, [storeReconnect, userId]);
 
   return { status, reconnect };
 }

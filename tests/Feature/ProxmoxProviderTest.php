@@ -633,5 +633,6 @@ test('edit proxmox connection broadcasts without its templates', function () {
     ])->assertSessionDoesntHaveErrors();
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.updated'
-        && (array) $event->data->data['editable_data'] === []);
+        && (array) $event->data->data['editable_data'] === []
+        && $event->data->userId === $this->proxmox->user_id);
 });

@@ -4,6 +4,7 @@ namespace App\WebSocket;
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\RequestInterface;
 
@@ -68,6 +69,10 @@ class EventsHandler implements WebSocketHandler
         $projectId = $tokenData['project_id'];
         if (! $projectId) {
             return 'No active project';
+        }
+
+        if ($this->authorizedUserIds([$user->id], $projectId) === []) {
+            return 'Unauthorized for project';
         }
 
         // Store validated data for retrieval in onOpen()
@@ -153,9 +158,17 @@ class EventsHandler implements WebSocketHandler
     public function ping(string $connId): void
     {
         $entry = $this->connections[$connId] ?? null;
-        if ($entry) {
-            $entry['connection']->ping();
+        if (! $entry) {
+            return;
         }
+
+        if ($this->authorizedUserIds([$entry['user_id']], $entry['project_id']) === []) {
+            $this->revoke($connId);
+
+            return;
+        }
+
+        $entry['connection']->ping();
     }
 
     public function getConnectionCount(): int
@@ -164,37 +177,25 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
-     * Broadcast an event to all connections subscribed to a project.
+     * Broadcast an event to the connections subscribed to a project, or only
+     * to one user's connections when a user id is given.
      *
      * @param  array<string, mixed>  $eventData
      */
-    public function broadcastToProject(int $projectId, array $eventData): void
+    public function broadcastToProject(int $projectId, array $eventData, ?int $userId = null): void
     {
-        $subscribers = $this->projectSubscriptions[$projectId] ?? [];
-        foreach ($subscribers as $connId => $_) {
-            $entry = $this->connections[$connId] ?? null;
-            if ($entry) {
-                $entry['connection']->send([
-                    'type' => 'event',
-                    'data' => $eventData,
-                ]);
-            }
-        }
+        $this->deliver(array_intersect_key($this->connections, $this->projectSubscriptions[$projectId] ?? []), $eventData, $userId, $projectId);
     }
 
     /**
-     * Broadcast an event to every connected client, regardless of project.
+     * Broadcast an event to every connected client regardless of project, or
+     * only to one user's connections when a user id is given.
      *
      * @param  array<string, mixed>  $eventData
      */
-    public function broadcastToAll(array $eventData): void
+    public function broadcastToAll(array $eventData, ?int $userId = null): void
     {
-        foreach ($this->connections as $entry) {
-            $entry['connection']->send([
-                'type' => 'event',
-                'data' => $eventData,
-            ]);
-        }
+        $this->deliver($this->connections, $eventData, $userId);
     }
 
     /**
@@ -245,13 +246,7 @@ class EventsHandler implements WebSocketHandler
             return;
         }
 
-        $user = User::find($entry['user_id']);
-        if (! $user) {
-            return;
-        }
-
-        $hasAccess = $user->allProjects()->where('projects.id', $newProjectId)->exists();
-        if (! $hasAccess) {
+        if ($this->authorizedUserIds([$entry['user_id']], $newProjectId) === []) {
             $entry['connection']->send([
                 'type' => 'error',
                 'message' => 'Unauthorized for project',
@@ -275,6 +270,64 @@ class EventsHandler implements WebSocketHandler
             'type' => 'subscribed',
             'project_id' => $newProjectId,
         ]);
+    }
+
+    /**
+     * Access is checked again on every delivery, so a removed member or a
+     * deleted user stops receiving events and is disconnected.
+     *
+     * @param  array<string, array{connection: WebSocketConnection, user_id: int, project_id: int}>  $entries
+     * @param  array<string, mixed>  $eventData
+     */
+    protected function deliver(array $entries, array $eventData, ?int $userId, ?int $projectId = null): void
+    {
+        if ($userId !== null) {
+            $entries = array_filter($entries, fn (array $entry): bool => $entry['user_id'] === $userId);
+        }
+
+        if ($entries === []) {
+            return;
+        }
+
+        $authorized = $this->authorizedUserIds(array_column($entries, 'user_id'), $projectId);
+
+        foreach ($entries as $connId => $entry) {
+            if (! in_array($entry['user_id'], $authorized, true)) {
+                $this->revoke($connId);
+
+                continue;
+            }
+
+            $entry['connection']->send([
+                'type' => 'event',
+                'data' => $eventData,
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<int>  $userIds
+     * @return array<int>
+     */
+    protected function authorizedUserIds(array $userIds, ?int $projectId): array
+    {
+        return User::query()
+            ->whereIn('id', array_unique($userIds))
+            ->when($projectId !== null, fn (Builder $query) => $query->whereHas(
+                'projects',
+                fn (Builder $query) => $query->where('projects.id', $projectId),
+            ))
+            ->pluck('id')
+            ->map(fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
+    protected function revoke(string $connId): void
+    {
+        $connection = $this->connections[$connId]['connection'];
+        $connection->send(['type' => 'error', 'message' => 'Access revoked']);
+        $this->onClose($connId);
+        $connection->close();
     }
 
     protected function userConnectionCount(int $userId): int

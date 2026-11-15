@@ -12,11 +12,13 @@ final readonly class SocketEventDTO
 
     /**
      * @param  array<string, mixed>|JsonResource  $data
+     * @param  ?int  $userId  When set, only this user's connections receive the event.
      */
     public function __construct(
         public int $projectId,
         public string $type,
         array|JsonResource $data,
+        public ?int $userId = null,
     ) {
         $this->data = $data instanceof JsonResource
             ? $data->resolve(new Request)
@@ -30,6 +32,7 @@ final readonly class SocketEventDTO
     {
         return [
             'project_id' => $this->projectId,
+            'user_id' => $this->userId,
             'type' => $this->type,
             'data' => $this->data,
         ];

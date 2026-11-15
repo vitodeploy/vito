@@ -2,11 +2,15 @@
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Enums\UserRole;
+use App\Models\Server;
 use App\Models\User;
 use App\WebSocket\TerminalHandler;
+use App\WebSocket\TerminalSession;
+use App\WebSocket\WebSocketConnection;
 use GuzzleHttp\Psr7\Request as PsrRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Mockery\MockInterface;
 use React\EventLoop\Loop;
 
 uses(RefreshDatabase::class);
@@ -446,4 +450,82 @@ test('unauthenticated user cannot generate token', function () {
     $this->post(route('console.token', $this->server), [
         'user' => $this->server->getSshUser(),
     ])->assertRedirect();
+});
+
+/**
+ * @return array{TerminalHandler, WebSocketConnection&object{sent: array<int, array<string, mixed>>, closed: bool}, TerminalSession&MockInterface}
+ */
+function vitoPestFeatureConsoleTestOpenTerminal(Server $server, User $user): array
+{
+    $handler = new TerminalHandler(Loop::get());
+    $connection = new class extends WebSocketConnection
+    {
+        /** @var array<int, array<string, mixed>> */
+        public array $sent = [];
+
+        public bool $closed = false;
+
+        public function __construct() {}
+
+        public function send(array $data): void
+        {
+            $this->sent[] = $data;
+        }
+
+        public function ping(): void
+        {
+            $this->sent[] = ['type' => 'ping'];
+        }
+
+        public function close(): void
+        {
+            $this->closed = true;
+        }
+    };
+    $session = Mockery::mock(TerminalSession::class);
+
+    (new ReflectionProperty($handler, 'connections'))->setValue($handler, [
+        'conn' => [
+            'connection' => $connection,
+            'session' => $session,
+            'server_id' => $server->id,
+            'user_id' => $user->id,
+            'ssh_user' => $server->getSshUser(),
+            'initial_cols' => 80,
+            'initial_rows' => 24,
+        ],
+    ]);
+
+    return [$handler, $connection, $session];
+}
+
+test('terminal input stops and the session closes once the user loses write access', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+
+    $session->shouldReceive('write')->once()->with('ls');
+    $session->shouldReceive('close')->once();
+
+    $handler->onMessage('conn', json_encode(['type' => 'input', 'data' => 'ls']));
+
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    $handler->onMessage('conn', json_encode(['type' => 'input', 'data' => 'rm -rf /']));
+
+    expect($connection->sent)->toBe([['type' => 'error', 'message' => 'Access revoked']])
+        ->and($connection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(0);
+});
+
+test('terminal ping closes an idle session once the user is removed from the project', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+    $session->shouldReceive('close')->once();
+
+    $handler->ping('conn');
+    expect($connection->sent)->toBe([['type' => 'ping']]);
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+    $handler->ping('conn');
+
+    expect(end($connection->sent))->toBe(['type' => 'error', 'message' => 'Access revoked'])
+        ->and($connection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(0);
 });

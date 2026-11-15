@@ -261,7 +261,8 @@ test('creating server provider dispatches socket event', function () {
     ])->assertSessionDoesntHaveErrors();
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.created'
-        && $event->data->data['name'] === 'hetty');
+        && $event->data->data['name'] === 'hetty'
+        && $event->data->userId === $this->user->id);
 });
 
 test('deleting server provider dispatches socket event', function () {
@@ -276,7 +277,8 @@ test('deleting server provider dispatches socket event', function () {
     $this->delete(route('server-providers.destroy', $serverProvider))->assertSessionDoesntHaveErrors();
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.deleted'
-        && $event->data->data['id'] === $serverProvider->id);
+        && $event->data->data['id'] === $serverProvider->id
+        && $event->data->userId === $this->user->id);
 });
 
 test('hetzner plans expose availability and order available first', function () {

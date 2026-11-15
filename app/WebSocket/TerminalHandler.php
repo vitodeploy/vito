@@ -121,6 +121,12 @@ class TerminalHandler implements WebSocketHandler
                 return;
             }
 
+            if (! $this->isAuthorized($entry['user_id'], $entry['server_id'])) {
+                $this->revoke($connId);
+
+                return;
+            }
+
             match ($data['type']) {
                 'input' => $entry['session']?->write($data['data'] ?? ''),
                 'resize' => $entry['session']?->resize(
@@ -146,9 +152,17 @@ class TerminalHandler implements WebSocketHandler
     public function ping(string $connId): void
     {
         $entry = $this->connections[$connId] ?? null;
-        if ($entry) {
-            $entry['connection']->ping();
+        if (! $entry) {
+            return;
         }
+
+        if (! $this->isAuthorized($entry['user_id'], $entry['server_id'])) {
+            $this->revoke($connId);
+
+            return;
+        }
+
+        $entry['connection']->ping();
     }
 
     public function getConnectionCount(): int
@@ -203,6 +217,26 @@ class TerminalHandler implements WebSocketHandler
             ]);
             $entry['connection']->close();
         }
+    }
+
+    /**
+     * Checked again before every message and on every ping,
+     * so a removed member or a deleted user loses an open terminal.
+     */
+    protected function isAuthorized(int $userId, int $serverId): bool
+    {
+        $server = Server::find($serverId);
+        $user = User::find($userId);
+
+        return $server && $user && Gate::forUser($user)->allows('update', $server);
+    }
+
+    protected function revoke(string $connId): void
+    {
+        $connection = $this->connections[$connId]['connection'];
+        $connection->send(['type' => 'error', 'message' => 'Access revoked']);
+        $this->onClose($connId);
+        $connection->close();
     }
 
     protected function userConnectionCount(int $userId): int

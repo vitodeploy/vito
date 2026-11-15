@@ -182,3 +182,26 @@ test('cannot execute script as user not on server', function () {
         'user' => 'example',
     ]);
 });
+
+test('execution history omits a server the owner can no longer view', function () {
+    $this->actingAs($this->user);
+    $script = Script::factory()->create(['user_id' => $this->user->id]);
+    ScriptExecution::factory()->create([
+        'script_id' => $script->id,
+        'server_id' => $this->server->id,
+        'status' => ScriptExecutionStatus::COMPLETED,
+    ]);
+
+    $this->get(route('scripts.show', $script))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('executions.data.0.server.id', $this->server->id)
+            ->where('script.last_execution.server.id', $this->server->id));
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+
+    $this->get(route('scripts.show', $script))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('executions.data.0.server')
+            ->missing('script.last_execution.server')
+            ->where('executions.data.0.server_id', $this->server->id));
+});

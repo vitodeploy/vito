@@ -6,6 +6,8 @@ import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import AppearanceToggleTab from '@/components/appearance-tabs';
 import { useBootstrapStore } from '@/stores/bootstrap-store';
+import { useSocketStore } from '@/stores/socket-store';
+import siteHelper from '@/lib/site-helper';
 
 interface UserMenuContentProps {
   user: User;
@@ -18,6 +20,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     cleanup();
     router.flushAll();
     useBootstrapStore.getState().clear();
+    useSocketStore.getState().disconnect();
+    siteHelper.storeSite();
   };
 
   return (
