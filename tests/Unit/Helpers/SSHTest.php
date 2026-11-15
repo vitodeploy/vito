@@ -52,8 +52,10 @@ test('write quotes the destination path', function () {
 });
 
 test('SFTP download streams chunks and detects incomplete transfers', function (bool $success, int $expectedSize) {
+    config()->set('core.backup_download_read_timeout', 45);
+
     $connection = Mockery::mock(SFTP::class);
-    $connection->shouldReceive('setTimeout')->once()->with(0);
+    $connection->shouldReceive('setTimeout')->once()->with(45);
     $connection->shouldReceive('get')->once()->with('/backup.sql.gz', Mockery::type('callable'))
         ->andReturnUsing(function (string $path, callable $onChunk) use ($success): bool {
             $onChunk('first');

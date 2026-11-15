@@ -76,6 +76,8 @@ Vito streams the existing archive to your browser over an authenticated request,
 
 Missing archives return a not-found error. Downloads include the archive's size so browsers can detect interrupted transfers. Changing a storage provider's path does not move existing archives; keep the path pointing at the archives you want to download.
 
+Local and SFTP downloads use a 60-second read timeout to stop stalled transfers. Set `BACKUP_DOWNLOAD_READ_TIMEOUT` in your Vito instance's `.env` file to adjust it. This timeout applies to each SFTP packet, not the total download duration; values below one second are treated as one second.
+
 :::warning
 Keep downloaded archives secure: database dumps and site file backups may contain personal data, credentials, and other sensitive information. Consider encrypting your off-server copies.
 :::

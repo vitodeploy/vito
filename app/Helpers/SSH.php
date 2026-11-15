@@ -331,7 +331,7 @@ class SSH
     public function streamDownload(string $remote, callable $onChunk, int $expectedSize): void
     {
         $sftp = $this->ensureSftp();
-        $sftp->setTimeout(0);
+        $sftp->setTimeout(max(1, (int) config('core.backup_download_read_timeout', 60)));
         $bytes = 0;
         $downloaded = $sftp->get($remote, static function (string $chunk) use ($onChunk, &$bytes): void {
             $bytes += strlen($chunk);
