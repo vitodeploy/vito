@@ -3,9 +3,9 @@
 use App\Exceptions\SSHCommandError;
 use App\Facades\SSH;
 use App\Helpers\SSH as SSHClient;
-use phpseclib3\Net\SSH2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use phpseclib3\Net\SSH2;
 
 uses(RefreshDatabase::class);
 
