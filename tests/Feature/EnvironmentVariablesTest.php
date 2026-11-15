@@ -231,7 +231,8 @@ test('import parses a long multiline value in one pass and bounds the content si
         ->and($this->environment->variables()->where('key', 'AFTER')->sole()->value)->toBe('ok');
 
     $started = microtime(true);
-    $this->postJson($this->url.'/preview', ['content' => "PEM=\"start\n".str_repeat("x\n", 120000).'end"'])->assertSessionHasNoErrors();
+    $this->post($this->url.'/preview', ['content' => "PEM=\"start\n".str_repeat("x\n", 120000).'end"'])
+        ->assertRedirect()->assertSessionHasNoErrors()->assertSessionHas('data.variables', [['key' => 'PEM', 'is_secret' => false]]);
     expect(microtime(true) - $started)->toBeLessThan(5);
 
     $this->postJson($this->url.'/preview', ['content' => 'A='.str_repeat('a', 262144)])->assertUnprocessable()->assertJsonValidationErrors('content');
