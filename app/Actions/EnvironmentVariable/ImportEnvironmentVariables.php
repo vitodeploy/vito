@@ -66,8 +66,7 @@ class ImportEnvironmentVariables
     }
 
     /**
-     * Group the lines into entries once (as phpdotenv does) and parse each
-     * entry on its own, so a long quoted value is never re-parsed per line.
+     * Parse each entry once, so a long quoted value is never re-parsed per line.
      *
      * @return array<string, string>
      *
@@ -87,12 +86,7 @@ class ImportEnvironmentVariables
         }
 
         $variables = [];
-        $next = 0;
-        foreach (Lines::process($lines) as $raw) {
-            $next = $this->skipBlank($lines, $next);
-            $start = $next + 1;
-            $next += substr_count($raw, "\n") + 1;
-
+        foreach ($this->entries($lines) as $start => $raw) {
             $result = EntryParser::parse($raw);
             if ($result->error()->isDefined()) {
                 throw ValidationException::withMessages(['content' => "Invalid env file at line {$start}."]);
@@ -108,23 +102,51 @@ class ImportEnvironmentVariables
             $variables[$key] = $entry->getValue()->isDefined() ? $entry->getValue()->get()->getChars() : '';
         }
 
-        $next = $this->skipBlank($lines, $next);
-        if ($next < count($lines)) {
-            throw ValidationException::withMessages(['content' => 'Unclosed quoted value at line '.($next + 1).'.']);
-        }
-
         return $variables;
     }
 
     /**
+     * Group lines into raw entries keyed by their first line number, using
+     * phpdotenv's own rules one line at a time: `Lines::process([$line])` is
+     * empty when a line opens a quoted value, and `Lines::process(['A="', $line])`
+     * is not empty when a line closes one. phpdotenv's own grouping copies the
+     * open buffer for every line, which is quadratic for long values.
+     *
      * @param  list<string>  $lines
+     * @return array<int, string>
+     *
+     * @throws ValidationException
      */
-    private function skipBlank(array $lines, int $index): int
+    private function entries(array $lines): array
     {
-        while (isset($lines[$index]) && (trim($lines[$index]) === '' || str_starts_with(trim($lines[$index]), '#'))) {
-            $index++;
+        $entries = [];
+        $open = null;
+        $start = 0;
+        foreach ($lines as $index => $line) {
+            if ($open !== null) {
+                $open[] = $line;
+                if (Lines::process(['A="', $line]) !== []) {
+                    $entries[$start] = implode("\n", $open);
+                    $open = null;
+                }
+
+                continue;
+            }
+            if (trim($line) === '' || str_starts_with(trim($line), '#')) {
+                continue;
+            }
+            if (Lines::process([$line]) === []) {
+                [$open, $start] = [[$line], $index + 1];
+
+                continue;
+            }
+            $entries[$index + 1] = $line;
         }
 
-        return $index;
+        if ($open !== null) {
+            throw ValidationException::withMessages(['content' => "Unclosed quoted value at line {$start}."]);
+        }
+
+        return $entries;
     }
 }
