@@ -7,8 +7,8 @@ use App\Helpers\EnvParser;
 use App\Models\Application;
 use App\Models\Environment;
 use App\Models\EnvironmentVariable;
-use Dotenv\Exception\InvalidFileException;
-use Dotenv\Parser\Parser;
+use Dotenv\Parser\EntryParser;
+use Dotenv\Parser\Lines;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -16,6 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 class ImportEnvironmentVariables
 {
+    private const MAX_CONTENT = 262144;
+
     /**
      * @return list<array{key: string, is_secret: bool}>
      */
@@ -64,51 +66,87 @@ class ImportEnvironmentVariables
     }
 
     /**
+     * Parse each entry once, so a long quoted value is never re-parsed per line.
+     *
      * @return array<string, string>
+     *
+     * @throws ValidationException
      */
     private function parse(string $content): array
     {
-        $variables = [];
-        $buffer = '';
-        $start = 1;
-        $parser = new Parser;
+        if (strlen($content) > self::MAX_CONTENT) {
+            throw ValidationException::withMessages(['content' => 'The env file can be at most '.self::MAX_CONTENT.' bytes.']);
+        }
 
-        foreach (explode("\n", str_replace(["\r\n", "\r"], "\n", $content)) as $index => $line) {
+        $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
+        foreach ($lines as $index => $line) {
             if (str_contains($line, "\0")) {
                 throw ValidationException::withMessages(['content' => 'Invalid env file at line '.($index + 1).'.']);
             }
-            if ($buffer === '') {
-                $start = $index + 1;
-                if (trim($line) === '' || str_starts_with(ltrim($line), '#')) {
-                    continue;
-                }
-            }
-            $buffer .= ($buffer === '' ? '' : "\n").$line;
+        }
 
-            try {
-                $entries = $parser->parse($buffer);
-            } catch (InvalidFileException) {
+        $variables = [];
+        foreach ($this->entries($lines) as $start => $raw) {
+            $result = EntryParser::parse($raw);
+            if ($result->error()->isDefined()) {
                 throw ValidationException::withMessages(['content' => "Invalid env file at line {$start}."]);
             }
-            if ($entries === []) {
-                continue;
+            $entry = $result->success()->get();
+            $key = $entry->getName();
+            if (preg_match('/\A[A-Z_][A-Z0-9_]*\z/', $key) !== 1 || strlen($key) > 255 || array_key_exists($key, $variables)) {
+                throw ValidationException::withMessages(['content' => "Invalid or duplicate variable key at line {$start}."]);
             }
-            foreach ($entries as $entry) {
-                $key = $entry->getName();
-                if (preg_match('/\A[A-Z_][A-Z0-9_]*\z/', $key) !== 1 || strlen($key) > 255 || array_key_exists($key, $variables)) {
-                    throw ValidationException::withMessages(['content' => "Invalid or duplicate variable key at line {$start}."]);
-                }
-                if (preg_match('/'.EnvironmentVariable::RESERVED_KEY_PATTERN.'/', $key) === 1) {
-                    throw ValidationException::withMessages(['content' => "Reserved command shell key at line {$start}."]);
-                }
-                $variables[$key] = $entry->getValue()->isDefined() ? $entry->getValue()->get()->getChars() : '';
+            if (preg_match('/'.EnvironmentVariable::RESERVED_KEY_PATTERN.'/', $key) === 1) {
+                throw ValidationException::withMessages(['content' => "Reserved command shell key at line {$start}."]);
             }
-            $buffer = '';
-        }
-        if ($buffer !== '') {
-            throw ValidationException::withMessages(['content' => "Unclosed quoted value at line {$start}."]);
+            $variables[$key] = $entry->getValue()->isDefined() ? $entry->getValue()->get()->getChars() : '';
         }
 
         return $variables;
+    }
+
+    /**
+     * Group lines into raw entries keyed by their first line number, using
+     * phpdotenv's own rules one line at a time: `Lines::process([$line])` is
+     * empty when a line opens a quoted value, and `Lines::process(['A="', $line])`
+     * is not empty when a line closes one. phpdotenv's own grouping copies the
+     * open buffer for every line, which is quadratic for long values.
+     *
+     * @param  list<string>  $lines
+     * @return array<int, string>
+     *
+     * @throws ValidationException
+     */
+    private function entries(array $lines): array
+    {
+        $entries = [];
+        $open = null;
+        $start = 0;
+        foreach ($lines as $index => $line) {
+            if ($open !== null) {
+                $open[] = $line;
+                if (Lines::process(['A="', $line]) !== []) {
+                    $entries[$start] = implode("\n", $open);
+                    $open = null;
+                }
+
+                continue;
+            }
+            if (trim($line) === '' || str_starts_with(trim($line), '#')) {
+                continue;
+            }
+            if (Lines::process([$line]) === []) {
+                [$open, $start] = [[$line], $index + 1];
+
+                continue;
+            }
+            $entries[$index + 1] = $line;
+        }
+
+        if ($open !== null) {
+            throw ValidationException::withMessages(['content' => "Unclosed quoted value at line {$start}."]);
+        }
+
+        return $entries;
     }
 }

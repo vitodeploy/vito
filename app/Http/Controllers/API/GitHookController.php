@@ -9,7 +9,8 @@ use App\Exceptions\FailedToDestroyGitHook;
 use App\Http\Controllers\Controller;
 use App\Models\GitHook;
 use App\Models\ServerLog;
-use App\Models\SourceControl;
+use App\SourceControlProviders\AbstractSourceControlProvider;
+use App\SourceControlProviders\SupportsApplications;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -50,11 +51,15 @@ class GitHookController extends Controller
             ]);
         }
 
+        $provider = $gitHook->site->sourceControl?->provider();
+        $pushedBranches = match (true) {
+            $provider instanceof AbstractSourceControlProvider, $provider instanceof SupportsApplications => $provider->getPushBranches($request->array()),
+            $provider !== null => [$provider->getWebhookBranch($request->array())],
+            default => [],
+        };
+
         foreach ($gitHook->actions as $action) {
-            /** @var SourceControl $sourceControl */
-            $sourceControl = $gitHook->site->sourceControl;
-            $webhookBranch = $sourceControl->provider()->getWebhookBranch($request->array());
-            if ($action == 'deploy' && $gitHook->site->branch === $webhookBranch) {
+            if ($action == 'deploy' && in_array($gitHook->site->branch, $pushedBranches, true)) {
                 try {
                     app(Deploy::class)->run($gitHook->site);
                 } catch (Throwable $e) {

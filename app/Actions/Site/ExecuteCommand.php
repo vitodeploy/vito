@@ -26,6 +26,8 @@ class ExecuteCommand
             }
         }
 
+        substitute_variables($command->command, $variables);
+
         $execution = new CommandExecution([
             'command_id' => $command->id,
             'server_id' => $command->site->server_id,

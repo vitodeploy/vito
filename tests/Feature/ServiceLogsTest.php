@@ -136,6 +136,7 @@ test('read journal source uses journalctl', function () {
     ])->assertSuccessful();
 
     SSH::assertExecutedContains("journalctl -u 'mysql.service'");
+    SSH::assertExecutedContains('2>/dev/null | tail -c 1048576');
 });
 
 test('read rejects lines above max', function () {
@@ -181,6 +182,16 @@ test('clear truncates file source', function () {
     SSH::assertExecutedContains('/var/log/nginx/error.log');
 });
 
+test('log content cut inside a multibyte character is returned as valid utf-8', function () {
+    $this->actingAs($this->user);
+    SSH::fake("\xA9 partial first line\nsecond line");
+
+    $response = $this->postJson(route('logs.services.read', $this->server), ['key' => 'php:8.2:user:vito'])->assertSuccessful();
+
+    expect(mb_check_encoding($response->json('content'), 'UTF-8'))->toBeTrue()
+        ->and($response->json('content'))->toEndWith("partial first line\nsecond line");
+});
+
 test('user owned log files are read and cleared as their owner', function () {
     $this->actingAs($this->user);
     SSH::fake('php-error-output');
@@ -189,14 +200,14 @@ test('user owned log files are read and cleared as their owner', function () {
         'key' => 'php:8.2:user:vito',
     ])->assertSuccessful();
 
-    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100 '/home/vito/.logs/php_errors.log'");
+    SSH::assertExecutedContains("sudo -u 'vito' tail -c 1048576 '/home/vito/.logs/php_errors.log' | tail -n 100");
 
     $this->postJson(route('logs.services.read', $this->server), [
         'key' => 'php:8.2:user:vito',
         'search' => 'error',
     ])->assertSuccessful();
 
-    SSH::assertExecutedContains("sudo -u 'vito' tail -n 100000 '/home/vito/.logs/php_errors.log'");
+    SSH::assertExecutedContains("sudo -u 'vito' tail -c 16777216 '/home/vito/.logs/php_errors.log'");
 
     $this->post(route('logs.services.clear', $this->server), [
         'key' => 'php:8.2:user:vito',

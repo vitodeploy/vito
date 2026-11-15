@@ -5,6 +5,7 @@ namespace App\Actions\Site;
 use App\Exceptions\SSHError;
 use App\Helpers\EnvParser;
 use App\Models\Site;
+use App\SSH\OS\OS;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -19,11 +20,13 @@ class UpdateEnv
     public function update(Site $site, array $input): void
     {
         Validator::make($input, [
-            'env' => ['nullable', 'string'],
-            'variables' => ['nullable', 'array', 'min:1'],
-            'variables.*.key' => ['required_with:variables', 'string'],
-            'variables.*.value' => ['nullable', 'string'],
+            'env' => ['nullable', 'string', 'max:'.OS::READ_LIMIT],
+            'variables' => ['nullable', 'array', 'min:1', 'max:1000'],
+            'variables.*.key' => ['required_with:variables', 'string', 'max:255', EnvParser::KEY_RULE],
+            'variables.*.value' => ['nullable', 'string', 'max:'.OS::READ_LIMIT],
             'variables.*.is_secret' => ['nullable', 'boolean'],
+            'secret_keys' => ['nullable', 'array', 'max:1000'],
+            'secret_keys.*' => ['string', 'max:255'],
             'path' => ['nullable', 'string'],
         ])->validate();
 
@@ -50,11 +53,14 @@ class UpdateEnv
 
         $variables = $this->resolveVariables($site, $input, $path, $hasVariables);
 
-        $site->server->os()->write(
-            $path,
-            $hasVariables ? EnvParser::stringify($variables) : trim((string) ($input['env'] ?? null)),
-            $site->user,
-        );
+        $content = $hasVariables ? EnvParser::stringify($variables) : trim((string) ($input['env'] ?? null));
+        if (strlen($content) > OS::READ_LIMIT) {
+            throw ValidationException::withMessages([
+                'env' => __('The .env file can be at most :bytes bytes.', ['bytes' => OS::READ_LIMIT]),
+            ]);
+        }
+
+        $site->server->os()->write($path, $content, $site->user);
 
         $site->env_variables = $this->secretKeys($variables);
         $site->jsonUpdate('type_data', 'env_path', $path, save: false);
@@ -73,9 +79,10 @@ class UpdateEnv
      * which is honoured because a real value is supplied.
      *
      * The raw-text path has no per-field secret toggle, so existing secret
-     * classifications are carried over and newly introduced keys fall back to
-     * pattern auto-detection. No secret restoration is performed on that path,
-     * so callers must supply real values.
+     * classifications are carried over, keys listed in `secret_keys` (secret
+     * toggles made before switching to raw text) are added, and other new keys
+     * fall back to pattern auto-detection. No secret restoration is performed
+     * on that path, so callers must supply real values.
      *
      * @param  array<string, mixed>  $input
      * @return array<int, array{key: string, value: string, is_secret: bool}>
@@ -110,6 +117,8 @@ class UpdateEnv
 
             return EnvParser::mergeWithLive($incoming, $live);
         }
+
+        $secretKeys += array_flip($input['secret_keys'] ?? []);
 
         return array_map(function ($variable) use ($secretKeys) {
             $variable['is_secret'] = $variable['is_secret'] || isset($secretKeys[$variable['key']]);

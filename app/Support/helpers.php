@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ProcessUtils;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 use function Illuminate\Support\php_binary;
@@ -106,66 +107,49 @@ function get_public_key_content(): string
 }
 
 /**
- * Credit: https://gist.github.com/lorenzos/1711e81a9162320fde20
+ * Return the last lines of a file, reading at most $maxBytes from its end.
  */
-function tail(string $filepath, int $lines = 1, bool $adaptive = true): string
+function tail(string $filepath, int $lines = 1, int $maxBytes = 1048576): string
 {
-    // Open file
     $f = @fopen($filepath, 'rb');
     if ($f === false) {
         return '';
     }
 
-    // Sets buffer size, according to the number of lines to retrieve.
-    // This gives a performance boost when reading a few lines from the file.
-    if (! $adaptive) {
-        $buffer = 4096;
-    } else {
-        $buffer = ($lines < 2 ? 64 : ($lines < 10 ? 512 : 4096));
-    }
-
-    // Jump to last character
-    fseek($f, -1, SEEK_END);
-
-    // Read it and adjust line number if necessary
-    // (Otherwise the result would be wrong if file doesn't end with a blank line)
-    if (fread($f, 1) != "\n") {
-        $lines -= 1;
-    }
-
-    // Start reading
-    $output = '';
-    $chunk = '';
-
-    // While we would like more
-    while (ftell($f) > 0 && $lines >= 0) {
-        // Figure out how far back we should jump
-        $seek = min(ftell($f), $buffer);
-
-        // Do the jump (backwards, relative to where we are)
-        fseek($f, -$seek, SEEK_CUR);
-
-        // Read a chunk and prepend it to our output
-        $output = ($chunk = fread($f, $seek)).$output;
-
-        // Jump back to where we started reading
-        fseek($f, -mb_strlen($chunk !== false ? $chunk : '', '8bit'), SEEK_CUR);
-
-        // Decrease our line counter
-        $lines -= substr_count($chunk !== false ? $chunk : '', "\n");
-    }
-
-    // While we have too many lines
-    // (Because of buffer size we might have read too many)
-    while ($lines++ < 0) {
-        // Find first newline and remove all text before that
-        $output = substr($output, strpos($output, "\n") + 1);
-    }
-
-    // Close file and return
+    $maxBytes = max(1, $maxBytes);
+    fseek($f, -min($maxBytes, (int) fstat($f)['size']), SEEK_END);
+    $content = (string) stream_get_contents($f, $maxBytes);
     fclose($f);
 
-    return trim($output);
+    return trim(implode("\n", array_slice(explode("\n", rtrim($content, "\n")), -max(1, $lines))));
+}
+
+/**
+ * Replace ${name} placeholders in one pass, so text a value inserts is never
+ * expanded again, and refuse results larger than $limit bytes before building
+ * them.
+ *
+ * @param  array<array-key, mixed>  $variables
+ *
+ * @throws ValidationException
+ */
+function substitute_variables(string $content, array $variables, int $limit = 1048576): string
+{
+    $replacements = [];
+    $length = strlen($content);
+    foreach ($variables as $variable => $value) {
+        if (is_string($value) && $value !== '' && $value !== '0') {
+            $placeholder = '${'.$variable.'}';
+            $replacements[$placeholder] = $value;
+            $length += substr_count($content, $placeholder) * max(0, strlen($value) - strlen($placeholder));
+        }
+    }
+
+    if ($length > $limit) {
+        throw ValidationException::withMessages(['variables' => 'The content is too large once its variables are filled in.']);
+    }
+
+    return strtr($content, $replacements);
 }
 
 function get_from_route(string $modelName, string $routeKey): mixed
@@ -243,7 +227,7 @@ function format_webserver_config(string $config): string
             }
         }
 
-        $formattedLines[] = str_repeat('    ', max(0, $indent)).$trimmed;
+        $formattedLines[] = str_repeat('    ', min(max(0, $indent), 32)).$trimmed;
 
         if (str_ends_with($trimmed, '{')) {
             $indent++;

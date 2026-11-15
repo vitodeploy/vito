@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Database\Factories\ScriptExecutionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property int $id
@@ -52,16 +53,12 @@ class ScriptExecution extends AbstractModel
         return $this->belongsTo(Script::class);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function getContent(): string
     {
-        $content = $this->script->content;
-        foreach ($this->variables as $variable => $value) {
-            if (is_string($value) && ($value !== '' && $value !== '0')) {
-                $content = str_replace('${'.$variable.'}', $value, $content);
-            }
-        }
-
-        return $content;
+        return substitute_variables($this->script->content, $this->variables);
     }
 
     /**

@@ -15,7 +15,7 @@ class StringifyEnv
     {
         Validator::make($input, [
             'variables' => ['present', 'array', 'max:1000'],
-            'variables.*.key' => ['required', 'string'],
+            'variables.*.key' => ['required', 'string', 'max:255', EnvParser::KEY_RULE],
             'variables.*.value' => ['nullable', 'string'],
         ])->validate();
 
