@@ -116,7 +116,7 @@ function tail(string $filepath, int $lines = 1, int $maxBytes = 1048576): string
         return '';
     }
 
-    fseek($f, -min($maxBytes, (int) fstat($f)['size']), SEEK_END);
+    fseek($f, -min(max(1, $maxBytes), (int) fstat($f)['size']), SEEK_END);
     $content = (string) stream_get_contents($f);
     fclose($f);
 

@@ -42,7 +42,7 @@ properties:
                   description: 'Saved action inputs. Values are returned as empty strings unless the caller can edit the workflow with a session or a token that has the `write` ability, because inputs can hold credentials.'
                   example:
                     server_id: '{server_id}'
-                    password: ''
+                    password: 'db-password'
   edges:
     type: array
     description: 'Workflow edges configuration'
@@ -62,23 +62,11 @@ properties:
               type: string
               example: 'success'
   run_inputs:
-    type: array
-    description: 'Inputs required for running the workflow. Values are masked the same way as node inputs.'
-    items:
-      type: object
-      properties:
-        name:
-          type: string
-          example: 'branch'
-        type:
-          type: string
-          example: 'string'
-        required:
-          type: boolean
-          example: true
-        description:
-          type: string
-          example: 'Git branch to deploy'
+    type: object
+    additionalProperties: true
+    description: 'Inputs of the starting action, used to pre-fill a run. Values are masked the same way as node inputs.'
+    example:
+      server_id: '1'
   created_at:
     type: string
     format: date-time

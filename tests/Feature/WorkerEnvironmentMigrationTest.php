@@ -68,6 +68,8 @@ test('repair marks migrated credential urls secret and keeps other choices', fun
         'environment' => [
             ['key' => 'REDIS_URL', 'value' => 'redis://cache:6379', 'is_secret' => false],
             ['key' => 'UPSTREAM', 'value' => 'https://user:pass@example.com/hook', 'is_secret' => false],
+            ['key' => 'DB_PWD', 'value' => 'plain', 'is_secret' => false],
+            ['key' => 'HOOK', 'value' => 'https://token@example.com', 'is_secret' => false],
             ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
         ],
     ]);
@@ -83,6 +85,8 @@ test('repair marks migrated credential urls secret and keeps other choices', fun
     expect(Worker::query()->findOrFail($worker->id)->environment)->toBe([
         ['key' => 'REDIS_URL', 'value' => 'redis://cache:6379', 'is_secret' => true],
         ['key' => 'UPSTREAM', 'value' => 'https://user:pass@example.com/hook', 'is_secret' => true],
+        ['key' => 'DB_PWD', 'value' => 'plain', 'is_secret' => true],
+        ['key' => 'HOOK', 'value' => 'https://token@example.com', 'is_secret' => true],
         ['key' => 'NODE_ENV', 'value' => 'production', 'is_secret' => false],
     ])->and((string) DB::table('workers')->where('id', $untouched->id)->value('environment'))->toBe($before);
 });

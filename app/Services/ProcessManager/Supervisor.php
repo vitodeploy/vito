@@ -63,7 +63,7 @@ class Supervisor extends AbstractProcessManager implements HasLogs
     public static function formatEnvironment(array $environment): string
     {
         return collect($environment)
-            ->filter(fn (string $value, string $key): bool => preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $key) === 1)
+            ->filter(fn (string $value, string $key): bool => preg_match('/\A[A-Za-z_][A-Za-z0-9_]*\z/', $key) === 1)
             ->map(function (string $value, string $key): string {
                 $sanitized = str_replace(["\r", "\n", '"'], '', $value);
 

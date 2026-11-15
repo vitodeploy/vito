@@ -28,14 +28,14 @@ class ExecuteScript
             }
         }
 
-        substitute_variables($script->content, $variables);
-
         /** @var Server $server */
         $server = Server::query()->findOrFail($input['server']);
 
         if (! $user->can('update', $server)) {
             abort(403, 'You do not have permission to execute scripts on this server.');
         }
+
+        substitute_variables($script->content, $variables);
 
         $execution = new ScriptExecution([
             'script_id' => $script->id,

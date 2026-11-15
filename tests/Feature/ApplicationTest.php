@@ -1565,6 +1565,15 @@ test('stringify env requires variables', function () {
     ]), [])->assertSessionHasErrors('variables');
 });
 
+test('read only members get no variables for an env file with a bare carriage return', function () {
+    SSH::fake("APP_NAME=TestApp\rDB_PASSWORD=hunter2-secret");
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+    vitoPestFeatureApplicationTestMakeUserReadOnly();
+
+    $this->actingAs($this->user)->getJson(route('application.env', ['server' => $this->server, 'site' => $this->site]))
+        ->assertOk()->assertJsonPath('variables', [])->assertDontSee('hunter2-secret');
+});
+
 test('read only members get no variables for an env file the parser cannot represent', function () {
     SSH::fake("APP_NAME=TestApp\nDB_PASSWORD=\"first-part\nLEAKED=second-part-of-secret\"");
     $this->site->update(['env_variables' => ['DB_PASSWORD']]);

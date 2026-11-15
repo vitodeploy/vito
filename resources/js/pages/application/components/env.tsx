@@ -113,7 +113,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       form.transform(() => ({
         env: rawContent,
         path: committedPath,
-        secret_keys: variables.filter((v) => v.isSecret).map((v) => v.key),
+        secret_keys: [...new Set(variables.filter((v) => v.isSecret).map((v) => v.key.trim()))].filter(Boolean),
       }));
     } else {
       form.transform(() => ({
@@ -430,9 +430,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                 ))}
                 {variables.length === 0 && (
                   <p className="text-muted-foreground text-sm">
-                    {canEdit
+                    {canEdit === true
                       ? 'This file has no variables. Add one below, or use Classic mode to save it empty.'
-                      : 'This file has no variables that can be shown here.'}
+                      : 'This file has no variables, or its content cannot be shown as variables.'}
                   </p>
                 )}
                 <Button type="button" variant="outline" className="w-full" onClick={handleAddVariable}>

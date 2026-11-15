@@ -291,4 +291,20 @@ test('workflow action inputs are masked for members who cannot edit the workflow
     if ($masked) {
         $response->assertDontSee('db-secret-value');
     }
+    if ($via === 'web') {
+        $index = $this->get(route('workflows'))->assertSuccessful();
+        $role === UserRole::USER ? $index->assertDontSee('db-secret-value') : $index->assertSee('db-secret-value');
+    }
 })->with(['web', 'read-token', 'write-token'])->with([UserRole::USER, null]);
+
+test('workflow saves reject nodes and edges with non string ids', function (array $nodes, array $edges) {
+    $this->actingAs($this->user);
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+
+    $this->put(route('workflows.update', $workflow), ['name' => 'Bad', 'nodes' => $nodes, 'edges' => $edges])
+        ->assertRedirect()->assertSessionHas('error');
+    expect($workflow->fresh()->payload)->toBeNull();
+})->with([
+    'array node id' => [[['id' => ['x'], 'data' => ['action' => ['starting' => true]]]], []],
+    'array edge target' => [[vitoPestFeatureWorkflowTestNode('a', true)], [['source' => 'a', 'target' => ['a']]]],
+]);

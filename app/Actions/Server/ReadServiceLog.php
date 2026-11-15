@@ -46,7 +46,7 @@ class ReadServiceLog
                 'term' => $search,
                 'user' => $log->user,
                 'lines' => $lines,
-                'scanBytes' => 16 * OS::READ_LIMIT,
+                'scanBytes' => OS::SCAN_LIMIT,
                 'bytes' => OS::READ_LIMIT,
             ]));
         } else {

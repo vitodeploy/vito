@@ -16,7 +16,9 @@ class OS
 
     public const KEY_READ_LIMIT = 16384;
 
-    private const SHELL_IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]*$/';
+    public const SCAN_LIMIT = 16777216;
+
+    private const SHELL_IDENTIFIER = '/\A[A-Za-z_][A-Za-z0-9_]*\z/';
 
     public function __construct(protected Server $server) {}
 

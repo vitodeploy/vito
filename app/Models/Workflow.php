@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -108,6 +109,21 @@ class Workflow extends Model
     }
 
     /**
+     * Action inputs can hold credentials (database or admin passwords, HTTP
+     * headers), so their values are blanked unless the user may reveal them.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function visibleInputs(mixed $inputs, ?User $user): array
+    {
+        if ($user?->can('revealInputs', $this) === true) {
+            return is_array($inputs) ? $inputs : [];
+        }
+
+        return is_array($inputs) ? array_map(fn (): string => '', $inputs) : [];
+    }
+
+    /**
      * @throws ValidationException
      */
     public function getExecutionTree(): ?WorkflowActionDTO
@@ -131,7 +147,7 @@ class Workflow extends Model
      * own ancestors is a cycle and is rejected.
      *
      * @param  array<string, array<string, mixed>>  $nodes
-     * @param  array<string, \Illuminate\Support\Collection<int, array<string, mixed>>>  $edges
+     * @param  array<string, SupportCollection<int, array<string, mixed>>>  $edges
      * @param  array<string, WorkflowActionDTO>  $built
      * @param  array<string, true>  $ancestors
      *

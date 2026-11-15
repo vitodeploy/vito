@@ -100,6 +100,10 @@ class EnvParser
      */
     public static function isRepresentable(string $content, array $variables): bool
     {
+        if (preg_match('/\r(?!\n)/', $content) === 1) {
+            return false;
+        }
+
         $shapeOk = collect(explode("\n", $content))
             ->map(fn (string $line): string => trim($line))
             ->every(function (string $line): bool {

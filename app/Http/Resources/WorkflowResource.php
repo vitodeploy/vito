@@ -11,47 +11,30 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class WorkflowResource extends JsonResource
 {
     /**
-     * Action inputs can hold credentials (database or admin passwords, HTTP
-     * headers), so their values are blanked unless the caller may reveal them.
-     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
         /** @var WorkflowActionDTO|null $startingNode */
         $startingNode = $this->getStartingNode();
-        $reveal = $request->user()?->can('revealInputs', $this->resource) === true;
-        $nodes = $this->payload['nodes'] ?? [];
-
-        if (! $reveal) {
-            $nodes = array_map(function (mixed $node): mixed {
-                if (is_array(data_get($node, 'data.action.inputs'))) {
-                    data_set($node, 'data.action.inputs', $this->mask($node['data']['action']['inputs']));
-                }
-
-                return $node;
-            }, $nodes);
-        }
+        $user = $request->user();
 
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
             'user_id' => $this->user_id,
             'name' => $this->name,
-            'nodes' => $nodes,
+            'nodes' => array_map(function (mixed $node) use ($user): mixed {
+                if (is_array($node) && data_get($node, 'data.action') !== null) {
+                    data_set($node, 'data.action.inputs', $this->visibleInputs(data_get($node, 'data.action.inputs'), $user));
+                }
+
+                return $node;
+            }, $this->payload['nodes'] ?? []),
             'edges' => $this->payload['edges'] ?? [],
-            'run_inputs' => $reveal ? ($startingNode->inputs ?? []) : $this->mask($startingNode->inputs ?? []),
+            'run_inputs' => $this->visibleInputs($startingNode->inputs ?? [], $user),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $inputs
-     * @return array<array-key, string>
-     */
-    private function mask(array $inputs): array
-    {
-        return array_map(fn (): string => '', $inputs);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Actions\Site;
 use App\Exceptions\SSHError;
 use App\Helpers\EnvParser;
 use App\Models\Site;
+use App\SSH\OS\OS;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -19,13 +20,13 @@ class UpdateEnv
     public function update(Site $site, array $input): void
     {
         Validator::make($input, [
-            'env' => ['nullable', 'string'],
-            'variables' => ['nullable', 'array', 'min:1'],
+            'env' => ['nullable', 'string', 'max:'.OS::READ_LIMIT],
+            'variables' => ['nullable', 'array', 'min:1', 'max:1000'],
             'variables.*.key' => ['required_with:variables', 'string', 'max:255', EnvParser::KEY_RULE],
-            'variables.*.value' => ['nullable', 'string'],
+            'variables.*.value' => ['nullable', 'string', 'max:'.OS::READ_LIMIT],
             'variables.*.is_secret' => ['nullable', 'boolean'],
-            'secret_keys' => ['nullable', 'array'],
-            'secret_keys.*' => ['string'],
+            'secret_keys' => ['nullable', 'array', 'max:1000'],
+            'secret_keys.*' => ['string', 'max:255', EnvParser::KEY_RULE],
             'path' => ['nullable', 'string'],
         ])->validate();
 
