@@ -50,9 +50,6 @@ class S3 extends AbstractStorageProvider
     }
 
     /**
-     * Build the configuration array for the S3 client.
-     * This method can be overridden by child classes to modify the configuration.
-     *
      * @param  array<string, mixed>|null  $credentials
      * @return array<string, mixed>
      */
@@ -109,7 +106,7 @@ class S3 extends AbstractStorageProvider
             DynamicField::make('secret')
                 ->passwordWithToggle()
                 ->label('Secret Key')
-                ->description('Leave empty to keep the current secret key'),
+                ->description('Leave empty to keep the current secret key. Required when changing the API URL or region.'),
             DynamicField::make('region')
                 ->text()
                 ->label('Region'),
@@ -130,6 +127,11 @@ class S3 extends AbstractStorageProvider
     protected function secretFields(): array
     {
         return ['secret'];
+    }
+
+    protected function secretDestinationFields(): array
+    {
+        return ['api_url', 'region'];
     }
 
     public function connect(array $credentials): bool

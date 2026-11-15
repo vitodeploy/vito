@@ -108,9 +108,7 @@ export default function CreateDatabase({
           onDatabaseCreated();
         }
       },
-      onError: () => {
-        // Handle error if needed
-      },
+      onError: () => {},
     });
   };
 

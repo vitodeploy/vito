@@ -87,10 +87,10 @@ test('webhook deployment failed links to logs with error level', function () {
 test('project invitation renders accept url', function () {
     $project = Project::factory()->create();
 
-    $html = (new ProjectInvitation($project))->render();
+    $html = (new ProjectInvitation($project, 'invite-token'))->render();
 
     $this->assertStringContainsString(
-        route('projects.invitations.accept', ['project' => $project]),
+        route('projects.invitations.show', ['project' => $project, 'token' => 'invite-token']),
         $html
     );
     $this->assertStringContainsString('email/logo.png', $html);

@@ -1,5 +1,6 @@
 @if(! empty($search))
-sudo journalctl -u {!! escapeshellarg($unit) !!} --since '7 days ago' --no-pager --output=short-iso 2>/dev/null | grep -F -i -- {!! escapeshellarg($search) !!} | tail -n {{ (int) $lines }}
+sudo journalctl -u {!! escapeshellarg($unit) !!} --since '7 days ago' --no-pager --output=short-iso 2>/dev/null | grep -F -i -- {!! escapeshellarg($search) !!} | tail -n {{ (int) $lines }} | tail -c {{ (int) $bytes }}
 @else
-sudo journalctl -u {!! escapeshellarg($unit) !!} -n {{ (int) $lines }} --no-pager --output=short-iso 2>/dev/null
+set -o pipefail
+sudo journalctl -u {!! escapeshellarg($unit) !!} -n {{ (int) $lines }} --no-pager --output=short-iso 2>/dev/null | tail -c {{ (int) $bytes }}
 @endif

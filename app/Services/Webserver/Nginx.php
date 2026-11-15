@@ -5,6 +5,7 @@ namespace App\Services\Webserver;
 use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\DTOs\ServiceLog;
+use App\Enums\ComponentType;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -86,8 +87,6 @@ class Nginx extends AbstractWebserver implements HasLogs
      */
     public function createVHost(Site $site): void
     {
-        // We need to get the isolated user first, if the site is isolated
-        // otherwise, use the default ssh user
         $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(
@@ -307,6 +306,22 @@ class Nginx extends AbstractWebserver implements HasLogs
                 source: ServiceLog::SOURCE_FILE,
                 target: '/var/log/nginx/'.$site->domain.'-error.log',
             );
+        }
+
+        $this->service->server->loadMissing('components.capabilities');
+        foreach ($this->service->server->components->sortBy('id') as $component) {
+            if ($component->type !== ComponentType::LOAD_BALANCER && ! $component->capabilities->contains('capability', 'web')) {
+                continue;
+            }
+            foreach (['access', 'error'] as $type) {
+                $logs[] = new ServiceLog(
+                    key: 'nginx:component:'.$component->id.':'.$type,
+                    serviceLabel: 'NGINX',
+                    label: $component->name.' '.$type.' log (component #'.$component->id.')',
+                    source: ServiceLog::SOURCE_FILE,
+                    target: '/var/log/nginx/component-'.$component->id.'-'.$type.'.log',
+                );
+            }
         }
 
         return $logs;

@@ -71,7 +71,7 @@ class FTP extends AbstractStorageProvider
             DynamicField::make('password')
                 ->passwordWithToggle()
                 ->label('Password')
-                ->description('Leave empty to keep the current password'),
+                ->description('Leave empty to keep the current password. Required when changing the host, port or SSL.'),
             DynamicField::make('ssl')
                 ->checkbox()
                 ->label('Use SSL'),
@@ -89,6 +89,11 @@ class FTP extends AbstractStorageProvider
     protected function secretFields(): array
     {
         return ['password'];
+    }
+
+    protected function secretDestinationFields(): array
+    {
+        return ['host', 'port', 'ssl'];
     }
 
     public function connect(array $credentials): bool

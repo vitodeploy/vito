@@ -198,9 +198,6 @@ class CreateNetwork
     }
 
     /**
-     * Runs only once `servers` is known to be a list of integers — building these rules from
-     * unvalidated input would interpolate an array into a rule key and fail with a 500.
-     *
      * @param  array<string, mixed>  $input
      */
     private function validateMemberIps(array $input): void

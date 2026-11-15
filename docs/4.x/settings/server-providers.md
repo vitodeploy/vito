@@ -80,10 +80,10 @@ When you [create a server](../servers/create.md) on a Lightsail connection:
 
 - **Region** is the AWS region where the instance will run. Vito selects an availability zone within it.
 - **Plan** lists active Linux plans with public IPv4 addresses in that region.
-- **Operating System** must be an Ubuntu version AWS currently offers. Vito looks up the image at creation time and returns an error before allocating resources if it is unavailable.
+- **Operating System** must be an Ubuntu or Debian version AWS currently offers. Vito looks up the image at creation time and returns an error before allocating resources if it is unavailable.
 - Include the **UFW** firewall service in the services to install.
 
-Vito generates and imports a separate RSA SSH key for each instance and initially connects as `ubuntu`. Your Vito installation must be able to reach the instance's public IPv4 address on SSH port `22`.
+Vito generates and imports a separate RSA SSH key for each instance and initially connects as `ubuntu`, or `admin` on Debian. Your Vito installation must be able to reach the instance's public IPv4 address on SSH port `22`.
 
 :::warning
 The Lightsail firewall permits only SSH until UFW installs and applies its rules successfully. Vito then allows inbound traffic through to the server's UFW firewall, where you manage access to service ports. If UFW is omitted or fails, the Lightsail firewall remains SSH-only.
@@ -133,7 +133,7 @@ API tokens belong to one project, so servers are always created in the project t
 
 ### Proxmox VE
 
-Vito creates servers on your own Proxmox VE host or cluster by cloning a cloud-init template for the Ubuntu version you pick. It sets the VM's CPU, memory and disk to the plan, adds a new SSH key through cloud-init, boots it and installs it like any other server.
+Vito creates servers on your own Proxmox VE host or cluster by cloning a cloud-init template for the operating system you pick. It sets the VM's CPU, memory and disk to the plan, adds a new SSH key through cloud-init, boots it and installs it like any other server.
 
 #### Requirements
 
@@ -164,7 +164,7 @@ If you create the token in the web UI instead (**Datacenter → Permissions → 
 
 #### 2. Create a cloud-init template
 
-Create one template for each Ubuntu version you want to use. These commands build an Ubuntu 24.04 template with VM ID `9000`:
+Create one template for each operating system you want to use. The guide button in each template field shows the commands for that system, including Debian. These commands build an Ubuntu 24.04 template with VM ID `9000`:
 
 ```sh
 cd /root
@@ -186,7 +186,7 @@ Change `9000` to any free VM ID, `vmbr0` to the bridge your servers should use, 
 To check a template, run `qm config 9000`. The output should include `template: 1` and a cloud-init drive such as `ide2: local-lvm:vm-9000-cloudinit,media=cdrom`.
 
 :::warning
-Build templates from Ubuntu's **cloud images**, as above. A VM installed from an Ubuntu ISO usually ignores the cloud-init settings from Proxmox, so Vito can't log in to servers cloned from it.
+Build templates from the distribution's **cloud images**, as above. A VM installed from an ISO usually ignores the cloud-init settings from Proxmox, so Vito can't log in to servers cloned from it.
 :::
 
 **DHCP or static IP.** Each server gets either a static IP you enter when you create it, or an address from your DHCP server. With DHCP, Vito reads the server's IP from the QEMU guest agent, which the cloud images don't include; that's what the `virt-customize` step installs. If you always use static IPs, you can skip it.
@@ -201,7 +201,7 @@ Build templates from Ubuntu's **cloud images**, as above. A VM installed from an
 | **Disk Storage** | Optional. The storage for the servers' disks. Leave it empty to use the template's storage. |
 | **API Token ID** | `vito@pve!vito` |
 | **API Token Secret** | The token secret from step 1. |
-| **Ubuntu … Template** | The VM ID of your template for each Ubuntu version. Leave the versions you don't use empty; at least one is required. |
+| **Ubuntu … / Debian … Template** | The VM ID of your template for each operating system version. Leave the versions you don't use empty; at least one is required. |
 | **Verify SSL certificate** | Turn this off if Proxmox still uses its default self-signed certificate. |
 
 When you connect, Vito checks that each mapped VM ID exists, is a QEMU template and has a cloud-init drive. Each **Ubuntu … Template** field has a guide button with the commands for that Ubuntu version, ready to copy.
@@ -224,7 +224,7 @@ When you [create a server](../servers/create.md) on a Proxmox connection:
 | xlarge | 8 | 16 GB | 320 GB |
 | 2xlarge | 16 | 32 GB | 640 GB |
 
-- **Operating System** must be an Ubuntu version with a template on the connection.
+- **Operating System** must be a version with a template on the connection.
 - **Static IP (CIDR)** and **Gateway** set a static address, for example `192.168.1.50/24` and `192.168.1.1`. Leave both empty to use DHCP.
 
 Vito waits up to 10 minutes for the clone, the first boot and SSH. The VM gets `Managed by Vito (server #…)` in its **Notes**; keep that line, because Vito only deletes VMs that carry it. When you delete the server with **Delete from Vito and Proxmox VE**, Vito stops the VM and destroys it along with its disks.
@@ -245,7 +245,7 @@ If your server provider is not listed here, you can use the `Custom` provider wh
 
 Your server must have the following requirements so Vito can provision it:
 
-- The server must be running a fresh installation of Ubuntu 20.04, 22.04, 24.04, or 26.04 x64.
+- The server must be running a fresh installation of Ubuntu 20.04, 22.04, 24.04, or 26.04 x64, or Debian 12 or 13.
 - The server must be accessible externally over the Internet.
 - The server must have root SSH access enabled.
 - The server requirements should meet the following criteria or more: 1 CPU Core with 1GHz, 1GB RAM, and 10GB Disk space.

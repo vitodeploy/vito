@@ -69,6 +69,15 @@ fi
     };
     $databasePrivileges = $permission === 'admin' ? 'ALL PRIVILEGES' : 'CONNECT';
 @endphp
+@if (! empty($user['owner']))
+if ! sudo -u postgres psql -v ON_ERROR_STOP=1 -d "$DB_NAME" <<'VITO_RESOURCE_OWNER'
+GRANT "{{ $user['owner'] }}" TO "{{ $username }}";
+ALTER ROLE "{{ $username }}" IN DATABASE "{{ $database }}" SET role TO '{{ $user['owner'] }}';
+VITO_RESOURCE_OWNER
+then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
+@endif
 if ! sudo -u postgres psql -c "GRANT {{ $databasePrivileges }} ON DATABASE \"$DB_NAME\" TO \"{{ $username }}\";"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

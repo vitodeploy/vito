@@ -9,8 +9,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Facade as FacadeAlias;
 
 /**
- * Class SSH
- *
  * @method static \App\Helpers\SSH|SSHFake init(Server $server, string $asUser = null)
  * @method static setLog(?ServerLog $log)
  * @method static \App\Helpers\SSH useLog(string $disk, string $path, ?\Closure $outputCallback = null)

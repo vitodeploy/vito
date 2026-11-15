@@ -363,9 +363,12 @@ class SiteSettingController extends Controller
     {
         $this->authorize('delete', [$site, $server]);
 
-        app(DeleteSite::class)->delete($site, $request->input());
+        $redirect = redirect()->route('sites', ['server' => $server]);
 
-        return redirect()->route('sites', ['server' => $server])
-            ->with('success', 'Site deleted successfully.');
+        if (! app(DeleteSite::class)->delete($site, $request->input())) {
+            return $redirect->with('warning', 'Site deleted, but its deploy key could not be removed from the repository. Remove it manually.');
+        }
+
+        return $redirect->with('success', 'Site deleted successfully.');
     }
 }

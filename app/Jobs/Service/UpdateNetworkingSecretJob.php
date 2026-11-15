@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Service;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
 use App\Events\SocketEvent;
@@ -37,6 +38,7 @@ class UpdateNetworkingSecretJob implements ShouldQueue
                 throw new RuntimeException("{$this->service->name} does not use a networking password.");
             }
 
+            app(ValidateEnvironmentResource::class)->unattached($this->service);
             $secret = $this->remove ? null : $handler->generateNetworkingSecret();
 
             $handler->writeNetworkingSecret($secret);

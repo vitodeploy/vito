@@ -37,7 +37,7 @@ class ServerSSLController extends Controller
         $this->validateRoute($project, $server);
 
         return SslResource::collection(
-            $server->ssls()->whereNull('site_id')->simplePaginate(25)
+            $server->ssls()->whereNull('site_id')->whereNull('environment_id')->simplePaginate(25)
         );
     }
 
@@ -149,7 +149,7 @@ class ServerSSLController extends Controller
             abort(404, 'Server not found in project');
         }
 
-        if ($ssl && $ssl->server_id !== $server->id) {
+        if ($ssl && ($ssl->server_id !== $server->id || $ssl->environment_id !== null)) {
             abort(404, 'SSL not found in server');
         }
     }

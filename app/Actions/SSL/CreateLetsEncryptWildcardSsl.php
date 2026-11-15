@@ -2,13 +2,16 @@
 
 namespace App\Actions\SSL;
 
+use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Jobs\SSL\CreateLetsEncryptWildcardSslJob;
 use App\Models\Domain;
+use App\Models\EnvironmentDomain;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Ssl;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -20,28 +23,41 @@ class CreateLetsEncryptWildcardSsl
      *
      * @throws ValidationException
      */
-    public function create(Server $server, array $input): Ssl
+    public function create(Server $server, array $input, ?EnvironmentDomain $environmentDomain = null): Ssl
     {
         $this->validate($server, $input);
 
-        /** @var Domain $domain */
-        $domain = Domain::query()->findOrFail($input['domain_id']);
+        if ($environmentDomain && ($environmentDomain->component->server_id !== $server->id
+            || $environmentDomain->environment->application->project_id !== $server->project_id)) {
+            throw ValidationException::withMessages(['domain_id' => 'The certificate target must belong to this server and project.']);
+        }
 
-        $ssl = new Ssl([
-            'server_id' => $server->id,
-            'domain_id' => $domain->id,
-            'type' => SslType::LETSENCRYPT->value,
-            'status' => SslStatus::CREATING,
-            'is_wildcard' => true,
-            'domains' => [$domain->domain, '*.'.$domain->domain],
-            'email' => $input['email'],
-        ]);
-        $ssl->log_id = ServerLog::log($server, 'create-wildcard-ssl', '')->id;
-        $ssl->save();
+        return DB::transaction(function () use ($server, $input, $environmentDomain): Ssl {
+            /** @var Domain $domain */
+            $domain = Domain::query()->findOrFail($input['domain_id']);
 
-        dispatch(new CreateLetsEncryptWildcardSslJob($server, $ssl))->onQueue('ssh-certbot');
+            $ssl = new Ssl([
+                'server_id' => $server->id,
+                'domain_id' => $domain->id,
+                'type' => SslType::LETSENCRYPT->value,
+                'status' => SslStatus::CREATING,
+                'is_wildcard' => true,
+                'domains' => [$domain->domain, '*.'.$domain->domain],
+                'email' => $input['email'],
+            ]);
+            $ssl->environment_id = $environmentDomain?->environment_id;
+            $ssl->log_id = ServerLog::log($server, 'create-wildcard-ssl', '')->id;
+            $ssl->save();
 
-        return $ssl;
+            if ($environmentDomain) {
+                $environmentDomain->ssl_id = $ssl->id;
+                $environmentDomain->status = HostedDomainStatus::UPDATING;
+                $environmentDomain->save();
+            }
+            dispatch(new CreateLetsEncryptWildcardSslJob($server, $ssl))->onQueue('ssh-certbot')->afterCommit();
+
+            return $ssl;
+        });
     }
 
     /**

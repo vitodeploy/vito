@@ -51,6 +51,7 @@ class CreateServerProvider
             $serverProvider->project_id ?? 0,
             'server-provider.created',
             new ServerProviderResource($serverProvider),
+            $serverProvider->user_id,
         ));
 
         return $serverProvider;

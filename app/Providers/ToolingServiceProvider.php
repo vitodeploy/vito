@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Tooling\BunTooling;
 use App\Tooling\ComposerTooling;
 use App\Tooling\DotnetTooling;
+use App\Tooling\GoTooling;
 use App\Tooling\NodeTooling;
 use App\Tooling\PnpmTooling;
 use App\Tooling\PythonTooling;
+use App\Tooling\RustTooling;
 use App\Tooling\YarnTooling;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +24,8 @@ class ToolingServiceProvider extends ServiceProvider
                 PnpmTooling::class,
                 YarnTooling::class,
                 PythonTooling::class,
+                GoTooling::class,
+                RustTooling::class,
                 DotnetTooling::class,
                 ComposerTooling::class,
             ],

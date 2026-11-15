@@ -39,10 +39,6 @@ class Linode extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * `/vpcs` carries `subnets[].linodes[]`, so membership needs no extra call; `/vpcs/ips`
-     * is the account-wide address list. A linode can hold several VPC addresses, and an entry
-     * may carry only `address_range`, so the first active entry with a plain address wins.
-     *
      * @param  array<int, array<string, mixed>>  $vpcs
      * @param  array<int, array<string, mixed>>  $addresses
      * @param  array<int, string>  $instanceIds

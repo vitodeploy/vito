@@ -18,6 +18,10 @@ class UpdateWorkerEnvironment
      */
     public function update(Worker $worker, array $input): WorkerEnvironmentUpdateResult
     {
+        if ($worker->component_id !== null) {
+            throw ValidationException::withMessages(['variables' => 'Component processes use environment variables from their environment only.']);
+        }
+
         $validated = Validator::make($input, [
             ...self::rules(),
             'restart' => ['sometimes', 'boolean'],
@@ -56,22 +60,13 @@ class UpdateWorkerEnvironment
     public static function nestedRules(string $attribute = 'variables'): array
     {
         return [
-            "{$attribute}.*.key" => ['required', 'string', 'max:255', 'regex:/^[A-Za-z_][A-Za-z0-9_]*$/', 'distinct'],
+            "{$attribute}.*.key" => ['required', 'string', 'max:255', 'regex:/\A[A-Za-z_][A-Za-z0-9_]*\z/', 'distinct'],
             "{$attribute}.*.value" => ['present', 'nullable', 'string', 'max:10000', 'regex:/\A[^\x00-\x1F\x7F"]*\z/'],
             "{$attribute}.*.is_secret" => ['required', 'boolean'],
         ];
     }
 
     /**
-     * Worker environment values live only in the database (the supervisor
-     * config is generated from them and never read back), so masked secrets
-     * are restored from the stored copy rather than from a server file.
-     *
-     * A key already stored as secret cannot be wiped by submitting it as a
-     * non-secret with an empty value: while the value is empty it stays secret
-     * and its stored value is restored. Re-adding the key with a real value is
-     * the only way to make it non-secret, which is honoured.
-     *
      * @param  array<int, array<string, mixed>>  $incoming
      * @param  ?array<int, array{key: string, value: string, is_secret: bool}>  $stored
      * @return array<int, array{key: string, value: string, is_secret: bool}>

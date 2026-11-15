@@ -5,8 +5,11 @@ namespace App\Providers;
 use App\Actions\User\ResetUserPassword;
 use App\Actions\User\UpdateUserPassword;
 use App\Actions\User\UpdateUserProfileInformation;
+use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -34,10 +37,20 @@ class AuthServiceProvider extends ServiceProvider
         ]));
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor'));
 
-        RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username()).'|'.$request->ip()));
+        AuthenticateSession::redirectUsing(fn (): string => route('login'));
 
-            return Limit::perMinute(5)->by($throttleKey);
+        ResetPassword::createUrlUsing(fn (User $user, string $token): string => app_url(route('password.reset', [
+            'token' => $token,
+            'email' => $user->getEmailForPasswordReset(),
+        ], false)));
+
+        RateLimiter::for('login', function (Request $request) {
+            $email = Str::transliterate(Str::lower($request->string(Fortify::username())->toString()));
+
+            return array_filter([
+                Limit::perMinute(5)->by($email.'|'.$request->ip()),
+                $email !== '' ? Limit::perMinute(10)->by('email|'.$email) : null,
+            ]);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

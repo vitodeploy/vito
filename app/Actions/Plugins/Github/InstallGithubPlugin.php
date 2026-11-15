@@ -21,6 +21,10 @@ final readonly class InstallGithubPlugin
      */
     public function handle(string $url, ?Plugin $plugin = null): Plugin
     {
+        if (config('app.demo')) {
+            throw new Exception('Plugins are disabled in demo mode.');
+        }
+
         if (str_contains($url, 'https://api.github.com/repos')) {
             $url = str_replace('https://api.github.com/repos', 'https://github.com', $url);
         }

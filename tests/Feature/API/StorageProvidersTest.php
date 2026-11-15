@@ -201,14 +201,26 @@ test('api update merges credentials without exposing secrets', function () {
         'storageProvider' => $storageProvider->id,
     ]), [
         'name' => 'updated',
-        'host' => '5.6.7.8',
+        'path' => '/home/backups',
     ])
         ->assertOk();
 
     $storageProvider->refresh();
 
-    expect($storageProvider->credentials['host'])->toBe('5.6.7.8')
+    expect($storageProvider->credentials['path'])->toBe('/home/backups')
         ->and($storageProvider->credentials['password'])->toBe('original-password');
+
+    $this->json('PUT', route('api.projects.storage-providers.update', [
+        'project' => $this->user->current_project_id,
+        'storageProvider' => $storageProvider->id,
+    ]), [
+        'name' => 'updated',
+        'host' => '5.6.7.8',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+
+    expect($storageProvider->refresh()->credentials['host'])->toBe('1.2.3.4');
 });
 
 test('api user cannot update other users storage provider', function () {
@@ -268,7 +280,6 @@ test('api guest cannot access storage providers', function () {
 test('api insufficient scopes denies access', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Only read scope
     $data = [
         'provider' => Local::id(),
         'name' => 'test',

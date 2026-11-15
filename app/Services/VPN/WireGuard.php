@@ -129,10 +129,6 @@ class WireGuard extends AbstractService implements VPN
     }
 
     /**
-     * Every WireGuard network this server still belongs to. Any other wg-vito interface on the
-     * box is a leftover — a teardown that could not complete while the server was unreachable,
-     * for instance — and the configure pass removes it.
-     *
      * @return array<int, int>
      */
     private function managedNetworkIds(NetworkServer $membership): array

@@ -34,6 +34,9 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
                     if ($hasSite) {
                         $fail('Cannot uninstall webserver while you have websites using it.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Cannot uninstall webserver while you have components using it.');
+                    }
                 },
             ],
         ];

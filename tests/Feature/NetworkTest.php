@@ -449,7 +449,6 @@ test('a range outside private address space is rejected', function () {
             ]);
             $this->fail("Expected [$cidr] to be rejected.");
         } catch (ValidationException) {
-            // expected
         }
     }
 

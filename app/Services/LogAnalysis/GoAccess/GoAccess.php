@@ -3,6 +3,7 @@
 namespace App\Services\LogAnalysis\GoAccess;
 
 use App\Actions\CronJob\DeleteCronJob;
+use App\Actions\CronJob\SyncCronJobs;
 use App\Actions\SiteStats\SyncGoAccessServer;
 use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
@@ -35,11 +36,6 @@ class GoAccess extends AbstractService
         return 'log_analysis';
     }
 
-    /**
-     * GoAccess has no systemd unit — work runs from a cron job (see {@see self::CRON_COMMAND}).
-     * Returning `''` here means the default {@see AbstractService::canBeManaged()}
-     * resolves to false, so {@see self::canBeManaged()} must stay overridden to `true`.
-     */
     public function unit(): string
     {
         return '';
@@ -161,7 +157,7 @@ class GoAccess extends AbstractService
         $cron->status = $status;
         $cron->save();
 
-        $server->cron()->update('root', CronJob::crontab($server, 'root'));
+        $server->cron()->update('root', app(SyncCronJobs::class)->crontab($server, 'root'));
 
         return true;
     }
@@ -173,7 +169,7 @@ class GoAccess extends AbstractService
     {
         if ($this->statsCron()) {
             $server = $this->service->server;
-            $server->cron()->update('root', CronJob::crontab($server, 'root'));
+            $server->cron()->update('root', app(SyncCronJobs::class)->crontab($server, 'root'));
         }
 
         return true;

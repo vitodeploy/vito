@@ -2,9 +2,11 @@
 
 namespace App\SSH\Mise;
 
+use App\DTOs\ToolingTargetDTO;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\Site;
+use InvalidArgumentException;
 
 class Mise
 {
@@ -36,13 +38,24 @@ class Mise
      */
     public function installRuntime(Site $site, string $runtime, string $version): void
     {
-        $this->server->ssh($site->user)->exec(
+        $this->installRuntimeForTarget(ToolingTargetDTO::forSite($site), $runtime, $version);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function installRuntimeForTarget(ToolingTargetDTO $target, string $runtime, string $version): void
+    {
+        $this->assertTarget($target);
+
+        $this->server->ssh($target->user)->exec(
             view('ssh.mise.install-runtime', [
                 'runtime' => $runtime,
                 'version' => $version,
+                'configDir' => $target->configDir,
             ]),
             'mise-install-'.$runtime.'-'.$version,
-            $site->id
+            $target->siteId
         );
     }
 
@@ -51,12 +64,29 @@ class Mise
      */
     public function uninstallRuntime(Site $site, string $runtime): void
     {
-        $this->server->ssh($site->user)->exec(
+        $this->uninstallRuntimeForTarget(ToolingTargetDTO::forSite($site), $runtime);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function uninstallRuntimeForTarget(ToolingTargetDTO $target, string $runtime): void
+    {
+        $this->assertTarget($target);
+
+        $this->server->ssh($target->user)->exec(
             view('ssh.mise.uninstall-runtime', [
                 'runtime' => $runtime,
             ]),
             'mise-uninstall-'.$runtime,
-            $site->id
+            $target->siteId
         );
+    }
+
+    private function assertTarget(ToolingTargetDTO $target): void
+    {
+        if ($target->server->id !== $this->server->id) {
+            throw new InvalidArgumentException('The tooling target must belong to the bound server.');
+        }
     }
 }

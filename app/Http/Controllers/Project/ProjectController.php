@@ -8,9 +8,7 @@ use App\Actions\Projects\GetProjects;
 use App\Actions\Projects\UpdateProject;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
-use App\Http\Resources\ProjectUserResource;
 use App\Models\Project;
-use App\Models\UserProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -37,12 +35,6 @@ class ProjectController extends Controller
                 user()
                     ->allProjects()
                     ->with(['users'])
-                    ->simplePaginate(20)
-            ),
-            'invitations' => ProjectUserResource::collection(
-                UserProject::query()
-                    ->where('email', user()->email)
-                    ->whereNull('user_id')
                     ->simplePaginate(20)
             ),
         ]);

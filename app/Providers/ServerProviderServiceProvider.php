@@ -41,6 +41,7 @@ class ServerProviderServiceProvider extends ServiceProvider
             ->label('Custom')
             ->handler(Custom::class)
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -59,7 +60,8 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Secret'),
                 ])
             )
-            ->defaultUser('ubuntu')
+            ->defaultUser('ubuntu', debian: 'admin')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -87,7 +89,8 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Secret Access Key'),
                 ])
             )
-            ->defaultUser('ubuntu')
+            ->defaultUser('ubuntu', debian: 'admin')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -104,6 +107,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                 ])
             )
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -120,6 +124,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                 ])
             )
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -136,6 +141,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                 ])
             )
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -152,6 +158,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                 ])
             )
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->register();
     }
 
@@ -165,7 +172,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                     DynamicField::make('proxmox_guide')
                         ->guide($this->proxmoxGuide())
                         ->label('Proxmox setup guide')
-                        ->description('Requires Proxmox VE 8.1+, an API token and a cloud-init template for each Ubuntu version.'),
+                        ->description('Requires Proxmox VE 8.1+, an API token and a cloud-init template for each operating system you want to use.'),
                     DynamicField::make('api_url')
                         ->text()
                         ->half()
@@ -209,6 +216,7 @@ class ServerProviderServiceProvider extends ServiceProvider
             )
             ->editForm(DynamicForm::make($this->proxmoxTemplateFields()))
             ->defaultUser('root')
+            ->operatingSystems(config('core.operating_systems'))
             ->provisionTimeout(600)
             ->register();
     }
@@ -225,7 +233,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                 return DynamicField::make(Proxmox::templateField($value))
                     ->text()
                     ->half()
-                    ->label('Ubuntu '.$os->getVersion().' Template')
+                    ->label($os->getLabel().' Template')
                     ->placeholder('VMID')
                     ->withGuide($this->proxmoxTemplateGuide($os));
             },
@@ -246,7 +254,7 @@ class ServerProviderServiceProvider extends ServiceProvider
             ],
             [
                 'title' => 'Build the templates',
-                'description' => 'Create a cloud-init template for each Ubuntu version you want to use. The guide button in each Ubuntu template field shows the commands for that version.',
+                'description' => 'Create a cloud-init template for each operating system you want to use. The guide button in each template field shows the commands for that system.',
             ],
             [
                 'title' => 'Connect Vito',
@@ -261,14 +269,17 @@ class ServerProviderServiceProvider extends ServiceProvider
     private function proxmoxTemplateGuide(OperatingSystem $os): array
     {
         $version = $os->getVersion();
-        $image = $os->getCodename().'-server-cloudimg-amd64.img';
+        $codename = $os->getCodename();
+        $image = $os->isDebian() ? "debian-{$version}-genericcloud-amd64.qcow2" : "{$codename}-server-cloudimg-amd64.img";
+        $imageUrl = $os->isDebian() ? "https://cloud.debian.org/images/cloud/{$codename}/latest/{$image}" : "https://cloud-images.ubuntu.com/{$codename}/current/{$image}";
+        $name = strtolower($os->getDistro()).'-'.str_replace('.', '', $version).'-cloud';
         $vmid = 9000 + (int) $version;
 
         return [
             [
-                'title' => "Download the Ubuntu {$version} cloud image",
+                'title' => "Download the {$os->getLabel()} cloud image",
                 'description' => 'Run these commands in the Proxmox host shell. Use an official cloud image, not an ISO install.',
-                'code' => "cd /root\nwget https://cloud-images.ubuntu.com/{$os->getCodename()}/current/{$image}",
+                'code' => "cd /root\nwget {$imageUrl}",
             ],
             [
                 'title' => 'Add the QEMU guest agent',
@@ -278,7 +289,7 @@ class ServerProviderServiceProvider extends ServiceProvider
             [
                 'title' => 'Create the template',
                 'description' => "Change vmbr0 and local-lvm if your bridge or storage is named differently, and {$vmid} if that VM ID is taken. Vito grows the disk to the plan size when it creates a server.",
-                'code' => "qm create {$vmid} --name ubuntu-".str_replace('.', '', $version)."-cloud --memory 2048 --cores 2 --ostype l26 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci\nqm set {$vmid} --scsi0 local-lvm:0,import-from=/root/{$image}\nqm set {$vmid} --ide2 local-lvm:cloudinit --boot order=scsi0 --serial0 socket --vga serial0 --agent 1\nqm template {$vmid}",
+                'code' => "qm create {$vmid} --name {$name} --memory 2048 --cores 2 --ostype l26 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci\nqm set {$vmid} --scsi0 local-lvm:0,import-from=/root/{$image}\nqm set {$vmid} --ide2 local-lvm:cloudinit --boot order=scsi0 --serial0 socket --vga serial0 --agent 1\nqm template {$vmid}",
             ],
             [
                 'title' => 'Check the template',

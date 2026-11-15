@@ -221,8 +221,6 @@ test('cannot access other servers ssl', function () {
 });
 
 /**
- * Generate a self-signed certificate for testing.
- *
  * @return array{certificate: string, private_key: string}
  */
 function vitoPestFeatureServerSslTestGenerateSelfSignedCert(): array

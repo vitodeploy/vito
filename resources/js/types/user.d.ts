@@ -12,5 +12,5 @@ export interface User {
   projects?: Project[];
   two_factor_enabled: boolean;
   is_admin: boolean;
-  [key: string]: unknown; // This allows for additional properties...
+  [key: string]: unknown;
 }

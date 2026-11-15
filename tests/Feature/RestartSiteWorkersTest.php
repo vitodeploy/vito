@@ -29,6 +29,27 @@ test('failed worker restart is non fatal and records error', function () {
     expect($worker->error)->toBe("{$worker->id}:{$worker->id}_00: ERROR (no such file)");
 });
 
+test('a worker that has not been installed yet does not fail the restart of its siblings', function () {
+    $installed = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+        'stdout_logfile' => '/home/vito/.logs/workers/legacy.log',
+    ]);
+    $pending = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::CREATING,
+    ]);
+    SSH::fake("{$installed->id}:{$installed->id}_00: started\n{$pending->id}:{$pending->id}_00: started");
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $this->assertDatabaseHas('workers', ['id' => $installed->id, 'status' => WorkerStatus::RUNNING, 'error' => null]);
+    SSH::assertExecutedContains('supervisorctl');
+    SSH::assertExecutedContains("install -d -o root -g 'vito' -m 750 '/var/log/vito/workers/vito'");
+});
+
 test('successful restart marks running and clears error', function () {
     $worker = Worker::factory()->create([
         'server_id' => $this->server->id,
@@ -48,6 +69,31 @@ test('successful restart marks running and clears error', function () {
     expect($worker->status)->toBe(WorkerStatus::RUNNING);
     expect($worker->error)->toBeNull();
 });
+
+test('supervisor group updates do not replace process restart results', function (?string $processStatus, WorkerStatus $expected, ?string $error) {
+    Storage::fake(config('core.logs_disk'));
+    $worker = Worker::factory()->create([
+        'server_id' => $this->server->id,
+        'site_id' => $this->site->id,
+        'status' => WorkerStatus::RUNNING,
+        'error' => 'stale error',
+    ]);
+    SSH::fake("{$worker->id}: changed\n{$worker->id}: stopped\n{$worker->id}: updated process group\n".
+        ($processStatus === null ? '' : "{$worker->id}:{$worker->id}_00: {$processStatus}"));
+
+    app(RestartSiteWorkers::class)->restart($this->site->fresh());
+
+    $this->assertDatabaseHas('workers', [
+        'id' => $worker->id,
+        'status' => $expected,
+        'error' => $error === 'ERROR (spawn error)' ? "{$worker->id}:{$worker->id}_00: {$error}" : $error,
+    ]);
+})->with([
+    ['started', WorkerStatus::RUNNING, null],
+    ['stopped', WorkerStatus::STOPPED, 'Unable to restart (stopped)'],
+    ['ERROR (spawn error)', WorkerStatus::FAILED, 'ERROR (spawn error)'],
+    [null, WorkerStatus::FAILED, 'Unable to restart'],
+]);
 
 test('worker left stopped is marked stopped with generic error', function () {
     Storage::fake(config('core.logs_disk'));

@@ -7,13 +7,12 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Define the application's command schedule.
-     */
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('backups:run')->everyMinute();
         $schedule->command('backups:reconcile')->everyThirtyMinutes();
+        $schedule->command('deployments:check-stalled')->everyMinute()->withoutOverlapping(5);
+        $schedule->command('git-hooks:sync-repositories')->everyFiveMinutes()->withoutOverlapping(5);
         $schedule->command('metrics:delete-older-metrics')->daily();
         $schedule->command('db:vacuum')->daily();
         $schedule->command('metrics:get')->everyMinute()->withoutOverlapping(5);
@@ -27,9 +26,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('github-app:sync')->cron('0 */4 * * *');
     }
 
-    /**
-     * Register the commands for the application.
-     */
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');

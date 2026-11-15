@@ -2,6 +2,7 @@
 
 namespace App\Actions\GithubApp;
 
+use App\Actions\GitHook\TriggerRepositoryAutoDeploy;
 use App\Jobs\Site\TriggerDeployFromWebhookJob;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -28,6 +29,10 @@ class HandlePushWebhook
 
         if (! $sourceControl instanceof SourceControl) {
             return;
+        }
+
+        if (str_starts_with((string) ($payload['ref'] ?? ''), 'refs/heads/') && ! ($payload['deleted'] ?? false)) {
+            app(TriggerRepositoryAutoDeploy::class)->trigger($sourceControl, $repository, $branch);
         }
 
         $sites = Site::query()

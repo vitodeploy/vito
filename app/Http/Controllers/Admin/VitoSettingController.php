@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,6 @@ class VitoSettingController extends Controller
      */
     protected array $paths = [
         'storage/database.sqlite' => 'file',
-        '.env' => 'file',
         'storage/ssh-public.key' => 'file',
         'storage/ssh-private.pem' => 'file',
         'storage/app/key-pairs' => 'directory',
@@ -47,19 +47,21 @@ class VitoSettingController extends Controller
     #[Get('/export', name: 'vito-settings.export')]
     public function downloadExport(): BinaryFileResponse
     {
-        $exportName = 'vito-backup-'.date('Y-m-d').'.zip';
-        $export = $this->export($exportName);
+        abort_if((bool) config('app.demo'), 403, 'Export is disabled in demo mode.');
 
-        return response()->download($export, $exportName)->deleteFileAfterSend();
+        $workspace = $this->makeWorkspace();
+        app()->terminating(fn () => File::deleteDirectory($workspace));
+
+        $exportName = 'vito-backup-'.date('Y-m-d').'.zip';
+
+        return response()->download($this->export($workspace.'/'.$exportName), $exportName);
     }
 
     /**
      * @throws Exception
      */
-    private function export(string $zipFileName): string
+    private function export(string $zipPath): string
     {
-        $zipPath = Storage::disk('tmp')->path($zipFileName);
-
         $zip = new ZipArchive;
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             throw new Exception('Could not create zip file at '.$zipPath);
@@ -72,6 +74,10 @@ class VitoSettingController extends Controller
             } elseif ($type === 'directory' && File::exists($path)) {
                 $this->addDirectoryToZip($zip, $path, basename($path));
             }
+        }
+
+        if (File::exists(app()->environmentFilePath())) {
+            $zip->addFile(app()->environmentFilePath(), '.env');
         }
 
         $zip->close();
@@ -90,7 +96,6 @@ class VitoSettingController extends Controller
             return back()->with('error', 'Import is disabled in demo mode.');
         }
 
-        // set session driver to file
         config(['session.driver' => 'file']);
 
         $request->validate([
@@ -98,39 +103,67 @@ class VitoSettingController extends Controller
         ]);
 
         $uploadedFile = $request->file('backup_file');
-        $extractName = 'vito-backup-import-'.time();
-        $extractPath = Storage::disk('tmp')->path($extractName);
-
-        // Create extraction directory
-        File::makeDirectory($extractPath, 0755, true);
 
         $zip = new ZipArchive;
         if ($zip->open($uploadedFile->getPathname()) !== true) {
             throw ValidationException::withMessages(['file' => 'The uploaded file is not a valid zip archive.']);
         }
 
-        // Extract files
-        $zip->extractTo($extractPath);
-        $zip->close();
+        $extractPath = $this->makeWorkspace();
+        $umask = umask(0077);
 
-        // Replace files
-        File::move($extractPath.'/database.sqlite', storage_path('database.sqlite'));
-        if (File::exists($extractPath.'/.env')) {
-            File::move($extractPath.'/.env', base_path('.env'));
-        }
-        File::move($extractPath.'/ssh-public.key', storage_path('ssh-public.key'));
-        File::move($extractPath.'/ssh-private.pem', storage_path('ssh-private.pem'));
-        if (File::exists($extractPath.'/key-pairs')) {
-            move_directory($extractPath.'/key-pairs', storage_path('app/key-pairs'));
-        }
-        if (File::exists($extractPath.'/server-logs')) {
-            move_directory($extractPath.'/server-logs', storage_path('app/server-logs'));
+        try {
+            $zip->extractTo($extractPath);
+            $zip->close();
+
+            File::move($extractPath.'/database.sqlite', storage_path('database.sqlite'));
+            if (File::exists($extractPath.'/.env')) {
+                File::move($extractPath.'/.env', app()->environmentFilePath());
+            }
+            File::move($extractPath.'/ssh-public.key', storage_path('ssh-public.key'));
+            File::move($extractPath.'/ssh-private.pem', storage_path('ssh-private.pem'));
+            if (File::exists($extractPath.'/key-pairs')) {
+                move_directory($extractPath.'/key-pairs', storage_path('app/key-pairs'));
+            }
+            if (File::exists($extractPath.'/server-logs')) {
+                move_directory($extractPath.'/server-logs', storage_path('app/server-logs'));
+            }
+
+            $this->restrictSecretPermissions();
+        } finally {
+            umask($umask);
+            File::deleteDirectory($extractPath);
         }
 
         Artisan::call('optimize');
 
         return redirect()->route('vito-settings')
             ->with('success', 'Settings imported successfully.');
+    }
+
+    private function makeWorkspace(): string
+    {
+        $path = Storage::disk('tmp')->path('vito-'.Str::random(40));
+        File::makeDirectory($path, 0700);
+
+        return $path;
+    }
+
+    private function restrictSecretPermissions(): void
+    {
+        foreach ([storage_path('app/key-pairs'), storage_path('app/server-logs')] as $directory) {
+            if (! File::isDirectory($directory)) {
+                continue;
+            }
+
+            chmod($directory, 0700);
+            foreach (File::directories($directory) as $child) {
+                chmod($child, 0700);
+            }
+            foreach (File::allFiles($directory, true) as $file) {
+                chmod($file->getPathname(), 0600);
+            }
+        }
     }
 
     private function addDirectoryToZip(ZipArchive $zip, string $path, string $zipPath): void

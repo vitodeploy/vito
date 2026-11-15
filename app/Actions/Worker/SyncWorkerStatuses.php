@@ -17,7 +17,7 @@ class SyncWorkerStatuses
 
     private const LOG_TYPE = 'sync-worker-statuses-failed';
 
-    public function sync(Server $server, ?Site $site = null): int
+    public function sync(Server $server, ?Site $site = null, bool $excludeComponents = false): int
     {
         /** @var Service $service */
         $service = $server->processManager();
@@ -25,6 +25,7 @@ class SyncWorkerStatuses
         $handler = $service->handler();
 
         $workers = $server->workers()
+            ->when($excludeComponents, fn ($query) => $query->whereNull('component_id'))
             ->when($site, fn ($query) => $query->where('site_id', $site->id))
             ->whereNotIn('status', [WorkerStatus::CREATING, WorkerStatus::DELETING])
             ->get();

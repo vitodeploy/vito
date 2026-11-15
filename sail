@@ -2,7 +2,6 @@
 
 UNAMEOUT="$(uname -s)"
 
-# Verify operating system is supported...
 case "${UNAMEOUT}" in
     Linux*)             MACHINE=linux;;
     Darwin*)            MACHINE=mac;;
@@ -15,9 +14,7 @@ if [ "$MACHINE" == "UNKNOWN" ]; then
     exit 1
 fi
 
-# Determine if stdout is a terminal...
 if test -t 1; then
-    # Determine if colors are supported...
     ncolors=$(tput colors)
 
     if test -n "$ncolors" && test "$ncolors" -ge 8; then
@@ -28,7 +25,6 @@ if test -t 1; then
     fi
 fi
 
-# Function that prints the available commands...
 function display_help {
     echo "Laravel Sail"
     echo
@@ -106,7 +102,6 @@ function display_help {
     exit 1
 }
 
-# Proxy the "help" command...
 if [ $# -gt 0 ]; then
     if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
         display_help
@@ -115,12 +110,10 @@ else
     display_help
 fi
 
-# Source the ".env" file so Laravel's environment variables are available...
 if [ -f ./.env ]; then
     source ./.env
 fi
 
-# Define environment variables...
 export APP_PORT=${APP_PORT:-80}
 export APP_SERVICE=${APP_SERVICE:-"app"}
 export DB_PORT=${DB_PORT:-3306}
@@ -133,7 +126,6 @@ export SAIL_SHARE_SERVER_HOST=${SAIL_SHARE_SERVER_HOST:-"laravel-sail.site"}
 export SAIL_SHARE_SERVER_PORT=${SAIL_SHARE_SERVER_PORT:-8080}
 export SAIL_SHARE_SUBDOMAIN=${SAIL_SHARE_SUBDOMAIN:-""}
 
-# Function that outputs Sail is not running...
 function sail_is_not_running {
     echo "${BOLD}Sail is not running.${NC}" >&2
     echo "" >&2
@@ -142,7 +134,6 @@ function sail_is_not_running {
     exit 1
 }
 
-# Define Docker Compose command prefix...
 docker compose &> /dev/null
 if [ $? == 0 ]; then
     DOCKER_COMPOSE=(docker compose)
@@ -151,7 +142,6 @@ else
 fi
 
 if [ -n "$SAIL_FILES" ]; then
-    # Convert SAIL_FILES to an array...
     IFS=':' read -ra SAIL_FILES <<< "$SAIL_FILES"
 
     for FILE in "${SAIL_FILES[@]}"; do
@@ -168,14 +158,12 @@ fi
 EXEC="yes"
 
 if [ -z "$SAIL_SKIP_CHECKS" ]; then
-    # Ensure that Docker is running...
     if ! docker info > /dev/null 2>&1; then
         echo "${BOLD}Docker is not running.${NC}" >&2
 
         exit 1
     fi
 
-    # Determine if Sail is currently up...
     if "${DOCKER_COMPOSE[@]}" ps "$APP_SERVICE" 2>&1 | grep 'Exit\|exited'; then
         echo "${BOLD}Shutting down old Sail processes...${NC}" >&2
 
@@ -189,7 +177,6 @@ fi
 
 ARGS=()
 
-# Proxy PHP commands to the "php" binary on the application container...
 if [ "$1" == "php" ]; then
     shift 1
 
@@ -201,7 +188,6 @@ if [ "$1" == "php" ]; then
         sail_is_not_running
     fi
 
-# Proxy vendor binary commands on the application container...
 elif [ "$1" == "bin" ]; then
     shift 1
 
@@ -213,7 +199,6 @@ elif [ "$1" == "bin" ]; then
         sail_is_not_running
     fi
 
-# Proxy docker-compose commands to the docker-compose binary on the application container...
 elif [ "$1" == "docker-compose" ]; then
     shift 1
 
@@ -225,7 +210,6 @@ elif [ "$1" == "docker-compose" ]; then
         sail_is_not_running
     fi
 
-# Proxy Composer commands to the "composer" binary on the application container...
 elif [ "$1" == "composer" ]; then
     shift 1
 
@@ -237,7 +221,6 @@ elif [ "$1" == "composer" ]; then
         sail_is_not_running
     fi
 
-# Proxy Artisan commands to the "artisan" binary on the application container...
 elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
     shift 1
 
@@ -249,7 +232,6 @@ elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "debug" command to the "php artisan" binary on the application container with xdebug enabled...
 elif [ "$1" == "debug" ]; then
     shift 1
 
@@ -261,7 +243,6 @@ elif [ "$1" == "debug" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "test" command to the "php artisan test" Artisan command...
 elif [ "$1" == "test" ]; then
     shift 1
 
@@ -273,7 +254,6 @@ elif [ "$1" == "test" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "pest" command to "php vendor/bin/pest"...
 elif [ "$1" == "pest" ]; then
     shift 1
 
@@ -285,7 +265,6 @@ elif [ "$1" == "pest" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "pint" command to "php vendor/bin/pint"...
 elif [ "$1" == "pint" ]; then
     shift 1
 
@@ -297,7 +276,6 @@ elif [ "$1" == "pint" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "dusk" command to the "php artisan dusk" Artisan command...
 elif [ "$1" == "dusk" ]; then
     shift 1
 
@@ -311,7 +289,6 @@ elif [ "$1" == "dusk" ]; then
         sail_is_not_running
     fi
 
-# Proxy the "dusk:fails" command to the "php artisan dusk:fails" Artisan command...
 elif [ "$1" == "dusk:fails" ]; then
     shift 1
 
@@ -325,7 +302,6 @@ elif [ "$1" == "dusk:fails" ]; then
         sail_is_not_running
     fi
 
-# Initiate a Laravel Tinker session within the application container...
 elif [ "$1" == "tinker" ] ; then
     shift 1
 
@@ -337,7 +313,6 @@ elif [ "$1" == "tinker" ] ; then
         sail_is_not_running
     fi
 
-# Proxy Node commands to the "node" binary on the application container...
 elif [ "$1" == "node" ]; then
     shift 1
 
@@ -349,7 +324,6 @@ elif [ "$1" == "node" ]; then
         sail_is_not_running
     fi
 
-# Proxy NPM commands to the "npm" binary on the application container...
 elif [ "$1" == "npm" ]; then
     shift 1
 
@@ -361,7 +335,6 @@ elif [ "$1" == "npm" ]; then
         sail_is_not_running
     fi
 
-# Proxy NPX commands to the "npx" binary on the application container...
 elif [ "$1" == "npx" ]; then
     shift 1
 
@@ -373,7 +346,6 @@ elif [ "$1" == "npx" ]; then
         sail_is_not_running
     fi
 
-# Proxy YARN commands to the "yarn" binary on the application container...
 elif [ "$1" == "yarn" ]; then
     shift 1
 
@@ -385,7 +357,6 @@ elif [ "$1" == "yarn" ]; then
         sail_is_not_running
     fi
 
-# Initiate a MySQL CLI terminal session within the "mysql" container...
 elif [ "$1" == "mysql" ]; then
     shift 1
 
@@ -398,7 +369,6 @@ elif [ "$1" == "mysql" ]; then
         sail_is_not_running
     fi
 
-# Initiate a MySQL CLI terminal session within the "mariadb" container...
 elif [ "$1" == "mariadb" ]; then
     shift 1
 
@@ -411,7 +381,6 @@ elif [ "$1" == "mariadb" ]; then
         sail_is_not_running
     fi
 
-# Initiate a PostgreSQL CLI terminal session within the "pgsql" container...
 elif [ "$1" == "psql" ]; then
     shift 1
 
@@ -424,7 +393,6 @@ elif [ "$1" == "psql" ]; then
         sail_is_not_running
     fi
 
-# Initiate a Bash shell within the application container...
 elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
     shift 1
 
@@ -436,7 +404,6 @@ elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
         sail_is_not_running
     fi
 
-# Initiate a root user Bash shell within the application container...
 elif [ "$1" == "root-shell" ] || [ "$1" == "root-bash" ]; then
     shift 1
 
@@ -448,7 +415,6 @@ elif [ "$1" == "root-shell" ] || [ "$1" == "root-bash" ]; then
         sail_is_not_running
     fi
 
-# Initiate a Redis CLI terminal session within the "redis" container...
 elif [ "$1" == "redis" ] ; then
     shift 1
 
@@ -460,7 +426,6 @@ elif [ "$1" == "redis" ] ; then
         sail_is_not_running
     fi
 
-# Share the site...
 elif [ "$1" == "share" ]; then
     shift 1
 
@@ -477,10 +442,8 @@ elif [ "$1" == "share" ]; then
         sail_is_not_running
     fi
 
-# Pass unknown commands to the "docker-compose" binary...
 else
     ARGS+=("$@")
 fi
 
-# Run Docker Compose with the defined arguments...
 "${DOCKER_COMPOSE[@]}" "${ARGS[@]}"

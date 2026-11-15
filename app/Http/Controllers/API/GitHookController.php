@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Application\GetApplicationSourceControl;
+use App\Actions\GitHook\TriggerRepositoryAutoDeploy;
 use App\Actions\Site\Deploy;
 use App\Exceptions\FailedToDestroyGitHook;
 use App\Http\Controllers\Controller;
 use App\Models\GitHook;
 use App\Models\ServerLog;
-use App\Models\SourceControl;
+use App\SourceControlProviders\AbstractSourceControlProvider;
+use App\SourceControlProviders\SupportsApplications;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -31,6 +34,15 @@ class GitHookController extends Controller
             ->where('secret', $request->input('secret'))
             ->firstOrFail();
 
+        if ($gitHook->repository !== null) {
+            $provider = $gitHook->sourceControl ? app(GetApplicationSourceControl::class)->provider($gitHook->sourceControl) : null;
+            foreach ($provider?->getPushBranches($request->array()) ?? [] as $branch) {
+                app(TriggerRepositoryAutoDeploy::class)->forBranch($gitHook, $branch);
+            }
+
+            return response()->json(['success' => true]);
+        }
+
         if (! $gitHook->site) {
             $gitHook->destroyHook();
 
@@ -39,11 +51,15 @@ class GitHookController extends Controller
             ]);
         }
 
+        $provider = $gitHook->site->sourceControl?->provider();
+        $pushedBranches = match (true) {
+            $provider instanceof AbstractSourceControlProvider, $provider instanceof SupportsApplications => $provider->getPushBranches($request->array()),
+            $provider !== null => [$provider->getWebhookBranch($request->array())],
+            default => [],
+        };
+
         foreach ($gitHook->actions as $action) {
-            /** @var SourceControl $sourceControl */
-            $sourceControl = $gitHook->site->sourceControl;
-            $webhookBranch = $sourceControl->provider()->getWebhookBranch($request->array());
-            if ($action == 'deploy' && $gitHook->site->branch === $webhookBranch) {
+            if ($action == 'deploy' && in_array($gitHook->site->branch, $pushedBranches, true)) {
                 try {
                     app(Deploy::class)->run($gitHook->site);
                 } catch (Throwable $e) {

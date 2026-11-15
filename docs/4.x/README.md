@@ -74,6 +74,18 @@ databases, deploy sites, and more — all from a clean dashboard.
 | [Redirects](sites/redirects.md) | Manage redirects |
 | [Modern Deployment](sites/modern-deployment.md) | Zero-downtime deployments |
 
+## Applications (Beta)
+
+| Page | What's in it |
+| --- | --- |
+| [Concepts](applications/concepts.md) | Applications, environments, presets and web modes |
+| [Components](applications/components.md) | Server placements, capabilities and processes |
+| [Variables](applications/variables.md) | Secrets, import and environment files |
+| [Deployments](applications/deployments.md) | Stages, scripts, rollback and auto-deploy |
+| [Domains and SSL](applications/domains.md) | Routing, verification and certificates |
+| [Load Balancing](applications/load-balancing.md) | Private backends and traffic distribution |
+| [Resources](applications/resources.md) | Database/Redis access and connection variables |
+
 ## Scripts
 
 | Page | What's in it |

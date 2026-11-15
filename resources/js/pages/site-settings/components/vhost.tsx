@@ -82,9 +82,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const query = useQuery({
     queryKey: ['site-settings.vhost-template', site.server_id, site.id],
     queryFn: async () => {
-      const response = await axios.get(
-        `/servers/${site.server_id}/sites/${site.id}/settings/vhost-template`,
-      );
+      const response = await axios.get(`/servers/${site.server_id}/sites/${site.id}/settings/vhost-template`);
       if (typeof response.data?.template === 'string') {
         form.setData('template', response.data.template);
       }

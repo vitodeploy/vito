@@ -56,6 +56,9 @@ class NodeJS extends AbstractService
                     if ($hasSite) {
                         $fail('Some sites are using this NodeJS version.');
                     }
+                    if ($this->service->server->componentsUsing($this->service)->isNotEmpty()) {
+                        $fail('Some components are using this NodeJS version.');
+                    }
                 },
             ],
         ];
@@ -82,8 +85,6 @@ class NodeJS extends AbstractService
      */
     public function uninstall(): void
     {
-        // skip uninstalling if there are other NodeJS services installed
-        // to keep it compatible with the previous approach with nvm
         if ($this->service->server->services()->where('type', 'nodejs')->count() > 1) {
             return;
         }

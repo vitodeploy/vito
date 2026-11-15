@@ -16,8 +16,19 @@ abstract class AbstractGenerateConfig
     protected const PHP_VALUE_TOKEN = '@@VITO_PHP_VALUE@@';
 
     /**
-     * Generate the full vhost config for a site.
+     * @var array<int, HostedDomainStatus>
      */
+    protected const SERVED_STATUSES = [
+        HostedDomainStatus::ACTIVE,
+        HostedDomainStatus::UPDATING,
+    ];
+
+    /** @var array<int, HostedDomainStatus> */
+    protected const UNVERIFIED_STATUSES = [
+        HostedDomainStatus::CREATING,
+        HostedDomainStatus::PENDING,
+    ];
+
     public function generate(Site $site, ?string $template = null): string
     {
         $site->load(['hostedDomains.ssl', 'activeRedirects', 'loadBalancerServers']);
@@ -34,48 +45,32 @@ abstract class AbstractGenerateConfig
         return str_replace(self::PHP_VALUE_TOKEN, $data['php_value_string'], $rendered);
     }
 
-    /**
-     * Get the default Mustache template contents.
-     */
     abstract public function defaultTemplate(): string;
 
     /**
-     * Build server block keys for a given SSL/HTTP state.
-     *
      * @return array<string, mixed>
      */
     abstract protected function buildServerBlockKeys(bool $hasSsl, string $sslCertPath, string $sslKeyPath, Site $site): array;
 
-    /**
-     * Build the PHP socket path for the given site.
-     */
     abstract protected function buildPhpSocket(Site $site): string;
 
     /**
-     * Build load balancer data for the template context.
-     *
      * @return array<string, mixed>
      */
     abstract protected function buildLoadBalancerData(Site $site): array;
 
     /**
-     * Build a single redirect entry for Mustache.
-     *
      * @return array<string, mixed>
      */
     abstract protected function buildRedirectEntry(object $redirect, bool $isProxy): array;
 
     /**
-     * Enrich server block domains (e.g. Caddy adds http:// prefix).
-     *
      * @param  array<int, array<string, string>>  $domains
      * @return array<int, array<string, string>>
      */
     abstract protected function transformDomains(array $domains, bool $httpOnly): array;
 
     /**
-     * Add webserver-specific keys to each server block.
-     *
      * @param  array<string, mixed>  $block
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
@@ -83,15 +78,11 @@ abstract class AbstractGenerateConfig
     abstract protected function enrichServerBlock(array $block, array $data): array;
 
     /**
-     * Build a redirect-type HostedDomain server block.
-     *
      * @return array<string, mixed>
      */
     abstract protected function buildRedirectBlock(HostedDomain $hd, string $primaryDomain, Site $site): array;
 
     /**
-     * Add webserver-specific data after server blocks are built (e.g. force_ssl for Nginx).
-     *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
@@ -123,14 +114,26 @@ abstract class AbstractGenerateConfig
             ->first(fn (HostedDomain $hd) => $hd->type === HostedDomainType::PRIMARY);
 
         $activeOthers = $site->hostedDomains
-            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && $hd->status === HostedDomainStatus::ACTIVE);
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::SERVED_STATUSES, true));
 
         $domains = $activeOthers;
         if ($primary) {
             $domains = $domains->prepend($primary);
         }
 
-        return $this->buildFromHostedDomains($site, $domains);
+        $data = $this->buildFromHostedDomains($site, $domains);
+
+        $pendingDomains = $site->hostedDomains
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && in_array($hd->status, self::UNVERIFIED_STATUSES, true))
+            ->map(fn (HostedDomain $hd) => ['name' => $hd->domain])
+            ->values()
+            ->all();
+        $pendingDomains = $this->transformDomains($pendingDomains, true);
+
+        $data['has_pending_verification'] = $pendingDomains !== [] && ! empty($data['verification_key']);
+        $data['pending_verification_domains'] = $pendingDomains;
+
+        return $data;
     }
 
     /**
@@ -280,10 +283,6 @@ abstract class AbstractGenerateConfig
         return $redirects;
     }
 
-    /**
-     * Build the multi-line PHP_VALUE directive string from the site's
-     * per-site PHP settings (type_data['php']). Empty when nothing is set.
-     */
     protected function phpValueDirectives(Site $site): string
     {
         $directives = [];

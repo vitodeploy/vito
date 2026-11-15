@@ -1,6 +1,19 @@
+mkdir -p ~/.ssh
+exec 9> ~/.ssh/.vito-authorized-keys.lock
+flock 9
 if [ -f ~/.ssh/authorized_keys ]; then
-    grep -vF '{!! addslashes(trim($key)) !!}' ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.tmp 2>/dev/null || true
-    if [ -f ~/.ssh/authorized_keys.tmp ]; then
-        mv ~/.ssh/authorized_keys.tmp ~/.ssh/authorized_keys
+    VITO_KEY_MATCH='{ line = $0; gsub(/"([^"\\]|\\.)*"/, "", line); n = split(line, f, /[ \t]+/); matched = 0; for (i = 1; i < n; i++) if (f[i] ~ /^(ssh-|ecdsa-|sk-)/) { matched = (f[i + 1] == key); break } }'
+    VITO_KEYS_TMP=$(mktemp ~/.ssh/authorized_keys.XXXXXX) || { echo 'VITO_SSH_ERROR' && exit 1; }
+    if ! awk -v key={!! escapeshellarg($material) !!} "$VITO_KEY_MATCH"' !matched { print }' ~/.ssh/authorized_keys > "$VITO_KEYS_TMP"; then
+        rm -f "$VITO_KEYS_TMP"
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! awk -v key={!! escapeshellarg($material) !!} "$VITO_KEY_MATCH"' matched { found = 1 } END { exit found }' "$VITO_KEYS_TMP"; then
+        rm -f "$VITO_KEYS_TMP"
+        echo 'VITO_SSH_ERROR' && exit 1
+    fi
+    if ! mv -f "$VITO_KEYS_TMP" ~/.ssh/authorized_keys; then
+        rm -f "$VITO_KEYS_TMP"
+        echo 'VITO_SSH_ERROR' && exit 1
     fi
 fi

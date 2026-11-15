@@ -20,7 +20,6 @@ class DemoServiceProvider extends ServiceProvider
      * @var string[]
      */
     protected array $canDelete = [
-        //
     ];
 
     /**
@@ -43,10 +42,17 @@ class DemoServiceProvider extends ServiceProvider
         PersonalAccessToken::class,
     ];
 
-    public function register(): void
-    {
-        //
-    }
+    /**
+     * @var string[]
+     */
+    protected array $userCanUpdate = [
+        'current_project_id',
+        'timezone',
+        'remember_token',
+        'updated_at',
+    ];
+
+    public function register(): void {}
 
     public function boot(): void
     {
@@ -54,7 +60,6 @@ class DemoServiceProvider extends ServiceProvider
             return;
         }
 
-        // get all classes inside App\Models namespace
         $files = scandir(app_path('Models')) ?: [];
         $models = collect($files)
             ->filter(fn ($file): bool => ! in_array($file, ['.', '..']))
@@ -85,13 +90,10 @@ class DemoServiceProvider extends ServiceProvider
     private function preventUpdating(string $model): void
     {
         $model::updating(function ($m): void {
-            $throw = true;
-            if ($m instanceof User && ! $m->isDirty(['name', 'email', 'password', 'two_factor_secret', 'two_factor_recovery_codes'])) {
-                $throw = false;
+            if ($m instanceof User && array_diff(array_keys($m->getDirty()), $this->userCanUpdate) === []) {
+                return;
             }
-            if ($throw) {
-                abort(403, $this->error);
-            }
+            abort(403, $this->error);
         });
     }
 

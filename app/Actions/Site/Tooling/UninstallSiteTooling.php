@@ -40,6 +40,8 @@ class UninstallSiteTooling
             ]);
         }
 
+        app(AssertToolingNotUsedByComponents::class)->assert($site, $toolId);
+
         $current = $iuser->toolingStatus($toolId);
         if ($current === SiteToolingState::STATUS_INSTALLING || $current === SiteToolingState::STATUS_UNINSTALLING) {
             throw ValidationException::withMessages([

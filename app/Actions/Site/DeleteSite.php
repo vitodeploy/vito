@@ -7,6 +7,7 @@ use App\Exceptions\SSHError;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
+use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -21,22 +22,42 @@ class DeleteSite
      *
      * @throws SSHError
      */
-    public function delete(Site $site, array $input): void
+    public function delete(Site $site, array $input): bool
     {
         $this->validate($site, $input);
 
+        if (! ($input['cleanup'] ?? true)) {
+            $this->deleteRow($site);
+
+            return true;
+        }
+
+        $deployKeyRemoved = true;
         if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
-            $site->sourceControl->provider()->deleteDeployKey(
-                $site->type_data['deploy_key_id'],
-                $site->repository,
-            );
+            $deployKeyId = (string) $site->type_data['deploy_key_id'];
+            $site->jsonUpdate('type_data', 'deploy_key_id', null);
+            try {
+                app(SyncSiteDeployKey::class)->remove(
+                    $site->sourceControl,
+                    $site->repository,
+                    $deployKeyId,
+                );
+            } catch (Exception $e) {
+                $deployKeyRemoved = false;
+                Log::warning('Site deploy key cleanup failed; continuing site deletion.', [
+                    'site_id' => $site->id,
+                    'source_control_id' => $site->source_control_id,
+                    'deploy_key_id' => $deployKeyId,
+                    'exception' => $e::class,
+                ]);
+            }
         }
 
         if (! $site->isIsolated()) {
             $site->webserver()->deleteSite($site);
             $this->deleteRow($site);
 
-            return;
+            return $deployKeyRemoved;
         }
 
         $iuser = $site->isolatedUser;
@@ -75,13 +96,10 @@ class DeleteSite
         } finally {
             $lock->release();
         }
+
+        return $deployKeyRemoved;
     }
 
-    /**
-     * Delete the site row. If the row deletion fails after server-side teardown has
-     * already run, the server-side artefacts (pool, user) are already gone — log the
-     * orphan-row state so an operator can clean up, then rethrow.
-     */
     private function deleteRow(Site $site): void
     {
         $server = $site->server;
@@ -91,7 +109,7 @@ class DeleteSite
         try {
             $site->delete();
         } catch (Throwable $e) {
-            Log::error('Site row deletion failed after isolated teardown', [
+            Log::error('Site row deletion failed', [
                 'site_id' => $site->id,
                 'server_id' => $site->server_id,
                 'user' => $site->user,
@@ -114,6 +132,7 @@ class DeleteSite
                 'required',
                 Rule::in($site->domain),
             ],
+            'cleanup' => ['sometimes', 'boolean'],
         ])->validate();
     }
 }

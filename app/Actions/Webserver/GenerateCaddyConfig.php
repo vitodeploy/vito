@@ -37,6 +37,7 @@ class GenerateCaddyConfig extends AbstractGenerateConfig
         $data = [
             'lb_servers' => [],
             'lb_policy' => 'round_robin',
+            'render_lb_proxy' => true,
         ];
 
         if ($site->type === 'load-balancer') {

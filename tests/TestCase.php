@@ -54,6 +54,7 @@ abstract class TestCase extends BaseTestCase
         $this->user->ensureHasDefaultProject();
 
         $this->notificationChannel = NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
             'provider' => Email::id(),
             'connected' => true,
             'data' => [

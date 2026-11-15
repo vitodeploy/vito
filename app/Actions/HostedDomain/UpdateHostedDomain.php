@@ -20,6 +20,12 @@ class UpdateHostedDomain
      */
     public function update(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
     {
+        return app(AssertHostAvailable::class)->run($site->server_id, 'domain', fn (): HostedDomain => $this->updateLocked($hostedDomain->refresh(), $site, $input));
+    }
+
+    /** @param array<string, mixed> $input */
+    private function updateLocked(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
+    {
         if ($hostedDomain->status->isProcessing()) {
             throw ValidationException::withMessages([
                 'domain' => ['Cannot update a domain while it is '.$hostedDomain->status->value.'.'],
@@ -29,6 +35,10 @@ class UpdateHostedDomain
         $validated = $this->validate($hostedDomain, $site, $input);
 
         $isPrimary = $hostedDomain->type === HostedDomainType::PRIMARY;
+        if (! $isPrimary) {
+            app(AssertHostAvailable::class)->assert($site->server, $validated['domain'], 'domain', $hostedDomain);
+        }
+
         $domainChanged = ! $isPrimary && $hostedDomain->domain !== $validated['domain'];
         $sslMethodChangedToLE = SslMethod::from($validated['ssl_method']) === SslMethod::LETSENCRYPT
             && $hostedDomain->ssl_method !== SslMethod::LETSENCRYPT;
@@ -94,17 +104,6 @@ class UpdateHostedDomain
                 'string',
                 'max:255',
                 'regex:/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/',
-                function (string $attribute, mixed $value, \Closure $fail) use ($site, $hostedDomain): void {
-                    $exists = HostedDomain::query()
-                        ->where('domain', $value)
-                        ->where('id', '!=', $hostedDomain->id)
-                        ->whereHas('site', fn ($q) => $q->where('server_id', $site->server_id))
-                        ->exists();
-
-                    if ($exists) {
-                        $fail('This domain is already in use on this server.');
-                    }
-                },
             ];
             $rules['type'] = [
                 'required',

@@ -2,11 +2,15 @@
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Enums\UserRole;
+use App\Models\Server;
 use App\Models\User;
 use App\WebSocket\TerminalHandler;
+use App\WebSocket\TerminalSession;
+use App\WebSocket\WebSocketConnection;
 use GuzzleHttp\Psr7\Request as PsrRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Mockery\MockInterface;
 use React\EventLoop\Loop;
 
 uses(RefreshDatabase::class);
@@ -42,7 +46,6 @@ test('generate token', function () {
     $token = $response->json('token');
     expect($token)->not->toBeEmpty();
 
-    // Verify token is stored in cache
     $cached = Cache::get("terminal_token:{$token}");
     expect($cached)->not->toBeNull();
     expect($cached['server_id'])->toEqual($this->server->id);
@@ -110,12 +113,10 @@ test('token is single use', function () {
 
     $token = $response->json('token');
 
-    // First validation should succeed
     $action = new GenerateWebSocketToken;
     $data = $action->validate('terminal_token', $token);
     expect($data)->not->toBeNull();
 
-    // Second validation should fail (token consumed)
     $data = $action->validate('terminal_token', $token);
     expect($data)->toBeNull();
 });
@@ -128,10 +129,8 @@ test('token expires after ttl', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Token should exist
     expect($action->validate('terminal_token', $result['token']))->not->toBeNull();
 
-    // Generate a new token and simulate expiry
     $result = $action->generate('terminal_token', [
         'server_id' => $this->server->id,
         'user_id' => $this->user->id,
@@ -184,7 +183,6 @@ test('terminal handler authenticate with expired token', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Expire the token
     Cache::forget("terminal_token:{$result['token']}");
 
     $handler = new TerminalHandler(Loop::get());
@@ -195,7 +193,6 @@ test('terminal handler authenticate with expired token', function () {
 });
 
 test('terminal handler authenticate unauthorized user', function () {
-    // Change user role to USER (no write access)
     $this->server->project->users()->where('user_id', $this->user->id)->update([
         'role' => UserRole::USER,
     ]);
@@ -222,7 +219,6 @@ test('terminal handler authenticate deleted server', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Delete the server after token generation
     $this->server->forceDelete();
 
     $handler = new TerminalHandler(Loop::get());
@@ -240,7 +236,6 @@ test('terminal handler authenticate deleted user', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Delete the user after token generation
     $this->user->forceDelete();
 
     $handler = new TerminalHandler(Loop::get());
@@ -254,7 +249,6 @@ test('terminal handler rate limits connections', function () {
     $handler = new TerminalHandler(Loop::get());
     $action = new GenerateWebSocketToken;
 
-    // Authenticate MAX_CONNECTIONS_PER_USER (5) times
     for ($i = 0; $i < 5; $i++) {
         $result = $action->generate('terminal_token', [
             'server_id' => $this->server->id,
@@ -265,9 +259,6 @@ test('terminal handler rate limits connections', function () {
         $error = $handler->authenticate($request);
         expect($error)->toBeNull("Connection $i should succeed");
 
-        // Simulate that the connection was opened by manually adding to connections via onOpen
-        // We need to call onOpen to track the connection, but it will try SSH which won't work.
-        // Instead, use reflection to add a fake connection entry
         $reflection = new ReflectionClass($handler);
         $prop = $reflection->getProperty('connections');
         $connections = $prop->getValue($handler);
@@ -283,7 +274,6 @@ test('terminal handler rate limits connections', function () {
         $prop->setValue($handler, $connections);
     }
 
-    // 6th connection should be rate limited
     $result = $action->generate('terminal_token', [
         'server_id' => $this->server->id,
         'user_id' => $this->user->id,
@@ -298,7 +288,6 @@ test('terminal handler rate limit per user', function () {
     $handler = new TerminalHandler(Loop::get());
     $action = new GenerateWebSocketToken;
 
-    // Fill up connections for user 1
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $connections = [];
@@ -315,7 +304,6 @@ test('terminal handler rate limit per user', function () {
     }
     $prop->setValue($handler, $connections);
 
-    // Another user should still be able to connect
     $otherUser = User::factory()->create();
     $this->server->project->users()->create([
         'user_id' => $otherUser->id,
@@ -336,7 +324,6 @@ test('terminal handler connection count', function () {
     $handler = new TerminalHandler(Loop::get());
     expect($handler->getConnectionCount())->toEqual(0);
 
-    // Add fake connections via reflection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -350,7 +337,6 @@ test('terminal handler connection count', function () {
 test('terminal handler on close cleans up', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Add a fake connection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -375,7 +361,6 @@ test('terminal handler on close cleans up', function () {
 test('terminal handler on close nonexistent connection', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Should not throw
     $handler->onClose('nonexistent-conn');
 
     expect($handler->getConnectionCount())->toEqual(0);
@@ -384,7 +369,6 @@ test('terminal handler on close nonexistent connection', function () {
 test('terminal handler on message ignores unknown connection', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Should not throw
     $handler->onMessage('nonexistent-conn', json_encode(['type' => 'input', 'data' => 'test']));
 
     expect($handler->getConnectionCount())->toEqual(0);
@@ -393,7 +377,6 @@ test('terminal handler on message ignores unknown connection', function () {
 test('terminal handler on message ignores invalid json', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Add a fake connection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -408,7 +391,6 @@ test('terminal handler on message ignores invalid json', function () {
         ],
     ]);
 
-    // Should not throw on invalid JSON
     $handler->onMessage('test-conn', 'not-json');
 
     expect($handler->getConnectionCount())->toEqual(1);
@@ -431,7 +413,6 @@ test('terminal handler on message ignores missing type', function () {
         ],
     ]);
 
-    // Should not throw on message without type
     $handler->onMessage('test-conn', json_encode(['data' => 'test']));
 
     expect($handler->getConnectionCount())->toEqual(1);
@@ -446,4 +427,104 @@ test('unauthenticated user cannot generate token', function () {
     $this->post(route('console.token', $this->server), [
         'user' => $this->server->getSshUser(),
     ])->assertRedirect();
+});
+
+/**
+ * @return array{TerminalHandler, WebSocketConnection&object{sent: array<int, array<string, mixed>>, closed: bool}, TerminalSession&MockInterface}
+ */
+function vitoPestFeatureConsoleTestOpenTerminal(Server $server, User $user): array
+{
+    $handler = new TerminalHandler(Loop::get());
+    $connection = new class extends WebSocketConnection
+    {
+        /** @var array<int, array<string, mixed>> */
+        public array $sent = [];
+
+        public bool $closed = false;
+
+        public function __construct() {}
+
+        public function send(array $data): void
+        {
+            $this->sent[] = $data;
+        }
+
+        public function ping(): void
+        {
+            $this->sent[] = ['type' => 'ping'];
+        }
+
+        public function close(): void
+        {
+            $this->closed = true;
+        }
+    };
+    $session = Mockery::mock(TerminalSession::class);
+
+    (new ReflectionProperty($handler, 'connections'))->setValue($handler, [
+        'conn' => [
+            'connection' => $connection,
+            'session' => $session,
+            'server_id' => $server->id,
+            'user_id' => $user->id,
+            'ssh_user' => $server->getSshUser(),
+            'initial_cols' => 80,
+            'initial_rows' => 24,
+            'checked_at' => 0.0,
+        ],
+    ]);
+
+    return [$handler, $connection, $session];
+}
+
+test('terminal input stops and the session closes once the user loses write access', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+
+    $session->shouldReceive('write')->once()->with('ls');
+    $session->shouldReceive('close')->once();
+
+    $handler->onMessage('conn', json_encode(['type' => 'input', 'data' => 'ls']));
+
+    $this->server->project->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    $handler->onMessage('conn', json_encode(['type' => 'input', 'data' => 'rm -rf /']));
+
+    expect($connection->sent)->toBe([['type' => 'error', 'message' => 'Access revoked']])
+        ->and($connection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(0);
+});
+
+test('terminal ping closes an idle session once the user is removed from the project', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+    $session->shouldReceive('close')->once();
+
+    $handler->ping('conn');
+    expect($connection->sent)->toBe([['type' => 'ping']]);
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+    $handler->ping('conn');
+
+    expect(end($connection->sent))->toBe(['type' => 'error', 'message' => 'Access revoked'])
+        ->and($connection->closed)->toBeTrue()
+        ->and($handler->getConnectionCount())->toBe(0);
+});
+
+test('terminal output is rechecked at most once per interval and cut off once access is gone', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+    $session->shouldReceive('close')->once();
+    $recheck = new ReflectionMethod($handler, 'recheck');
+    $connections = new ReflectionProperty($handler, 'connections');
+
+    expect($recheck->invoke($handler, 'conn', 1))->toBeTrue();
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+    expect($recheck->invoke($handler, 'conn', 1))->toBeTrue()
+        ->and($connection->sent)->toBe([]);
+
+    $state = $connections->getValue($handler);
+    $state['conn']['checked_at'] = microtime(true) - 2;
+    $connections->setValue($handler, $state);
+
+    expect($recheck->invoke($handler, 'conn', 1))->toBeFalse()
+        ->and($connection->sent)->toBe([['type' => 'error', 'message' => 'Access revoked']])
+        ->and($connection->closed)->toBeTrue();
 });

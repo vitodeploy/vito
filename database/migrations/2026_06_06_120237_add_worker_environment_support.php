@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         if (! Schema::hasColumn('sites', 'worker_environment')) {
@@ -42,9 +39,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('sites', function (Blueprint $table) {
@@ -91,7 +85,7 @@ return new class extends Migration
             $variables[] = [
                 'key' => $key,
                 'value' => is_scalar($value) ? (string) $value : '',
-                'is_secret' => (bool) preg_match('/PASSWORD|SECRET|TOKEN|KEY|PRIVATE/i', (string) $key),
+                'is_secret' => true,
             ];
         }
 

@@ -3,10 +3,14 @@
 use App\Events\SocketEvent;
 use App\Models\ServerProvider;
 use App\Models\User;
+use App\ServerProviders\AWS;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
+use Aws\Command;
+use Aws\Ec2\Ec2Client;
+use Aws\Result;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -14,6 +18,46 @@ use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+test('aws plans paginate current generation virtual machine types', function (): void {
+    $requests = [];
+    $client = $this->getMockBuilder(Ec2Client::class)
+        ->disableOriginalConstructor()
+        ->onlyMethods(['getCommand', 'execute'])
+        ->getMock();
+    $client->expects($this->exactly(2))
+        ->method('getCommand')
+        ->with('describeInstanceTypes', $this->callback(function (array $parameters) use (&$requests): bool {
+            $requests[] = $parameters;
+
+            return true;
+        }))
+        ->willReturnCallback(fn (string $name, array $parameters): Command => new Command($name, $parameters));
+    $client->expects($this->exactly(2))
+        ->method('execute')
+        ->willReturnOnConsecutiveCalls(
+            new Result(['InstanceTypes' => [['InstanceType' => 't3.small']], 'NextToken' => 'next-page']),
+            new Result(['InstanceTypes' => [['InstanceType' => 't4g.small']]]),
+        );
+    $this->app->bind(Ec2Client::class, fn (): Ec2Client => $client);
+    $connection = ServerProvider::factory()->create([
+        'provider' => AWS::id(),
+        'credentials' => ['key' => 'fake-key', 'secret' => 'fake-secret'],
+    ]);
+
+    $plans = (new AWS($connection, $this->server))->plans('us-east-1');
+
+    expect(array_keys($plans))->toBe(['t3.small', 't4g.small'])
+        ->and($requests[0])->not->toHaveKey('NextToken')
+        ->and($requests[1]['NextToken'])->toBe('next-page')
+        ->and(array_column($requests[0]['Filters'], 'Values', 'Name'))->toBe([
+            'processor-info.supported-architecture' => ['x86_64', 'arm64'],
+            'current-generation' => ['true'],
+            'supported-virtualization-type' => ['hvm'],
+            'bare-metal' => ['false'],
+        ])
+        ->and($requests[1]['Filters'])->toBe($requests[0]['Filters']);
+});
 
 test('connect provider', function (string $provider, array $input) {
     $this->actingAs($this->user);
@@ -261,7 +305,8 @@ test('creating server provider dispatches socket event', function () {
     ])->assertSessionDoesntHaveErrors();
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.created'
-        && $event->data->data['name'] === 'hetty');
+        && $event->data->data['name'] === 'hetty'
+        && $event->data->userId === $this->user->id);
 });
 
 test('deleting server provider dispatches socket event', function () {
@@ -276,7 +321,8 @@ test('deleting server provider dispatches socket event', function () {
     $this->delete(route('server-providers.destroy', $serverProvider))->assertSessionDoesntHaveErrors();
 
     Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->type === 'server-provider.deleted'
-        && $event->data->data['id'] === $serverProvider->id);
+        && $event->data->data['id'] === $serverProvider->id
+        && $event->data->userId === $this->user->id);
 });
 
 test('hetzner plans expose availability and order available first', function () {

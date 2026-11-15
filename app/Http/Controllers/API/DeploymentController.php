@@ -10,6 +10,7 @@ use App\Models\Deployment;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -36,14 +37,14 @@ class DeploymentController extends Controller
     }
 
     #[Post('/', name: 'api.projects.servers.sites.deployments.store', middleware: 'ability:write')]
-    public function store(Project $project, Server $server, Site $site): DeploymentResource
+    public function store(Request $request, Project $project, Server $server, Site $site): DeploymentResource
     {
         $this->authorize('update', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
 
         try {
-            $deployment = app(Deploy::class)->run($site);
+            $deployment = app(Deploy::class)->run($site, input: $request->only('commit_hash'));
 
             return new DeploymentResource($deployment);
         } catch (DeploymentScriptIsEmptyException) {

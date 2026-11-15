@@ -15,18 +15,16 @@ use App\Models\Workflow;
 use App\Models\WorkflowRun;
 use App\Traits\UniqueQueue;
 use Exception;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-class RunJob implements ShouldQueue
+class RunJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
     use UniqueQueue;
 
-    /**
-     * Jobs queued before token context was captured must fail closed.
-     */
     protected ?int $accessTokenId = 0;
 
     public function __construct(

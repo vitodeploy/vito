@@ -68,8 +68,6 @@ class Cloudflare extends AbstractDNSProvider
     public function connect(array $credentials): bool
     {
         try {
-            // Use /zones endpoint to verify token works for both user-scoped and account-scoped tokens
-            // This also verifies the token has Zone:Read permissions which we need
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$credentials['token'],
                 'Content-Type' => 'application/json',
@@ -147,30 +145,41 @@ class Cloudflare extends AbstractDNSProvider
         }
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     public function getRecords(string $domainId): array
     {
-        $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
-            'per_page' => 100,
-        ]);
+        $records = [];
+        $page = 1;
+        do {
+            $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
+                'per_page' => 100,
+                'page' => $page,
+            ]);
 
-        if (! $response->successful()) {
-            Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
-            throw new \RuntimeException('Failed to fetch DNS records: '.($response->json('errors')[0]['message'] ?? 'Unknown error'));
-        }
+            if (! $response->successful()) {
+                Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
+                throw new \RuntimeException('Failed to fetch DNS records: '.($response->json('errors')[0]['message'] ?? 'Unknown error'));
+            }
 
-        return collect($response->json('result'))->map(function (array $record) {
-            return [
-                'id' => $record['id'],
-                'type' => $record['type'],
-                'name' => $record['name'],
-                'content' => $record['content'],
-                'ttl' => $record['ttl'],
-                'proxied' => $record['proxied'],
-                'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
-                'created_on' => $record['created_on'],
-                'modified_on' => $record['modified_on'],
-            ];
-        })->toArray();
+            $pageRecords = collect($response->json('result'))->map(function (array $record) {
+                return [
+                    'id' => $record['id'],
+                    'type' => $record['type'],
+                    'name' => $record['name'],
+                    'content' => $record['content'],
+                    'ttl' => $record['ttl'],
+                    'proxied' => $record['proxied'],
+                    'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
+                    'created_on' => $record['created_on'],
+                    'modified_on' => $record['modified_on'],
+                ];
+            })->toArray();
+            array_push($records, ...$pageRecords);
+        } while ($page++ < (int) $response->json('result_info.total_pages', 1));
+
+        return $records;
     }
 
     public function createRecord(string $domainId, array $recordData): array
@@ -229,7 +238,7 @@ class Cloudflare extends AbstractDNSProvider
         try {
             $response = $this->getClient()->delete("zones/{$domainId}/dns_records/{$recordId}");
 
-            if (! $response->successful()) {
+            if (! $response->successful() && $response->status() !== 404) {
                 Log::error('Failed to delete Cloudflare DNS record', ['domainId' => $domainId, 'recordId' => $recordId, 'response' => $response->json()]);
 
                 return false;

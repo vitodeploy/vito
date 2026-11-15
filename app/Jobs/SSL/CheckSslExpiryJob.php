@@ -22,8 +22,8 @@ class CheckSslExpiryJob implements ShouldQueue
     {
         $ssls = Ssl::query()
             ->with('site.server')
-            ->whereHas('site', fn ($q) => $q->where('server_id', $this->server->id))
-            ->whereNotNull('site_id')
+            ->where(fn ($query) => $query->whereHas('site', fn ($q) => $q->where('server_id', $this->server->id))
+                ->orWhere(fn ($query) => $query->whereNotNull('environment_id')->where('server_id', $this->server->id)))
             ->where('type', SslType::LETSENCRYPT)
             ->where('status', SslStatus::CREATED)
             ->whereNotNull('certificate_path')

@@ -54,7 +54,6 @@ class RunWorkflow
 
         $this->authorizeExecution($user, $workflow, $accessTokenId);
 
-        // Merge input with $workflowActionDto->inputs and resolve placeholders
         $resolvedInput = $this->resolveInputs($input ?? [], $workflowActionDto->inputs ?? []);
 
         $run->current_node_id = $workflowActionDto->id;
@@ -95,8 +94,6 @@ class RunWorkflow
     }
 
     /**
-     * Resolve inputs by merging previous outputs with current action inputs and replacing placeholders
-     *
      * @param  array<string, mixed>  $previousOutputs
      * @param  array<string, mixed>  $actionInputs
      * @return array<string, mixed>
@@ -105,51 +102,38 @@ class RunWorkflow
     {
         $resolvedInputs = [];
 
-        // First pass: resolve exact placeholders and regular values
         foreach ($actionInputs as $key => $value) {
             if (is_string($value)) {
-                // Handle exact placeholder matches
                 if (preg_match('/^\{\{?(\w+)\}?\}$/', $value, $matches)) {
-                    // This is an exact placeholder like {server_id} or {{server_id}}
                     $placeholderKey = $matches[1];
 
                     if (array_key_exists($placeholderKey, $previousOutputs)) {
-                        // Replace placeholder with actual value from previous output
                         $resolvedInputs[$key] = $previousOutputs[$placeholderKey];
                     } else {
-                        // Placeholder not found in previous outputs, keep the placeholder as is
                         $resolvedInputs[$key] = $value;
                     }
                 } else {
-                    // This might contain interpolated placeholders, resolve later
                     $resolvedInputs[$key] = $value;
                 }
             } else {
-                // Regular input value, use as is
                 $resolvedInputs[$key] = $value;
             }
         }
 
-        // Second pass: resolve string interpolation using original previous outputs
-        // This ensures string interpolation uses the original values, not the overridden ones
         foreach ($resolvedInputs as $key => $value) {
             if (is_string($value) && ! preg_match('/^\{\{?(\w+)\}?\}$/', $value)) {
                 $resolvedInputs[$key] = $this->interpolateString($value, $previousOutputs);
             }
         }
 
-        // Return merged inputs with resolved action inputs taking priority
         return array_merge($previousOutputs, $resolvedInputs);
     }
 
     /**
-     * Interpolate placeholders within a string using previous outputs
-     *
      * @param  array<string, mixed>  $previousOutputs
      */
     private function interpolateString(string $string, array $previousOutputs): string
     {
-        // Handle both single {key} and double {{key}} placeholders
         return preg_replace_callback('/\{\{?(\w+)\}?\}/', function ($matches) use ($previousOutputs) {
             $placeholderKey = $matches[1];
 
@@ -157,7 +141,6 @@ class RunWorkflow
                 return (string) $previousOutputs[$placeholderKey];
             }
 
-            // Keep the placeholder as-is if not found in previous outputs
             return $matches[0];
         }, $string);
     }

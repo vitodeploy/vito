@@ -105,12 +105,6 @@ class CreateJob implements ShouldQueue
         return 'Installation failed due to an unexpected error. See the site logs for full details.';
     }
 
-    /**
-     * Strip SSH public-key material from a string so provider responses can be
-     * surfaced safely. Provider error bodies sometimes echo back the submitted
-     * key — redact `ssh-rsa AAAA…`, `ssh-ed25519 AAAA…`, `ecdsa-sha2-… AAAA…`
-     * and similar patterns.
-     */
     private function redactPublicKeys(string $message): string
     {
         if ($message === '') {

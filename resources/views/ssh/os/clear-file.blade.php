@@ -1,25 +1,28 @@
 #!/bin/bash
 
-# Clear remote log file while preserving permissions and ownership
-# Usage: clear-file.sh <file_path>
 
-FILE_PATH="{{ $path }}"
+FILE_PATH={!! escapeshellarg($path) !!}
 
-# Check if the file exists
-if [ ! -f "$FILE_PATH" ]; then
+@if (isset($user))
+if ! sudo -u {!! escapeshellarg($user) !!} test -f "$FILE_PATH"; then
     echo "Error: File '$FILE_PATH' does not exist"
     exit 1
 fi
 
-# Get the current permissions and ownership
-PERMISSIONS=$(stat -c "%a" "$FILE_PATH")
-OWNER=$(stat -c "%U:%G" "$FILE_PATH")
+sudo -u {!! escapeshellarg($user) !!} truncate -s 0 "$FILE_PATH"
+@else
+if ! sudo test -f "$FILE_PATH"; then
+    echo "Error: File '$FILE_PATH' does not exist"
+    exit 1
+fi
 
-# Clear the file contents using sudo to ensure we have write permissions
+PERMISSIONS=$(sudo stat -L -c "%a" "$FILE_PATH")
+OWNER=$(sudo stat -L -c "%U:%G" "$FILE_PATH")
+
 sudo truncate -s 0 "$FILE_PATH"
 
-# Restore the original permissions and ownership
 sudo chown "$OWNER" "$FILE_PATH"
 sudo chmod "$PERMISSIONS" "$FILE_PATH"
+@endif
 
 echo "File '$FILE_PATH' cleared successfully"

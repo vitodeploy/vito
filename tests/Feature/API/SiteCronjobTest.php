@@ -224,7 +224,6 @@ test('cannot access cronjob from different server', function () {
         'site_id' => $site->id,
     ]);
 
-    // Create another server and try to access the cronjob through it
     $otherServer = Server::factory()->create([
         'project_id' => $this->server->project->id,
     ]);

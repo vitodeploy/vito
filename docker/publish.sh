@@ -3,7 +3,6 @@
 BRANCH=""
 TAGS=()
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --branch)
@@ -21,7 +20,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate inputs
 if [ -z "$BRANCH" ]; then
     echo "No branch provided. Use --branch <git_branch>"
     exit 1
@@ -32,20 +30,21 @@ if [ ${#TAGS[@]} -eq 0 ]; then
     exit 1
 fi
 
-# Clone the specified branch of the repo
-rm -rf /tmp/vito
-git clone --branch "$BRANCH" --depth 1 git@github.com:vitodeploy/vito.git /tmp/vito
-cd /tmp/vito || exit
+WORK_DIR=$(mktemp -d) || exit 1
+trap 'rm -rf "$WORK_DIR"' EXIT
 
-# Prepare tag arguments for docker buildx
+if ! git clone --branch "$BRANCH" --depth 1 git@github.com:vitodeploy/vito.git "$WORK_DIR/vito"; then
+    echo "Failed to clone branch $BRANCH"
+    exit 1
+fi
+cd "$WORK_DIR/vito" || exit 1
+
 TAG_ARGS=()
 for TAG in "${TAGS[@]}"; do
-    # Trim whitespace to avoid invalid tag formatting
     TAG_CLEANED=$(echo -n "$TAG" | xargs)
     TAG_ARGS+=("-t" "vitodeploy/vito:$TAG_CLEANED")
 done
 
-# Build and push the image
 docker buildx build . \
     -f docker/Dockerfile \
     "${TAG_ARGS[@]}" \

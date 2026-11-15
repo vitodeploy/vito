@@ -102,6 +102,8 @@ test('execute script and view log', function () {
         'user' => 'root',
     ]);
 
+    SSH::assertExecutedContains('if ! cd -- "$HOME"\'/\'; then');
+
     $this->assertDatabaseHas('server_logs', [
         'server_id' => $this->server->id,
     ]);
@@ -179,4 +181,42 @@ test('cannot execute script as user not on server', function () {
         'script_id' => $script->id,
         'user' => 'example',
     ]);
+});
+
+test('execution history omits a server the owner can no longer view', function () {
+    $this->actingAs($this->user);
+    $script = Script::factory()->create(['user_id' => $this->user->id]);
+    ScriptExecution::factory()->create([
+        'script_id' => $script->id,
+        'server_id' => $this->server->id,
+        'status' => ScriptExecutionStatus::COMPLETED,
+    ]);
+
+    $this->get(route('scripts.show', $script))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('executions.data.0.server.id', $this->server->id)
+            ->where('script.last_execution.server.id', $this->server->id));
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+
+    $this->get(route('scripts.show', $script))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('executions.data.0.server')
+            ->missing('script.last_execution.server')
+            ->where('executions.data.0.server_id', $this->server->id));
+});
+
+test('script variables are substituted once and oversized expansions are rejected', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+
+    $script = Script::factory()->create(['user_id' => $this->user->id, 'content' => 'echo "${A}-${B}"']);
+    $this->post(route('scripts.execute', $script), ['server' => $this->server->id, 'user' => 'root', 'A' => '${B}${B}', 'B' => 'x'])
+        ->assertSessionDoesntHaveErrors();
+    SSH::assertExecutedContains('echo "${B}${B}-x"');
+
+    $huge = Script::factory()->create(['user_id' => $this->user->id, 'content' => str_repeat('${A}', 5000)]);
+    $this->post(route('scripts.execute', $huge), ['server' => $this->server->id, 'user' => 'root', 'A' => str_repeat('a', 255)])
+        ->assertSessionHasErrors('variables');
+    $this->assertDatabaseMissing('script_executions', ['script_id' => $huge->id]);
 });

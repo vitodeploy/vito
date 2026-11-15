@@ -83,10 +83,12 @@ class WebSocketServeCommand extends Command
                 throw new \RuntimeException('Invalid project ID');
             }
 
+            $userId = isset($body['user_id']) ? (int) $body['user_id'] : null;
+
             if ($projectId === 0) {
-                $eventsHandler->broadcastToAll($body);
+                $eventsHandler->broadcastToAll($body, $userId);
             } else {
-                $eventsHandler->broadcastToProject($projectId, $body);
+                $eventsHandler->broadcastToProject($projectId, $body, $userId);
             }
         });
     }

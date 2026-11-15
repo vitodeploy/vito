@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Actions\EnvironmentAttachment\ValidateEnvironmentResource;
 use App\Enums\DatabaseUserPermission;
 use App\Models\DatabaseUser;
 use App\Models\Service;
@@ -19,6 +20,7 @@ class UpdateDatabaseUser
      */
     public function update(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
+        app(ValidateEnvironmentResource::class)->databaseUser($databaseUser);
         $this->validate($databaseUser, $input);
 
         $oldHost = $databaseUser->host;
@@ -71,6 +73,7 @@ class UpdateDatabaseUser
             $rules['password'] = [
                 'required',
                 'min:6',
+                'not_regex:/[\x00-\x1F\x7F]/',
             ];
         }
 
@@ -100,9 +103,6 @@ class UpdateDatabaseUser
     }
 
     /**
-     * Resolves the new host when it is being changed, or null when unchanged or
-     * the database engine does not use hosts (e.g. PostgreSQL).
-     *
      * @param  array<string, mixed>  $input
      */
     private function changedHost(DatabaseUser $databaseUser, array $input): ?string

@@ -17,7 +17,7 @@ class SshKeyFactory extends Factory
         return [
             'user_id' => 1,
             'name' => $this->faker->name(),
-            'public_key' => 'public-key-content',
+            'public_key' => 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGW6u1UNcrPWNloh/cTUAhAQcxtPHquUT4d7MkGfwI vito-test',
         ];
     }
 }

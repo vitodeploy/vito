@@ -2,7 +2,4 @@
 
 namespace App\Exceptions;
 
-class SSLCreationException extends SSHError
-{
-    //
-}
+class SSLCreationException extends SSHError {}

@@ -26,7 +26,6 @@ class AddServersToNetwork
 
     /**
      * @param  array<string, mixed>  $input
-     * @return ?int the port the network moved to, when an incoming server forced it off its own
      */
     public function add(Network $network, array $input): ?int
     {
@@ -134,9 +133,6 @@ class AddServersToNetwork
     }
 
     /**
-     * Runs only once `servers` is known to be a list of integers — building these rules from
-     * unvalidated input would interpolate an array into a rule key and fail with a 500.
-     *
      * @param  array<string, mixed>  $input
      */
     private function validateMemberIps(Network $network, array $input): void
@@ -158,13 +154,6 @@ class AddServersToNetwork
     }
 
     /**
-     * An incoming server may already run this network's port for a different network, which the
-     * two would then fight over on that host. The network moves to a free port instead of
-     * refusing the server — every healthy member is resynced by the caller, so they follow it.
-     *
-     * Peers do not follow: their endpoint port is baked into the config at download time, so an
-     * already-imported config keeps the old port. The caller warns when peers exist.
-     *
      * @param  array<int, int>  $serverIds
      */
     private function resolvePortConflict(Network $network, array $serverIds): void

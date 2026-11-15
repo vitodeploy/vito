@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property int $id
@@ -106,88 +108,71 @@ class Workflow extends Model
         return WorkflowActionDTO::fromArray($actionData, $nodeId);
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
+    public static function visibleInputs(mixed $inputs, bool $reveal): array
+    {
+        if ($reveal) {
+            return is_array($inputs) ? $inputs : [];
+        }
+
+        return is_array($inputs) ? array_map(fn (): string => '', $inputs) : [];
+    }
+
+    /**
+     * @throws ValidationException
+     */
     public function getExecutionTree(): ?WorkflowActionDTO
     {
-        $payload = $this->payload ?? [];
-
-        $nodes = data_get($payload, 'nodes', []);
-        $edges = data_get($payload, 'edges', []);
-
-        if (empty($nodes)) {
-            return null;
-        }
-
-        // Find the starting node
-        $startingNode = null;
-        foreach ($nodes as $node) {
-            if (data_get($node, 'data.action.starting') === true) {
-                $startingNode = $node;
-                break;
-            }
-        }
+        $startingNode = $this->getStartingNode();
 
         if (! $startingNode) {
             return null;
         }
 
-        // Build the execution tree recursively
-        return $this->buildExecutionTree($startingNode, $nodes, $edges);
+        $nodes = collect(data_get($this->payload, 'nodes', []))->keyBy('id')->all();
+        $edges = collect(data_get($this->payload, 'edges', []))->groupBy('source')->all();
+        $built = [];
+
+        return $this->buildExecutionTree($startingNode->id, $nodes, $edges, $built, []);
     }
 
     /**
-     * Build the execution tree recursively starting from a given node
+     * @param  array<string, array<string, mixed>>  $nodes
+     * @param  array<string, SupportCollection<int, array<string, mixed>>>  $edges
+     * @param  array<string, WorkflowActionDTO>  $built
+     * @param  array<string, true>  $ancestors
+     *
+     * @throws ValidationException
      */
-    private function buildExecutionTree(array $currentNode, array $allNodes, array $allEdges): WorkflowActionDTO
+    private function buildExecutionTree(string $nodeId, array $nodes, array $edges, array &$built, array $ancestors): WorkflowActionDTO
     {
-        $nodeId = $currentNode['id'];
-        $actionData = $currentNode['data']['action'] ?? [];
-
-        // Create the base DTO for this node
-        $dto = WorkflowActionDTO::fromArray($actionData, $nodeId);
-
-        // Find all edges that start from this node
-        $outgoingEdges = array_filter($allEdges, function ($edge) use ($nodeId) {
-            return $edge['source'] === $nodeId;
-        });
-
-        $successDto = null;
-        $failureDto = null;
-
-        foreach ($outgoingEdges as $edge) {
-            $targetNodeId = $edge['target'];
-            $edgeStatus = $edge['data']['status'] ?? 'success';
-
-            // Find the target node
-            $targetNode = null;
-            foreach ($allNodes as $node) {
-                if ($node['id'] === $targetNodeId) {
-                    $targetNode = $node;
-                    break;
-                }
-            }
-
-            if ($targetNode) {
-                // Recursively build the subtree for the target node
-                $subTree = $this->buildExecutionTree($targetNode, $allNodes, $allEdges);
-
-                // Assign to the appropriate branch based on edge status
-                if ($edgeStatus === 'success') {
-                    $successDto = $subTree;
-                } elseif ($edgeStatus === 'failure') {
-                    $failureDto = $subTree;
-                }
-            }
+        if (isset($ancestors[$nodeId])) {
+            throw ValidationException::withMessages(['edges' => 'The workflow contains a cycle.']);
         }
 
-        // Return a new DTO with the success and failure branches
-        return new WorkflowActionDTO(
-            label: $dto->label,
-            handler: $dto->handler,
-            outputs: $dto->outputs,
-            inputs: $dto->inputs,
-            id: $dto->id,
-            success: $successDto,
-            failure: $failureDto,
-        );
+        if (isset($built[$nodeId])) {
+            return $built[$nodeId];
+        }
+
+        $ancestors[$nodeId] = true;
+        $dto = WorkflowActionDTO::fromArray($nodes[$nodeId]['data']['action'] ?? [], $nodeId);
+
+        foreach ($edges[$nodeId] ?? [] as $edge) {
+            $target = $edge['target'] ?? null;
+            if (! is_scalar($target) || ! isset($nodes[$target])) {
+                continue;
+            }
+
+            $subTree = $this->buildExecutionTree((string) $target, $nodes, $edges, $built, $ancestors);
+            match ($edge['data']['status'] ?? 'success') {
+                'success' => $dto->success = $subTree,
+                'failure' => $dto->failure = $subTree,
+                default => null,
+            };
+        }
+
+        return $built[$nodeId] = $dto;
     }
 }

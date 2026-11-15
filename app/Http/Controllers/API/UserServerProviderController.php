@@ -53,7 +53,6 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('view', $serverProvider);
 
-        // Ensure the server provider belongs to the authenticated user
         if ($serverProvider->user_id !== user()->id) {
             abort(404, 'Server provider not found');
         }
@@ -66,7 +65,6 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('update', $serverProvider);
 
-        // Ensure the server provider belongs to the authenticated user
         if ($serverProvider->user_id !== user()->id) {
             abort(404, 'Server provider not found');
         }
@@ -85,7 +83,6 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('view', $serverProvider);
 
-        // Ensure the server provider belongs to the authenticated user
         if ($serverProvider->user_id !== user()->id) {
             abort(404, 'Server provider not found');
         }
@@ -98,7 +95,6 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('view', $serverProvider);
 
-        // Ensure the server provider belongs to the authenticated user
         if ($serverProvider->user_id !== user()->id) {
             abort(404, 'Server provider not found');
         }
@@ -111,7 +107,6 @@ class UserServerProviderController extends Controller
     {
         $this->authorize('delete', $serverProvider);
 
-        // Ensure the server provider belongs to the authenticated user
         if ($serverProvider->user_id !== user()->id) {
             abort(404, 'Server provider not found');
         }

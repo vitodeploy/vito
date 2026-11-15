@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('hosted_domains', function (Blueprint $table) {
@@ -33,7 +30,6 @@ return new class extends Migration
             $table->index('domain');
         });
 
-        // Seed existing sites' domains into hosted_domains
         Site::query()->each(function (Site $site): void {
             $isCaddy = DB::table('services')
                 ->where('server_id', $site->server_id)
@@ -73,9 +69,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('hosted_domains');

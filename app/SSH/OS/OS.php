@@ -6,14 +6,19 @@ use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
-use App\Models\Site;
 use RuntimeException;
 
 class OS
 {
     public const FILE_NOT_FOUND = 'VITO_NO_FILE';
 
-    private const SHELL_IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]*$/';
+    public const READ_LIMIT = 1048576;
+
+    public const KEY_READ_LIMIT = 16384;
+
+    public const SCAN_LIMIT = 16777216;
+
+    private const SHELL_IDENTIFIER = '/\A[A-Za-z_][A-Za-z0-9_]*\z/';
 
     public function __construct(protected Server $server) {}
 
@@ -32,6 +37,7 @@ class OS
         $this->server->ssh()->exec(
             view('ssh.os.wait-for-boot', [
                 'timeout' => $timeout,
+                'isDebian' => $this->server->os->isDebian(),
             ]),
             'wait-for-boot'
         );
@@ -46,6 +52,7 @@ class OS
             view('ssh.os.install-dependencies', [
                 'name' => $this->server->creator->name,
                 'email' => $this->server->creator->email,
+                'isDebian' => $this->server->os->isDebian(),
             ]),
             'install-dependencies'
         );
@@ -117,7 +124,7 @@ class OS
     /**
      * @throws SSHError
      */
-    public function createIsolatedUser(string $user, string $password, int $site_id): void
+    public function createIsolatedUser(string $user, string $password, ?int $siteId = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.create-isolated-user', [
@@ -127,7 +134,7 @@ class OS
                 'key' => escapeshellarg(trim($this->server->sshKey()['public_key'])),
             ]),
             'create-isolated-user',
-            $site_id
+            $siteId
         );
     }
 
@@ -153,6 +160,7 @@ class OS
         $key = $this->server->ssh()->exec(
             view('ssh.os.read-file', [
                 'path' => '/home/'.$user.'/.ssh/id_rsa.pub',
+                'limit' => self::KEY_READ_LIMIT,
             ]),
             'get-public-key'
         );
@@ -161,7 +169,7 @@ class OS
             throw new SSHCommandError(message: 'Failed to read the public key for '.$user);
         }
 
-        return $key;
+        return $this->publicKey($key);
     }
 
     /**
@@ -171,7 +179,7 @@ class OS
     {
         $this->server->ssh($user)->exec(
             view('ssh.os.deploy-ssh-key', [
-                'key' => $key,
+                'key' => str_replace(["\r", "\n"], ' ', trim($key)),
             ]),
             'deploy-ssh-key'
         );
@@ -182,9 +190,15 @@ class OS
      */
     public function deleteSSHKey(string $key, string $user): void
     {
+        $material = preg_split('/\s+/', trim($key))[1] ?? '';
+
+        if (preg_match('/^AAAA[A-Za-z0-9+\/]+={0,3}$/', $material) !== 1) {
+            throw new SSHCommandError(message: 'Invalid SSH public key');
+        }
+
         $this->server->ssh($user)->exec(
             view('ssh.os.delete-ssh-key', [
-                'key' => $key,
+                'material' => $material,
             ]),
             'delete-ssh-key'
         );
@@ -193,28 +207,42 @@ class OS
     /**
      * @throws SSHError
      */
-    public function generateSSHKey(string $name, ?Site $site = null): void
+    public function generateSSHKey(string $name, ?string $user = null, ?int $siteId = null): void
     {
-        $this->server->ssh($site?->user)->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.generate-ssh-key', [
                 'name' => $name,
             ]),
             'generate-ssh-key',
-            $site?->id
+            $siteId
         );
     }
 
     /**
      * @throws SSHError
      */
-    public function readSSHKey(string $name, ?Site $site = null): string
+    public function readSSHKey(string $name, ?string $user = null, ?int $siteId = null): string
     {
-        return $this->server->ssh($site?->user)->exec(
+        return $this->publicKey($this->server->ssh($user)->exec(
             view('ssh.os.read-ssh-key', [
                 'name' => $name,
+                'limit' => self::KEY_READ_LIMIT,
             ]),
-            'read-ssh-key'
-        );
+            'read-ssh-key',
+            $siteId
+        ));
+    }
+
+    /**
+     * @throws SSHCommandError
+     */
+    private function publicKey(string $output): string
+    {
+        if (strlen($output) > self::KEY_READ_LIMIT || str_contains(trim($output), "\n")) {
+            throw new SSHCommandError(message: 'The SSH public key is invalid or too large');
+        }
+
+        return $output;
     }
 
     /**
@@ -229,7 +257,7 @@ class OS
     }
 
     /**
-     * @deprecated use write() instead
+     * @deprecated
      *
      * @throws SSHError
      */
@@ -253,22 +281,31 @@ class OS
      */
     public function readFile(string $path): string
     {
-        return trim($this->server->ssh()->exec(
+        $content = $this->server->ssh()->exec(
             view('ssh.os.read-file', [
                 'path' => $path,
+                'limit' => self::READ_LIMIT,
             ])
-        ));
+        );
+
+        if (strlen($content) > self::READ_LIMIT) {
+            throw new SSHCommandError(message: 'The file is larger than '.self::READ_LIMIT.' bytes');
+        }
+
+        return trim($content);
     }
 
     /**
      * @throws SSHError
      */
-    public function tail(string $path, int $lines): string
+    public function tail(string $path, int $lines, ?string $user = null): string
     {
         return $this->server->ssh()->exec(
             view('ssh.os.tail', [
                 'path' => $path,
                 'lines' => $lines,
+                'user' => $user,
+                'bytes' => self::READ_LIMIT,
             ])
         );
     }
@@ -476,15 +513,14 @@ class OS
     }
 
     /**
-     * Clear a remote log file while preserving permissions and ownership
-     *
      * @throws SSHError
      */
-    public function clearFile(string $path): void
+    public function clearFile(string $path, ?string $user = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.clear-file', [
                 'path' => $path,
+                'user' => $user,
             ]),
             'clear-file'
         );

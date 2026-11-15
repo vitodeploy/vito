@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Models\PersonalAccessToken;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Laravel\Sanctum\TransientToken;
 
 class WorkflowPolicy
 {
@@ -31,6 +33,18 @@ class WorkflowPolicy
     public function update(User $user, Workflow $workflow): bool
     {
         return $this->hasWriteAccess($user, $workflow->project);
+    }
+
+    public function revealInputs(User $user, Workflow $workflow): bool
+    {
+        /** @var PersonalAccessToken|TransientToken|null $token */
+        $token = $user->currentAccessToken();
+
+        if ($token !== null && ! $token->can('write')) {
+            return false;
+        }
+
+        return $this->update($user, $workflow);
     }
 
     public function delete(User $user, Workflow $workflow): bool

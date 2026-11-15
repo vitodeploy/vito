@@ -12,6 +12,7 @@ use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use RuntimeException;
 
 class ExecuteJob implements ShouldQueue
 {
@@ -27,6 +28,10 @@ class ExecuteJob implements ShouldQueue
     {
         $this->run("server-{$this->execution->server_id}", function () {
             $server = $this->execution->server;
+            $script = $this->execution->script;
+            if (! $server || ! $script->user?->can('execute', [$script, $server])) {
+                throw new RuntimeException('The script owner no longer has access to this server.');
+            }
             $content = $this->execution->getContent();
             $this->execution->server_log_id = $this->log->id;
             $this->execution->save();
@@ -42,7 +47,9 @@ class ExecuteJob implements ShouldQueue
         $this->execution->status = ScriptExecutionStatus::FAILED;
         $this->execution->save();
         $this->broadcastExecutionUpdate();
-        ServerLog::log($this->execution->server, 'execute-script-failed', $e->getMessage());
+        if ($this->execution->server) {
+            ServerLog::log($this->execution->server, 'execute-script-failed', $e->getMessage());
+        }
     }
 
     private function broadcastExecutionUpdate(): void
@@ -50,9 +57,10 @@ class ExecuteJob implements ShouldQueue
         $this->execution->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $this->execution->server->project_id,
+            projectId: $this->execution->server->project_id ?? 0,
             type: 'script-execution.updated',
             data: new ScriptExecutionResource($this->execution),
+            userId: $this->execution->script->user_id,
         ));
     }
 }

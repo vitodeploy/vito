@@ -154,14 +154,12 @@ test('get execution tree handles success and failure branches', function () {
     expect($result->label)->toEqual('Create Server');
     expect($result->id)->toEqual('node-1');
 
-    // Check success branch
     expect($result->success)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->success->label)->toEqual('Install Service');
     expect($result->success->id)->toEqual('node-2');
     expect($result->success->success)->toBeNull();
     expect($result->success->failure)->toBeNull();
 
-    // Check failure branch
     expect($result->failure)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->failure->label)->toEqual('Create Site');
     expect($result->failure->id)->toEqual('node-3');
@@ -249,7 +247,6 @@ test('get execution tree handles deep nested workflows', function () {
     expect($result)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->label)->toEqual('Start');
 
-    // Check nested success chain
     expect($result->success)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->success->label)->toEqual('Step 1');
 
@@ -357,7 +354,7 @@ test('get execution tree handles missing edge status', function () {
                 [
                     'source' => 'node-1',
                     'target' => 'node-2',
-                    'data' => [], // Missing status
+                    'data' => [],
                 ],
             ],
         ],
@@ -368,7 +365,6 @@ test('get execution tree handles missing edge status', function () {
     expect($result)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->label)->toEqual('Start');
 
-    // Should default to success when status is missing
     expect($result->success)->toBeInstanceOf(WorkflowActionDTO::class);
     expect($result->success->label)->toEqual('Next');
 });

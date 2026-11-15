@@ -16,6 +16,7 @@ use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
@@ -153,11 +154,33 @@ test('deploy classic', function () {
         'status' => DeploymentStatus::FINISHED,
     ]);
 
-    SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
+    SSH::assertExecutedContains('cd -- '.escapeshellarg('/home/vito/'.$this->site->domain));
     SSH::assertExecutedContains('git pull');
 
     Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
 });
+
+test('deploy proceeds when the source control API is temporarily unavailable', function (int $status) {
+    SSH::fake('fake output');
+    Http::fake(['github.com/*' => Http::response(['message' => 'unavailable'], $status)]);
+    Notification::fake();
+    Log::spy();
+
+    $this->site->deploymentScript->update(['content' => 'git pull']);
+
+    $this->actingAs($this->user)->post(route('application.deploy', [
+        'server' => $this->server,
+        'site' => $this->site,
+    ]))->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('deployments', [
+        'site_id' => $this->site->id,
+        'status' => DeploymentStatus::FINISHED,
+        'commit_id' => null,
+    ]);
+    SSH::assertExecutedContains('git pull');
+    Log::shouldHaveReceived('warning')->twice();
+})->with([503, 429]);
 
 test('deploy broadcasts deployment created', function () {
     vitoPestFeatureApplicationTestAssertBroadcastsDeploymentCreated(function (): void {
@@ -424,7 +447,7 @@ test('delete release', function () {
         'id' => $oldRelease->id,
     ]);
 
-    SSH::assertExecutedContains('rm -rf '.$this->site->basePath().'/releases/20240901000000');
+    SSH::assertExecutedContains('rm -rf -- '.escapeshellarg($this->site->basePath().'/releases/20240901000000'));
 });
 
 test('disable auto deployment', function () {
@@ -457,7 +480,7 @@ test('disable auto deployment even if hook destroy fails', function () {
         'api.github.com/repos/organization/repository' => Http::response([
             'id' => '123',
         ], 200),
-        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 404),
+        'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 503),
     ]);
 
     $this->actingAs($this->user);
@@ -874,11 +897,9 @@ test('parse env endpoint', function () {
     $variables = $response->json('variables');
     expect($variables)->toHaveCount(3);
 
-    // Check that DB_PASSWORD is detected as secret
     $passwordVar = collect($variables)->firstWhere('key', 'DB_PASSWORD');
     expect($passwordVar['is_secret'])->toBeTrue();
 
-    // Check that APP_NAME is not secret
     $nameVar = collect($variables)->firstWhere('key', 'APP_NAME');
     expect($nameVar['is_secret'])->toBeFalse();
 });
@@ -1003,7 +1024,7 @@ dataset('hookData', function () {
         [
             'gitlab',
             [
-                'ref' => 'main',
+                'ref' => 'refs/heads/main',
             ],
             'gitlab.com/*',
             [
@@ -1020,7 +1041,7 @@ dataset('hookData', function () {
         [
             'gitlab',
             [
-                'ref' => 'other-branch',
+                'ref' => 'refs/heads/other-branch',
             ],
             'gitlab.com/*',
             [
@@ -1041,6 +1062,7 @@ dataset('hookData', function () {
                     'changes' => [
                         [
                             'new' => [
+                                'type' => 'branch',
                                 'name' => 'main',
                             ],
                         ],
@@ -1073,6 +1095,7 @@ dataset('hookData', function () {
                     'changes' => [
                         [
                             'new' => [
+                                'type' => 'branch',
                                 'name' => 'other-branch',
                             ],
                         ],
@@ -1116,14 +1139,12 @@ test('deploy classic restarts only site workers', function () {
     ]);
     Notification::fake();
 
-    // Create a worker for the site being deployed
     $siteWorker = Worker::factory()->create([
         'server_id' => $this->server->id,
         'site_id' => $this->site->id,
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Create another site with workers on the same server
     $otherSite = Site::factory()->create([
         'server_id' => $this->server->id,
     ]);
@@ -1133,7 +1154,6 @@ test('deploy classic restarts only site workers', function () {
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Enable restart workers for the deployment script
     $this->site->deploymentScript->update([
         'content' => 'git pull',
         'configs' => ['restart_workers' => true],
@@ -1147,10 +1167,8 @@ test('deploy classic restarts only site workers', function () {
     ]))
         ->assertSessionDoesntHaveErrors();
 
-    // Verify that only the site worker restart command was executed
     SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
-    // Verify that other site's worker and "restart all" are not executed
     vitoPestFeatureApplicationTestAssertWorkerNotRestarted($otherSiteWorker->id);
     SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
 });
@@ -1180,14 +1198,12 @@ test('deploy modern restarts only site workers', function () {
     $this->site->ensureDeploymentScriptsExist();
     $this->site->refresh();
 
-    // Create a worker for the site being deployed
     $siteWorker = Worker::factory()->create([
         'server_id' => $this->server->id,
         'site_id' => $this->site->id,
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Create another site with workers on the same server
     $otherSite = Site::factory()->create([
         'server_id' => $this->server->id,
     ]);
@@ -1197,7 +1213,6 @@ test('deploy modern restarts only site workers', function () {
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Enable restart workers for the pre-flight script
     $this->site->preFlightScript->update([
         'content' => 'php artisan migrate --force',
         'configs' => ['restart_workers' => true],
@@ -1211,17 +1226,12 @@ test('deploy modern restarts only site workers', function () {
     ]))
         ->assertSessionDoesntHaveErrors();
 
-    // Verify that only the site worker restart command was executed
     SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
-    // Verify that other site's worker and "restart all" are not executed
     vitoPestFeatureApplicationTestAssertWorkerNotRestarted($otherSiteWorker->id);
     SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
 });
 
-/**
- * Assert that the given worker's restart command was not executed via SSH.
- */
 function vitoPestFeatureApplicationTestAssertWorkerNotRestarted(int|string $workerId): void
 {
     SSH::assertNotExecutedContains(
@@ -1540,9 +1550,101 @@ test('stringify env requires variables', function () {
     ]), [])->assertSessionHasErrors('variables');
 });
 
-/**
- * Demote the acting user to the read-only project role.
- */
+test('read only members get no variables for an env file with a bare carriage return', function () {
+    SSH::fake("APP_NAME=TestApp\rDB_PASSWORD=hunter2-secret");
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+    vitoPestFeatureApplicationTestMakeUserReadOnly();
+
+    $this->actingAs($this->user)->getJson(route('application.env', ['server' => $this->server, 'site' => $this->site]))
+        ->assertOk()->assertJsonPath('variables', [])->assertDontSee('hunter2-secret');
+});
+
+test('read only members get no variables for an env file the parser cannot represent', function () {
+    SSH::fake("APP_NAME=TestApp\nDB_PASSWORD=\"first-part\nLEAKED=second-part-of-secret\"");
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+    $route = route('application.env', ['server' => $this->server, 'site' => $this->site]);
+
+    $this->actingAs($this->user)->getJson($route)->assertOk()->assertJsonPath('env', "APP_NAME=TestApp\nDB_PASSWORD=\"first-part\nLEAKED=second-part-of-secret\"");
+
+    vitoPestFeatureApplicationTestMakeUserReadOnly();
+    $this->getJson($route)->assertOk()->assertJsonPath('variables', [])->assertJsonMissingPath('env')
+        ->assertDontSee('second-part-of-secret');
+
+    $token = $this->user->createToken('env', ['read'])->plainTextToken;
+    $this->withToken($token)->getJson(route('api.projects.servers.sites.env.show', [$this->server->project_id, $this->server, $this->site]))
+        ->assertOk()->assertJsonPath('data.variables', [])->assertDontSee('second-part-of-secret');
+});
+
+test('env keys that are not plain identifiers are rejected before writing', function (string $key) {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [['key' => $key, 'value' => 'secret-value', 'is_secret' => true]],
+    ])->assertSessionHasErrors('variables.0.key');
+    $this->post(route('application.stringify-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [['key' => $key, 'value' => 'secret-value']],
+    ])->assertSessionHasErrors('variables.0.key');
+
+    expect(SSH::getUploadedContent())->toBe('');
+})->with(["SECRET\nLEAKED", 'SECRET=LEAKED', 'SECRET LEAKED', 'SECRET#']);
+
+test('classic mode saves keep secret toggles made in variables mode', function () {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+    $this->site->update(['env_variables' => ['DB_PASSWORD']]);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'env' => "APP_NAME=TestApp\nDB_PASSWORD=one\nUPSTREAM=two",
+        'secret_keys' => ['UPSTREAM', 'REMOVED'],
+    ])->assertSessionDoesntHaveErrors();
+
+    expect($this->site->fresh()->env_variables)->toEqualCanonicalizing(['DB_PASSWORD', 'UPSTREAM']);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'env' => "export API_TOKEN=value\nAPP_NAME=TestApp",
+        'secret_keys' => ['export API_TOKEN'],
+    ])->assertSessionDoesntHaveErrors();
+    expect($this->site->fresh()->env_variables)->toContain('export API_TOKEN');
+});
+
+test('env saves are refused when the written file would exceed the read limit', function () {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [
+            ['key' => 'ONE', 'value' => str_repeat('a', 600000), 'is_secret' => false],
+            ['key' => 'TWO', 'value' => str_repeat('b', 600000), 'is_secret' => false],
+        ],
+    ])->assertSessionHasErrors('env');
+
+    expect(SSH::getUploadedContent())->toBe('');
+});
+
+test('site git hooks deploy only for pushes to the site branch', function (string $provider, array $payload, bool $deploys) {
+    SSH::fake();
+    Http::fake();
+    $this->site->update(['branch' => 'main']);
+    $this->site->sourceControl->update(['provider' => $provider]);
+    GitHook::factory()->create([
+        'site_id' => $this->site->id,
+        'source_control_id' => $this->site->source_control_id,
+        'secret' => 'secret',
+        'events' => ['push'],
+        'actions' => ['deploy'],
+    ]);
+
+    $this->post(route('api.git-hooks', ['secret' => 'secret']), $payload)->assertOk();
+
+    expect($this->site->deployments()->exists())->toBe($deploys);
+})->with([
+    'bitbucket tag named like the branch' => ['bitbucket', ['push' => ['changes' => [['new' => ['type' => 'tag', 'name' => 'main']]]]], false],
+    'github tag named like the branch' => ['github', ['ref' => 'refs/tags/main'], false],
+    'github branch deletion' => ['github', ['ref' => 'refs/heads/main', 'deleted' => true], false],
+    'github branch push' => ['github', ['ref' => 'refs/heads/main'], true],
+]);
+
 function vitoPestFeatureApplicationTestMakeUserReadOnly(): void
 {
     test()->server->project->users()->where('user_id', test()->user->id)->update([

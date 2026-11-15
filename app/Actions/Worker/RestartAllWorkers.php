@@ -13,6 +13,7 @@ class RestartAllWorkers
     public function restart(Server $server, ?Site $site = null): void
     {
         $server->workers()
+            ->whereNull('component_id')
             ->when($site, fn ($query) => $query->where('site_id', $site->id))
             ->whereNotIn('status', [WorkerStatus::CREATING, WorkerStatus::DELETING])
             ->get()

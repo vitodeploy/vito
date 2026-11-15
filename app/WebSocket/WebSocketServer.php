@@ -9,7 +9,6 @@ use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use Ratchet\RFC6455\Messaging\Frame;
-use Ratchet\RFC6455\Messaging\MessageBuffer;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
@@ -21,10 +20,12 @@ class WebSocketServer
 
     protected const PING_INTERVAL = 30;
 
+    protected const MAX_MESSAGE_SIZE = 1048576;
+
     protected ServerNegotiator $negotiator;
 
     /**
-     * @var array<string, array{handler: WebSocketHandler, buffer: MessageBuffer, connection: WebSocketConnection}>
+     * @var array<string, array{handler: WebSocketHandler, buffer: LimitedMessageBuffer, connection: WebSocketConnection}>
      */
     protected array $connections = [];
 
@@ -107,10 +108,6 @@ class WebSocketServer
      */
     protected array $httpHandlers = [];
 
-    /**
-     * Register an HTTP POST handler for a given path.
-     * Used for internal server-to-server communication (e.g. broadcasting events).
-     */
     public function httpRoute(string $path, callable $handler): void
     {
         $this->httpHandlers[$path] = $handler;
@@ -125,7 +122,6 @@ class WebSocketServer
         try {
             $psrRequest = Message::parseRequest($httpBuffer);
 
-            // Handle plain HTTP requests (non-WebSocket)
             if (! $psrRequest->hasHeader('Upgrade')) {
                 $contentLength = (int) $psrRequest->getHeaderLine('Content-Length');
 
@@ -160,7 +156,6 @@ class WebSocketServer
                 return;
             }
 
-            // Route to the correct handler based on URI path
             $path = $psrRequest->getUri()->getPath();
             $handler = $this->resolveHandler($path);
 
@@ -170,7 +165,6 @@ class WebSocketServer
                 return;
             }
 
-            // Let the handler authenticate the request
             $authError = $handler->authenticate($psrRequest);
             if ($authError !== null) {
                 $this->sendErrorAndClose($conn, $authError);
@@ -178,12 +172,11 @@ class WebSocketServer
                 return;
             }
 
-            // Complete the WebSocket handshake
             $conn->write(Message::toString($response));
 
             $wsConnection = new WebSocketConnection($conn);
 
-            $messageBuffer = new MessageBuffer(
+            $messageBuffer = new LimitedMessageBuffer(
                 new CloseFrameChecker,
                 function ($message) use ($connId): void {
                     $entry = $this->connections[$connId] ?? null;
@@ -201,8 +194,8 @@ class WebSocketServer
                 },
                 true,
                 null,
-                null,
-                null,
+                self::MAX_MESSAGE_SIZE,
+                self::MAX_MESSAGE_SIZE,
                 function (string $data) use ($conn): void {
                     $conn->write($data);
                 },
@@ -223,12 +216,10 @@ class WebSocketServer
 
     protected function resolveHandler(string $path): ?WebSocketHandler
     {
-        // Exact match first
         if (isset($this->handlers[$path])) {
             return $this->handlers[$path];
         }
 
-        // Prefix match (longest prefix wins)
         $bestMatch = null;
         $bestLength = 0;
         foreach ($this->handlers as $prefix => $handler) {
@@ -281,38 +272,21 @@ class WebSocketServer
             return false;
         }
 
-        $defaultPorts = ['http' => 80, 'https' => 443];
-        $originScheme = strtolower($originParts['scheme'] ?? 'http');
-        $originHost = strtolower($originParts['host']);
-        $originPort = $originParts['port'] ?? null;
-        $originDefaultPort = $defaultPorts[$originScheme] ?? null;
-
-        foreach ($this->allowedOrigins as $allowed) {
-            $allowedParts = parse_url($allowed);
-            if (! is_array($allowedParts) || ! isset($allowedParts['host'])) {
-                continue;
+        $normalize = function (string $url): ?string {
+            $parts = parse_url($url);
+            if (! is_array($parts) || ! isset($parts['host'])) {
+                return null;
             }
 
-            $allowedScheme = strtolower($allowedParts['scheme'] ?? 'http');
-            $allowedHost = strtolower($allowedParts['host']);
-            $allowedPort = $allowedParts['port'] ?? null;
-            $allowedDefaultPort = $defaultPorts[$allowedScheme] ?? null;
+            $scheme = strtolower($parts['scheme'] ?? 'http');
+            $port = $parts['port'] ?? ['http' => 80, 'https' => 443][$scheme] ?? null;
 
-            if ($originScheme !== $allowedScheme || $originHost !== $allowedHost) {
-                continue;
-            }
+            return $scheme.'://'.strtolower($parts['host']).':'.$port;
+        };
 
-            $originHasExplicitPort = $originPort !== null && $originPort !== $originDefaultPort;
-            $allowedHasExplicitPort = $allowedPort !== null && $allowedPort !== $allowedDefaultPort;
+        $normalized = $normalize($origin);
 
-            if ($originHasExplicitPort && $allowedHasExplicitPort && $originPort !== $allowedPort) {
-                continue;
-            }
-
-            return true;
-        }
-
-        return false;
+        return $normalized !== null && in_array($normalized, array_map($normalize, $this->allowedOrigins), true);
     }
 
     protected function sendErrorAndClose(ConnectionInterface $conn, string $message): void
@@ -332,6 +306,7 @@ class WebSocketServer
             try {
                 $entry['handler']->ping($connId);
             } catch (\Throwable) {
+                $entry['connection']->close();
                 $this->handleClose($connId);
             }
         }

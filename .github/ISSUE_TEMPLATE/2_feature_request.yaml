@@ -1,0 +1,67 @@
+name: ✨ Feature Request
+description: Suggest something new that Vito doesn't do yet
+title: "[Feature]: "
+labels: ["feature", "needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please search [existing issues](https://github.com/vitodeploy/vito/issues) and the [roadmap](https://github.com/orgs/vitodeploy/projects/5) first. If it already exists, add your use case there instead.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Vito does this relate to?
+      options:
+        - Installation & Upgrade
+        - Servers & Server Providers
+        - Services (PHP, Databases, Web Servers, etc.)
+        - Sites & Applications
+        - Deployments
+        - Domains & SSL
+        - Databases & Backups
+        - Firewall & Networks
+        - Workers & Cron Jobs
+        - Source Control
+        - DNS Providers
+        - Storage Providers
+        - Notifications
+        - Workflows, Automation & Scripts
+        - Plugins
+        - API & MCP
+        - Projects, Users & Settings
+        - User Interface
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem are you trying to solve, and why does it matter to you?
+      placeholder: I manage several servers behind Cloudflare and have to add their IP ranges to the firewall one by one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: How would you expect the feature to work? Describe the UI, API or behavior you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and Workarounds
+      description: What have you tried or considered instead?
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Mockups, screenshots, links to similar tools, or anything else that helps.

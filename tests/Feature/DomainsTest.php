@@ -12,11 +12,9 @@ use Illuminate\Support\Facades\Http;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Create a user for testing
     $this->user = User::factory()->create();
     $this->user->ensureHasDefaultProject();
 
-    // Create a second user for authorization tests
     $this->otherUser = User::factory()->create();
     $this->otherUser->ensureHasDefaultProject();
 });
@@ -56,27 +54,23 @@ test('unauthenticated user cannot view domains index', function () {
 test('user can see all domains in their current project', function () {
     $this->actingAs($this->user);
 
-    // Create a DNS provider for the current user's project
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create a domain for the current user in their project
     $userDomain = Domain::factory()->create([
         'user_id' => $this->user->id,
         'dns_provider_id' => $dnsProvider->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create a domain for another user in the same project
     $otherUserDomain = Domain::factory()->create([
         'user_id' => $this->otherUser->id,
         'dns_provider_id' => $dnsProvider->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create a domain for the other user in a different project
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -102,20 +96,17 @@ test('user can see all domains in their current project', function () {
 test('user can access domains created by other users in same project', function () {
     $this->actingAs($this->user);
 
-    // Create a DNS provider for the current user's project
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create a domain for another user in the same project
     $otherUserDomain = Domain::factory()->create([
         'user_id' => $this->otherUser->id,
         'dns_provider_id' => $dnsProvider->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // User should be able to view the domain created by another user in the same project
     $response = $this->get("/domains/{$otherUserDomain->id}");
 
     $response->assertOk()
@@ -208,7 +199,6 @@ test('authenticated user can view domain show', function () {
 test('user cannot view domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -234,7 +224,6 @@ test('authenticated user can create domain', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Mock the DNS provider API calls (getDomain + getRecords)
     Http::fake([
         'api.cloudflare.com/client/v4/zones/test-domain-id/dns_records*' => Http::response([
             'result' => [],
@@ -272,7 +261,6 @@ test('authenticated user can create domain', function () {
 test('user cannot create domain with dns provider from other project', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -314,7 +302,6 @@ test('authenticated user can delete domain', function () {
 test('user cannot delete domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -350,7 +337,6 @@ test('authenticated user can get available domains from dns provider', function 
 test('user cannot get available domains from dns provider in other project', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -397,7 +383,6 @@ test('authenticated user can view dns records index', function () {
 test('user cannot view dns records for domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -475,7 +460,6 @@ test('authenticated user can get dns records json', function () {
 test('user cannot get dns records json for domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -508,7 +492,6 @@ test('authenticated user can create dns record', function () {
         'provider_domain_id' => 'test-domain-id',
     ]);
 
-    // Mock the DNS provider API call
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -547,7 +530,6 @@ test('authenticated user can create dns record', function () {
 test('user cannot create dns record for domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -594,7 +576,6 @@ test('authenticated user can update dns record', function () {
         'provider_record_id' => 'test-record-id',
     ]);
 
-    // Mock the DNS provider API call
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -631,7 +612,6 @@ test('authenticated user can update dns record', function () {
 test('user cannot update dns record from domains in other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -704,6 +684,8 @@ test('authenticated user can delete dns record', function () {
         'domain_id' => $domain->id,
     ]);
 
+    Http::fake(['*/dns_records/*' => Http::response(['result' => ['id' => $record->provider_record_id]])]);
+
     $response = $this->delete("/domains/{$domain->id}/records/{$record->id}");
 
     $response->assertRedirect()
@@ -715,7 +697,6 @@ test('authenticated user can delete dns record', function () {
 test('user cannot delete dns record from domains in other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -792,11 +773,9 @@ test('dns record show route does not exist', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // There's no GET route for individual DNS records in the regular controller
     $response = $this->get("/domains/{$domain->id}/records/999999");
 
     $response->assertStatus(405);
-    // Method not allowed
 });
 
 test('dns provider not found returns 404', function () {
@@ -821,7 +800,6 @@ test('dns records are ordered by type and name', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create records in random order
     DNSRecord::factory()->create([
         'domain_id' => $domain->id,
         'type' => 'CNAME',
@@ -853,7 +831,6 @@ test('dns records are ordered by type and name', function () {
     $records = $response->json();
     expect($records)->toHaveCount(4);
 
-    // Should be ordered by type first (A before CNAME), then by name
     expect($records[0]['type'])->toEqual('A');
     expect($records[0]['name'])->toEqual('alpha');
     expect($records[1]['type'])->toEqual('A');
@@ -867,25 +844,21 @@ test('dns records are ordered by type and name', function () {
 test('user cannot access domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a second project for a different user (not the current user)
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in the other project
     $otherProjectDomain = Domain::factory()->create([
         'user_id' => $otherUser->id,
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in current project (before switching)
     $dnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
@@ -897,17 +870,15 @@ test('user cannot access domains from other projects', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Should only see domains from current project
     $response = $this->get('/domains');
 
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('domains/index')
-            ->has('domains.data', 1) // Only domains from current project
+            ->has('domains.data', 1)
             ->where('domains.data.0.id', $currentProjectDomain->id)
         );
 
-    // Should not be able to access domain from other project
     $response = $this->get("/domains/{$otherProjectDomain->id}");
 
     $response->assertForbidden();
@@ -916,18 +887,15 @@ test('user cannot access domains from other projects', function () {
 test('user cannot create domain in other project', function () {
     $this->actingAs($this->user);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Try to create domain with DNS provider from other project
     $domainData = [
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'provider_domain_id' => 'test-domain-id',
@@ -941,25 +909,21 @@ test('user cannot create domain in other project', function () {
 test('user cannot delete domain from other project', function () {
     $this->actingAs($this->user);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in the other project
     $otherProjectDomain = Domain::factory()->create([
         'user_id' => $otherUser->id,
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Try to delete domain from other project
     $response = $this->delete("/domains/{$otherProjectDomain->id}");
 
     $response->assertForbidden();
@@ -982,7 +946,6 @@ test('authenticated user can sync dns records', function () {
         'provider_domain_id' => 'test-domain-id',
     ]);
 
-    // Create an existing record that will be replaced
     DNSRecord::factory()->create([
         'domain_id' => $domain->id,
         'type' => 'A',
@@ -990,7 +953,6 @@ test('authenticated user can sync dns records', function () {
         'content' => '192.168.1.1',
     ]);
 
-    // Mock the DNS provider API call to return records
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -1024,7 +986,6 @@ test('authenticated user can sync dns records', function () {
     $response->assertRedirect()
         ->assertSessionHas('success', 'DNS records synced successfully.');
 
-    // Check that old record was deleted and new records were created
     $this->assertDatabaseMissing('dns_records', [
         'domain_id' => $domain->id,
         'name' => 'old',
@@ -1069,7 +1030,6 @@ test('sync dns records returns error when provider fails', function () {
         'content' => '192.168.1.1',
     ]);
 
-    // Mock the DNS provider API call to throw an exception
     Http::fake(function () {
         throw new RuntimeException('Domain is not opted in to API access.');
     });
@@ -1079,7 +1039,6 @@ test('sync dns records returns error when provider fails', function () {
     $response->assertRedirect()
         ->assertSessionHas('error');
 
-    // Existing record should remain intact after a failed sync
     $this->assertDatabaseHas('dns_records', [
         'id' => $existingRecord->id,
         'domain_id' => $domain->id,
@@ -1097,7 +1056,6 @@ test('add domain fails when record sync fails', function () {
 
     $callCount = 0;
 
-    // First call (getDomain) succeeds, subsequent calls throw
     Http::fake(function () use (&$callCount) {
         $callCount++;
         if ($callCount === 1) {
@@ -1126,7 +1084,6 @@ test('add domain fails when record sync fails', function () {
     $response->assertRedirect()
         ->assertSessionHasErrors('domain');
 
-    // Domain should not have been persisted due to transaction rollback
     $this->assertDatabaseMissing('domains', [
         'provider_domain_id' => 'test-domain-id',
     ]);
@@ -1135,7 +1092,6 @@ test('add domain fails when record sync fails', function () {
 test('user cannot sync dns records for domains from other projects', function () {
     $this->actingAs($this->user);
 
-    // Create a different project for the other user
     $otherProject = Project::factory()->create();
     $otherDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->otherUser->id,
@@ -1167,7 +1123,6 @@ test('available domains returns cached value when cache exists', function () {
 
     Cache::put("dns_provider_{$dnsProvider->id}_domains", $cachedDomains, 3600);
 
-    // Should NOT make an API call — Http::fake with no matching routes would throw if called
     Http::fake([]);
 
     $response = $this->get("/domains/{$dnsProvider->id}/available");
@@ -1211,7 +1166,6 @@ test('refresh domains skips cache and fetches from provider', function () {
     expect($data[0]['name'])->toEqual('fresh.com');
     expect($data[1]['name'])->toEqual('new.com');
 
-    // Cache should now be updated with fresh data
     $cached = Cache::get("dns_provider_{$dnsProvider->id}_domains");
     expect($cached)->toHaveCount(2);
     expect($cached[0]['name'])->toEqual('fresh.com');
@@ -1236,10 +1190,8 @@ test('refresh domains updates cache for subsequent available calls', function ()
         ], 200),
     ]);
 
-    // First call: refresh to populate cache
     $this->get("/domains/{$dnsProvider->id}/refresh")->assertOk();
 
-    // Second call: available should use cache (no API call needed)
     Http::fake([]);
 
     $response = $this->get("/domains/{$dnsProvider->id}/available");

@@ -1,10 +1,12 @@
 export PATH=$HOME/.local/share/mise/shims:$PATH
 
+@if (! empty($configDir))
+mise use --path {!! escapeshellarg($configDir.'/mise.toml') !!} {!! escapeshellarg($runtime.'@'.$version) !!} --verbose
+mise trust {!! escapeshellarg($configDir.'/mise.toml') !!}
+@else
 mise use -g {{ $runtime . '@' . $version }} --verbose
+@endif
 
-# Make the mise shims available to interactive SSH sessions for this user
-# so commands like `node`/`bun`/`pnpm`/`yarn` work from a plain shell, not
-# only from Vito's PATH-wrapped commands. Idempotent: only appended once.
 ACTIVATION_LINE='export PATH="$HOME/.local/share/mise/shims:$PATH"'
 for FILE in "$HOME/.bashrc" "$HOME/.profile"; do
     touch "$FILE"

@@ -1,0 +1,26 @@
+name: 📚 Documentation
+description: Report missing, outdated or unclear documentation
+title: "[Docs]: "
+labels: ["documentation", "needs triage"]
+
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: Link to the documentation page, if there is one.
+      placeholder: https://vitodeploy.com/docs/...
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's Wrong or Missing?
+      description: Describe what is incorrect, outdated, confusing or not documented.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Change
+      description: What should the documentation say instead?

@@ -40,7 +40,7 @@ class CreateServer
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
-            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_user') ?? 'root',
+            'ssh_user' => $this->defaultUser($input),
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
@@ -61,19 +61,14 @@ class CreateServer
 
             $this->server->provider_data = $this->server->provider()->data($input);
 
-            // save
             $this->server->save();
 
-            // create instance
             $this->server->provider()->create();
 
-            // create services
             $this->createServices($input);
 
-            // install server
             dispatch(new InstallJob($this->server))->onQueue('ssh');
 
-            // Ensure we get the default db values in the model
             $this->server->refresh();
 
             return $this->server;
@@ -84,6 +79,17 @@ class CreateServer
                 'provider' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function defaultUser(array $input): string
+    {
+        $provider = config('server-provider.providers')[$input['provider']] ?? [];
+        $debianUser = OperatingSystem::from($input['os'])->isDebian() ? ($provider['debian_default_user'] ?? null) : null;
+
+        return $debianUser ?? $provider['default_user'] ?? 'root';
     }
 
     private function validate(Project $project, array $input): void
@@ -98,7 +104,12 @@ class CreateServer
             ],
             'os' => [
                 'required',
-                Rule::in(config('core.operating_systems')),
+                Rule::in(array_intersect(
+                    is_string($input['provider'] ?? null)
+                        ? config('server-provider.providers')[$input['provider']]['operating_systems'] ?? config('core.operating_systems')
+                        : config('core.operating_systems'),
+                    config('core.operating_systems'),
+                )),
             ],
             'server_provider' => [
                 Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != Custom::id(), [

@@ -36,13 +36,14 @@ class RestartAllJob implements ShouldQueue
             $handler = $service->handler();
             $handler->restartAll($this->site?->id);
 
-            app(SyncWorkerStatuses::class)->sync($this->server, $this->site);
+            app(SyncWorkerStatuses::class)->sync($this->server, $this->site, excludeComponents: true);
         });
     }
 
     public function failed(Throwable $e): void
     {
         $failed = $this->server->workers()
+            ->whereNull('component_id')
             ->when($this->site, fn ($query) => $query->where('site_id', $this->site->id))
             ->where('status', WorkerStatus::RESTARTING)
             ->get()

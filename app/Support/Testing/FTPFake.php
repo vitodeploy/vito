@@ -31,20 +31,11 @@ class FTPFake
         return true;
     }
 
-    public function close(bool|Connection $connection): void
-    {
-        //
-    }
+    public function close(bool|Connection $connection): void {}
 
-    public function passive(bool|Connection $connection, bool $passive): void
-    {
-        //
-    }
+    public function passive(bool|Connection $connection, bool $passive): void {}
 
-    public function delete(bool|Connection $connection, string $path): void
-    {
-        //
-    }
+    public function delete(bool|Connection $connection, string $path): void {}
 
     public function assertConnected(string $host): void
     {
@@ -61,5 +52,10 @@ class FTPFake
         if (! $connected) {
             Assert::fail('The expected host is not connected');
         }
+    }
+
+    public function assertNotConnected(): void
+    {
+        Assert::assertSame([], $this->connections, 'Unexpected connections were made');
     }
 }

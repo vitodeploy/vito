@@ -3,10 +3,11 @@
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Facades\SSH;
-use App\Helpers\SSH as SSHHelper;
+use App\Helpers\SSH as SSHClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use phpseclib3\Net\SFTP;
+use phpseclib3\Net\SSH2;
 
 uses(RefreshDatabase::class);
 
@@ -61,8 +62,8 @@ test('SFTP download streams chunks and detects incomplete transfers', function (
             return $success;
         });
     $connection->shouldReceive('disconnect')->once();
-    $ssh = new SSHHelper;
-    (new ReflectionProperty(SSHHelper::class, 'connection'))->setValue($ssh, $connection);
+    $ssh = new SSHClient;
+    (new ReflectionProperty(SSHClient::class, 'connection'))->setValue($ssh, $connection);
     $content = '';
     $download = function () use ($ssh, $expectedSize, &$content): void {
         $ssh->streamDownload('/backup.sql.gz', function (string $chunk) use (&$content): void {
@@ -87,9 +88,50 @@ test('SFTP download preflight checks a regular file and its current size', funct
         $connection->shouldReceive('filesize')->once()->with('/backup.tar.gz')->andReturn($size);
     }
     $connection->shouldReceive('disconnect')->once();
-    $ssh = new SSHHelper;
-    (new ReflectionProperty(SSHHelper::class, 'connection'))->setValue($ssh, $connection);
+    $ssh = new SSHClient;
+    (new ReflectionProperty(SSHClient::class, 'connection'))->setValue($ssh, $connection);
 
     expect($ssh->fileSize('/backup.tar.gz'))->toBe($expected);
     $ssh->disconnect();
 })->with([[true, 123, 123], [true, 0, 0], [true, false, null], [false, false, null]]);
+
+function vitoPestUnitHelpersSSHTestClient(SSH2 $connection): SSHClient
+{
+    $client = new class extends SSHClient
+    {
+        public const MAX_OUTPUT_BYTES = 10;
+    };
+    (fn () => $this->connection = $connection)->call($client);
+
+    return $client;
+}
+
+test('exec stops the remote command once its output exceeds the limit', function () {
+    $connection = Mockery::mock(SSH2::class);
+    $connection->shouldReceive('setTimeout', 'disconnect');
+    $chunks = 0;
+    $connection->shouldReceive('exec')->andReturnUsing(function (string $command, callable $callback) use (&$chunks): bool {
+        while ($chunks < 1000) {
+            $chunks++;
+            if ($callback('yyyy') === true) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+    $connection->shouldReceive('getExitStatus')->andReturn(0);
+
+    expect(fn () => vitoPestUnitHelpersSSHTestClient($connection)->exec('yes'))
+        ->toThrow(SSHCommandError::class, 'exceeded 10 bytes');
+    expect($chunks)->toBe(3);
+});
+
+test('exec returns output within the limit', function () {
+    $connection = Mockery::mock(SSH2::class);
+    $connection->shouldReceive('setTimeout', 'disconnect');
+    $connection->shouldReceive('exec')->andReturnUsing(fn (string $command, callable $callback): bool => $callback('ok') === true);
+    $connection->shouldReceive('getExitStatus')->andReturn(0);
+
+    expect(vitoPestUnitHelpersSSHTestClient($connection)->exec('echo ok'))->toBe('ok');
+});

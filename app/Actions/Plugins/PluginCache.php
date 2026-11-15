@@ -14,8 +14,6 @@ final readonly class PluginCache
     private const string CACHE_KEY = 'active-plugins';
 
     /**
-     * Retrieves active plugins
-     *
      * @return Collection<int, Plugin>
      */
     public function get(): Collection

@@ -11,9 +11,7 @@ use Illuminate\Support\Collection;
 class AssignSslToDomains
 {
     /**
-     * Assign the best-matching server-level SSL to each hosted domain.
-     *
-     * @return Collection<int, HostedDomain> Only domains where ssl_id changed
+     * @return Collection<int, HostedDomain>
      */
     public function assign(Site $site, ?Collection $hostedDomains = null): Collection
     {
@@ -43,9 +41,6 @@ class AssignSslToDomains
     }
 
     /**
-     * Find the best matching SSL for a domain.
-     * Priority: exact match > wildcard match.
-     *
      * @param  Collection<int, Ssl>  $ssls
      */
     public function findBestMatch(string $domain, Collection $ssls): ?Ssl

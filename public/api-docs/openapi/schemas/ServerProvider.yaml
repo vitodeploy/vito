@@ -29,6 +29,8 @@ properties:
       template_ubuntu_22: null
       template_ubuntu_24: 9024
       template_ubuntu_26: 9026
+      template_debian_12: null
+      template_debian_13: 9013
   created_at:
     type: string
     format: date-time

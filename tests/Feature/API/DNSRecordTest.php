@@ -110,7 +110,6 @@ test('authenticated user can create dns record', function () {
         'provider_domain_id' => 'test-domain-id',
     ]);
 
-    // Mock the DNS provider API call
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -332,7 +331,6 @@ test('authenticated user can update dns record', function () {
         'provider_record_id' => 'test-record-id',
     ]);
 
-    // Mock the DNS provider API call
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -442,6 +440,8 @@ test('authenticated user can delete dns record', function () {
     $record = DNSRecord::factory()->create([
         'domain_id' => $domain->id,
     ]);
+
+    Http::fake(['*/dns_records/*' => Http::response(['result' => ['id' => $record->provider_record_id]])]);
 
     $response = $this->deleteJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}/records/{$record->id}");
 
@@ -563,7 +563,6 @@ test('dns records are ordered by type and name', function () {
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create records in random order
     DNSRecord::factory()->create([
         'domain_id' => $domain->id,
         'type' => 'CNAME',
@@ -595,7 +594,6 @@ test('dns records are ordered by type and name', function () {
     $records = $response->json();
     expect($records)->toHaveCount(4);
 
-    // Should be ordered by type first (A before CNAME), then by name
     expect($records[0]['type'])->toEqual('A');
     expect($records[0]['name'])->toEqual('alpha');
     expect($records[1]['type'])->toEqual('A');
@@ -609,35 +607,29 @@ test('dns records are ordered by type and name', function () {
 test('user cannot access dns records from other projects', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Create a second project for a different user
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProject = $otherUser->currentProject;
 
-    // Create DNS provider for the other project
     $otherProjectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $otherUser->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create domain in the other project
     $otherProjectDomain = Domain::factory()->create([
         'user_id' => $otherUser->id,
         'dns_provider_id' => $otherProjectDnsProvider->id,
         'project_id' => $otherProject->id,
     ]);
 
-    // Create DNS record for the other project domain
     $otherProjectRecord = DNSRecord::factory()->create([
         'domain_id' => $otherProjectDomain->id,
     ]);
 
-    // Should not be able to access DNS records from other project
     $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}/records");
 
     $response->assertForbidden();
 
-    // Should not be able to access specific DNS record from other project
     $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}/records/{$otherProjectRecord->id}");
 
     $response->assertForbidden();
@@ -658,7 +650,6 @@ test('authenticated user can sync dns records', function () {
         'provider_domain_id' => 'test-domain-id',
     ]);
 
-    // Create an existing record that will be replaced
     DNSRecord::factory()->create([
         'domain_id' => $domain->id,
         'type' => 'A',
@@ -666,7 +657,6 @@ test('authenticated user can sync dns records', function () {
         'content' => '192.168.1.1',
     ]);
 
-    // Mock the DNS provider API call to return records
     Http::fake([
         'api.cloudflare.com/*' => Http::response([
             'result' => [
@@ -700,7 +690,6 @@ test('authenticated user can sync dns records', function () {
     $response->assertOk()
         ->assertJsonFragment(['message' => 'DNS records synced successfully']);
 
-    // Check that old record was deleted and new records were created
     $this->assertDatabaseMissing('dns_records', [
         'domain_id' => $domain->id,
         'name' => 'old',
@@ -738,7 +727,6 @@ test('sync dns records returns error when provider fails', function () {
         'provider_domain_id' => 'test-domain-id',
     ]);
 
-    // Mock the DNS provider API call to throw an exception
     Http::fake(function () {
         throw new RuntimeException('Domain is not opted in to API access.');
     });

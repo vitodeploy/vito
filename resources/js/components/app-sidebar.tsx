@@ -36,6 +36,8 @@ import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useConfigs } from '@/stores/bootstrap-store';
+import { Badge } from '@/components/ui/badge';
+import { BoxesIcon } from 'lucide-react';
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
   const page = usePage<SharedData>();
@@ -56,6 +58,12 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Sites',
       href: '/sites',
       icon: MousePointerClickIcon,
+    },
+    {
+      title: 'Applications',
+      href: '/applications',
+      icon: BoxesIcon,
+      badge: 'Beta',
     },
     {
       title: 'Backups',
@@ -117,9 +125,6 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
-      {/* This is the first sidebar */}
-      {/* We disable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
       <Sidebar collapsible="none" className="h-auto !w-[calc(var(--sidebar-width-icon)_+_1px)] border-r">
         <SidebarHeader>
           <SidebarMenu>
@@ -146,7 +151,15 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                     <SidebarMenuButton
                       asChild
                       isActive={item.onlyActivePath ? currentPath() === item.href : currentPath().startsWith(item.href)}
-                      tooltip={{ children: item.title, hidden: false }}
+                      tooltip={{
+                        children: (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
+                        ),
+                        hidden: false,
+                      }}
                       hidden={item.hidden}
                     >
                       {item.external ? (
@@ -157,7 +170,10 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       ) : (
                         <Link href={item.href}>
                           {item.icon && <item.icon />}
-                          <span>{item.title}</span>
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.badge && <Badge variant="warning">{item.badge}</Badge>}
+                          </span>
                         </Link>
                       )}
                     </SidebarMenuButton>
@@ -184,9 +200,6 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
         </SidebarFooter>
       </Sidebar>
 
-      {/* This is the second sidebar */}
-      {/* We enable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
       {secondNavItems && secondNavItems.length > 0 && (
         <Sidebar collapsible="none" className="flex flex-1">
           <SidebarHeader className="hidden h-12 border-b p-0 md:flex">

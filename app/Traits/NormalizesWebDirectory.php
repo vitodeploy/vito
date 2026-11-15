@@ -10,10 +10,8 @@ trait NormalizesWebDirectory
             return null;
         }
 
-        // Remove leading and trailing slashes
         $webDirectory = trim($webDirectory, '/');
 
-        // If it's empty after trimming, return null
         if (empty($webDirectory)) {
             return null;
         }

@@ -32,10 +32,6 @@ class NetworkServerFactory extends Factory
         ];
     }
 
-    /**
-     * A two-digit host pattern gives faker's unique() only 100 values, which it can exhaust
-     * across a long-running process and then throw. This spans the whole 100.64.0.0/16.
-     */
     private function hostAddress(): string
     {
         $host = $this->faker->unique()->numberBetween(1, 64516);

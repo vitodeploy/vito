@@ -18,7 +18,7 @@ class ScriptExecutionResource extends JsonResource
             'id' => $this->id,
             'script_id' => $this->script_id,
             'server_id' => $this->server_id,
-            'server' => new ServerResource($this->server),
+            'server' => $this->when($this->canViewServer($request), fn (): ServerResource => new ServerResource($this->server)),
             'server_log_id' => $this->server_log_id,
             'log' => ServerLogResource::make($this->serverLog),
             'user' => $this->user,
@@ -28,5 +28,12 @@ class ScriptExecutionResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    private function canViewServer(Request $request): bool
+    {
+        $viewer = $request->user() ?? $this->script->user;
+
+        return $this->server !== null && $viewer?->can('view', $this->server);
     }
 }

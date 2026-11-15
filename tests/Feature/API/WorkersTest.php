@@ -287,6 +287,8 @@ test('see worker logs', function () {
     ]))
         ->assertSuccessful()
         ->assertExactJson(['logs' => 'fake output']);
+
+    SSH::assertExecutedContains('tail -100 -- '.escapeshellarg($worker->getLogFile()));
 });
 
 test('delete site worker', function () {

@@ -2,9 +2,9 @@ name: Docker Latest
 
 on:
   workflow_dispatch:
-#  push:
-#    branches:
-#      - 2.x
+
+permissions:
+  contents: read
 
 jobs:
   build-and-push:
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2

@@ -108,8 +108,6 @@ fi
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-# Major version comes from the branch when it is a release branch (X.x);
-# otherwise fall back to config/app.php so the script still works on feature branches.
 BRANCH_MAJOR=""
 if [[ "$BRANCH" =~ ^([0-9]+)\.x$ ]]; then
   BRANCH_MAJOR="${BASH_REMATCH[1]}"
@@ -124,8 +122,6 @@ CONFIG_BASE="${CONFIG_RAW%%-beta-*}"
 
 MAJOR="${BRANCH_MAJOR:-${CONFIG_BASE%%.*}}"
 
-# A trailing "|| true" keeps an empty match (grep exits non-zero) from tripping
-# "set -o pipefail" + "set -e" at the call site.
 latest_beta_tag() {
   git tag --list "${MAJOR}.*-beta-*" 2>/dev/null \
     | grep -E "^${MAJOR}\.[0-9]+\.[0-9]+-beta-[0-9]+$" \
@@ -232,7 +228,6 @@ style_notes() {
   '
 }
 
-# Resolve the version + previous tag for the selected channel.
 if [[ "$MODE" == "beta" ]]; then
   CHANNEL="Beta"
   if [[ -n "$VERSION_OVERRIDE" ]]; then
@@ -269,14 +264,11 @@ else
   fi
 fi
 
-# Guard, mirroring the release workflow: version major must match the branch major.
 if [[ -n "$BRANCH_MAJOR" && "${VERSION%%.*}" != "$BRANCH_MAJOR" ]]; then
   printf "%sWarning:%s version %s does not match branch '%s' (major %s). The real release would abort.\n" \
     "$YELLOW" "$RESET" "$VERSION" "$BRANCH" "$BRANCH_MAJOR" >&2
 fi
 
-# The release workflow targets the branch (github.ref_name); GitHub uses the
-# remote tip, so warn when local commits have not been pushed yet.
 TARGET="$BRANCH"
 TARGET_SHA=""
 if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then

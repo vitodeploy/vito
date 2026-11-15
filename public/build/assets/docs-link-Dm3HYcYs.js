@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-D71uMYU6.js";var t=e();function n({page:e=`concepts`}){return(0,t.jsx)(`a`,{className:`text-muted-foreground hover:text-foreground text-sm underline underline-offset-4`,href:`https://vitodeploy.com/docs/4.x/applications/${e}`,target:`_blank`,rel:`noreferrer`,children:`Read the Applications guide`})}export{n as default};

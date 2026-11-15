@@ -249,3 +249,17 @@ test('execute command validation error', function () {
     ]))
         ->assertSessionHasErrors();
 });
+
+test('command variables are substituted once and oversized expansions are rejected', function () {
+    SSH::fake();
+    $this->actingAs($this->user);
+    $route = fn (Command $command): string => route('commands.execute', ['server' => $this->server, 'site' => $this->site, 'command' => $command]);
+
+    $command = $this->site->commands()->create(['name' => 'Nested', 'command' => 'echo "${A}-${B}"']);
+    $this->post($route($command), ['A' => '${B}${B}', 'B' => 'x'])->assertSessionDoesntHaveErrors();
+    SSH::assertExecutedContains('echo "${B}${B}-x"');
+
+    $huge = $this->site->commands()->create(['name' => 'Huge', 'command' => str_repeat('${A}', 5000)]);
+    $this->post($route($huge), ['A' => str_repeat('a', 255)])->assertSessionHasErrors('variables');
+    $this->assertDatabaseMissing('command_executions', ['command_id' => $huge->id]);
+});

@@ -1,3 +1,4 @@
+import { ComponentProcessOwner } from '@/types/application';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -18,16 +19,21 @@ export default function WorkerForm({
   open,
   onOpenChange,
   serverId,
+  component,
   site,
   worker,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   serverId: number;
+  component?: ComponentProcessOwner;
   site?: Site;
   worker?: Worker;
 }) {
-  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
+  const page = usePage<SharedData & { server?: Server; sites?: Array<{ id: number; domain: string }> }>();
+  const componentOwned = !!component || !!worker?.component_id;
+  const componentUser = component?.user ?? worker?.user ?? '';
+  const componentUrl = component?.url ?? worker?.component_url;
   const form = useForm<{
     name: string;
     command: string;
@@ -39,23 +45,24 @@ export default function WorkerForm({
   }>({
     name: worker?.name || '',
     command: worker?.command || '',
-    user: worker?.user || '',
-    auto_start: worker?.auto_start || true,
-    auto_restart: worker?.auto_restart || true,
+    user: component?.user ?? worker?.user ?? '',
+    auto_start: worker?.auto_start ?? true,
+    auto_restart: worker?.auto_restart ?? true,
     numprocs: worker?.numprocs.toString() || '',
     site_id: worker?.site_id?.toString() || '0',
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    form.transform((data) => ({ ...data, site_id: componentOwned ? undefined : data.site_id }));
     if (worker) {
-      form.put(`/servers/${serverId}/workers/${worker.id}`, {
+      form.put(`${componentUrl ?? `/servers/${serverId}`}/workers/${worker.id}`, {
         onSuccess: () => onOpenChange(false),
       });
       return;
     }
 
-    form.post(`/servers/${serverId}/workers${site ? `/${site.id}` : ''}`, {
+    form.post(componentUrl ? `${componentUrl}/workers` : `/servers/${serverId}/workers${site ? `/${site.id}` : ''}`, {
       onSuccess: () => onOpenChange(false),
     });
   };
@@ -83,12 +90,16 @@ export default function WorkerForm({
                 onChange={(e) => form.setData('command', e.target.value)}
                 placeholder={site ? 'php artisan queue:work' : ''}
               />
-              <p className="text-muted-foreground text-sm">`php` command will use the default php cli command</p>
-              <p className="text-muted-foreground text-sm">For specific version, use exact path to the php version like `/usr/bin/php8.4`</p>
+              {!componentOwned && (
+                <>
+                  <p className="text-muted-foreground text-sm">`php` command will use the default php cli command</p>
+                  <p className="text-muted-foreground text-sm">For specific version, use exact path to the php version like `/usr/bin/php8.4`</p>
+                </>
+              )}
               <InputError message={form.errors.command} />
             </FormField>
 
-            {page.props.sites && !site && (
+            {page.props.sites && !site && !componentOwned && (
               <FormField>
                 <Label htmlFor="site_id">Site</Label>
                 <Select value={form.data.site_id} onValueChange={(value) => form.setData('site_id', value)}>
@@ -112,20 +123,29 @@ export default function WorkerForm({
 
             <FormField>
               <Label htmlFor="user">User</Label>
-              <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
-                <SelectTrigger id="user">
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {page.props.server.ssh_users.map((user) => (
-                      <SelectItem key={`user-${user}`} value={user}>
-                        {user}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              {componentOwned ? (
+                <Input id="user" value={componentUser} readOnly />
+              ) : (
+                <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
+                  <SelectTrigger id="user">
+                    <SelectValue placeholder="Select a user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {(page.props.server?.ssh_users ?? []).map((user) => (
+                        <SelectItem key={`user-${user}`} value={user}>
+                          {user}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+              {componentOwned && (
+                <p className="text-muted-foreground text-sm">
+                  Runs in the component’s current release as its Linux user. Variables come from the component environment, not this process.
+                </p>
+              )}
               <InputError message={form.errors.user} />
             </FormField>
 

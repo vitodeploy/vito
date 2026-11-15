@@ -188,7 +188,6 @@ test('api guest cannot access dns providers', function () {
 test('api insufficient scopes denies access', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Only read scope
     $data = [
         'provider' => Cloudflare::id(),
         'name' => 'test',
@@ -295,7 +294,6 @@ test('dns provider creation validates credentials', function () {
     $data = [
         'name' => 'Test Cloudflare',
         'provider' => Cloudflare::id(),
-        // Missing required 'token' field
     ];
 
     $this->json('POST', route('api.dns-providers.create'), $data)
@@ -369,19 +367,16 @@ test('dns provider creation without global flag', function () {
 test('dns providers are filtered by project', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Create DNS provider for current project
     $projectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create global DNS provider (no project)
     $globalDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => null,
     ]);
 
-    // Create DNS provider for different project
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProjectDnsProvider = DNSProvider::factory()->create([
@@ -435,7 +430,7 @@ test('dns provider creation ignores user id manipulation', function () {
         'name' => 'Test Provider',
         'provider' => Cloudflare::id(),
         'token' => 'fake-token',
-        'user_id' => $otherUser->id, // Attempt to set different user
+        'user_id' => $otherUser->id,
     ];
 
     $this->json('POST', route('api.dns-providers.create'), $data)
@@ -446,7 +441,7 @@ test('dns provider creation ignores user id manipulation', function () {
         ]);
 
     $this->assertDatabaseHas('dns_providers', [
-        'user_id' => $this->user->id, // Should be set to authenticated user
+        'user_id' => $this->user->id,
         'name' => 'Test Provider',
     ]);
 
@@ -465,7 +460,7 @@ test('dns provider update ignores user id manipulation', function () {
 
     $data = [
         'name' => 'Updated Name',
-        'user_id' => $otherUser->id, // Attempt to change user
+        'user_id' => $otherUser->id,
     ];
 
     $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
@@ -477,7 +472,6 @@ test('dns provider update ignores user id manipulation', function () {
     $dnsProvider->refresh();
     expect($dnsProvider->name)->toEqual('Updated Name');
     expect($dnsProvider->user_id)->toEqual($this->user->id);
-    // Should remain unchanged
 });
 
 test('dns provider update ignores provider manipulation', function () {
@@ -490,20 +484,19 @@ test('dns provider update ignores provider manipulation', function () {
 
     $data = [
         'name' => 'Updated Name',
-        'provider' => 'different-provider', // Attempt to change provider
+        'provider' => 'different-provider',
     ];
 
     $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
         ->assertSuccessful()
         ->assertJsonFragment([
             'name' => 'Updated Name',
-            'provider' => Cloudflare::id(), // Should remain unchanged
+            'provider' => Cloudflare::id(),
         ]);
 
     $dnsProvider->refresh();
     expect($dnsProvider->name)->toEqual('Updated Name');
     expect($dnsProvider->provider)->toEqual(Cloudflare::id());
-    // Should remain unchanged
 });
 
 test('dns provider update keeps credentials when empty', function () {
@@ -597,20 +590,19 @@ test('dns provider update ignores connected manipulation', function () {
 
     $data = [
         'name' => 'Updated Name',
-        'connected' => false, // Attempt to change connected status
+        'connected' => false,
     ];
 
     $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
         ->assertSuccessful()
         ->assertJsonFragment([
             'name' => 'Updated Name',
-            'connected' => true, // Should remain unchanged
+            'connected' => true,
         ]);
 
     $dnsProvider->refresh();
     expect($dnsProvider->name)->toEqual('Updated Name');
     expect($dnsProvider->connected)->toBeTrue();
-    // Should remain unchanged
 });
 
 test('dns provider update ignores project id manipulation', function () {
@@ -623,7 +615,7 @@ test('dns provider update ignores project id manipulation', function () {
 
     $data = [
         'name' => 'Updated Name',
-        'project_id' => 999, // Attempt to change project
+        'project_id' => 999,
     ];
 
     $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)

@@ -23,6 +23,8 @@ use Throwable;
 
 class SSH
 {
+    public const MAX_OUTPUT_BYTES = 33554432;
+
     public Server $server;
 
     public ?ServerLog $log = null;
@@ -65,9 +67,6 @@ class SSH
         return $this;
     }
 
-    /**
-     * Ensure a server log exists when a log message is provided.
-     */
     private function ensureLog(?string $log, ?int $siteId = null): void
     {
         if (! $this->log instanceof ServerLog && $log && ! $this->logDisk && ! $this->logPath) {
@@ -79,9 +78,6 @@ class SSH
         }
     }
 
-    /**
-     * Ensure there is an active SFTP connection and return it.
-     */
     private function ensureSftp(): SFTP
     {
         if (! $this->connection instanceof SFTP) {
@@ -95,9 +91,6 @@ class SSH
         return $this->connection;
     }
 
-    /**
-     * Write a chunk of output to either a file on a disk or the server log.
-     */
     protected function writeOutput(string $chunk): void
     {
         if ($this->logDisk && $this->logPath) {
@@ -106,7 +99,16 @@ class SSH
                 ($this->logOutputCallback)($chunk);
             }
         } else {
-            $this->log?->write($chunk);
+            $this->log?->writeOutput($chunk);
+        }
+    }
+
+    protected function writeMessage(string $message): void
+    {
+        if ($this->logDisk && $this->logPath) {
+            $this->writeOutput($message);
+        } else {
+            $this->log?->write($message);
         }
     }
 
@@ -118,7 +120,7 @@ class SSH
     }
 
     /**
-     * @param  ?\Closure(string): void  $outputCallback  Optional callback invoked with each output chunk
+     * @param  ?\Closure(string): void  $outputCallback
      */
     public function useLog(string $disk, string $path, ?\Closure $outputCallback = null): self
     {
@@ -160,7 +162,6 @@ class SSH
      */
     public function connect(bool $sftp = false): void
     {
-        // If the IP is an IPv6 address, we need to wrap it in square brackets
         $ip = $this->server->ip;
         if (str($ip)->contains(':')) {
             $ip = '['.$ip.']';
@@ -197,7 +198,7 @@ class SSH
                 $this->connect();
             }
         } catch (Throwable $e) {
-            $this->writeOutput($e->getMessage());
+            $this->writeMessage($e->getMessage());
             throw new SSHConnectionError($e->getMessage());
         }
 
@@ -208,31 +209,42 @@ class SSH
             }
             $command = $envPrefix.'set -e; '.$command;
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
-                $command = <<<BASH
-                sudo -u {$this->asUser} bash <<'EOF'
-                cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }
-                {$command}
-                EOF
-                BASH;
+                do {
+                    $delimiter = 'VITO_SSH_'.Str::random(32);
+                } while (str_contains($command, $delimiter));
+                $command = 'sudo -u '.escapeshellarg($this->asUser)." bash -s <<'".$delimiter."'\n"
+                    ."cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }\n".$command."\n".$delimiter;
             }
 
             $this->connection->setTimeout($timeout);
-            if ($stream === true) {
-                /** @var callable $streamCallback */
-                $this->connection->exec($command, function ($output) use ($streamCallback) {
-                    $this->writeOutput($output);
-
-                    return $streamCallback($output);
-                });
-
-                return '';
-            }
             $output = '';
-            $this->connection->exec($command, function (string $out) use (&$output): void {
+            $bytes = 0;
+            $this->connection->exec($command, function (string $out) use (&$output, &$bytes, $stream, $streamCallback): bool {
+                $bytes += strlen($out);
+                if ($bytes > static::MAX_OUTPUT_BYTES) {
+                    return true;
+                }
+
                 $this->writeOutput($out);
 
+                if ($stream === true) {
+                    /** @var callable $streamCallback */
+                    return $streamCallback($out) === true;
+                }
+
                 $output .= $out;
+
+                return false;
             });
+            if ($bytes > static::MAX_OUTPUT_BYTES) {
+                throw new SSHCommandError(
+                    message: 'SSH command output exceeded '.static::MAX_OUTPUT_BYTES.' bytes and was stopped',
+                    log: $this->log
+                );
+            }
+            if ($stream === true) {
+                return '';
+            }
             if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
                 throw new SSHCommandError(
                     message: 'SSH command failed with an error',
@@ -246,7 +258,7 @@ class SSH
                 'msg' => $e->getMessage(),
                 'log' => $this->log,
             ]);
-            $this->writeOutput($e->getMessage());
+            $this->writeMessage($e->getMessage());
             throw new SSHCommandError(
                 message: $e->getMessage(),
                 log: $this->log

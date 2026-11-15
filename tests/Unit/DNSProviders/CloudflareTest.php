@@ -715,7 +715,7 @@ test('delete record failure', function () {
     $recordId = 'invalid-record';
 
     Http::fake([
-        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([], 404),
+        "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records/{$recordId}" => Http::response([], 403),
     ]);
 
     $result = $this->cloudflare->deleteRecord($domainId, $recordId);

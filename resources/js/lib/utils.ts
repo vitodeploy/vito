@@ -5,16 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// stable client-side id for repeated form rows; crypto.randomUUID needs a secure context
 export function rowId(): string {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+}
+
+export function loadBalancerMethodLabel(method: string | null): string {
+  const labels: Record<string, string> = { 'round-robin': 'Round robin', 'least-connections': 'Least connections', 'ip-hash': 'IP hash' };
+  return labels[method ?? 'round-robin'] ?? method ?? 'Round robin';
 }
 
 export function currentPath(): string {
   return window.location.pathname;
 }
 
-// convert kb to gb
 export function kbToGb(kb: number | string): number {
   if (typeof kb === 'string') {
     kb = parseFloat(kb);
@@ -22,7 +25,6 @@ export function kbToGb(kb: number | string): number {
   return Math.round((kb / 1024 / 1024) * 100) / 100;
 }
 
-// convert mb to gb
 export function mbToGb(mb: number | string): number {
   if (typeof mb === 'string') {
     mb = parseFloat(mb);
@@ -50,7 +52,6 @@ export function formatDateString(dateString: string | Date): string {
   const month = date.toLocaleString('default', { month: '2-digit' });
   const day = date.toLocaleString('default', { day: '2-digit' });
 
-  // Generate yyyy-mm-dd date string
   return year + '-' + month + '-' + day;
 }
 

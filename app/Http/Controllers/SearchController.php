@@ -74,14 +74,13 @@ class SearchController extends Controller
             })
             ->where('sites.domain', 'like', "%{$query}%");
 
-        // Combine with unionAll
         $results = $projects
             ->unionAll($servers)
             ->unionAll($sites)
             ->get();
 
         $results = [
-            'data' => $results, // Replace with actual search results
+            'data' => $results,
         ];
 
         return response()->json($results);

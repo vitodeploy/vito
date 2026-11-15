@@ -23,10 +23,14 @@ class DeployJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
+    protected ?string $checkoutCommit = null;
+
     public function __construct(
         protected Deployment $deployment,
-        protected bool $isModern = true
+        protected bool $isModern = true,
+        ?string $checkoutCommit = null
     ) {
+        $this->checkoutCommit = $checkoutCommit;
         $this->onQueue('ssh');
     }
 
@@ -68,7 +72,7 @@ class DeployJob implements ShouldQueue
         if ($this->isModern && $current) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
-                    'site' => $site,
+                    'basePath' => $site->basePath(),
                     'releasePath' => $current->path(),
                 ]),
                 'release',
@@ -110,9 +114,8 @@ class DeployJob implements ShouldQueue
 
     private function handleModernDeployment($site, $log): void
     {
-        app(Git::class)->clone($site, $this->deployment->path());
+        app(Git::class)->clone($site, $this->deployment->path(), $this->checkoutCommit);
 
-        // build
         $site->server->os()->runScript(
             path: $this->deployment->path(),
             script: $site->buildScript->content ?? '',
@@ -125,7 +128,6 @@ class DeployJob implements ShouldQueue
             aliases: $site->environmentAliases(),
         );
 
-        // link resources
         $site->server->ssh($site->user)
             ->variables($site->environmentVariables($this->deployment))
             ->exec(
@@ -137,7 +139,6 @@ class DeployJob implements ShouldQueue
                 $site->id
             );
 
-        // pre-flight
         $site->server->os()->runScript(
             path: $this->deployment->path(),
             script: $site->preFlightScript->content ?? '',
@@ -150,10 +151,9 @@ class DeployJob implements ShouldQueue
             aliases: $site->environmentAliases(),
         );
 
-        // release
         $site->server->ssh($site->user)->exec(
             view('ssh.modern-deployment.release', [
-                'site' => $site,
+                'basePath' => $site->basePath(),
                 'releasePath' => $this->deployment->path(),
             ]),
             'release',

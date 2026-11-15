@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('firewall_rules', function (Blueprint $table): void {
@@ -22,9 +19,6 @@ return new class extends Migration
         DB::statement("UPDATE firewall_rules SET mask = null WHERE mask = '0'");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         DB::statement("UPDATE firewall_rules SET protocol = LOWER(name) WHERE protocol = 'tcp' AND LOWER(name) IN ('ssh', 'http', 'https')");

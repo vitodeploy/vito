@@ -50,10 +50,6 @@ class NetworkPeer extends AbstractModel
         'private_key',
     ];
 
-    /**
-     * Whether Vito still holds this peer's private key. False once the key has been revealed
-     * and concealed, and always false for peers that brought their own key.
-     */
     public function hasPrivateKey(): bool
     {
         return ! $this->byo && $this->private_key !== null;

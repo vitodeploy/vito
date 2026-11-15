@@ -326,7 +326,6 @@ test('write conf job noop when disabled', function () {
 test('stats cron is subject to crontab sync', function () {
     SSH::fake('');
 
-    // getUserCrontab returns empty for every user
     $cron = $this->server->cronJobs()->create([
         'site_id' => null,
         'name' => GoAccess::CRON_NAME,

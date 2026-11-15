@@ -19,24 +19,17 @@ interface DNSProvider
     public function credentialData(array $input): array;
 
     /**
-     * Non-sensitive credential data that can be exposed for editing.
-     *
      * @return array<string, mixed>
      */
     public function editableData(): array;
 
     /**
-     * Merge edit input into existing credentials, ignoring empty optional fields.
-     * Returns [credentials, needsReconnect] tuple.
-     *
      * @param  array<string, mixed>  $input
      * @return array{0: array<string, mixed>, 1: bool}
      */
     public function mergeEditData(array $input): array;
 
     /**
-     * Validation rules for edit form (fields are optional by default).
-     *
      * @param  array<string, mixed>  $input
      * @return array<string, string|array<int, mixed>>
      */
@@ -58,7 +51,7 @@ interface DNSProvider
     public function getDomain(string $domainId): array;
 
     /**
-     * @return array<string, mixed>
+     * @return list<array<string, mixed>>
      */
     public function getRecords(string $domainId): array;
 

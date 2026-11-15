@@ -36,14 +36,9 @@ use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 class Kernel extends HttpKernel
 {
     /**
-     * The application's global HTTP middleware stack.
-     *
-     * These middleware are run during every request to your application.
-     *
      * @var array<int, class-string|string>
      */
     protected $middleware = [
-        // \App\Http\Middleware\TrustHosts::class,
         TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
@@ -53,8 +48,6 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * The application's route middleware groups.
-     *
      * @var array<string, array<int, class-string|string>>
      */
     protected $middlewareGroups = [
@@ -62,6 +55,7 @@ class Kernel extends HttpKernel
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
+            AuthenticateSession::class,
             ShareErrorsFromSession::class,
             PreventRequestForgery::class,
             SubstituteBindings::class,
@@ -76,10 +70,6 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used to conveniently assign middleware to routes and groups.
-     *
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [

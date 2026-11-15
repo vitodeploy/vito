@@ -1,9 +1,12 @@
 <?php
 
+use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\ServerLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
@@ -59,7 +62,6 @@ test('clear remote log', function () {
         'name' => 'test-remote-log',
     ]);
 
-    // Mock the SSH connection to avoid actual SSH calls
     SSH::fake();
 
     $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))
@@ -81,4 +83,63 @@ test('unauthorized user cannot clear log', function () {
 
     $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))
         ->assertForbidden();
+});
+
+test('log messages get their own lines while streamed output is kept exactly as received', function () {
+    Storage::fake('server-logs');
+    Event::fake([SocketEvent::class]);
+    $log = ServerLog::factory()->create(['server_id' => $this->server->id, 'disk' => 'server-logs']);
+
+    $log->write('Starting clone.');
+    $log->writeOutput('Receiving objects: 50%');
+    $log->writeOutput(", done.\nsecond line\n");
+    $log->writeOutput('partial');
+    $log->write('Starting build.');
+
+    expect(Storage::disk('server-logs')->get($log->name))->toBe("Starting clone.\nReceiving objects: 50%, done.\nsecond line\npartial\nStarting build.\n");
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => ($event->data->data['content'] ?? null) === 'Receiving objects: 50%');
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => ($event->data->data['content'] ?? null) === "\nStarting build.\n");
+});
+
+test('log content is served as plain text', function () {
+    Storage::fake('server-logs');
+    $this->actingAs($this->user);
+
+    $log = ServerLog::factory()->create(['server_id' => $this->server->id]);
+    $log->write('<script>alert(1)</script>');
+
+    $this->get(route('logs.show', [$this->server, 'log' => $log->id]))
+        ->assertSuccessful()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertSee('<script>alert(1)</script>', false);
+});
+
+test('local logs cannot be renamed to another file', function () {
+    Storage::fake('server-logs');
+    $this->actingAs($this->user);
+
+    $log = ServerLog::factory()->create(['server_id' => $this->server->id, 'name' => 'own.log']);
+
+    $this->patch(route('logs.update', [$this->server, 'log' => $log->id]), ['path' => 'other-project.log'])
+        ->assertSessionHasErrors('path');
+
+    expect($log->refresh()->name)->toBe('own.log');
+});
+
+test('remote logs can be renamed', function () {
+    $this->actingAs($this->user);
+
+    $log = ServerLog::factory()->create([
+        'server_id' => $this->server->id,
+        'is_remote' => true,
+        'type' => 'remote',
+        'disk' => 'ssh',
+        'name' => '/var/log/old.log',
+    ]);
+
+    $this->patch(route('logs.update', [$this->server, 'log' => $log->id]), ['path' => '/var/log/new.log'])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($log->refresh()->name)->toBe('/var/log/new.log');
 });

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $project_id
  * @property ?int $user_id
  * @property ?string $email
+ * @property ?string $invitation_token
  * @property UserRole $role
  * @property ?User $user
  * @property Project $project
@@ -23,6 +24,10 @@ class UserProject extends Model
         'user_id',
         'email',
         'role',
+    ];
+
+    protected $hidden = [
+        'invitation_token',
     ];
 
     protected $casts = [

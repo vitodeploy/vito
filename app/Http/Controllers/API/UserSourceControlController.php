@@ -52,7 +52,6 @@ class UserSourceControlController extends Controller
     {
         $this->authorize('view', $sourceControl);
 
-        // Ensure the source control belongs to the authenticated user
         if ($sourceControl->user_id !== user()->id) {
             abort(404, 'Source control not found');
         }
@@ -65,7 +64,6 @@ class UserSourceControlController extends Controller
     {
         $this->authorize('update', $sourceControl);
 
-        // Ensure the source control belongs to the authenticated user
         if ($sourceControl->user_id !== user()->id) {
             abort(404, 'Source control not found');
         }
@@ -84,7 +82,6 @@ class UserSourceControlController extends Controller
     {
         $this->authorize('delete', $sourceControl);
 
-        // Ensure the source control belongs to the authenticated user
         if ($sourceControl->user_id !== user()->id) {
             abort(404, 'Source control not found');
         }

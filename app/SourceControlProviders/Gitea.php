@@ -12,17 +12,17 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class Gitea extends AbstractSourceControlProvider
+class Gitea extends AbstractSourceControlProvider implements SupportsApplications
 {
     protected string $defaultApiHost = 'https://gitea.com/';
 
     protected string $apiVersion = 'api/v1';
 
-    private const int CACHE_TTL = 60 * 15; // 15 minutes
+    private const int CACHE_TTL = 60 * 15;
 
-    private const int MAX_LIMIT = 50; // Gitea's max limit per page
+    private const int MAX_LIMIT = 50;
 
-    private const int MAX_PAGES = 25; // Safety limit
+    private const int MAX_PAGES = 25;
 
     public static function id(): string
     {
@@ -116,6 +116,13 @@ class Gitea extends AbstractSourceControlProvider
         return $res->json();
     }
 
+    public function getFileContents(string $repo, string $branch, string $path): ?string
+    {
+        $res = Http::withToken($this->data()['token'])->get($this->getApiUrl().'/repos/'.$repo.'/raw/'.$path, ['ref' => $branch]);
+
+        return $this->repositoryFile($res, $repo);
+    }
+
     public function fullRepoUrl(string $repo, string $key): string
     {
         $host = parse_url($this->getApiUrl())['host'] ?? 'gitea.com';
@@ -171,7 +178,7 @@ class Gitea extends AbstractSourceControlProvider
             throw new FailedToDestroyGitHook($e->getMessage());
         }
 
-        if ($response->status() != 204) {
+        if (! in_array($response->status(), [204, 404], true)) {
             throw new FailedToDestroyGitHook($response->body());
         }
     }
@@ -182,7 +189,7 @@ class Gitea extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/repos/'.$repo.'/commits?sha='.$branch);
+            ->get($this->getApiUrl().'/repos/'.$repo.'/commits', ['sha' => $branch]);
 
         $this->handleResponseErrors($res, $repo);
 
@@ -205,26 +212,23 @@ class Gitea extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
+    public function deployReadOnlyKey(string $title, string $repo, string $key): string
+    {
+        return $this->deployKey($title, $repo, $key);
+    }
+
     public function deployKey(string $title, string $repo, string $key): string
     {
-        try {
-            $response = Http::withToken($this->data()['token'])->post(
-                $this->getApiUrl().'/repos/'.$repo.'/keys',
-                [
-                    'title' => $title,
-                    'key' => $key,
-                    'read_only' => true,
-                ]
-            );
+        return $this->registerDeployKey(
+            fn () => Http::withToken($this->data()['token']),
+            $this->getApiUrl().'/repos/'.$repo.'/keys',
+            ['title' => $title, 'key' => $key, 'read_only' => true], pageSizeParameter: 'limit',
+        );
+    }
 
-            if ($response->status() != 201) {
-                throw new FailedToDeployGitKey($response->body());
-            }
-
-            return $response->json()['id'] ?? '';
-        } catch (Exception $e) {
-            throw new FailedToDeployGitKey($e->getMessage());
-        }
+    public function findDeployKey(string $repo, string $key): ?string
+    {
+        return $this->lookupDeployKey(fn () => Http::withToken($this->data()['token']), $this->getApiUrl().'/repos/'.$repo.'/keys', $key, pageSizeParameter: 'limit');
     }
 
     public function deleteDeployKey(string $keyId, string $repo): void
@@ -234,20 +238,11 @@ class Gitea extends AbstractSourceControlProvider
                 $this->getApiUrl().'/repos/'.$repo.'/keys/'.$keyId
             );
 
-            if (! $response->successful()) {
-                Log::warning('Failed to delete Gitea deploy key', [
-                    'repo' => $repo,
-                    'key_id' => $keyId,
-                    'response' => $response->body(),
-                ]);
+            if (! $response->successful() && $response->status() !== 404) {
+                throw new \RuntimeException('Deploy key removal was rejected by the source control.');
             }
-
-        } catch (Throwable $e) {
-            Log::error('Error deleting Gitea deploy key', [
-                'repo' => $repo,
-                'key_id' => $keyId,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (Throwable) {
+            throw new \RuntimeException('Unable to remove the source-control deploy key.');
         }
     }
 
@@ -314,11 +309,7 @@ class Gitea extends AbstractSourceControlProvider
     }
 
     /**
-     * Fetch all pages from Gitea API
-     * Gitea uses pagination with 'page' and 'limit' parameters
-     *
-     * @param  string  $endpoint  API endpoint (without base URL)
-     * @param  array<string, mixed>  $params  Query parameters
+     * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */
     private function fetchAllPages(string $endpoint, array $params = []): Collection
@@ -347,7 +338,6 @@ class Gitea extends AbstractSourceControlProvider
             } else {
                 $allData = $allData->concat($pageData);
 
-                // Gitea pagination: if we got fewer items than the limit, we're done
                 $limit = $params['limit'] ?? self::MAX_LIMIT;
                 $hasMore = count($pageData) >= $limit;
                 $page++;

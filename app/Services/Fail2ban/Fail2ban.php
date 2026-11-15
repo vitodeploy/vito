@@ -95,7 +95,7 @@ class Fail2ban extends AbstractService implements HasLogs
         $this->service->server->ssh()
             ->setLog($this->service->log)
             ->exec(
-                view('ssh.services.fail2ban.install', $this->jailData()),
+                view('ssh.services.fail2ban.install', [...$this->jailData(), 'isDebian' => $this->service->server->os->isDebian()]),
                 'install-fail2ban'
             );
         event('service.installed', $this->service);

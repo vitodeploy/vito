@@ -14,8 +14,5 @@ return new class extends Migration
         $schema->dropIfExists('telescope_monitoring');
     }
 
-    public function down(): void
-    {
-        //
-    }
+    public function down(): void {}
 };

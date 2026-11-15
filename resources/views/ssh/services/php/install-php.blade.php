@@ -17,4 +17,4 @@ fi
 
 sudo systemctl enable php{{ $version }}-fpm
 
-sudo systemctl start php{{ $version }}-fpm
+sudo systemctl restart php{{ $version }}-fpm

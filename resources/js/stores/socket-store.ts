@@ -30,13 +30,16 @@ const SLOW_RECONNECT_INTERVAL = 30000;
 let ws: WebSocket | null = null;
 let reconnectAttempt = 0;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let generation = 0;
+let connectedUserId: number | null = null;
+let connecting = false;
 
 type SocketStore = {
   status: SocketStatus;
   currentProjectId: number | null;
-  connect: (csrfToken: string) => Promise<void>;
+  connect: (csrfToken: string, userId: number) => Promise<void>;
   disconnect: () => void;
-  reconnect: (csrfToken: string) => void;
+  reconnect: (csrfToken: string, userId: number) => void;
   switchProject: (projectId: number) => void;
 };
 
@@ -56,7 +59,7 @@ async function requestEventsToken(csrfToken: string): Promise<{ token: string; u
   }
 }
 
-function scheduleReconnect(csrfToken: string): void {
+function scheduleReconnect(csrfToken: string, userId: number): void {
   if (reconnectTimer) {
     clearTimeout(reconnectTimer);
     reconnectTimer = null;
@@ -64,28 +67,39 @@ function scheduleReconnect(csrfToken: string): void {
   reconnectAttempt++;
   if (reconnectAttempt > MAX_FAST_RECONNECT_ATTEMPTS) {
     useSocketStore.setState({ status: 'disconnected' });
-    reconnectTimer = setTimeout(() => useSocketStore.getState().connect(csrfToken), SLOW_RECONNECT_INTERVAL);
+    reconnectTimer = setTimeout(() => useSocketStore.getState().connect(csrfToken, userId), SLOW_RECONNECT_INTERVAL);
     return;
   }
   useSocketStore.setState({ status: 'connecting' });
   const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttempt - 1), RECONNECT_MAX_DELAY);
-  reconnectTimer = setTimeout(() => useSocketStore.getState().connect(csrfToken), delay);
+  reconnectTimer = setTimeout(() => useSocketStore.getState().connect(csrfToken, userId), delay);
 }
 
 export const useSocketStore = create<SocketStore>((set, get) => ({
   status: 'connecting',
   currentProjectId: null,
 
-  connect: async (csrfToken: string) => {
-    if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+  connect: async (csrfToken: string, userId: number) => {
+    if (connectedUserId !== null && connectedUserId !== userId) {
+      get().disconnect();
+    }
+
+    if (connecting || (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN))) {
       return;
     }
 
+    const connectGeneration = generation;
+    connectedUserId = userId;
+    connecting = true;
     set({ status: 'connecting' });
 
     const tokenData = await requestEventsToken(csrfToken);
+    if (connectGeneration !== generation) {
+      return;
+    }
+    connecting = false;
     if (!tokenData) {
-      scheduleReconnect(csrfToken);
+      scheduleReconnect(csrfToken, userId);
       return;
     }
 
@@ -93,6 +107,9 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     ws = socket;
 
     socket.onmessage = (event) => {
+      if (ws !== socket) {
+        return;
+      }
       try {
         const msg: WebSocketMessage = JSON.parse(event.data);
 
@@ -115,21 +132,26 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
             break;
         }
       } catch {
-        // ignore non-JSON messages
+        return;
       }
     };
 
     socket.onclose = () => {
+      if (ws !== socket) {
+        return;
+      }
       ws = null;
-      scheduleReconnect(csrfToken);
+      scheduleReconnect(csrfToken, userId);
     };
 
-    socket.onerror = () => {
-      // onclose will fire after onerror, reconnection handled there
-    };
+    socket.onerror = () => {};
   },
 
   disconnect: () => {
+    generation++;
+    connectedUserId = null;
+    connecting = false;
+    reconnectAttempt = 0;
     if (reconnectTimer) {
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
@@ -141,13 +163,12 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       ws.close();
       ws = null;
     }
-    set({ status: 'disconnected' });
+    set({ status: 'disconnected', currentProjectId: null });
   },
 
-  reconnect: (csrfToken: string) => {
-    reconnectAttempt = 0;
+  reconnect: (csrfToken: string, userId: number) => {
     get().disconnect();
-    get().connect(csrfToken);
+    get().connect(csrfToken, userId);
   },
 
   switchProject: (projectId: number) => {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\FirewallRuleStatus;
+use App\Facades\SSH;
 use App\Jobs\FirewallRule\ApplyRulesJob;
 use App\Models\FirewallRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +24,7 @@ test('apply rules job failed sets non ready rules to failed and logs', function 
         'status' => FirewallRuleStatus::DELETING,
     ]);
 
-    $job = new ApplyRulesJob($creatingRule);
+    $job = new ApplyRulesJob($this->server, [$creatingRule->id]);
     $job->failed(new Exception('Firewall error'));
 
     $creatingRule->refresh();
@@ -38,4 +39,36 @@ test('apply rules job failed sets non ready rules to failed and logs', function 
         'server_id' => $this->server->id,
         'type' => 'apply-firewall-rules-failed',
     ]);
+});
+
+test('apply rules job settles every batch rule even when one is being deleted', function () {
+    SSH::fake();
+
+    $creatingRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::CREATING,
+    ]);
+
+    $deletingRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::DELETING,
+    ]);
+
+    $readyRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::READY,
+    ]);
+
+    $failedRule = FirewallRule::factory()->create([
+        'server_id' => $this->server->id,
+        'status' => FirewallRuleStatus::FAILED,
+    ]);
+
+    (new ApplyRulesJob($this->server, [$deletingRule->id, $creatingRule->id, $readyRule->id, $failedRule->id, 999999]))->handle();
+
+    expect($failedRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
+
+    expect($creatingRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
+    $this->assertDatabaseMissing('firewall_rules', ['id' => $deletingRule->id]);
+    expect($readyRule->refresh()->status)->toEqual(FirewallRuleStatus::READY);
 });

@@ -31,11 +31,6 @@ abstract class AbstractProvider implements ServerProvider
         return true;
     }
 
-    /**
-     * Convert any upstream failure into a credential-free exception. Upstream
-     * HTTP/SDK exceptions can carry tokens in their message or trace arguments,
-     * which the queue would persist into `failed_jobs.exception`.
-     */
     protected function syncError(?int $status = null, ?string $region = null): PrivateNetworkSyncError
     {
         return new PrivateNetworkSyncError(

@@ -16,19 +16,13 @@ class RefreshServerIps
     private const MANAGED_SENTINEL = '===VITO-MANAGED===';
 
     /**
-     * Read the server's configured addresses and reconcile the catalogue.
-     *
-     * An empty result is treated as a no-op (the existing catalogue is kept)
-     * rather than a reconcile, so a transient empty or garbled SSH read can
-     * never wipe the previously discovered rows.
-     *
      * @throws SSHError
      * @throws Throwable
      */
     public function handle(Server $server): void
     {
         $output = $server->ssh()->exec(
-            view('ssh.network.list-network-addresses'),
+            view('ssh.network.list-network-addresses', ['isDebian' => $server->os->isDebian()]),
             'list-network-addresses'
         );
 
@@ -61,9 +55,6 @@ class RefreshServerIps
     }
 
     /**
-     * Addresses Vito previously added are recorded in a `# vito-managed:` marker
-     * inside its netplan file so they keep their managed status on rediscovery.
-     *
      * @return array<int, string>
      */
     private function parseManaged(string $output): array

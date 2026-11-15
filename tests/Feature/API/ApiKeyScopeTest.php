@@ -81,10 +81,8 @@ test('scoped token cannot access servers in unscoped project', function () {
         'role' => UserRole::ADMIN,
     ]);
 
-    // Token scoped to project2 only
     $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$project2->id]);
 
-    // Try accessing servers in the default project (not scoped)
     $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
         ->json('GET', route('api.projects.servers', [
             'project' => $this->user->current_project_id,
@@ -252,4 +250,24 @@ test('multiple project scopes', function () {
     expect($accessToken->hasProjectAccess($this->user->currentProject))->toBeTrue();
     expect($accessToken->hasProjectAccess($project2))->toBeTrue();
     expect($accessToken->getProjectIds())->toHaveCount(2);
+});
+
+test('scoped token cannot create a project', function () {
+    $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$this->user->current_project_id]);
+
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->json('POST', '/api/projects', ['name' => 'out-of-scope'])
+        ->assertForbidden();
+
+    $this->assertDatabaseMissing('projects', ['name' => 'out-of-scope']);
+});
+
+test('unscoped token can create a project', function () {
+    $token = $this->user->createToken('full-access-token', ['read', 'write']);
+
+    $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+        ->json('POST', '/api/projects', ['name' => 'in-scope'])
+        ->assertSuccessful();
+
+    $this->assertDatabaseHas('projects', ['name' => 'in-scope']);
 });

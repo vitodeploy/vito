@@ -29,6 +29,12 @@ class CreateDNSRecord
             ]);
         }
 
+        if (empty($recordData['id'])) {
+            throw ValidationException::withMessages([
+                'record' => ['The DNS provider did not create the record.'],
+            ]);
+        }
+
         $dnsRecord = new DNSRecord;
         $dnsRecord->domain_id = $domain->id;
         $dnsRecord->type = $input['type'];

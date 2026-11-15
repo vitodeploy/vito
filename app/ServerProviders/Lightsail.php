@@ -107,12 +107,12 @@ class Lightsail extends AbstractProvider
 
         $blueprint = collect($this->paginate('GetBlueprints', 'blueprints', $region))
             ->first(fn (array $blueprint): bool => ($blueprint['isActive'] ?? false)
-                && in_array($blueprint['group'] ?? '', ['ubuntu', $this->server->os->value], true)
+                && in_array($blueprint['group'] ?? '', [strtolower($this->server->os->getDistro()), $this->server->os->value], true)
                 && ($blueprint['type'] ?? '') === 'os'
                 && str_starts_with($blueprint['version'] ?? '', $this->server->os->getVersion()));
 
         if (! $blueprint) {
-            throw new ServerProviderError('The selected Ubuntu version is unavailable on AWS Lightsail.');
+            throw new ServerProviderError('The selected '.$this->server->os->getDistro().' version is unavailable on AWS Lightsail.');
         }
 
         $name = 'vito-'.$this->server->id.'-'.Str::lower(Str::random(12));

@@ -12,7 +12,11 @@ use React\EventLoop\LoopInterface;
 
 class TerminalHandler implements WebSocketHandler
 {
+    use RevokesConnections;
+
     protected const MAX_CONNECTIONS_PER_USER = 5;
+
+    protected const OUTPUT_RECHECK_INTERVAL = 1;
 
     /**
      * @var array<string, array{
@@ -23,6 +27,7 @@ class TerminalHandler implements WebSocketHandler
      *     ssh_user: string,
      *     initial_cols: int,
      *     initial_rows: int,
+     *     checked_at: float,
      * }>
      */
     protected array $connections = [];
@@ -65,7 +70,6 @@ class TerminalHandler implements WebSocketHandler
             return 'Too many connections';
         }
 
-        // Store validated token data for retrieval in onOpen()
         $this->pendingAuth[$token] = $tokenData;
 
         return null;
@@ -103,6 +107,7 @@ class TerminalHandler implements WebSocketHandler
             'ssh_user' => $tokenData['ssh_user'],
             'initial_cols' => max(1, (int) ($queryParams['cols'] ?? 80)),
             'initial_rows' => max(1, (int) ($queryParams['rows'] ?? 24)),
+            'checked_at' => microtime(true),
         ];
 
         $this->connectSsh($connId, $server);
@@ -118,6 +123,10 @@ class TerminalHandler implements WebSocketHandler
         try {
             $data = json_decode($payload, true);
             if (! is_array($data) || ! isset($data['type'])) {
+                return;
+            }
+
+            if (! $this->recheck($connId)) {
                 return;
             }
 
@@ -146,9 +155,15 @@ class TerminalHandler implements WebSocketHandler
     public function ping(string $connId): void
     {
         $entry = $this->connections[$connId] ?? null;
-        if ($entry) {
-            $entry['connection']->ping();
+        if (! $entry) {
+            return;
         }
+
+        if (! $this->recheck($connId)) {
+            return;
+        }
+
+        $entry['connection']->ping();
     }
 
     public function getConnectionCount(): int
@@ -169,6 +184,10 @@ class TerminalHandler implements WebSocketHandler
                 sshUser: $entry['ssh_user'],
                 loop: $this->loop,
                 onOutput: function (string $data) use ($connId): void {
+                    if (! $this->recheck($connId, self::OUTPUT_RECHECK_INTERVAL)) {
+                        return;
+                    }
+
                     $this->connections[$connId]['connection']->send([
                         'type' => 'output',
                         'data' => $data,
@@ -203,6 +222,30 @@ class TerminalHandler implements WebSocketHandler
             ]);
             $entry['connection']->close();
         }
+    }
+
+    protected function recheck(string $connId, float $interval = 0): bool
+    {
+        $entry = $this->connections[$connId] ?? null;
+        if (! $entry) {
+            return false;
+        }
+
+        if (microtime(true) - $entry['checked_at'] < $interval) {
+            return true;
+        }
+
+        $server = Server::find($entry['server_id']);
+        $user = User::find($entry['user_id']);
+        if (! $server || ! $user || ! Gate::forUser($user)->allows('update', $server)) {
+            $this->revoke($connId);
+
+            return false;
+        }
+
+        $this->connections[$connId]['checked_at'] = microtime(true);
+
+        return true;
     }
 
     protected function userConnectionCount(int $userId): int

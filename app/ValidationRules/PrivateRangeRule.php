@@ -6,11 +6,6 @@ use App\Support\Cidr;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * A network's declared range is what its firewall rules are scoped to, so a range wider than
- * private address space would emit `allow from 0.0.0.0/0` on every member — opening the ports
- * to the internet on servers that were default-deny.
- */
 class PrivateRangeRule implements ValidationRule
 {
     private const BLOCKS = [

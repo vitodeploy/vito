@@ -34,4 +34,9 @@ class SFTPFake
             Assert::fail('The expected host is not connected');
         }
     }
+
+    public function assertNotConnected(): void
+    {
+        Assert::assertSame([], $this->connections, 'Unexpected connections were made');
+    }
 }

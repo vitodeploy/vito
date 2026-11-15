@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-D71uMYU6.js";import{t}from"./download-Vt7yngQ3.js";import{t as n}from"./button-BVjZeGHL.js";var r=e();function i(){return(0,r.jsxs)(n,{onClick:()=>{window.open(`/admin/vito/export`,`_blank`)},children:[(0,r.jsx)(t,{}),`Export`]})}export{i as default};

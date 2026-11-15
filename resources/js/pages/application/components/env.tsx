@@ -66,7 +66,6 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     }
   }, [monaco]);
 
-  // Find duplicate keys
   const duplicateKeys = useMemo(() => {
     const keyCounts = new Map<string, number>();
     variables.forEach((v) => {
@@ -110,7 +109,11 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     e.preventDefault();
 
     if (mode === 'classic') {
-      form.transform(() => ({ env: rawContent, path: committedPath }));
+      form.transform(() => ({
+        env: rawContent,
+        path: committedPath,
+        secret_keys: [...new Set(variables.filter((v) => v.isSecret).map((v) => v.key.trim()))].filter(Boolean),
+      }));
     } else {
       form.transform(() => ({
         variables: variables.map((v) => ({
@@ -179,16 +182,13 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
         key: newKey,
         value: '',
         isSecret: false,
-        isNew: true, // Mark as new so user can toggle secret and see value
+        isNew: true,
       },
     ]);
   };
 
   const parseRawContent = async (content: string) => {
-    const response = await axios.post(
-      `/servers/${site.server_id}/sites/${site.id}/env/parse`,
-      { content },
-    );
+    const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/parse`, { content });
 
     if (response.data?.representable === false) {
       throw new Error(
@@ -212,12 +212,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
 
       setIsSwitching(true);
       try {
-        const response = await axios.post(
-          `/servers/${site.server_id}/sites/${site.id}/env/stringify`,
-          {
-            variables: variables.map((v) => ({ key: v.key, value: v.value })),
-          },
-        );
+        const response = await axios.post(`/servers/${site.server_id}/sites/${site.id}/env/stringify`, {
+          variables: variables.map((v) => ({ key: v.key, value: v.value })),
+        });
         setRawContent(response.data?.env ?? '');
         setMode('classic');
       } catch (error) {
@@ -282,7 +279,6 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     };
     reader.readAsText(file);
 
-    // Reset the input so the same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -432,7 +428,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
                 ))}
                 {variables.length === 0 && (
                   <p className="text-muted-foreground text-sm">
-                    This file has no variables{canEdit ? '. Add one below, or use Classic mode to save it empty' : ''}.
+                    {canEdit === true
+                      ? 'This file has no variables. Add one below, or use Classic mode to save it empty.'
+                      : 'This file has no variables, or its content cannot be shown as variables.'}
                   </p>
                 )}
                 <Button type="button" variant="outline" className="w-full" onClick={handleAddVariable}>

@@ -3,13 +3,18 @@
 namespace App\Models;
 
 use App\Enums\CronjobStatus;
+use App\Helpers\ComponentShell;
+use App\Traits\HasExclusiveOwner;
 use Database\Factories\CronJobFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $server_id
  * @property ?int $site_id
+ * @property ?int $component_id
+ * @property ?int $component_capability_id
  * @property string $command
  * @property string $user
  * @property string $frequency
@@ -18,10 +23,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CronjobStatus $status
  * @property string $crontab
  * @property Server $server
+ * @property ?Component $component
  * @property ?Site $site
  */
 class CronJob extends AbstractModel
 {
+    use HasExclusiveOwner;
+
     /** @use HasFactory<CronJobFactory> */
     use HasFactory;
 
@@ -38,9 +46,24 @@ class CronJob extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'component_id' => 'integer',
+        'component_capability_id' => 'integer',
         'hidden' => 'boolean',
         'status' => CronjobStatus::class,
     ];
+
+    /**
+     * @return list<string>
+     */
+    public function ownerColumns(): array
+    {
+        return ['site_id', 'component_id'];
+    }
+
+    public function requiresOwner(): bool
+    {
+        return false;
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>
@@ -48,6 +71,14 @@ class CronJob extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<Component, covariant $this>
+     */
+    public function component(): BelongsTo
+    {
+        return $this->belongsTo(Component::class);
     }
 
     /**
@@ -69,28 +100,32 @@ class CronJob extends AbstractModel
         return $value;
     }
 
+    /** @param Builder<self> $query */
+    public function scopeInCrontab(Builder $query, string $user): void
+    {
+        $query->with('component.environment.application', 'component.server', 'component.isolatedUser')
+            ->where('user', $user)
+            ->whereIn('status', [CronjobStatus::READY, CronjobStatus::CREATING, CronjobStatus::UPDATING, CronjobStatus::ENABLING]);
+    }
+
     public static function crontab(Server $server, string $user): string
     {
-        $data = '';
-        $cronJobs = $server->cronJobs()
-            ->where('user', $user)
-            ->whereIn('status', [
-                CronjobStatus::READY,
-                CronjobStatus::CREATING,
-                CronjobStatus::UPDATING,
-                CronjobStatus::ENABLING,
-            ])
-            ->get();
-        /** @var CronJob $cronJob */
-        foreach ($cronJobs as $key => $cronJob) {
-            $command = $user === 'root' ? $cronJob->command : self::wrapCommand($cronJob->command);
-            $data .= $cronJob->frequency.' '.$command;
-            if ($key != count($cronJobs) - 1) {
-                $data .= "\n";
-            }
-        }
+        return $server->cronJobs()->inCrontab($user)->get()
+            ->map(fn (CronJob $cronJob): string => $cronJob->crontabLine())->implode("\n");
+    }
 
-        return $data;
+    public function crontabLine(): string
+    {
+        $command = $this->component ? $this->wrappedCommand() : ($this->user === 'root' ? $this->command : self::wrapCommand($this->command));
+
+        return $this->frequency.' '.$command;
+    }
+
+    public function wrappedCommand(): string
+    {
+        return $this->component
+            ? ComponentShell::wrap($this->component, $this->command).' # vito-component-cron:'.$this->id
+            : self::wrapCommand($this->command);
     }
 
     public static function wrapCommand(string $command): string

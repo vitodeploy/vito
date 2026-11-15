@@ -17,9 +17,10 @@ final readonly class SocketEventDTO
         public int $projectId,
         public string $type,
         array|JsonResource $data,
+        public ?int $userId = null,
     ) {
         $this->data = $data instanceof JsonResource
-            ? $data->toArray(new Request)
+            ? $data->resolve(new Request)
             : $data;
     }
 
@@ -30,6 +31,7 @@ final readonly class SocketEventDTO
     {
         return [
             'project_id' => $this->projectId,
+            'user_id' => $this->userId,
             'type' => $this->type,
             'data' => $this->data,
         ];

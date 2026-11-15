@@ -4,7 +4,7 @@ export interface DeploymentScriptConfigs {
 
 export interface DeploymentScript {
   id: number;
-  site_id: number;
+  site_id: number | null;
   name: string;
   content: string;
   configs: DeploymentScriptConfigs;

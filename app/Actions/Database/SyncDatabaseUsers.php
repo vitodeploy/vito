@@ -30,9 +30,6 @@ class SyncDatabaseUsers
 
             $query = $server->databaseUsers()->where('username', $user[0]);
 
-            // MySQL/MariaDB distinguish users by (username, host); match both to avoid
-            // collapsing distinct accounts onto a single row. PostgreSQL's get-users-list
-            // returns an empty host (roles are host-agnostic), so only filter when present.
             if ($user[1] !== '') {
                 $query->where('host', $user[1]);
             }
@@ -51,8 +48,10 @@ class SyncDatabaseUsers
                 continue;
             }
 
-            $databaseUser->databases = $databases;
-            $databaseUser->save();
+            if ($databaseUser->environment_attachment_id === null) {
+                $databaseUser->databases = $databases;
+                $databaseUser->save();
+            }
         }
     }
 }

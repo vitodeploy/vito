@@ -7,6 +7,7 @@ use App\Models\BackupFile;
 use App\Models\StorageProvider;
 use App\StorageProviders\StorageProvider as StorageProviderContract;
 use Closure;
+use Illuminate\Validation\ValidationException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -76,8 +77,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     }
 
     /**
-     * Credential keys that are safe to send back to the client for editing.
-     *
      * @return array<int, string>
      */
     protected function editableFields(): array
@@ -86,9 +85,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     }
 
     /**
-     * Credential keys that are never sent back to the client and are only
-     * written when a non-empty value is submitted.
-     *
      * @return array<int, string>
      */
     protected function secretFields(): array
@@ -106,6 +102,14 @@ abstract class AbstractStorageProvider implements StorageProviderContract
         }
 
         return $data;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function secretDestinationFields(): array
+    {
+        return [];
     }
 
     public function editValidationRules(array $input): array
@@ -139,6 +143,7 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     {
         $credentials = $this->storageProvider->credentials;
         $needsReconnect = false;
+        $destinationChanged = false;
         $checkboxFields = static::checkboxFields();
 
         foreach ($this->editableFields() as $field) {
@@ -154,10 +159,20 @@ abstract class AbstractStorageProvider implements StorageProviderContract
 
             $credentials[$field] = $value;
             $needsReconnect = true;
+            $destinationChanged = $destinationChanged || in_array($field, $this->secretDestinationFields(), true);
         }
 
         foreach ($this->secretFields() as $field) {
             if (! isset($input[$field]) || $input[$field] === '') {
+                if ($destinationChanged) {
+                    throw ValidationException::withMessages([
+                        $field => __('Enter the :field again when changing :fields.', [
+                            'field' => $field,
+                            'fields' => implode(', ', $this->secretDestinationFields()),
+                        ]),
+                    ]);
+                }
+
                 continue;
             }
 

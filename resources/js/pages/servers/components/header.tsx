@@ -17,7 +17,6 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
   const server = useRealtimeRecord<Server>(initialServer, 'server')!;
   const site = useRealtimeRecord<Site>(initialSite, 'site');
 
-  // Reload page when installation completes
   useEffect(() => {
     if (initialServer.status === 'installing' && (server.status === 'ready' || server.status === 'installation_failed')) {
       router.reload();

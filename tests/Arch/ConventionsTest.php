@@ -5,9 +5,6 @@ use Illuminate\Support\Str;
 use Tests\ArchTestCase;
 
 /**
- * Models whose rows are reflected in GetBootstrap::configs(). In production the
- * bootstrap version is cached forever, so any write here has to bust it.
- *
  * @var array<string, string>
  */
 const BOOTSTRAP_BACKED_MODELS = [

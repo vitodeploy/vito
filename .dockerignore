@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+storage/*.pem
+storage/*.key
+storage/*.sqlite
+storage/app/key-pairs
+storage/app/server-logs
+storage/logs/*.log

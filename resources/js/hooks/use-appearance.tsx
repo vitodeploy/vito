@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
+const APPEARANCE_EVENT = 'vito:appearance-change';
+
 const prefersDark = () => {
   if (typeof window === 'undefined') {
     return false;
@@ -43,39 +45,48 @@ export function initializeTheme() {
 
   applyTheme(savedAppearance);
 
-  // Add the event listener for system theme changes...
   mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance() {
   const [appearance, setAppearance] = useState<Appearance>('system');
+  const [systemAppearance, setSystemAppearance] = useState<'light' | 'dark'>('light');
 
   const updateAppearance = useCallback((mode: Appearance) => {
-    setAppearance(mode);
-
-    // Store in localStorage for client-side persistence...
     localStorage.setItem('appearance', mode);
 
-    // Store in cookie for SSR...
     setCookie('appearance', mode);
 
     applyTheme(mode);
+    window.dispatchEvent(new Event(APPEARANCE_EVENT));
   }, []);
 
-  // create a method to return the actual appearance light or dark
   const getActualAppearance = useCallback(() => {
     if (appearance === 'system') {
-      return prefersDark() ? 'dark' : 'light';
+      return systemAppearance;
     }
     return appearance;
-  }, [appearance]);
+  }, [appearance, systemAppearance]);
 
   useEffect(() => {
-    const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-    updateAppearance(savedAppearance || 'system');
+    const syncAppearance = () => {
+      const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
+      setAppearance(savedAppearance);
+      setSystemAppearance(prefersDark() ? 'dark' : 'light');
+      applyTheme(savedAppearance);
+    };
+    const query = mediaQuery();
+    syncAppearance();
+    window.addEventListener(APPEARANCE_EVENT, syncAppearance);
+    window.addEventListener('storage', syncAppearance);
+    query?.addEventListener('change', syncAppearance);
 
-    return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-  }, [updateAppearance]);
+    return () => {
+      window.removeEventListener(APPEARANCE_EVENT, syncAppearance);
+      window.removeEventListener('storage', syncAppearance);
+      query?.removeEventListener('change', syncAppearance);
+    };
+  }, []);
 
   return { appearance, updateAppearance, getActualAppearance } as const;
 }

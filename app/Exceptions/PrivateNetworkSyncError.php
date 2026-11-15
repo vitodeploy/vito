@@ -4,11 +4,6 @@ namespace App\Exceptions;
 
 use Exception;
 
-/**
- * Raised at the provider boundary so no upstream exception — which may carry
- * credentials in its message or trace arguments — reaches the queue's failed-job
- * serialisation or the log.
- */
 class PrivateNetworkSyncError extends Exception
 {
     public function __construct(

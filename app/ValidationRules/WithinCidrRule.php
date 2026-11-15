@@ -7,11 +7,6 @@ use App\Support\Cidr;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * A custom network's declared range is what its firewall rules are built from, so a member
- * addressed outside that range gets no working rule while the declared range is opened
- * regardless. The value under validation is a `server_ip_addresses` id.
- */
 class WithinCidrRule implements ValidationRule
 {
     public function __construct(private ?string $cidr) {}

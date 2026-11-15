@@ -1,3 +1,7 @@
+@if ($configDir !== null)
+rm -f -- {!! escapeshellarg($configDir.'/'.$installDir.'/composer') !!}
+rmdir -- {!! escapeshellarg($configDir.'/'.$installDir) !!} 2>/dev/null || true
+@else
 rm -f "$HOME/{{ $installDir }}/composer"
 
 ACTIVATION_LINE='export PATH="$HOME/{{ $installDir }}:$PATH"'
@@ -8,3 +12,4 @@ for FILE in "$HOME/.bashrc" "$HOME/.profile"; do
 done
 
 rmdir "$HOME/{{ $installDir }}" 2>/dev/null || true
+@endif

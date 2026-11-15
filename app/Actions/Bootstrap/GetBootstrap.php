@@ -2,6 +2,10 @@
 
 namespace App\Actions\Bootstrap;
 
+use App\Actions\Component\GetComponentOptions;
+use App\ComponentCapabilities\Web;
+use App\Models\Application;
+use App\Models\ComponentCapability;
 use App\Models\GithubApp;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Support\Facades\Cache;
@@ -43,12 +47,6 @@ final class GetBootstrap
         );
     }
 
-    /**
-     * Compute the version directly from current in-memory config without
-     * touching the cache. Used by plugin lifecycle Actions immediately after
-     * mutating the catalogue, so the broadcast payload reflects this request's
-     * fresh state instead of a value a concurrent request may have re-cached.
-     */
     public function computeVersion(): string
     {
         return substr(md5(serialize($this->configs()).'|'.$this->publicKeyText()), 0, 16);
@@ -72,6 +70,10 @@ final class GetBootstrap
             'site' => [
                 'types' => config('site.types'),
                 'reserved_user_names' => config('core.reserved_user_names'),
+            ],
+            'application' => [
+                'runtimes' => $this->runtimes(),
+                'capabilities' => $this->capabilities(),
             ],
             'source_control' => [
                 'providers' => config('source-control.providers'),
@@ -100,6 +102,52 @@ final class GetBootstrap
                 'logs' => $this->dashboardUrl(config('log-viewer.route_domain'), config('log-viewer.route_path')),
             ],
         ];
+    }
+
+    /**
+     * @return list<array{id: string, label: string, versions: list<string>, web_mode: string, form: array<int, mixed>, creation_form: array<int, mixed>, capabilities: array<int, mixed>, required_services: list<string>, version_service: ?string, suggests_database: bool}>
+     */
+    private function runtimes(): array
+    {
+        $runtimes = [];
+
+        foreach (config('component.runtimes', []) as $id => $registration) {
+            $preset = (new Application(['runtime' => $id]))->preset();
+            $runtimes[] = [
+                'id' => $id,
+                'label' => $registration['label'],
+                'versions' => $preset->versions(),
+                'web_mode' => $preset->webMode()->getText(),
+                'form' => $registration['form'],
+                'creation_form' => $preset->creationForm()->toArray(),
+                'capabilities' => app(GetComponentOptions::class)->forPreset($preset),
+                'required_services' => (new ComponentCapability(['capability' => Web::id()]))->handler()->requiredServices($preset),
+                'version_service' => collect($preset->requiredServices($preset->versions()[0] ?? ''))->filter()->keys()->first(),
+                'suggests_database' => $preset->suggestsDatabase(),
+            ];
+        }
+
+        return $runtimes;
+    }
+
+    /**
+     * @return list<array{id: string, label: string, description: string, surfaces: list<string>}>
+     */
+    private function capabilities(): array
+    {
+        $capabilities = [];
+
+        foreach (config('component.capabilities', []) as $id => $registration) {
+            $handler = (new ComponentCapability(['capability' => $id]))->handler();
+            $capabilities[] = [
+                'id' => $id,
+                'label' => $registration['label'],
+                'description' => $handler->description(),
+                'surfaces' => $handler->surfaces(),
+            ];
+        }
+
+        return $capabilities;
     }
 
     private function dashboardUrl(?string $domain, string $path): string

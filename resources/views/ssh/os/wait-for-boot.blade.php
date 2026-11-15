@@ -1,5 +1,15 @@
 echo "Waiting for cloud-init and apt to finish first-boot tasks..."
 
+@if($isDebian)
+if ! command -v sudo >/dev/null 2>&1; then
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "VITO_SSH_ERROR: sudo is not installed and this user is not root, so Vito cannot install it." >&2
+        exit 1
+    fi
+    sudo() { env "$@"; }
+fi
+
+@endif
 if command -v cloud-init >/dev/null 2>&1; then
     __vito_ci_state=$(sudo cloud-init status 2>/dev/null | awk '/^status:/ {print $2; exit}')
     if [ "$__vito_ci_state" = "running" ]; then
@@ -12,6 +22,22 @@ if command -v cloud-init >/dev/null 2>&1; then
     fi
 fi
 
+@if($isDebian)
+until sudo DEBIAN_FRONTEND=noninteractive apt-get update; do
+    if [ "${__vito_apt_attempts:-0}" -ge 30 ]; then
+        echo "VITO_SSH_ERROR: apt-get update kept failing." >&2
+        exit 1
+    fi
+    __vito_apt_attempts=$(( ${__vito_apt_attempts:-0} + 1 ))
+    sleep 10
+done
+sudo DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout={{ $timeout }} install -y sudo psmisc openssl
+
+if ! sudo grep -q '^PATH=' /etc/environment 2>/dev/null; then
+    echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' | sudo tee -a /etc/environment > /dev/null
+fi
+
+@endif
 if command -v fuser >/dev/null 2>&1; then
     __vito_wait_start=$(date +%s)
     __vito_timeout={{ $timeout }}

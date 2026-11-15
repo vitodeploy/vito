@@ -21,7 +21,6 @@ use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\BunSite;
 use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
-use App\SourceControlProviders\GithubApp;
 use App\Tooling\ToolingRegistry;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
@@ -40,7 +39,7 @@ use RuntimeException;
  * @property int $server_id
  * @property string $type
  * @property array<string, mixed> $type_data
- * @property ?array<int, string> $env_variables List of keys marked as secret; values live on the server, never in the database.
+ * @property ?array<int, string> $env_variables
  * @property ?array<int, array{key: string, value: string, is_secret: bool}> $worker_environment
  * @property string $domain
  * @property array<int, string> $aliases
@@ -403,10 +402,6 @@ class Site extends AbstractModel
         return (bool) ($this->type_data['modern_deployment'] ?? false);
     }
 
-    /**
-     * Resolve the deployment script that drives a deploy of the given mode.
-     * Modern deploys use the pre-flight script; classic deploys use the default script.
-     */
     public function deploymentScriptFor(bool $modern): ?DeploymentScript
     {
         return $modern ? $this->preFlightScript : $this->deploymentScript;
@@ -672,13 +667,7 @@ class Site extends AbstractModel
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
 
-        if ($this->sourceControl?->isGithubApp()) {
-            /** @var GithubApp $provider */
-            $provider = $this->sourceControl->provider();
-            $variables['GIT_HTTP_TOKEN'] = $provider->installationAccessToken();
-        }
-
-        return $variables;
+        return array_merge($variables, $this->sourceControl?->cloneVariables() ?? []);
     }
 
     /**
@@ -704,7 +693,7 @@ class Site extends AbstractModel
 
     public function userSharedWithSiblings(): bool
     {
-        return $this->siblingsSharingUser()->exists();
+        return $this->isolatedUser?->isUsedByOthers($this) ?? false;
     }
 
     /**
@@ -771,15 +760,9 @@ class Site extends AbstractModel
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
     {
-        if (! $this->isolated_user_id) {
-            return false;
-        }
+        $phpVersion ??= (string) $this->php_version;
 
-        return Site::query()
-            ->where('isolated_user_id', $this->isolated_user_id)
-            ->where('php_version', $phpVersion ?? $this->php_version)
-            ->where('id', '!=', $this->id)
-            ->exists();
+        return $phpVersion !== '' && ($this->isolatedUser?->fpmPoolUsedByOthers($phpVersion, $this) ?? false);
     }
 
     public function webserver(): Webserver

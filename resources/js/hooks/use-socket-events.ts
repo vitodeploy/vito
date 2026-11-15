@@ -19,10 +19,11 @@ export function useSocketEvents(): { status: SocketStatus; reconnect: () => void
   const switchProject = useSocketStore((s) => s.switchProject);
 
   const projectId = auth?.currentProject?.id;
+  const userId = auth?.user?.id;
 
   useEffect(() => {
-    if (auth && csrfRef.current) {
-      connect(csrfRef.current);
+    if (auth?.user && csrfRef.current) {
+      connect(csrfRef.current, auth.user.id);
     }
   }, [auth, connect]);
 
@@ -39,18 +40,14 @@ export function useSocketEvents(): { status: SocketStatus; reconnect: () => void
   }, [auth, disconnect]);
 
   const reconnect = useCallback(() => {
-    if (csrfRef.current) {
-      storeReconnect(csrfRef.current);
+    if (csrfRef.current && userId) {
+      storeReconnect(csrfRef.current, userId);
     }
-  }, [storeReconnect]);
+  }, [storeReconnect, userId]);
 
   return { status, reconnect };
 }
 
-/**
- * Listen for socket events on a page. The callback receives the event data
- * and can decide whether to handle it or ignore it.
- */
 export function useSocketListener(callback: (data: SocketEventData) => void): void {
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
@@ -64,12 +61,6 @@ export function useSocketListener(callback: (data: SocketEventData) => void): vo
   }, []);
 }
 
-/**
- * Keeps a single resource in sync with socket events.
- *
- * Returns the live resource (initially from Inertia props, updated via socket).
- * Pass `null` to skip listening (safe to call unconditionally).
- */
 export function useRealtimeRecord<T extends { id: number }>(initial: T | null | undefined, eventPrefix: string): T | null {
   const [record, setRecord] = useState<T | null>(initial ?? null);
 
@@ -92,17 +83,6 @@ export function useRealtimeRecord<T extends { id: number }>(initial: T | null | 
   return record;
 }
 
-/**
- * Manages paginated Inertia data with realtime socket updates.
- *
- * Listens for socket events matching `{eventPrefix}.created` (prepend row),
- * `{eventPrefix}.updated` (replace row), and `{eventPrefix}.deleted` (remove row) automatically.
- *
- * Socket events are broadcast project-wide, so pass a `scope` of field/value pairs
- * (e.g. `{ server_id: server.id }`) that created records must match before trigger refreshes
- *
- * Returns the live data and setter for custom handling.
- */
 export function useRealtime<T extends { id: number }>(
   initialData: PaginatedData<T>,
   eventPrefix: string,

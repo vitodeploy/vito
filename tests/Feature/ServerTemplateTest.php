@@ -12,12 +12,10 @@ beforeEach(function () {
 });
 
 test('index returns user server templates', function () {
-    // Create some server templates for the user
     $templates = ServerTemplate::factory()->count(3)->create([
         'user_id' => $this->user->id,
     ]);
 
-    // Create a template for another user (should not be returned)
     $otherUser = User::factory()->create();
     ServerTemplate::factory()->create([
         'user_id' => $otherUser->id,
@@ -38,7 +36,6 @@ test('index returns user server templates', function () {
             })->toArray(),
         ]);
 
-    // Ensure only user's templates are returned
     expect($response->json('templates'))->toHaveCount(3);
 });
 
@@ -96,7 +93,7 @@ test('store validates name is string', function () {
 
 test('store validates name max length', function () {
     $data = [
-        'name' => str_repeat('a', 256), // 256 characters (over the 255 limit)
+        'name' => str_repeat('a', 256),
         'services' => ['php' => '8.4'],
     ];
 
@@ -127,7 +124,6 @@ test('store requires authentication', function () {
     $response = $this->post(route('server-templates.store'), $data);
 
     $response->assertStatus(302);
-    // Redirect to login
 });
 
 test('update modifies existing server template', function () {
@@ -166,7 +162,6 @@ test('update allows partial updates', function () {
         'services' => ['php' => '8.2'],
     ]);
 
-    // Update only the name
     $response = $this->actingAs($this->user)
         ->put(route('server-templates.update', $template->id), [
             'name' => 'New Name Only',
@@ -179,8 +174,6 @@ test('update allows partial updates', function () {
     expect($template->name)->toEqual('New Name Only');
     expect($template->services)->toEqual(['php' => '8.2']);
 
-    // Should remain unchanged
-    // Update only the services
     $response = $this->actingAs($this->user)
         ->put(route('server-templates.update', $template->id), [
             'services' => ['nginx' => 'latest'],
@@ -191,7 +184,6 @@ test('update allows partial updates', function () {
 
     $template->refresh();
     expect($template->name)->toEqual('New Name Only');
-    // Should remain unchanged
     expect($template->services)->toEqual(['nginx' => 'latest']);
 });
 
@@ -202,8 +194,8 @@ test('update validates fields when provided', function () {
 
     $response = $this->actingAs($this->user)
         ->put(route('server-templates.update', $template->id), [
-            'name' => '', // Invalid: empty string
-            'services' => 'not-an-array', // Invalid: not an array
+            'name' => '',
+            'services' => 'not-an-array',
         ]);
 
     $response->assertSessionHasErrors(['name', 'services']);
@@ -242,7 +234,6 @@ test('update requires authentication', function () {
     ]);
 
     $response->assertStatus(302);
-    // Redirect to login
 });
 
 test('destroy deletes server template', function () {
@@ -272,7 +263,6 @@ test('destroy prevents access to other users templates', function () {
 
     $response->assertStatus(404);
 
-    // Ensure the template still exists
     $this->assertDatabaseHas('server_templates', [
         'id' => $template->id,
     ]);
@@ -293,7 +283,6 @@ test('destroy requires authentication', function () {
     $response = $this->delete(route('server-templates.destroy', $template->id));
 
     $response->assertStatus(302);
-    // Redirect to login
 });
 
 test('server template belongs to user', function () {
@@ -331,7 +320,6 @@ test('server template casts services to array', function () {
     expect($template->services)->toBeArray();
     expect($template->services)->toEqual($services);
 
-    // Test with fresh instance from database
     $template = ServerTemplate::find($template->id);
     expect($template->services)->toBeArray();
     expect($template->services)->toEqual($services);

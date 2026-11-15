@@ -22,6 +22,15 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
+            'current_password' => [
+                Rule::excludeIf(($input['email'] ?? null) === $user->email),
+                'bail',
+                'required',
+                'string',
+                'current_password:web',
+            ],
+        ], [
+            'current_password.current_password' => __('The provided password does not match your current password.'),
         ])->validateWithBag('updateProfileInformation');
 
         if ($input['email'] !== $user->email && Features::enabled(Features::emailVerification())) {

@@ -192,6 +192,31 @@ test('lightsail permits at most one hundred catalog pages', function (bool $hasM
     expect($this->lightsailCommands)->toHaveCount(100);
 })->with([false, true]);
 
+test('lightsail provisions debian with its blueprint and default user', function (string $os, string $version) {
+    $this->actingAs($this->user);
+    $this->lightsailHandler->append(
+        new Result($this->lightsailRegions),
+        new Result(['bundles' => [$this->lightsailBundle]]),
+        new Result(['blueprints' => [
+            $this->lightsailBlueprint,
+            array_merge($this->lightsailBlueprint, ['group' => 'debian', 'version' => $version.'.9', 'blueprintId' => 'debian_'.$version]),
+        ]]),
+        new Result,
+        new Result(['operations' => [['status' => 'Started']]]),
+    );
+
+    $this->post(route('servers.store'), [
+        'provider' => 'lightsail', 'server_provider' => $this->lightsailProfile->id,
+        'name' => 'Debian server', 'os' => $os,
+        'region' => 'eu-central-1', 'plan' => 'small_3_0',
+    ])->assertSessionDoesntHaveErrors();
+
+    $this->assertDatabaseHas('servers', ['name' => 'Debian server', 'ssh_user' => 'admin']);
+    expect(collect($this->lightsailCommands)->firstWhere('name', 'CreateInstances')['parameters']['blueprintId'])->toBe('debian_'.$version);
+})->with([
+    ['debian_12', '12'], ['debian_13', '13'],
+]);
+
 test('lightsail provisions the selected ubuntu image and queues installation', function (string $os, string $version, bool $versionedGroup) {
     $this->actingAs($this->user);
     $this->lightsailHandler->append(

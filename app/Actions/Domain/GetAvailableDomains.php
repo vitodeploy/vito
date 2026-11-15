@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Cache;
 class GetAvailableDomains
 {
     /**
-     * Get available domains from the DNS provider that haven't been added yet.
-     *
      * @return array<int, array<string, mixed>>
      */
     public function execute(DNSProvider $dnsProvider, bool $useCache = true): array

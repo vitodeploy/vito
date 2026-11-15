@@ -12,8 +12,6 @@
     <script>
         const originalFetch = window.fetch;
 
-        // intercept TryIt requests and add the XSRF-TOKEN header,
-        // which is necessary for Sanctum cookie-based authentication to work correctly
         window.fetch = (url, options) => {
             const CSRF_TOKEN_COOKIE_KEY = "XSRF-TOKEN";
             const CSRF_TOKEN_HEADER_KEY = "X-XSRF-TOKEN";
@@ -52,9 +50,6 @@
     <style>
         html, body { margin:0; height:100%; }
         body { background-color: var(--color-canvas); }
-        /* issues about the dark theme of stoplight/mosaic-code-viewer using web component:
-         * https://github.com/stoplightio/elements/issues/2188#issuecomment-1485461965
-         */
         [data-theme="dark"] .token.property {
             color: rgb(128, 203, 196) !important;
         }

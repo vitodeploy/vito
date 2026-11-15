@@ -11,7 +11,7 @@ use RuntimeException;
 class ImportGithubAppInstallation
 {
     /**
-     * @param  array<string, mixed>|null  $installationData  Pre-fetched payload from GitHub
+     * @param  array<string, mixed>|null  $installationData
      */
     public function import(int $installationId, ?array $installationData = null): SourceControl
     {

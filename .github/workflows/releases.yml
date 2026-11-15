@@ -97,7 +97,6 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      # Release
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

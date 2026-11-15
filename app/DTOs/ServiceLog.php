@@ -14,6 +14,7 @@ final class ServiceLog
         public string $label,
         public string $source,
         public string $target,
+        public ?string $user = null,
     ) {}
 
     public function displayTarget(): string

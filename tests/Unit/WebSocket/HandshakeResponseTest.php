@@ -15,10 +15,6 @@ test('scalar header values are accepted despite psr7 strict validation', functio
         ->toBe('13');
 });
 
-/**
- * `withAddedHeader()` needs the same treatment as `withHeader()`: Ratchet appends
- * `Sec-WebSocket-Extensions` through it when permessage-deflate is negotiated.
- */
 test('scalar values appended to an existing header are stringified too', function () {
     $response = (new HandshakeResponseFactory)->createResponse()->withHeader('Sec-WebSocket-Version', 13);
 
@@ -26,10 +22,6 @@ test('scalar values appended to an existing header are stringified too', functio
         ->toBe('13, 8');
 });
 
-/**
- * Intentionally end-to-end through the vendor negotiator: this is the regression
- * guard for the guzzlehttp/psr7 3.x upgrade, which broke every handshake.
- */
 test('the negotiator completes a websocket handshake with 101', function () {
     $negotiator = new ServerNegotiator(new RequestVerifier, new HandshakeResponseFactory);
 
