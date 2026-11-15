@@ -1,0 +1,28 @@
+[tools]
+"conda:re2c" = "4.4"
+node = "22.23.5"
+redis = "7.4.7"
+
+[tools.php]
+version = "8.4.27"
+depends = ["conda:re2c"]
+postinstall = { run = """
+set -eu
+if ! php --ri redis >/dev/null 2>&1; then
+    if [ ! -f "$(php-config --extension-dir)/redis.so" ]; then
+        pecl install redis-6.3.0 </dev/null
+    fi
+    printf 'extension=redis.so\n' > "$(php-config --prefix)/conf.d/redis.ini"
+fi
+""", when = "always" }
+
+[tasks.redis]
+description = "Run local Redis on 127.0.0.1:6379"
+run = """
+mkdir -p storage/app/redis
+redis-server --bind 127.0.0.1 --protected-mode yes --dir "$PWD/storage/app/redis" --appendonly yes
+"""
+
+[tasks.dev]
+description = "Start Vito's development processes (run mise run redis first)"
+run = "composer dev"
