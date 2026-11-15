@@ -31,12 +31,10 @@ abstract class AbstractService implements ServiceInterface
 
     public function install(): void
     {
-        //
     }
 
     public function uninstall(): void
     {
-        //
     }
 
     public function versionCommand(): ?string

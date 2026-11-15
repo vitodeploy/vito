@@ -12,10 +12,6 @@ class GetNetworkPeerConfig
     private const PRIVATE_KEY_PLACEHOLDER = 'REPLACE_WITH_YOUR_PRIVATE_KEY';
 
     /**
-     * The configuration is always available so it can be regenerated after the network's
-     * membership changes. The private key is returned separately and only while Vito still
-     * holds it — once concealed, the config renders a placeholder in its place.
-     *
      * @return array{config: string, private_key: ?string}
      */
     public function config(NetworkPeer $peer): array
@@ -36,11 +32,6 @@ class GetNetworkPeerConfig
     }
 
     /**
-     * The first member carries the whole network range as its `AllowedIPs` so the device routes
-     * the subnet through it, and the rest carry only their own host address. That makes the
-     * order load-bearing: without a deterministic one, regenerating a config could silently
-     * move which server the device routes through.
-     *
      * @return array<int, array{public_key: string, allowed_ips: string, endpoint: string}>
      */
     private function peers(NetworkPeer $peer): array

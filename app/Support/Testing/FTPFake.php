@@ -33,17 +33,14 @@ class FTPFake
 
     public function close(bool|Connection $connection): void
     {
-        //
     }
 
     public function passive(bool|Connection $connection, bool $passive): void
     {
-        //
     }
 
     public function delete(bool|Connection $connection, string $path): void
     {
-        //
     }
 
     public function assertConnected(string $host): void

@@ -8,7 +8,6 @@ autostart={{ $autoStart }}
 autorestart={{ $autoRestart }}
 user={{ $user }}
 numprocs={{ $numprocs }}
-{{-- $environment must be the output of Supervisor::formatEnvironment() --}}
 @if (!empty($environment))
 environment={!! $environment !!}
 @endif

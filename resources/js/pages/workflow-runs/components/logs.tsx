@@ -11,7 +11,6 @@ export default function Logs({ workflowRun }: { workflowRun: WorkflowRun }) {
   const runIdRef = useRef(workflowRun.id);
   runIdRef.current = workflowRun.id;
 
-  // Fetch initial content
   useEffect(() => {
     setIsLoading(true);
     setError(null);
@@ -35,7 +34,6 @@ export default function Logs({ workflowRun }: { workflowRun: WorkflowRun }) {
       });
   }, [workflowRun.id, workflowRun.workflow_id]);
 
-  // Listen for realtime log content appends
   useSocketListener(
     useCallback((event) => {
       if (event.type !== 'workflow-run.log-content') return;

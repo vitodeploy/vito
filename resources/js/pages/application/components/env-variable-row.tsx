@@ -38,7 +38,6 @@ export default function EnvVariableRow({ variable, onChange, onDelete, revealabl
   };
 
   const renderValueInput = () => {
-    // Existing secret: show placeholder, user can toggle visibility once they start typing
     if (isExistingSecret) {
       const hasNewValue = variable.value.length > 0;
 
@@ -129,7 +128,6 @@ export default function EnvVariableRow({ variable, onChange, onDelete, revealabl
       );
     }
 
-    // Non-secret value - use AutoGrowTextarea for multiline support
     return (
       <div className="min-h-9 flex-1">
         <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="w-full" />

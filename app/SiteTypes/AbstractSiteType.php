@@ -81,12 +81,10 @@ abstract class AbstractSiteType implements SiteType
 
     public function afterDeploy(Deployment $deployment): void
     {
-        //
     }
 
     public function assertReadyToDeploy(): void
     {
-        //
     }
 
     public function defaultDeploymentScript(): string

@@ -4,13 +4,12 @@ import { useInputFocus } from '@/stores/useInputFocus';
 
 type AutoGrowTextareaProps = React.ComponentProps<'textarea'>;
 
-const MAX_HEIGHT = 200; // Maximum height in pixels before scrolling
+const MAX_HEIGHT = 200;
 
 const AutoGrowTextarea = React.forwardRef<HTMLTextAreaElement, AutoGrowTextareaProps>(({ className, value, onChange, ...props }, ref) => {
   const setFocused = useInputFocus((state) => state.setFocused);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  // Combine refs
   React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
 
   const adjustHeight = React.useCallback(() => {

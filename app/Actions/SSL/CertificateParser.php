@@ -8,10 +8,7 @@ use Illuminate\Validation\ValidationException;
 class CertificateParser
 {
     /**
-     * Parse a PEM certificate to extract expiry date and domains from SANs.
-     *
      * @return array{expires_at: Carbon, domains: array<int, string>}
-     *
      * @throws ValidationException
      */
     public static function parse(string $certificate): array

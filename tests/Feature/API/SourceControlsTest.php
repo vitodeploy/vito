@@ -189,7 +189,6 @@ test('api guest cannot access source controls', function () {
 test('api insufficient scopes denies access', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Only read scope
     $data = [
         'provider' => Github::id(),
         'name' => 'test',

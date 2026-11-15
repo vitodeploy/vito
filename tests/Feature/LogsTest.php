@@ -62,7 +62,6 @@ test('clear remote log', function () {
         'name' => 'test-remote-log',
     ]);
 
-    // Mock the SSH connection to avoid actual SSH calls
     SSH::fake();
 
     $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))

@@ -29,16 +29,6 @@ class VerifyHostedDomain
         );
     }
 
-    /**
-     * Rewrite the site's vhost when the domains it should serve have changed,
-     * for example after a domain failed verification and went back to pending.
-     *
-     * Custom templates don't carry the challenge block, so they are left alone.
-     * The web server is only touched when the generated vhost differs from the
-     * deployed one, so the periodic pending-domain retry does not reload it.
-     * If publishing fails (e.g. the reload fails after the file was written),
-     * the previous file is put back so the next retry sees the difference again.
-     */
     public function syncVhost(Site $site): void
     {
         if ($site->vhost_template !== null || ! $site->vhost_generation_enabled) {
@@ -63,11 +53,6 @@ class VerifyHostedDomain
         }
     }
 
-    /**
-     * A domain that is not active yet is not in the site's vhost, so the web
-     * server would answer from another server block and never serve the
-     * challenge. Regenerate the vhost, which adds a challenge-only block for it.
-     */
     private function publishChallengeRoute(HostedDomain $hostedDomain, Site $site): bool
     {
         if ($hostedDomain->type === HostedDomainType::PRIMARY || $hostedDomain->status === HostedDomainStatus::ACTIVE) {

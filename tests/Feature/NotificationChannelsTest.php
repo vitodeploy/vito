@@ -44,7 +44,6 @@ test('cannot add email channel', function () {
     config()->set('mail.mailers.smtp.host', '127.0.0.1');
     config()->set('mail.mailers.smtp.port', 1);
 
-    // closed port so the SMTP connection fails even if a local mail catcher (e.g. Mailpit) is listening
     $this->actingAs($this->user);
 
     $this->post(route('notification-channels.store'), [

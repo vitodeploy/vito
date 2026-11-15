@@ -193,13 +193,6 @@ class Ssl extends AbstractModel
         return $this->domains;
     }
 
-    /**
-     * Check if a wildcard domain pattern matches the given domain.
-     *
-     * *.example.com matches sub.example.com
-     * *.example.com does NOT match example.com (bare domain)
-     * *.example.com does NOT match a.b.example.com (nested subdomain)
-     */
     public static function wildcardMatches(string $pattern, string $domain): bool
     {
         if (! str_starts_with($pattern, '*.')) {
@@ -218,9 +211,6 @@ class Ssl extends AbstractModel
         return $prefix !== '' && ! str_contains($prefix, '.');
     }
 
-    /**
-     * Check if this SSL certificate covers the given domain.
-     */
     public function coversDomain(string $domain): bool
     {
         foreach ($this->getDomains() as $sslDomain) {

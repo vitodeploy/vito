@@ -39,7 +39,6 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider, S
 
     public function data(): array
     {
-        // support for older data
         $token = $this->sourceControl->access_token ?? '';
 
         return [
@@ -177,11 +176,6 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider, S
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
-     *
-     * @note Subclasses that return a non-empty editableFields() MUST override
-     *       this method to whitelist exactly which keys are merged from $input.
-     *       Spreading $input here would let an attacker overwrite encrypted
-     *       fields like `token`.
      */
     public function editData(array $input): array
     {

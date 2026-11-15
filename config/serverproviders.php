@@ -800,7 +800,6 @@ return [
     'hetzner' => [
         'plans' => [
 
-            /* Shared vCPUs x86 */
             [
                 'title' => 'CX11 - 1 Cores (Intel) - 2 Memory - 20 Disk (eu only)',
                 'value' => 'cx11',
@@ -878,7 +877,6 @@ return [
                 'value' => 'ccx51',
             ],
 
-            /* Shared vCPUs Arm64 */
             [
                 'title' => 'CAX11 - 2 Cores (ARM64) - 4 Memory - 40 Disk',
                 'value' => 'cax11',
@@ -896,7 +894,6 @@ return [
                 'value' => 'cax41',
             ],
 
-            /* Dedicated vCPUs */
             [
                 'title' => 'CCX13 Dedicated CPU - 2 Cores (AMD) - 8 Memory - 80 Disk',
                 'value' => 'ccx13',

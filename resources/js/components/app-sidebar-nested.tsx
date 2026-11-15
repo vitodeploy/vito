@@ -122,41 +122,6 @@ export function AppSidebar() {
           icon: ClockIcon,
           isDisabled: isServerMenuDisabled,
         },
-        // {
-        //   title: 'Workers',
-        //   href: '#',
-        //   icon: ListEndIcon,
-        // },
-        // {
-        //   title: 'SSH Keys',
-        //   href: '#',
-        //   icon: KeyIcon,
-        // },
-        // {
-        //   title: 'Services',
-        //   href: '#',
-        //   icon: CogIcon,
-        // },
-        // {
-        //   title: 'Metrics',
-        //   href: '#',
-        //   icon: ChartPieIcon,
-        // },
-        // {
-        //   title: 'Console',
-        //   href: '#',
-        //   icon: TerminalSquareIcon,
-        // },
-        // {
-        //   title: 'Logs',
-        //   href: '#',
-        //   icon: LogsIcon,
-        // },
-        // {
-        //   title: 'Settings',
-        //   href: '#',
-        //   icon: Settings2Icon,
-        // },
       ],
     },
     {

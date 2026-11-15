@@ -3,11 +3,8 @@ import axios from 'axios';
 import { useSocketListener } from '@/hooks/use-socket-events';
 
 type UseLogContentOptions = {
-  /** The server ID owning the log */
   serverId: number;
-  /** The log ID to fetch and subscribe to */
   logId: number;
-  /** Whether fetching is enabled (e.g., dialog is open) */
   enabled?: boolean;
 };
 
@@ -17,12 +14,6 @@ type UseLogContentReturn = {
   error: string | null;
 };
 
-/**
- * Reusable hook for streaming log content via socket events.
- *
- * Fetches the initial log content via HTTP, then listens for
- * `server-log.content` socket events to append new content in realtime.
- */
 export function useLogContent({ serverId, logId, enabled = true }: UseLogContentOptions): UseLogContentReturn {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +21,6 @@ export function useLogContent({ serverId, logId, enabled = true }: UseLogContent
   const logIdRef = useRef(logId);
   logIdRef.current = logId;
 
-  // Fetch initial content when enabled
   useEffect(() => {
     if (!enabled || !logId) {
       return;
@@ -58,7 +48,6 @@ export function useLogContent({ serverId, logId, enabled = true }: UseLogContent
       });
   }, [enabled, serverId, logId]);
 
-  // Listen for realtime content appends
   useSocketListener(
     useCallback(
       (event) => {
@@ -70,7 +59,7 @@ export function useLogContent({ serverId, logId, enabled = true }: UseLogContent
           setContent((prev) => prev + buf);
         }
       },
-      [], // logIdRef is a ref, no need to depend on it
+      [],
     ),
   );
 

@@ -29,8 +29,6 @@ final readonly class BootPlugins
             }
         }
 
-        // Where we have booted fewer plugins than where loaded
-        // collect the plugins and set the cache for next time
         if (count($booted) < count($plugins)) {
             $this->cache->set(collect($booted));
         }

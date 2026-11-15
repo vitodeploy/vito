@@ -218,7 +218,6 @@ test('dns provider creation validates credentials', function () {
     $data = [
         'name' => 'Test Cloudflare',
         'provider' => 'cloudflare',
-        // Missing required 'token' field
     ];
 
     $response = $this->post(route('dns-providers.store'), $data);
@@ -493,19 +492,16 @@ test('user can only see own dns providers in json', function () {
 test('dns providers are filtered by project', function () {
     $this->actingAs($this->user);
 
-    // Create DNS provider for current project
     $projectDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->user->current_project_id,
     ]);
 
-    // Create global DNS provider (no project)
     $globalDnsProvider = DNSProvider::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => null,
     ]);
 
-    // Create DNS provider for different project
     $otherUser = User::factory()->create();
     $otherUser->ensureHasDefaultProject();
     $otherProjectDnsProvider = DNSProvider::factory()->create([
@@ -543,7 +539,7 @@ test('dns provider creation ignores user id manipulation', function () {
         'name' => 'Test Provider',
         'provider' => 'cloudflare',
         'token' => 'fake-token',
-        'user_id' => $otherUser->id, // Attempt to set different user
+        'user_id' => $otherUser->id,
     ];
 
     $response = $this->post(route('dns-providers.store'), $data);
@@ -552,7 +548,7 @@ test('dns provider creation ignores user id manipulation', function () {
     $response->assertSessionHas('success', 'DNS provider created.');
 
     $this->assertDatabaseHas('dns_providers', [
-        'user_id' => $this->user->id, // Should be set to authenticated user
+        'user_id' => $this->user->id,
         'name' => 'Test Provider',
     ]);
 

@@ -28,9 +28,6 @@ class GetComponentOptions
     }
 
     /**
-     * Ready project servers with what is installed on them. `database` names the service a new
-     * resource can use, which needs a ready firewall as well as a ready database.
-     *
      * @return list<array{id: int, name: string, services: array<string, list<string>>, database: ?string}>
      */
     public function servers(int $projectId): array

@@ -8,8 +8,6 @@ use Detection\MobileDetect;
 class Agent extends MobileDetect
 {
     /**
-     * List of additional operating systems.
-     *
      * @var array<string, string>
      */
     protected static array $additionalOperatingSystems = [
@@ -25,8 +23,6 @@ class Agent extends MobileDetect
     ];
 
     /**
-     * List of additional browsers.
-     *
      * @var array<string, string>
      */
     protected static array $additionalBrowsers = [
@@ -46,15 +42,10 @@ class Agent extends MobileDetect
     ];
 
     /**
-     * Key value store for resolved strings.
-     *
      * @var array<string, mixed>
      */
     protected array $store = [];
 
-    /**
-     * Get the platform name from the User Agent.
-     */
     public function platform(): ?string
     {
         return $this->retrieveUsingCacheOrResolve('paymently.platform', fn () => $this->findDetectionRulesAgainstUserAgent(
@@ -63,8 +54,6 @@ class Agent extends MobileDetect
     }
 
     /**
-     * Get the browser name from the User Agent.
-     *
      * @return string|null
      */
     public function browser()
@@ -75,14 +64,11 @@ class Agent extends MobileDetect
     }
 
     /**
-     * Determine if the device is a desktop computer.
-     *
      * @return bool
      */
     public function isDesktop()
     {
         return $this->retrieveUsingCacheOrResolve('paymently.desktop', function (): bool {
-            // Check specifically for cloudfront headers if the useragent === 'Amazon CloudFront'
             if (
                 $this->getUserAgent() === static::$cloudFrontUA
                 && $this->getHttpHeader('HTTP_CLOUDFRONT_IS_DESKTOP_VIEWER') === 'true'
@@ -95,8 +81,6 @@ class Agent extends MobileDetect
     }
 
     /**
-     * Match a detection rule and return the matched key.
-     *
      * @param  array<mixed, string>  $rules
      * @return string|null
      */
@@ -122,8 +106,6 @@ class Agent extends MobileDetect
     }
 
     /**
-     * Retrieve from the given key from the cache or resolve the value.
-     *
      * @param  Closure():mixed  $callback
      * @return mixed
      */
@@ -141,8 +123,6 @@ class Agent extends MobileDetect
     }
 
     /**
-     * Merge multiple rules into one array.
-     *
      * @param  array<mixed>  $all
      * @return array<string, string>
      */

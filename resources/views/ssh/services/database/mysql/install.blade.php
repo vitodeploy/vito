@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Remove old repository and keys
 sudo rm -f /etc/apt/sources.list.d/mysql.list
 sudo rm -f /usr/share/keyrings/mysql-archive-keyring.gpg
 sudo rm -f /etc/apt/trusted.gpg.d/mysql.gpg
@@ -8,8 +7,6 @@ sudo rm -f /etc/apt/trusted.gpg.d/mysql.gpg
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y wget lsb-release gnupg dirmngr ca-certificates
 
-# Import the MySQL signing key, preferring keyservers (which carry a refreshed
-# expiry) and falling back to the armored keys published on the MySQL repo.
 MYSQL_KEY_ID="B7B3B788A8D3785C"
 MYSQL_KEYRING="/usr/share/keyrings/mysql-archive-keyring.gpg"
 
@@ -39,14 +36,11 @@ if ! import_mysql_key; then
     echo 'VITO_SSH_ERROR: failed to import MySQL GPG key' && exit 1
 fi
 
-# Add the MySQL {{ $version }} LTS repository
 CODENAME=$(lsb_release -sc)
 echo "deb [signed-by=${MYSQL_KEYRING}] http://repo.mysql.com/apt/{{ $isDebian ? 'debian' : 'ubuntu' }} ${CODENAME} mysql-{{ $version }}-lts" | sudo tee /etc/apt/sources.list.d/mysql.list
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 
-# Refuse to install a different MySQL release than the one requested, for
-# example when the MySQL repository has no packages for this architecture.
 CANDIDATE=$(apt-cache policy mysql-server | awk '/Candidate:/ { print $2 }')
 case "${CANDIDATE}" in
     {{ $version }}.*) ;;
@@ -56,7 +50,6 @@ case "${CANDIDATE}" in
         ;;
 esac
 
-# Stop and purge any existing MySQL installation
 sudo systemctl stop mysql 2>/dev/null || true
 sudo systemctl stop mysql.service 2>/dev/null || true
 

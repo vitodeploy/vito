@@ -16,7 +16,7 @@ class LoadBalancerServerFactory extends Factory
     public function definition(): array
     {
         return [
-            'load_balancer_id' => $this->faker->randomNumber(), //
+            'load_balancer_id' => $this->faker->randomNumber(),
             'ip' => $this->faker->ipv4(),
             'port' => $this->faker->randomNumber(),
             'weight' => $this->faker->randomNumber(),

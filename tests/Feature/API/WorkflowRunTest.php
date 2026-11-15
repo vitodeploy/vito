@@ -75,7 +75,6 @@ test('can run workflow', function () {
     SSH::fake();
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Create a workflow with proper nodes and edges
     $workflow = Workflow::factory()->create([
         'user_id' => $this->user->id,
         'project_id' => $this->project->id,
@@ -157,7 +156,6 @@ test('can get single workflow run', function () {
 test('can get workflow run logs', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Mock the log content
     Storage::fake('server-logs');
     $logContent = "Test log content\nWith multiple lines";
     $this->workflowRun->log($logContent);
@@ -275,7 +273,6 @@ test('cannot access nonexistent workflow run', function () {
 });
 
 test('requires authentication', function () {
-    // Create a fresh test case without authentication
     $this->refreshDatabase();
 
     $user = User::factory()->create();
@@ -315,7 +312,6 @@ test('requires write ability for running', function () {
 test('pagination works correctly', function () {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Create additional workflow runs
     WorkflowRun::factory()->count(30)->create([
         'workflow_id' => $this->workflow->id,
         'user_id' => $this->user->id,
@@ -341,7 +337,6 @@ test('pagination works correctly', function () {
             ],
         ]);
 
-    // Should have pagination links since we have more than 25 workflow runs
     expect($response->json('links.next'))->not->toBeNull();
 });
 

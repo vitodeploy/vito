@@ -39,9 +39,6 @@ class Hetzner extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * `/networks` already carries `servers[]` (attached ids), so membership needs no
-     * extra call; `/servers` is read only for the per-network private IPs.
-     *
      * @param  array<int, array<string, mixed>>  $networks
      * @param  array<int, array<string, mixed>>  $servers
      * @param  array<int, string>  $instanceIds
@@ -329,7 +326,6 @@ class Hetzner extends AbstractProvider implements ProvidesPrivateNetworks
             ->post($this->apiUrl.'/servers', [
                 'automount' => false,
                 'image' => config('serverproviders.hetzner.images')[$this->server->os->value],
-                // 'root_password' => $this->server->authentication['root_pass'],
                 'ssh_keys' => [
                     $sshKey->json()['ssh_key']['id'],
                 ],
@@ -374,7 +370,6 @@ class Hetzner extends AbstractProvider implements ProvidesPrivateNetworks
             }
         }
 
-        // delete key
         if (isset($this->server->provider_data['ssh_key_id'])) {
             Http::withToken($this->server->serverProvider->credentials['token'])
                 ->delete($this->apiUrl.'/ssh_keys/'.$this->server->provider_data['ssh_key_id']);

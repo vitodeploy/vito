@@ -57,12 +57,7 @@ class ServerLog extends AbstractModel
     ];
 
     /**
-     * Associate every ServerLog created inside $callback with $networkId. Lets
-     * logs produced deep in the SSH/Service layers during a network sync be
-     * tagged without threading the network through every call site.
-     *
      * @template TReturn
-     *
      * @param  Closure(): TReturn  $callback
      * @return TReturn
      */
@@ -180,17 +175,11 @@ class ServerLog extends AbstractModel
         return $query;
     }
 
-    /**
-     * Write a message on its own line.
-     */
     public function write(string $message): void
     {
         $this->appendContent(str_ends_with($message, "\n") ? $message : $message."\n", true);
     }
 
-    /**
-     * Write raw streamed command output exactly as received.
-     */
     public function writeOutput(string $chunk): void
     {
         $this->appendContent($chunk, false);
@@ -297,14 +286,11 @@ class ServerLog extends AbstractModel
     }
 
     /**
-     * Clear the contents of a remote log file
-     *
      * @throws Throwable
      */
     public function clear(): void
     {
         if ($this->is_remote) {
-            // For remote logs, use the dedicated script that preserves permissions and ownership
             $this->server->os()->clearFile($this->name);
         }
     }

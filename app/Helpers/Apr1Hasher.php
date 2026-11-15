@@ -2,11 +2,6 @@
 
 namespace App\Helpers;
 
-/**
- * Generates Apache APR1 ($apr1$) password hashes, the format expected by
- * nginx's `auth_basic_user_file` directive. Pure PHP — no apache2-utils
- * dependency required on the target server.
- */
 class Apr1Hasher
 {
     private const ALPHABET = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

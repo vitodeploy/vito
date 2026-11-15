@@ -22,11 +22,6 @@ class ReconcileBackupsCommand extends Command
 
     protected $description = 'Fail backup files stuck in a transient state after an interrupted job';
 
-    /**
-     * Sweep records stuck in a transient state after an interrupted (e.g. SIGKILL'd)
-     * job. The window is intentionally 2x the longest backup timeout so an in-flight
-     * dump/restore/delete is never reaped mid-run.
-     */
     public function handle(): void
     {
         $threshold = now()->subSeconds(2 * (int) config('core.backup_run_timeout'));

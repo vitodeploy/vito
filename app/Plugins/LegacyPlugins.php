@@ -78,7 +78,6 @@ class LegacyPlugins
         $composerJson = base_path('composer.json');
         $composerLock = base_path('composer.lock');
 
-        // Backup composer files
         File::copy($composerJson, $composerJson.'.bak');
         File::copy($composerLock, $composerLock.'.bak');
 
@@ -91,7 +90,6 @@ class LegacyPlugins
                     $json = json_decode(File::get($pluginComposer), true);
                     if (isset($json['name'])) {
                         $name = $json['name'];
-                        // name must be in vendor/plugin format
                         if (! str_contains($name, '/')) {
                             continue;
                         }

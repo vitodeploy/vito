@@ -108,10 +108,6 @@ class WebSocketServer
      */
     protected array $httpHandlers = [];
 
-    /**
-     * Register an HTTP POST handler for a given path.
-     * Used for internal server-to-server communication (e.g. broadcasting events).
-     */
     public function httpRoute(string $path, callable $handler): void
     {
         $this->httpHandlers[$path] = $handler;
@@ -126,7 +122,6 @@ class WebSocketServer
         try {
             $psrRequest = Message::parseRequest($httpBuffer);
 
-            // Handle plain HTTP requests (non-WebSocket)
             if (! $psrRequest->hasHeader('Upgrade')) {
                 $contentLength = (int) $psrRequest->getHeaderLine('Content-Length');
 
@@ -161,7 +156,6 @@ class WebSocketServer
                 return;
             }
 
-            // Route to the correct handler based on URI path
             $path = $psrRequest->getUri()->getPath();
             $handler = $this->resolveHandler($path);
 
@@ -171,7 +165,6 @@ class WebSocketServer
                 return;
             }
 
-            // Let the handler authenticate the request
             $authError = $handler->authenticate($psrRequest);
             if ($authError !== null) {
                 $this->sendErrorAndClose($conn, $authError);
@@ -179,7 +172,6 @@ class WebSocketServer
                 return;
             }
 
-            // Complete the WebSocket handshake
             $conn->write(Message::toString($response));
 
             $wsConnection = new WebSocketConnection($conn);
@@ -224,12 +216,10 @@ class WebSocketServer
 
     protected function resolveHandler(string $path): ?WebSocketHandler
     {
-        // Exact match first
         if (isset($this->handlers[$path])) {
             return $this->handlers[$path];
         }
 
-        // Prefix match (longest prefix wins)
         $bestMatch = null;
         $bestLength = 0;
         foreach ($this->handlers as $prefix => $handler) {

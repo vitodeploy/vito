@@ -16,10 +16,6 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Notifications\Notification;
 use Tests\ArchTestCase;
 
-/**
- * Each source namespace needs its own expectation — Pest's negative dependency
- * expectations silently pass when given an array of source namespaces.
- */
 const PRESENTATION_LAYER = ['App\Http\Controllers', 'Inertia\Inertia'];
 
 arch('server providers extend the abstract server provider')

@@ -70,7 +70,6 @@ class TerminalHandler implements WebSocketHandler
             return 'Too many connections';
         }
 
-        // Store validated token data for retrieval in onOpen()
         $this->pendingAuth[$token] = $tokenData;
 
         return null;
@@ -225,11 +224,6 @@ class TerminalHandler implements WebSocketHandler
         }
     }
 
-    /**
-     * Access is checked again before every message, on every ping and, at most
-     * once per interval, before output, so a removed member or a deleted user
-     * loses an open terminal. Revokes the connection when access is gone.
-     */
     protected function recheck(string $connId, float $interval = 0): bool
     {
         $entry = $this->connections[$connId] ?? null;

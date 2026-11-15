@@ -16,8 +16,7 @@ class LinkUser
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return DatabaseUser $databaseUser
-     *
+     * @return DatabaseUser
      * @throws ValidationException
      */
     public function link(DatabaseUser $databaseUser, array $input, ?EnvironmentAttachment $attachment = null): DatabaseUser

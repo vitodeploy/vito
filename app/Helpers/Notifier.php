@@ -10,9 +10,6 @@ use App\Notifications\NotificationInterface;
 
 class Notifier
 {
-    /**
-     * Sends the notification only to channels whose owners are members of the notifiable's project.
-     */
     public function send(object $notifiable, NotificationInterface $notification): void
     {
         $project = match (true) {

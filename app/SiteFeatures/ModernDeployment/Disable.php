@@ -58,7 +58,6 @@ class Disable extends Action
 
         $this->site->webserver()->updateVHost($this->site);
 
-        // set releases to null as they are already removed
         $this->site->deployments()->update(['release' => null]);
 
         $request->session()->flash('success', 'Modern deployment disabled!');

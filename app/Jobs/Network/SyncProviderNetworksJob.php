@@ -21,13 +21,6 @@ class SyncProviderNetworksJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    /**
-     * The `default` Horizon supervisor runs a 90s timeout. A sweep across several
-     * connections and paginated pages exceeds that, and a SIGKILLed worker never runs
-     * `UniqueQueue`'s `finally`, so the lock would survive for its full duration and
-     * block every later sync. Declared here because Laravel prefers the job's own
-     * timeout over the supervisor's.
-     */
     public int $timeout = 300;
 
     public function __construct(
@@ -35,11 +28,6 @@ class SyncProviderNetworksJob implements ShouldQueue
         protected ?Network $network = null,
     ) {}
 
-    /**
-     * `UniqueQueue` serialises rather than de-duplicates — a contended job releases and
-     * retries, so repeated clicks would each run a full provider sweep and invite 429s.
-     * De-duplication therefore has to happen before dispatch.
-     */
     public static function dispatchUnlessRecent(Project $project, ?Network $network = null): bool
     {
         $scope = $network instanceof Network ? (string) $network->id : 'all';
@@ -66,10 +54,6 @@ class SyncProviderNetworksJob implements ShouldQueue
         });
     }
 
-    /**
-     * The sweep is user-triggered from a button that only flashes "syncing", so a failure has
-     * to be surfaced somewhere the user will see it rather than only in the job log.
-     */
     public function failed(Throwable $e): void
     {
         Log::warning('Provider network sync job failed.', [
@@ -84,11 +68,6 @@ class SyncProviderNetworksJob implements ShouldQueue
         ));
     }
 
-    /**
-     * Only the sweep's own exceptions are built to be credential-free. Anything else — a driver
-     * or HTTP client exception, say — can carry a token or a connection string in its message,
-     * and this log is written verbatim.
-     */
     private function safeReason(Throwable $e): ?string
     {
         return $e instanceof PrivateNetworkSyncError || $e instanceof PrivateNetworkPersistError

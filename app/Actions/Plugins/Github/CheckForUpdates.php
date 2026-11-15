@@ -38,7 +38,6 @@ final readonly class CheckForUpdates
      */
     private function parseGithubUrl(string $url): array
     {
-        // TODO: Remove Duplication
         $parsed = parse_url(rtrim($url, '.git'));
         if (($parsed['host'] ?? '') !== 'github.com') {
             throw new Exception('Invalid GitHub URL provided');

@@ -11,9 +11,6 @@ class Security
     public function __construct(protected Server $server) {}
 
     /**
-     * Whether sshd currently permits password authentication (anything other than `no`).
-     * An unknown/empty result is treated as enabled (fail-closed for the score).
-     *
      * @throws SSHError
      */
     public function passwordAuthEnabled(): bool
@@ -42,9 +39,6 @@ class Security
     }
 
     /**
-     * Whether sshd currently permits root login (anything other than `no`).
-     * An unknown/empty result is treated as enabled (fail-closed for the score).
-     *
      * @throws SSHError
      */
     public function rootLoginEnabled(): bool
@@ -72,10 +66,6 @@ class Security
         );
     }
 
-    /**
-     * Ubuntu 18.04 ships an OpenSSH that predates `Include`, so its sshd config
-     * has no drop-in directory and must be edited in place.
-     */
     private function supportsConfigDropin(): bool
     {
         return $this->server->os !== OperatingSystem::UBUNTU18;

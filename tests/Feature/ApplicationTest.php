@@ -897,11 +897,9 @@ test('parse env endpoint', function () {
     $variables = $response->json('variables');
     expect($variables)->toHaveCount(3);
 
-    // Check that DB_PASSWORD is detected as secret
     $passwordVar = collect($variables)->firstWhere('key', 'DB_PASSWORD');
     expect($passwordVar['is_secret'])->toBeTrue();
 
-    // Check that APP_NAME is not secret
     $nameVar = collect($variables)->firstWhere('key', 'APP_NAME');
     expect($nameVar['is_secret'])->toBeFalse();
 });
@@ -1141,14 +1139,12 @@ test('deploy classic restarts only site workers', function () {
     ]);
     Notification::fake();
 
-    // Create a worker for the site being deployed
     $siteWorker = Worker::factory()->create([
         'server_id' => $this->server->id,
         'site_id' => $this->site->id,
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Create another site with workers on the same server
     $otherSite = Site::factory()->create([
         'server_id' => $this->server->id,
     ]);
@@ -1158,7 +1154,6 @@ test('deploy classic restarts only site workers', function () {
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Enable restart workers for the deployment script
     $this->site->deploymentScript->update([
         'content' => 'git pull',
         'configs' => ['restart_workers' => true],
@@ -1172,10 +1167,8 @@ test('deploy classic restarts only site workers', function () {
     ]))
         ->assertSessionDoesntHaveErrors();
 
-    // Verify that only the site worker restart command was executed
     SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
-    // Verify that other site's worker and "restart all" are not executed
     vitoPestFeatureApplicationTestAssertWorkerNotRestarted($otherSiteWorker->id);
     SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
 });
@@ -1205,14 +1198,12 @@ test('deploy modern restarts only site workers', function () {
     $this->site->ensureDeploymentScriptsExist();
     $this->site->refresh();
 
-    // Create a worker for the site being deployed
     $siteWorker = Worker::factory()->create([
         'server_id' => $this->server->id,
         'site_id' => $this->site->id,
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Create another site with workers on the same server
     $otherSite = Site::factory()->create([
         'server_id' => $this->server->id,
     ]);
@@ -1222,7 +1213,6 @@ test('deploy modern restarts only site workers', function () {
         'status' => WorkerStatus::RUNNING,
     ]);
 
-    // Enable restart workers for the pre-flight script
     $this->site->preFlightScript->update([
         'content' => 'php artisan migrate --force',
         'configs' => ['restart_workers' => true],
@@ -1236,17 +1226,12 @@ test('deploy modern restarts only site workers', function () {
     ]))
         ->assertSessionDoesntHaveErrors();
 
-    // Verify that only the site worker restart command was executed
     SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
-    // Verify that other site's worker and "restart all" are not executed
     vitoPestFeatureApplicationTestAssertWorkerNotRestarted($otherSiteWorker->id);
     SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
 });
 
-/**
- * Assert that the given worker's restart command was not executed via SSH.
- */
 function vitoPestFeatureApplicationTestAssertWorkerNotRestarted(int|string $workerId): void
 {
     SSH::assertNotExecutedContains(
@@ -1660,9 +1645,6 @@ test('site git hooks deploy only for pushes to the site branch', function (strin
     'github branch push' => ['github', ['ref' => 'refs/heads/main'], true],
 ]);
 
-/**
- * Demote the acting user to the read-only project role.
- */
 function vitoPestFeatureApplicationTestMakeUserReadOnly(): void
 {
     test()->server->project->users()->where('user_id', test()->user->id)->update([

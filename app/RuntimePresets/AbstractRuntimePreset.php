@@ -77,8 +77,6 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * Extra tooling installed for every component, keyed by tooling id with the version to install.
-     *
      * @return array<string, string>
      */
     public function additionalTooling(): array
@@ -146,9 +144,6 @@ abstract class AbstractRuntimePreset
         return DynamicForm::make([]);
     }
 
-    /**
-     * Optional fields offered only while an environment is being created.
-     */
     public function creationForm(): DynamicForm
     {
         return DynamicForm::make([]);
@@ -163,8 +158,6 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * Variables seeded into a new environment.
-     *
      * @param  array<string, mixed>  $input
      * @return array<string, array{value: string, is_secret: bool}>
      */
@@ -179,10 +172,7 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * Recognizes this runtime in a repository. Presets are asked in reverse registration order, so
-     * a more specific preset registered later wins over a generic one.
-     *
-     * @return ?list<string> Compatible versions, newest first, or null when the repository is not this runtime.
+     * @return ?list<string>
      */
     public function detect(RepositoryFiles $files): ?array
     {
@@ -190,9 +180,6 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * Versions satisfying a Composer, npm or Python style constraint, newest first. An empty, unparsable or
-     * unsatisfiable constraint returns every version, so detection never removes the user's choices.
-     *
      * @return list<string>
      */
     protected function compatibleVersions(?string $constraint): array
@@ -214,8 +201,6 @@ abstract class AbstractRuntimePreset
     }
 
     /**
-     * A caret allows changes right of the first non-zero segment, so ^0.2 stays on 0.2 and ^0.0.2 on 0.0.2.
-     *
      * @param  list<string>  $version
      * @param  list<string>  $target
      */

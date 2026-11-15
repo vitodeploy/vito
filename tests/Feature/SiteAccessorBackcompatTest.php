@@ -83,8 +83,6 @@ test('ssh key name returns iuser when no legacy column and iuser key set', funct
 });
 
 test('new site joining legacy iuser lazy resolves to iuser key', function () {
-    // Legacy iuser: backfilled from a 3.x server, ssh_key still NULL,
-    // existing sibling carrying its own per-site key on disk.
     $iuser = IsolatedUser::factory()->create([
         'server_id' => $this->server->id,
         'username' => 'shared',

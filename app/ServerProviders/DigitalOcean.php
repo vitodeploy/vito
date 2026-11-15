@@ -40,10 +40,6 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * Droplet objects carry `vpc_uuid` and their private `networks.v4` entry, so membership
-     * and addresses come from one list call. `/vpcs/{id}/members` returns URNs with no IP and
-     * would need a fetch per droplet.
-     *
      * @param  array<int, array<string, mixed>>  $vpcs
      * @param  array<int, array<string, mixed>>  $droplets
      * @param  array<int, string>  $instanceIds
@@ -249,7 +245,7 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
                 ->get($this->apiUrl.'/regions', ['per_page' => 200])
                 ->json();
 
-            $regionsList = $regions['regions'] ?? []; // Ensure it's always an array
+            $regionsList = $regions['regions'] ?? [];
 
             return collect($regionsList)
                 ->where('available', true)
@@ -370,7 +366,7 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
                 ->json();
 
             /** @var array<int, array{ id: int, name: string, distribution: string, status: string, regions: array<string> }> $images */
-            $images = $result['images'] ?? []; // Ensure $images is an array
+            $images = $result['images'] ?? [];
 
             $image = collect($images)
                 ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains($image['name'], $version)
@@ -379,7 +375,7 @@ class DigitalOcean extends AbstractProvider implements ProvidesPrivateNetworks
                 ->where('status', 'available')
                 ->first();
 
-            return $image['id'] ?? 0; // Handle the case where first() returns null
+            return $image['id'] ?? 0;
         } catch (Exception) {
             throw new Exception('Could not find image ID');
         }

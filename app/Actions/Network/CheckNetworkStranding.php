@@ -9,14 +9,6 @@ use App\ServerProviders\ProvidesPrivateNetworks;
 
 class CheckNetworkStranding
 {
-    /**
-     * Whether a provider network can no longer be asked about at the provider: its connection
-     * cannot discover private networks, or none of its members still carries the instance id the
-     * provider identifies servers by. Sync can neither reconcile nor prune such a network, so the
-     * policy lets it be deleted by hand instead of stranding the row.
-     *
-     * A network with no members at all is not stranded — sync reaps that one on its own.
-     */
     public function handle(Network $network): bool
     {
         if ($network->type !== NetworkType::PROVIDER || $network->server_provider_id === null) {

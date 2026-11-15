@@ -70,12 +70,6 @@ class ReconcileNetworksCommand extends Command
             });
     }
 
-    /**
-     * The first attempts run at the command's own cadence; past that the member drops to an
-     * hourly retry rather than being abandoned. A member that gave up permanently would keep
-     * its network `failed` forever and would never pick up a later change — a moved WireGuard
-     * port, say — with nothing in the UI to say a manual sync is required.
-     */
     private function reconcileFailed(): void
     {
         $slowRetry = now()->subMinutes(self::SLOW_RETRY_MINUTES);
@@ -127,12 +121,6 @@ class ReconcileNetworksCommand extends Command
             });
     }
 
-    /**
-     * On-server cleanup only works while the server is reachable, so a teardown keeps retrying —
-     * quickly at first, then hourly — for about a day before the membership is force-removed.
-     * Giving up after the fast attempts alone would abandon the tunnel config on a server that
-     * was merely rebooting.
-     */
     private function reconcileLeaving(): void
     {
         $threshold = now()->subMinutes(2);

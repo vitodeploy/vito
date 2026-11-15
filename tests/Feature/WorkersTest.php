@@ -647,7 +647,7 @@ test('cannot create worker with invalid site id', function () {
         'auto_start' => 1,
         'auto_restart' => 1,
         'numprocs' => 1,
-        'site_id' => 99999, // Non-existent site ID
+        'site_id' => 99999,
     ])
         ->assertSessionHasErrors(['site_id']);
 
@@ -743,7 +743,7 @@ test('cannot edit worker with invalid site id', function () {
         'auto_start' => 1,
         'auto_restart' => 1,
         'numprocs' => 2,
-        'site_id' => 99999, // Non-existent site ID
+        'site_id' => 99999,
     ])
         ->assertSessionHasErrors(['site_id']);
 

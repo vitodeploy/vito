@@ -18,11 +18,11 @@ class Gitea extends AbstractSourceControlProvider implements SupportsApplication
 
     protected string $apiVersion = 'api/v1';
 
-    private const int CACHE_TTL = 60 * 15; // 15 minutes
+    private const int CACHE_TTL = 60 * 15;
 
-    private const int MAX_LIMIT = 50; // Gitea's max limit per page
+    private const int MAX_LIMIT = 50;
 
-    private const int MAX_PAGES = 25; // Safety limit
+    private const int MAX_PAGES = 25;
 
     public static function id(): string
     {
@@ -309,11 +309,8 @@ class Gitea extends AbstractSourceControlProvider implements SupportsApplication
     }
 
     /**
-     * Fetch all pages from Gitea API
-     * Gitea uses pagination with 'page' and 'limit' parameters
-     *
-     * @param  string  $endpoint  API endpoint (without base URL)
-     * @param  array<string, mixed>  $params  Query parameters
+     * @param  string  $endpoint
+     * @param  array<string, mixed>  $params
      * @return Collection<int, mixed>
      */
     private function fetchAllPages(string $endpoint, array $params = []): Collection
@@ -342,7 +339,6 @@ class Gitea extends AbstractSourceControlProvider implements SupportsApplication
             } else {
                 $allData = $allData->concat($pageData);
 
-                // Gitea pagination: if we got fewer items than the limit, we're done
                 $limit = $params['limit'] ?? self::MAX_LIMIT;
                 $hasMore = count($pageData) >= $limit;
                 $page++;

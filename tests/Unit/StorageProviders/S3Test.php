@@ -22,24 +22,20 @@ test('s3 connect successful', function () {
         ],
     ]);
 
-    // Mock the S3Client
     $s3ClientMock = $this->getMockBuilder(S3Client::class)
         ->disableOriginalConstructor()
         ->onlyMethods(['getCommand', 'execute'])
         ->getMock();
 
-    // Mock the getCommand method
     $s3ClientMock->expects($this->once())
         ->method('getCommand')
         ->with('listBuckets')
         ->willReturn(new Command('listBuckets'));
 
-    // Mock the execute method
     $s3ClientMock->expects($this->once())
         ->method('execute')
         ->willReturn(['Buckets' => []]);
 
-    // Mock the S3 class to return the mocked S3Client
     $s3 = $this->getMockBuilder(S3::class)
         ->setConstructorArgs([$storageProvider])
         ->onlyMethods(['getClient'])
@@ -64,24 +60,20 @@ test('s3 connect failure', function () {
         ],
     ]);
 
-    // Mock the S3Client
     $s3ClientMock = $this->getMockBuilder(S3Client::class)
         ->disableOriginalConstructor()
         ->onlyMethods(['getCommand', 'execute'])
         ->getMock();
 
-    // Mock the getCommand method
     $s3ClientMock->expects($this->once())
         ->method('getCommand')
         ->with('listBuckets')
         ->willReturn(new Command('listBuckets'));
 
-    // Mock the execute method to throw an S3Exception
     $s3ClientMock->expects($this->once())
         ->method('execute')
         ->willThrowException(new S3Exception('Error', new Command('ListBuckets')));
 
-    // Mock the S3 class to return the mocked S3Client
     $s3 = $this->getMockBuilder(S3::class)
         ->setConstructorArgs([$storageProvider])
         ->onlyMethods(['getClient'])

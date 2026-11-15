@@ -36,9 +36,6 @@ type CreateSiteForm = {
   repository: string;
   branch: string;
   user: string;
-  // Tooling versions land here as `{tool_id}_version` (e.g. `node_version`,
-  // `bun_version`), driven by the site type's `createTimeTools()` and the
-  // `tooling` DynamicField.
   [key: string]: string | number | boolean | string[] | undefined;
 };
 
@@ -171,11 +168,6 @@ export default function CreateSite({
 
   const lockedVersions = selectedIsolatedUser?.runtime_versions ?? {};
 
-  // Tool ids participating in the current site type's form, with their kind:
-  //   - 'tooling'          → optional multi-tool field; unlock fallback = 'none'
-  //   - 'tooling-picker'   → single required tool; unlock fallback = latest version
-  //   - 'tooling-selector' → tool chosen from a list; treated like a picker for
-  //                          lock-sync purposes (version required when no overlap)
   type ActiveTool = { toolId: string; kind: 'tooling' | 'tooling-picker' | 'tooling-selector' };
   const activeTools = useMemo<ActiveTool[]>(() => {
     const typeConfig = configs.site.types[form.data.type];
@@ -189,9 +181,6 @@ export default function CreateSite({
     return result;
   }, [configs, form.data.type]);
 
-  // Tool ids that have a dedicated `toolingPicker` field on this form. Used by
-  // the `toolingSelector` render to suppress the version companion when the
-  // picked tool's version is already controlled by another field.
   const pickerToolIds = useMemo<Set<string>>(
     () => new Set(activeTools.filter((t) => t.kind === 'tooling-picker').map((t) => t.toolId)),
     [activeTools],

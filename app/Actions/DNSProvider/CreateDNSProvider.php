@@ -58,7 +58,6 @@ class CreateDNSProvider
             ],
         ];
 
-        // Only get provider-specific rules if the provider exists
         if (isset($input['provider']) && config('dns-provider.providers.'.$input['provider'])) {
             $rules = array_merge($rules, $this->providerRules($input));
         }

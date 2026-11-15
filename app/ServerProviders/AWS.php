@@ -30,11 +30,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * EC2 is queried per region, so a region that was never collected is never asked about. With
-     * no regions at all, or with a server whose region is unknown, the result is incomplete for
-     * want of asking rather than because the VPCs are gone — saying so keeps sync from pruning
-     * a network whose members live in a region this run could not reach.
-     *
      * @param  array<int, string>  $regions
      */
     public function canDiscoverPrivateNetworks(array $regions, int $serversWithoutRegion): bool
@@ -42,12 +37,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
         return $regions !== [] && $serversWithoutRegion === 0;
     }
 
-    /**
-     * EC2 is regional, so each region is queried with its own client. A region failure aborts
-     * the whole connection rather than returning partial results: the caller only skips
-     * pruning per connection, and returning a partial view would let it delete networks that
-     * live in the region that failed.
-     */
     public function privateNetworks(array $instanceIds, array $regions): array
     {
         $result = [];
@@ -82,11 +71,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * Public so it can be exercised without an EC2 client — the SDK has no HTTP-level fake
-     * equivalent to `Http::fake()` in this codebase. Not part of the provider contract.
-     *
      * @internal
-     *
      * @param  array<int, array<string, mixed>>  $reservations
      * @param  array<int, array<string, mixed>>  $vpcs
      * @param  array<int, string>  $instanceIds
@@ -135,11 +120,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * Reads the primary network interface (device index 0), falling back to the first usable
-     * one and then to the instance's top-level fields, both of which are optional. On a
-     * multi-ENI instance the interfaces are not returned in a guaranteed order, so taking the
-     * first would risk reporting a secondary interface's address.
-     *
      * @param  array<string, mixed>  $instance
      * @return array{0: ?string, 1: ?string}
      */
@@ -174,10 +154,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * A VPC always carries an IPv4 range unless it was created IPv6-only, in which case its
-     * range lives in the association set. A dual-stack VPC is recorded by its IPv4 range,
-     * since a network holds a single range.
-     *
      * @param  array<string, mixed>  $vpc
      */
     private function cidrOf(array $vpc): ?string
@@ -200,9 +176,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * An IPv6-only instance has no `PrivateIpAddress`, so its address has to be read from the
-     * IPv6 fields — without this it would join its network with no address at all.
-     *
      * @param  array<string, mixed>  $source
      */
     private function addressOf(array $source): ?string
@@ -277,9 +250,6 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * EC2 list calls are paged. Reading only the first page would make instances beyond it look
-     * detached, and sync would then remove them from their network.
-     *
      * @param  array<string, mixed>  $args
      * @return array<int, array<string, mixed>>
      */
@@ -369,7 +339,7 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
                 'Filters' => [
                     [
                         'Name' => 'processor-info.supported-architecture',
-                        'Values' => ['x86_64', 'arm64'], // Include both x86_64 and ARM64
+                        'Values' => ['x86_64', 'arm64'],
                     ],
                     [
                         'Name' => 'current-generation',
@@ -377,11 +347,11 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
                     ],
                     [
                         'Name' => 'supported-virtualization-type',
-                        'Values' => ['hvm'], // Ubuntu AMIs require HVM
+                        'Values' => ['hvm'],
                     ],
                     [
                         'Name' => 'bare-metal',
-                        'Values' => ['false'], // Skip bare-metal unless explicitly needed
+                        'Values' => ['false'],
                     ],
                 ],
             ];
@@ -616,11 +586,9 @@ class AWS extends AbstractProvider implements ProvidesPrivateNetworks
             'Owners' => [$owner],
         ]);
 
-        // Extract and display image information
         $images = $result->get('Images');
 
         if (! empty($images)) {
-            // Sort images by creation date to get the latest one
             usort($images, fn (array $a, array $b): int => strtotime((string) $b['CreationDate']) - strtotime((string) $a['CreationDate']));
 
             return $images[0]['ImageId'];

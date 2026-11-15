@@ -80,7 +80,7 @@ test('cannot create cronjob with invalid site id api', function () {
         'command' => 'ls -la',
         'user' => 'vito',
         'frequency' => '* * * * *',
-        'site_id' => 99999, // Non-existent site ID
+        'site_id' => 99999,
     ])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['site_id']);

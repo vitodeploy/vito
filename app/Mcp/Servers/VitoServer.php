@@ -8,10 +8,6 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;
 use Laravel\Mcp\Server;
 
-/**
- * Mirrors the REST API: every token-authenticated `api.*` route becomes a tool,
- * described by its OpenAPI operation, so new endpoints reach MCP clients unchanged.
- */
 class VitoServer extends Server
 {
     protected string $name = 'Vito';

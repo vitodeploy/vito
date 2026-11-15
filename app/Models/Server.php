@@ -130,8 +130,6 @@ class Server extends AbstractModel
     public bool $deleteFromProvider = true;
 
     /**
-     * Carried between the two events because the membership rows are gone by the second.
-     *
      * @var array{members: array<int, int>, networks: array<int, int>}
      */
     protected array $networkDeparture = ['members' => [], 'networks' => []];
@@ -449,7 +447,7 @@ class Server extends AbstractModel
     }
 
     /**
-     * @deprecated Prefer `$site->isolatedUser->lock()`
+     * @deprecated
      */
     public function isolatedUserLock(string $user): Lock
     {
@@ -457,8 +455,6 @@ class Server extends AbstractModel
     }
 
     /**
-     * Linux users that can never become an isolated user here: system and service accounts plus the sudo-enabled SSH user.
-     *
      * @return list<string>
      */
     public function reservedUserNames(): array
@@ -515,7 +511,6 @@ class Server extends AbstractModel
             ->where('is_default', 1)
             ->first();
 
-        // If no default service found, get the first service with status ready or stopped
         if (! $service) {
             /** @var ?Service $service */
             $service = $this->services()
@@ -699,8 +694,6 @@ class Server extends AbstractModel
     }
 
     /**
-     * Normalised security-hardening state stored in feature_data['security'].
-     *
      * @return array{password_authentication: array{enabled: bool, detected: ?bool, status: string}, root_login: array{enabled: bool, detected: ?bool, status: string}}
      */
     public function securityState(): array

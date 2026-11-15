@@ -12,9 +12,6 @@ class CheckSslExpiry
     private const EXPIRY_WARNING_DAYS = 14;
 
     /**
-     * Read the certificate from the server, refresh the stored expiry date and
-     * domains, and optionally send the expiry notification.
-     *
      * @throws ValidationException
      */
     public function check(Ssl $ssl, bool $notify = true, mixed $ssh = null): void

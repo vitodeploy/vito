@@ -3,13 +3,6 @@
 use Illuminate\Support\Str;
 use Tests\ArchTestCase;
 
-/**
- * Layers that answer questions or shape output. Nothing here may reach a
- * server or otherwise cause a side effect.
- *
- * Each source namespace needs its own expectation — Pest's negative dependency
- * expectations silently pass when given an array of source namespaces.
- */
 const READ_AND_DECISION_LAYERS = [
     'App\DTOs',
     'App\Enums',

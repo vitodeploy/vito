@@ -46,8 +46,6 @@ class ValidateApplication
     }
 
     /**
-     * Validates the repository input and resolves the provider the actor may read it through.
-     *
      * @param  array<string, mixed>  $input
      */
     public function provider(Project $project, array $input, User $actor): SupportsApplications

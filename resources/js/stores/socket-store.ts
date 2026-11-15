@@ -132,7 +132,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
             break;
         }
       } catch {
-        // ignore non-JSON messages
+        return;
       }
     };
 
@@ -145,7 +145,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     };
 
     socket.onerror = () => {
-      // onclose will fire after onerror, reconnection handled there
     };
   },
 

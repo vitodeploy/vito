@@ -187,7 +187,6 @@ test('api guest cannot access server providers', function () {
 test('api insufficient scopes denies access', function () {
     Sanctum::actingAs($this->user, ['read']);
 
-    // Only read scope
     $data = [
         'provider' => DigitalOcean::id(),
         'name' => 'test',
@@ -259,7 +258,6 @@ test('api user can only see own server providers in list', function () {
 test('get regions', function (string $provider, array $input) {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Mock the provider's regions method
     Http::fake([
         '*' => Http::response([
             ['id' => 'nyc1', 'name' => 'New York 1', 'country' => 'US', 'available' => true],
@@ -293,7 +291,6 @@ test('get regions', function (string $provider, array $input) {
 test('get plans', function (string $provider, array $input) {
     Sanctum::actingAs($this->user, ['read', 'write']);
 
-    // Mock the provider's plans method
     Http::fake([
         '*' => Http::response([
             [
@@ -465,13 +462,6 @@ test('cannot access other users server provider plans', function () {
  */
 dataset('data', function () {
     return [
-        // [
-        //     ServerProvider::AWS,
-        //     [
-        //         'key' => 'key',
-        //         'secret' => 'secret',
-        //     ],
-        // ],
         [
             Linode::id(),
             [

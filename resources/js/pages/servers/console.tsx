@@ -151,7 +151,6 @@ export default function Console() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Initialize xterm + connect on mount
   useEffect(() => {
     const container = terminalRef.current;
     if (!container || xtermRef.current) return;
@@ -186,7 +185,6 @@ export default function Console() {
       }
     });
 
-    // Connect immediately
     connect(server.ssh_user);
 
     return () => {
@@ -195,7 +193,6 @@ export default function Console() {
     };
   }, []);
 
-  // Update document title with status
   const statusLabel = status === 'connected' ? '' : ` (${status})`;
 
   const statusDot = () => {
@@ -215,7 +212,6 @@ export default function Console() {
     <div className="bg-background flex h-screen flex-col">
       <Head title={`Terminal - ${server.name}${statusLabel}`} />
 
-      {/* Toolbar */}
       <div className="border-border bg-card flex items-center justify-between border-b px-3 py-1.5">
         <div className="flex items-center gap-2">
           <span className="text-foreground text-sm font-medium">{server.name}</span>
@@ -248,7 +244,6 @@ export default function Console() {
         </div>
       </div>
 
-      {/* Terminal */}
       <div className="min-h-0 flex-1 p-1">
         <div ref={terminalRef} className="h-full w-full" />
       </div>

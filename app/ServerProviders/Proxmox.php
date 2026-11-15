@@ -22,8 +22,6 @@ use Illuminate\Validation\ValidationException;
 class Proxmox extends AbstractProvider implements HasEditableCredentials
 {
     /**
-     * Memory and disk are in GiB.
-     *
      * @var array<string, array{cores: int, memory: int, disk: int}>
      */
     private const PLANS = [
@@ -157,9 +155,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
     }
 
     /**
-     * Besides the token, verifies every mapped template exists, is a template and
-     * carries a cloud-init drive, so a broken mapping fails here rather than mid-install.
-     *
      * @throws CouldNotConnectToProvider
      * @throws ValidationException
      * @throws ServerProviderError
@@ -261,9 +256,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
     }
 
     /**
-     * Starts a full clone of the mapped template and returns without waiting for it;
-     * `isRunning()` finishes provisioning once the clone task is done.
-     *
      * @throws ServerProviderError
      * @throws ConnectionException
      */
@@ -316,9 +308,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
     }
 
     /**
-     * Polled by the install job. While the clone task runs this returns false; once it
-     * finishes, the VM is configured and started. With DHCP, the IP comes from the guest agent.
-     *
      * @throws ServerProviderError
      */
     public function isRunning(): bool
@@ -367,9 +356,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
     }
 
     /**
-     * Refuses to touch a VM without this server's marker: the VMID of a failed clone is
-     * freed and Proxmox can hand it out again to an unrelated VM.
-     *
      * @throws ServerProviderError
      * @throws ConnectionException
      */
@@ -397,9 +383,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
     }
 
     /**
-     * Safe to repeat when an install is retried: the config and resize are idempotent
-     * and a VM that is already running is not started again.
-     *
      * @throws ServerProviderError
      * @throws ConnectionException
      */
@@ -477,9 +460,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
         return collect($order)->first(fn (string $key): bool => $disks->has($key)) ?? $disks->keys()->first();
     }
 
-    /**
-     * Size of a drive definition such as `local-lvm:vm-100-disk-0,size=3584M`, in GiB.
-     */
     private function diskSize(string $disk): float
     {
         if (preg_match('/(?:^|,)size=(\d+(?:\.\d+)?)([KMGT]?)/', $disk, $matches) !== 1) {
@@ -607,10 +587,6 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
         return $response->json('data');
     }
 
-    /**
-     * The API always lives at `/api2/json` on the host root, so any path, query or
-     * fragment (e.g. a URL copied from the web UI) is dropped.
-     */
     private static function baseUrl(string $url): string
     {
         $parts = parse_url($url);

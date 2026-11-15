@@ -5,13 +5,6 @@ namespace App\WebSocket;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\MessageInterface;
 
-/**
- * PSR-7 response that tolerates scalar header values.
- *
- * `Ratchet\RFC6455\Handshake\ServerNegotiator::handshake()` sets
- * `Sec-WebSocket-Version` from `getVersionNumber(): int`. guzzlehttp/psr7 3.x
- * rejects non-string header values, which aborts every handshake.
- */
 class HandshakeResponse extends Response
 {
     /**

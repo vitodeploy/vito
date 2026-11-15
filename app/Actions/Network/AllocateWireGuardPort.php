@@ -9,10 +9,6 @@ use Illuminate\Validation\ValidationException;
 class AllocateWireGuardPort
 {
     /**
-     * A server runs one WireGuard interface per network it belongs to, and two interfaces on
-     * one host cannot share a listen port. The port is therefore picked against the networks
-     * the given servers already belong to, not against the project as a whole.
-     *
      * @param  array<int, int>  $serverIds
      */
     public function allocate(int $projectId, array $serverIds, int $requested, ?int $excludeNetworkId = null): int

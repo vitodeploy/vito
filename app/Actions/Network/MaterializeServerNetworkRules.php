@@ -30,10 +30,6 @@ class MaterializeServerNetworkRules
     /** @var array<int, bool> */
     private array $deviceCache = [];
 
-    /**
-     * Re-materialise every non-LEAVING member's server. A topology change on the
-     * network (membership, IP, keys) affects the handshake/source rows on all peers.
-     */
     public function forNetwork(Network $network): void
     {
         $network->servers()
@@ -43,10 +39,6 @@ class MaterializeServerNetworkRules
             ->each(fn (NetworkServer $member) => $this->forServer($member->server));
     }
 
-    /**
-     * Reconcile the materialised network-rule rows for a single server against the
-     * desired set derived from its current memberships.
-     */
     public function forServer(Server $server): void
     {
         $desired = $this->desiredFor($server);
@@ -201,10 +193,6 @@ class MaterializeServerNetworkRules
     }
 
     /**
-     * Sources are interpolated unquoted into the `ufw` blade template, which is a shell
-     * script — Blade escapes HTML, not shell metacharacters. Every address is re-checked
-     * here so nothing but a literal IP can reach it, whatever wrote the column.
-     *
      * @return array<int, array{ip: string, name: string}>
      */
     private function handshakes(Network $network, Server $server): array

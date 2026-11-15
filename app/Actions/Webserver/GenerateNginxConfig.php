@@ -8,7 +8,7 @@ use App\Models\Site;
 
 class GenerateNginxConfig extends AbstractGenerateConfig
 {
-    /** @var array<int, array<string, string>> Collected during server block building */
+    /** @var array<int, array<string, string>> */
     private array $forceSSLDomains = [];
 
     public function defaultTemplate(): string

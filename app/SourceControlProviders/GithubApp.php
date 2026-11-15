@@ -17,7 +17,7 @@ class GithubApp extends AbstractSourceControlProvider implements SupportsApplica
 {
     private const string API_BASE_URL = 'https://api.github.com';
 
-    private const int TOKEN_TTL = 50 * 60; // 50 minutes (GitHub installation tokens last ~60min)
+    private const int TOKEN_TTL = 50 * 60;
 
     private const int CACHE_TTL = 60 * 15;
 

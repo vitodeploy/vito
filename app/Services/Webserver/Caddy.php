@@ -105,8 +105,6 @@ class Caddy extends AbstractWebserver implements HasLogs
      */
     public function createVHost(Site $site): void
     {
-        // We need to get the isolated user first, if the site is isolated
-        // otherwise, use the default ssh user
         $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(

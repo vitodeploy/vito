@@ -78,10 +78,6 @@ class ServerProvider extends AbstractModel
         return $provider;
     }
 
-    /**
-     * The handler, if users can edit this connection's credentials. The class is
-     * checked first, so providers whose plugin is gone never build a missing handler.
-     */
     public function editableProvider(): ?HasEditableCredentials
     {
         if (! is_a((string) config('server-provider.providers.'.$this->provider.'.handler'), HasEditableCredentials::class, true)) {

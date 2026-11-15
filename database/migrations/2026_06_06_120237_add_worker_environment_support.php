@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         if (! Schema::hasColumn('sites', 'worker_environment')) {
@@ -42,9 +39,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('sites', function (Blueprint $table) {
@@ -80,9 +74,6 @@ return new class extends Migration
     }
 
     /**
-     * Legacy values carry no classification, so every one is migrated as
-     * secret; users can mark the harmless ones public afterwards.
-     *
      * @param  array<string, mixed>  $map
      * @return array<int, array{key: string, value: string, is_secret: bool}>
      */

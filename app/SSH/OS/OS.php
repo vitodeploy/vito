@@ -257,8 +257,7 @@ class OS
     }
 
     /**
-     * @deprecated use write() instead
-     *
+     * @deprecated
      * @throws SSHError
      */
     public function editFileAs(string $path, string $user, ?string $content = null): void
@@ -513,8 +512,6 @@ class OS
     }
 
     /**
-     * Clear a remote log file while preserving permissions and ownership
-     *
      * @throws SSHError
      */
     public function clearFile(string $path, ?string $user = null): void

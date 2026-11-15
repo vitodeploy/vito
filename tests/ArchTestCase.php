@@ -5,24 +5,11 @@ namespace Tests;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use InvalidArgumentException;
 
-/**
- * Base case for the architecture suite, and the single registry of exceptions
- * to its rules.
- *
- * Read `.github/instructions/architecture-tests.instructions.md` before
- * touching EXCEPTIONS. Entries may only be added with the maintainer's explicit
- * permission, and only when a rule is added or changed — never to make a
- * failing rule pass.
- */
 abstract class ArchTestCase extends BaseTestCase
 {
     use CreatesApplication;
 
     /**
-     * Every deviation from an architecture rule that the current implementation
-     * relies on. Each entry exempts real code from a real standard, so the rule
-     * stops protecting it. Lists may shrink freely; they may not grow.
-     *
      * @var array<string, array{reason: string, entries: array<int, string>}>
      */
     public const array EXCEPTIONS = [

@@ -22,8 +22,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     use HasTimezoneTimestamps;
 
     /**
-     * Get the project IDs this token is scoped to.
-     *
      * @return array<int>
      */
     public function getProjectIds(): array
@@ -35,10 +33,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
             ->all();
     }
 
-    /**
-     * Check if the token has access to the given project.
-     * Tokens with no project restrictions have access to all projects (backward compatible).
-     */
     public function hasProjectAccess(Project $project): bool
     {
         $projectIds = $this->getProjectIds();
@@ -50,11 +44,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         return in_array($project->id, $projectIds);
     }
 
-    /**
-     * Check if the token may reach a resource that belongs to the given project.
-     * A null project id means the resource is global: every project may read it,
-     * but writing it would affect projects outside the token's scope.
-     */
     public function allowsProjectId(?int $projectId, bool $write = false): bool
     {
         $projectIds = $this->getProjectIds();

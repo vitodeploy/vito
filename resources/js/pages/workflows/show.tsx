@@ -79,12 +79,12 @@ export default function Show() {
   const onEdgesChange: OnEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
 
   const wouldCreateLoop = (edges: Edge[], source: string, target: string): boolean => {
-    if (source === target) return true; // direct self-loop
+    if (source === target) return true;
 
     const visited = new Set<string>();
 
     const dfs = (nodeId: string): boolean => {
-      if (nodeId === source) return true; // found a cycle
+      if (nodeId === source) return true;
       visited.add(nodeId);
 
       const outgoing = edges.filter((e) => e.source === nodeId);
@@ -162,7 +162,6 @@ export default function Show() {
       position: { x: 0, y: 0 },
     };
     console.log('New node added:', newNode);
-    // append node
     setNodes((nds) => nds.concat(newNode));
   };
 

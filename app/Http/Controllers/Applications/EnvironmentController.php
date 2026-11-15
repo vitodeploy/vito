@@ -100,9 +100,6 @@ class EnvironmentController extends Controller
         return to_route('applications.show', $application)->with('success', 'Environment deletion requested. Components are cleaned up before the environment is removed.');
     }
 
-    /**
-     * Every environment URL renders the graph; sheet routes add the data for the sheet they open on top of it.
-     */
     private function render(Request $request, Application $application, Environment $environment, ?string $sheet = null, ?EnvironmentDeployment $deployment = null): Response
     {
         $overview = app(GetEnvironmentOverview::class);

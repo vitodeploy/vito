@@ -49,7 +49,6 @@ class HttpCall extends AbstractWorkflowAction
         $method = strtoupper($input['method']);
         $timeout = $input['timeout'] ?? 30;
 
-        // Parse headers if provided
         $headers = [];
         if (! empty($input['headers'])) {
             $decodedHeaders = json_decode($input['headers'], true);
@@ -58,7 +57,6 @@ class HttpCall extends AbstractWorkflowAction
             }
         }
 
-        // Prepare request body
         $body = null;
         if (! empty($input['body'])) {
             if (is_string($input['body'])) {
@@ -70,28 +68,22 @@ class HttpCall extends AbstractWorkflowAction
         }
 
         try {
-            // Build HTTP client with timeout
             $httpClient = Http::timeout($timeout);
 
-            // Add headers if provided
             if (! empty($headers)) {
                 $httpClient = $httpClient->withHeaders($headers);
             }
 
-            // Add body for methods that support it
             if (in_array($method, ['POST', 'PUT', 'PATCH']) && $body !== null) {
                 $httpClient = $httpClient->withBody(json_encode($body), 'application/json');
             }
 
-            // Make the request
             $response = $httpClient->send($method, $url);
 
-            // Get response data
             $statusCode = $response->status();
             $responseBody = $response->body();
             $responseHeaders = $response->headers();
 
-            // Try to decode response body as JSON
             $responseBodyJson = null;
             $decodedBody = json_decode($responseBody, true);
             if (json_last_error() === JSON_ERROR_NONE) {

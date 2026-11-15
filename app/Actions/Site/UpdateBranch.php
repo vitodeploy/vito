@@ -10,11 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class UpdateBranch
 {
     /**
-     * With modern deployment the site path is the live release, so the branch
-     * is switched in the source checkout and the next deployment clones it.
-     *
      * @param  array<string, mixed>  $input
-     *
      * @throws SSHError
      */
     public function update(Site $site, array $input): void

@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Orphaned rows are deleted before the foreign keys are added, because a foreign key
-     * cannot be created on a table that already violates it.
-     */
     public function up(): void
     {
         DB::transaction(function (): void {
@@ -43,9 +39,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * The schema is fully reverted, but rows deleted by up() cannot be restored.
-     */
     public function down(): void
     {
         Schema::table('backup_files', function (Blueprint $table): void {

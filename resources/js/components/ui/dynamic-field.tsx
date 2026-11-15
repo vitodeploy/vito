@@ -16,9 +16,6 @@ import ServerProviderSelect from '@/pages/server-providers/components/server-pro
 
 const widthSpans = { half: 'sm:col-span-3', third: 'sm:col-span-2' };
 
-/**
- * Column span for a field inside a `sm:grid-cols-6` grid, from the backend's width hint.
- */
 export function dynamicFieldSpan(config: DynamicFieldConfig): string {
   return config.width ? widthSpans[config.width] : 'sm:col-span-6';
 }
@@ -57,7 +54,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
 
   const inputValue = controlled ? { value: value as string | number | string[] } : { defaultValue: (value as string) || '' };
 
-  // Handle alert
   if (config?.type === 'alert') {
     return (
       <FormField>
@@ -99,7 +95,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle checkbox
   if (config?.type === 'checkbox') {
     return (
       <FormField>
@@ -113,7 +108,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle select
   if (config?.type === 'select' && config.options) {
     return (
       <FormField>
@@ -141,7 +135,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle textarea
   if (config?.type === 'textarea') {
     return (
       <FormField>
@@ -162,7 +155,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle password
   if (config?.type === 'password') {
     return (
       <FormField>
@@ -185,7 +177,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle password with visibility toggle
   if (config?.type === 'password-with-toggle') {
     return (
       <FormField>
@@ -207,7 +198,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Handle server provider select
   if (config?.type === 'component' && config?.name === 'server_provider') {
     return (
       <FormField>
@@ -221,7 +211,6 @@ export default function DynamicField({ value, onChange, config, error, idPrefix,
     );
   }
 
-  // Default to text input
   const props: InputHTMLAttributes<HTMLInputElement> = {};
   if (config?.placeholder) {
     props.placeholder = config.placeholder;

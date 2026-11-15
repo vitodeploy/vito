@@ -53,9 +53,6 @@ class SyncSiteDeployKey
         });
     }
 
-    /**
-     * Separate credentials can refer to the same repository key, including across projects.
-     */
     public function remove(SourceControl $sourceControl, string $repository, string $keyId): void
     {
         $this->run($sourceControl, $repository, function () use ($sourceControl, $repository, $keyId): void {

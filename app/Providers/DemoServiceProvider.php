@@ -20,7 +20,6 @@ class DemoServiceProvider extends ServiceProvider
      * @var string[]
      */
     protected array $canDelete = [
-        //
     ];
 
     /**
@@ -55,7 +54,6 @@ class DemoServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        //
     }
 
     public function boot(): void
@@ -64,7 +62,6 @@ class DemoServiceProvider extends ServiceProvider
             return;
         }
 
-        // get all classes inside App\Models namespace
         $files = scandir(app_path('Models')) ?: [];
         $models = collect($files)
             ->filter(fn ($file): bool => ! in_array($file, ['.', '..']))

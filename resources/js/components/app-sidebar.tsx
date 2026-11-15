@@ -125,9 +125,6 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
-      {/* This is the first sidebar */}
-      {/* We disable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
       <Sidebar collapsible="none" className="h-auto !w-[calc(var(--sidebar-width-icon)_+_1px)] border-r">
         <SidebarHeader>
           <SidebarMenu>
@@ -203,9 +200,6 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
         </SidebarFooter>
       </Sidebar>
 
-      {/* This is the second sidebar */}
-      {/* We enable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
       {secondNavItems && secondNavItems.length > 0 && (
         <Sidebar collapsible="none" className="flex flex-1">
           <SidebarHeader className="hidden h-12 border-b p-0 md:flex">

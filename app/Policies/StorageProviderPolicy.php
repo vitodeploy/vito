@@ -36,10 +36,6 @@ class StorageProviderPolicy
             && $user->tokenAllowsProject($storageProvider->project_id, write: true);
     }
 
-    /**
-     * Non-secret credential values are only for callers who can already
-     * rewrite them. API tokens must additionally carry the write ability.
-     */
     public function revealCredentials(User $user, StorageProvider $storageProvider): bool
     {
         /** @var PersonalAccessToken|TransientToken|null $token */

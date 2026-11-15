@@ -4,8 +4,6 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Tokens that mean a migration is doing more than schema and data work.
- *
  * @var array<string, string>
  */
 const FORBIDDEN_MIGRATION_TOKENS = [

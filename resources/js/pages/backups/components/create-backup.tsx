@@ -56,7 +56,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
         </SheetHeader>
         <Form id="create-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
-            {/*server - only when not opened from a server page*/}
             {!server && (
               <FormField>
                 <Label htmlFor="server">Server</Label>
@@ -74,7 +73,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               </FormField>
             )}
 
-            {/*backup type*/}
             <FormField>
               <Label htmlFor="type">Backup Type</Label>
               <Select value={form.data.type} onValueChange={(value) => form.setData('type', value)}>
@@ -91,7 +89,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               <InputError message={form.errors.type} />
             </FormField>
 
-            {/*database - only show for database backups*/}
             {form.data.type === 'database' && activeServer && (
               <FormField>
                 <Label htmlFor="database">Database</Label>
@@ -106,7 +103,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               </FormField>
             )}
 
-            {/*path - only show for file backups*/}
             {form.data.type === 'file' && (
               <FormField>
                 <Label htmlFor="path">File/Directory Path</Label>
@@ -122,7 +118,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               </FormField>
             )}
 
-            {/*storage*/}
             <FormField>
               <Label htmlFor="storage">Storage</Label>
               <StorageProviderSelect
@@ -134,7 +129,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               <InputError message={form.errors.storage} />
             </FormField>
 
-            {/*interval*/}
             <FormField>
               <Label htmlFor="interval">Interval</Label>
               <Select value={form.data.interval} onValueChange={(value) => form.setData('interval', value)}>
@@ -154,7 +148,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               <InputError message={form.errors.interval} />
             </FormField>
 
-            {/*custom interval*/}
             {form.data.interval === 'custom' && (
               <FormField>
                 <Label htmlFor="custom_interval">Custom interval (crontab)</Label>
@@ -169,7 +162,6 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
               </FormField>
             )}
 
-            {/*backups to keep*/}
             <FormField>
               <Label htmlFor="keep">Backups to keep</Label>
               <Input id="keep" name="keep" value={form.data.keep} onChange={(e) => form.setData('keep', e.target.value)} />

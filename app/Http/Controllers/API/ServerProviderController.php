@@ -21,14 +21,14 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
 /**
- * @deprecated Use UserServerProviderController instead. This controller will be removed in a future version.
+ * @deprecated
  */
 #[Prefix('api/projects/{project}/server-providers')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
 class ServerProviderController extends Controller
 {
     /**
-     * @deprecated Use GET /api/server-providers instead
+     * @deprecated
      */
     #[Get('/', name: 'api.projects.server-providers', middleware: 'ability:read')]
     public function index(Project $project): ResourceCollection
@@ -41,7 +41,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use POST /api/server-providers instead
+     * @deprecated
      */
     #[Post('/', name: 'api.projects.server-providers.create', middleware: 'ability:write')]
     public function create(Request $request, Project $project): ServerProviderResource
@@ -58,7 +58,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use GET /api/server-providers/{serverProvider} instead
+     * @deprecated
      */
     #[Get('{serverProvider}', name: 'api.projects.server-providers.show', middleware: 'ability:read')]
     public function show(Project $project, ServerProvider $serverProvider): ServerProviderResource
@@ -71,7 +71,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use PUT /api/server-providers/{serverProvider} instead
+     * @deprecated
      */
     #[Put('{serverProvider}', name: 'api.projects.server-providers.update', middleware: 'ability:write')]
     public function update(Request $request, Project $project, ServerProvider $serverProvider): ServerProviderResource
@@ -90,7 +90,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use GET /api/server-providers/{serverProvider}/regions instead
+     * @deprecated
      */
     #[Get('{serverProvider}/regions', name: 'api.projects.server-providers.regions', middleware: 'ability:read')]
     public function regions(Project $project, ServerProvider $serverProvider): JsonResponse
@@ -103,7 +103,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use GET /api/server-providers/{serverProvider}/regions/{region}/plans instead
+     * @deprecated
      */
     #[Get('{serverProvider}/regions/{region}/plans', name: 'api.projects.server-providers.plans', middleware: 'ability:read')]
     public function plans(Project $project, ServerProvider $serverProvider, string $region): JsonResponse
@@ -116,7 +116,7 @@ class ServerProviderController extends Controller
     }
 
     /**
-     * @deprecated Use DELETE /api/server-providers/{serverProvider} instead
+     * @deprecated
      */
     #[Delete('{serverProvider}', name: 'api.projects.server-providers.delete', middleware: 'ability:write')]
     public function delete(Project $project, ServerProvider $serverProvider): Response

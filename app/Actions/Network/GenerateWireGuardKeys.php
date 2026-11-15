@@ -5,10 +5,6 @@ namespace App\Actions\Network;
 class GenerateWireGuardKeys
 {
     /**
-     * Generate a WireGuard (Curve25519) key pair, base64-encoded, matching
-     * `wg genkey` / `wg pubkey`: the private key is clamped and the public key
-     * is derived via X25519 base-point multiplication.
-     *
      * @return array{private_key: string, public_key: string}
      */
     public function generate(): array

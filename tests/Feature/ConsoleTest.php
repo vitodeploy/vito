@@ -46,7 +46,6 @@ test('generate token', function () {
     $token = $response->json('token');
     expect($token)->not->toBeEmpty();
 
-    // Verify token is stored in cache
     $cached = Cache::get("terminal_token:{$token}");
     expect($cached)->not->toBeNull();
     expect($cached['server_id'])->toEqual($this->server->id);
@@ -114,12 +113,10 @@ test('token is single use', function () {
 
     $token = $response->json('token');
 
-    // First validation should succeed
     $action = new GenerateWebSocketToken;
     $data = $action->validate('terminal_token', $token);
     expect($data)->not->toBeNull();
 
-    // Second validation should fail (token consumed)
     $data = $action->validate('terminal_token', $token);
     expect($data)->toBeNull();
 });
@@ -132,10 +129,8 @@ test('token expires after ttl', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Token should exist
     expect($action->validate('terminal_token', $result['token']))->not->toBeNull();
 
-    // Generate a new token and simulate expiry
     $result = $action->generate('terminal_token', [
         'server_id' => $this->server->id,
         'user_id' => $this->user->id,
@@ -188,7 +183,6 @@ test('terminal handler authenticate with expired token', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Expire the token
     Cache::forget("terminal_token:{$result['token']}");
 
     $handler = new TerminalHandler(Loop::get());
@@ -199,7 +193,6 @@ test('terminal handler authenticate with expired token', function () {
 });
 
 test('terminal handler authenticate unauthorized user', function () {
-    // Change user role to USER (no write access)
     $this->server->project->users()->where('user_id', $this->user->id)->update([
         'role' => UserRole::USER,
     ]);
@@ -226,7 +219,6 @@ test('terminal handler authenticate deleted server', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Delete the server after token generation
     $this->server->forceDelete();
 
     $handler = new TerminalHandler(Loop::get());
@@ -244,7 +236,6 @@ test('terminal handler authenticate deleted user', function () {
         'ssh_user' => $this->server->getSshUser(),
     ], 30);
 
-    // Delete the user after token generation
     $this->user->forceDelete();
 
     $handler = new TerminalHandler(Loop::get());
@@ -258,7 +249,6 @@ test('terminal handler rate limits connections', function () {
     $handler = new TerminalHandler(Loop::get());
     $action = new GenerateWebSocketToken;
 
-    // Authenticate MAX_CONNECTIONS_PER_USER (5) times
     for ($i = 0; $i < 5; $i++) {
         $result = $action->generate('terminal_token', [
             'server_id' => $this->server->id,
@@ -269,9 +259,6 @@ test('terminal handler rate limits connections', function () {
         $error = $handler->authenticate($request);
         expect($error)->toBeNull("Connection $i should succeed");
 
-        // Simulate that the connection was opened by manually adding to connections via onOpen
-        // We need to call onOpen to track the connection, but it will try SSH which won't work.
-        // Instead, use reflection to add a fake connection entry
         $reflection = new ReflectionClass($handler);
         $prop = $reflection->getProperty('connections');
         $connections = $prop->getValue($handler);
@@ -287,7 +274,6 @@ test('terminal handler rate limits connections', function () {
         $prop->setValue($handler, $connections);
     }
 
-    // 6th connection should be rate limited
     $result = $action->generate('terminal_token', [
         'server_id' => $this->server->id,
         'user_id' => $this->user->id,
@@ -302,7 +288,6 @@ test('terminal handler rate limit per user', function () {
     $handler = new TerminalHandler(Loop::get());
     $action = new GenerateWebSocketToken;
 
-    // Fill up connections for user 1
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $connections = [];
@@ -319,7 +304,6 @@ test('terminal handler rate limit per user', function () {
     }
     $prop->setValue($handler, $connections);
 
-    // Another user should still be able to connect
     $otherUser = User::factory()->create();
     $this->server->project->users()->create([
         'user_id' => $otherUser->id,
@@ -340,7 +324,6 @@ test('terminal handler connection count', function () {
     $handler = new TerminalHandler(Loop::get());
     expect($handler->getConnectionCount())->toEqual(0);
 
-    // Add fake connections via reflection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -354,7 +337,6 @@ test('terminal handler connection count', function () {
 test('terminal handler on close cleans up', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Add a fake connection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -379,7 +361,6 @@ test('terminal handler on close cleans up', function () {
 test('terminal handler on close nonexistent connection', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Should not throw
     $handler->onClose('nonexistent-conn');
 
     expect($handler->getConnectionCount())->toEqual(0);
@@ -388,7 +369,6 @@ test('terminal handler on close nonexistent connection', function () {
 test('terminal handler on message ignores unknown connection', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Should not throw
     $handler->onMessage('nonexistent-conn', json_encode(['type' => 'input', 'data' => 'test']));
 
     expect($handler->getConnectionCount())->toEqual(0);
@@ -397,7 +377,6 @@ test('terminal handler on message ignores unknown connection', function () {
 test('terminal handler on message ignores invalid json', function () {
     $handler = new TerminalHandler(Loop::get());
 
-    // Add a fake connection
     $reflection = new ReflectionClass($handler);
     $prop = $reflection->getProperty('connections');
     $prop->setValue($handler, [
@@ -412,7 +391,6 @@ test('terminal handler on message ignores invalid json', function () {
         ],
     ]);
 
-    // Should not throw on invalid JSON
     $handler->onMessage('test-conn', 'not-json');
 
     expect($handler->getConnectionCount())->toEqual(1);
@@ -435,7 +413,6 @@ test('terminal handler on message ignores missing type', function () {
         ],
     ]);
 
-    // Should not throw on message without type
     $handler->onMessage('test-conn', json_encode(['data' => 'test']));
 
     expect($handler->getConnectionCount())->toEqual(1);

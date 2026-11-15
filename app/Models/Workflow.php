@@ -109,10 +109,6 @@ class Workflow extends Model
     }
 
     /**
-     * Action inputs can hold credentials (database or admin passwords, HTTP
-     * headers), so their values are blanked unless the caller may reveal them
-     * (`revealInputs`, checked once per response by the caller).
-     *
      * @return array<array-key, mixed>
      */
     public static function visibleInputs(mixed $inputs, bool $reveal): array
@@ -143,15 +139,10 @@ class Workflow extends Model
     }
 
     /**
-     * Each node is built once and shared by every branch that reaches it, so
-     * reconverging paths cost nothing extra. A path that returns to one of its
-     * own ancestors is a cycle and is rejected.
-     *
      * @param  array<string, array<string, mixed>>  $nodes
      * @param  array<string, SupportCollection<int, array<string, mixed>>>  $edges
      * @param  array<string, WorkflowActionDTO>  $built
      * @param  array<string, true>  $ancestors
-     *
      * @throws ValidationException
      */
     private function buildExecutionTree(string $nodeId, array $nodes, array $edges, array &$built, array $ancestors): WorkflowActionDTO

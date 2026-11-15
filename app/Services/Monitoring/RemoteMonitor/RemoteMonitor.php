@@ -58,7 +58,6 @@ class RemoteMonitor extends AbstractService
 
     public function install(): void
     {
-        //
     }
 
     public function uninstall(): void

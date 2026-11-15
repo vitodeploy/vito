@@ -15,8 +15,6 @@ use Throwable;
 class PointDomainAtServer
 {
     /**
-     * Project domains whose DNS Vito can manage for this environment.
-     *
      * @return Builder<Domain>
      */
     public function available(Environment $environment): Builder
@@ -28,9 +26,6 @@ class PointDomainAtServer
     }
 
     /**
-     * Creates the address record through the DNS provider. An existing record for the host is never
-     * overwritten: it may be serving traffic, so changing it stays an explicit decision.
-     *
      * @throws ValidationException
      */
     public function point(EnvironmentDomain $domain, int $dnsDomainId): void

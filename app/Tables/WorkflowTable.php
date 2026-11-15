@@ -9,10 +9,6 @@ use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
 use Forjed\InertiaTable\Table;
 
-/**
- * `run_inputs` is shipped as hidden row data so the Run modal can pre-fill the
- * JSON inputs editor without a second roundtrip.
- */
 class WorkflowTable extends Table
 {
     protected function query(): void

@@ -19,8 +19,7 @@ class DeleteSite
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return bool false when the source-control deploy key could not be removed
-     *
+     * @return bool
      * @throws SSHError
      */
     public function delete(Site $site, array $input): bool
@@ -101,11 +100,6 @@ class DeleteSite
         return $deployKeyRemoved;
     }
 
-    /**
-     * Delete the site row. If the row deletion fails after server-side teardown has
-     * already run, the server-side artefacts (pool, user) are already gone — log the
-     * orphan-row state so an operator can clean up, then rethrow.
-     */
     private function deleteRow(Site $site): void
     {
         $server = $site->server;

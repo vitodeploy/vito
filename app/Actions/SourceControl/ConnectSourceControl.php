@@ -36,12 +36,10 @@ class ConnectSourceControl
                 ]);
             }
         } catch (\Exception $e) {
-            // Re-throw validation exceptions as-is
             if ($e instanceof ValidationException) {
                 throw $e;
             }
 
-            // For all other exceptions, wrap in validation exception to show the error message in the frontend
             throw ValidationException::withMessages([
                 'provider' => $e->getMessage(),
             ]);

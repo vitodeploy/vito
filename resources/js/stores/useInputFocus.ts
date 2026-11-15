@@ -1,4 +1,3 @@
-// stores/useInputFocus.ts
 import { create } from 'zustand';
 
 type InputFocusStore = {

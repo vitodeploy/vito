@@ -47,12 +47,6 @@ final class GetBootstrap
         );
     }
 
-    /**
-     * Compute the version directly from current in-memory config without
-     * touching the cache. Used by plugin lifecycle Actions immediately after
-     * mutating the catalogue, so the broadcast payload reflects this request's
-     * fresh state instead of a value a concurrent request may have re-cached.
-     */
     public function computeVersion(): string
     {
         return substr(md5(serialize($this->configs()).'|'.$this->publicKeyText()), 0, 16);

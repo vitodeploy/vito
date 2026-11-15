@@ -56,9 +56,6 @@ class RegisterServerProvider
         return $this;
     }
 
-    /**
-     * Extra provider-specific fields rendered on the create-server form.
-     */
     public function createForm(DynamicForm $createForm): self
     {
         $this->createForm = $createForm;
@@ -66,10 +63,6 @@ class RegisterServerProvider
         return $this;
     }
 
-    /**
-     * Credential fields users can change after connecting, rendered in the
-     * connection's edit form. Never include secrets here.
-     */
     public function editForm(DynamicForm $editForm): self
     {
         $this->editForm = $editForm;
@@ -86,9 +79,6 @@ class RegisterServerProvider
     }
 
     /**
-     * Operating systems this provider can create, as OperatingSystem values.
-     * Providers that don't declare any are offered the Ubuntu releases only.
-     *
      * @param  array<int, string>  $operatingSystems
      */
     public function operatingSystems(array $operatingSystems): self
@@ -98,10 +88,6 @@ class RegisterServerProvider
         return $this;
     }
 
-    /**
-     * How long the install waits for a new server to boot and accept SSH, for
-     * providers that provision slower than the default.
-     */
     public function provisionTimeout(int $seconds): self
     {
         $this->provisionTimeout = $seconds;

@@ -30,11 +30,6 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
         return 'instance_id';
     }
 
-    /**
-     * A server deleted upstream leaves a stale instance id behind, so a 404 for one instance is
-     * skipped rather than allowed to abort the connection's whole sync — which would also
-     * suppress pruning for every other network on it.
-     */
     public function privateNetworks(array $instanceIds, array $regions): array
     {
         $attachments = [];
@@ -72,12 +67,6 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
     }
 
     /**
-     * Only `/v2/vpcs` is used. `/v2/vpc2` is deprecated, and its metadata shape differs
-     * (`ip_block`/`prefix_length` rather than `v4_subnet`/`v4_subnet_mask`).
-     *
-     * The per-instance attachment lookup is bounded by the servers Vito manages rather than
-     * by the size of the account.
-     *
      * @param  array<int, array<string, mixed>>  $vpcs
      * @param  array<string, array<int, PrivateNetworkMemberDTO>>  $attachments
      * @return array<int, PrivateNetworkDTO>
@@ -279,7 +268,6 @@ class Vultr extends AbstractProvider implements ProvidesPrivateNetworks
      */
     public function create(): void
     {
-        // generate key pair
         /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         generate_key_pair($storageDisk->path((string) $this->server->id));

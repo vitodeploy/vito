@@ -1,4 +1,3 @@
-{{-- Unescaped output is deliberate: every value here is a developer-authored command fragment already passed through escapeshellarg() by ProbeServices; {{ }} would HTML-encode the shell quoting and corrupt the script. Do not interpolate request or model data into this template. --}}
 @if ($unitCount > 0)
 STATES=$(timeout 10 bash -c {!! $unitsArgument !!} 2>/dev/null || true)
 

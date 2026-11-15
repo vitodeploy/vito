@@ -18,8 +18,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     public function forgetCachedState(): void {}
 
     /**
-     * Credential keys that are safe to send back to the client for editing.
-     *
      * @return array<int, string>
      */
     protected function editableFields(): array
@@ -28,9 +26,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     }
 
     /**
-     * Credential keys that are never sent back to the client and are only
-     * written when a non-empty value is submitted.
-     *
      * @return array<int, string>
      */
     protected function secretFields(): array
@@ -51,9 +46,6 @@ abstract class AbstractStorageProvider implements StorageProviderContract
     }
 
     /**
-     * Editable keys that decide where the secrets are sent. Changing any of
-     * them requires every secret to be submitted again.
-     *
      * @return array<int, string>
      */
     protected function secretDestinationFields(): array

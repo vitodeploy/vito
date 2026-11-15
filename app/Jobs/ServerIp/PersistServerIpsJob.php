@@ -98,14 +98,7 @@ class PersistServerIpsJob implements ShouldQueue
     }
 
     /**
-     * Debian images name their netplan definitions differently, and a second
-     * definition for the same interface replaces the first one's DHCP config and
-     * takes the server offline. A systemd unit adds the addresses without touching
-     * the network config. Rows that already failed stay out of it so they can't
-     * block the addresses that work.
-     *
      * @param  Collection<int, ServerIpAddress>  $managed
-     *
      * @throws SSHError
      */
     private function applySystemdUnit(Collection $managed): void
@@ -136,12 +129,6 @@ class PersistServerIpsJob implements ShouldQueue
     }
 
     /**
-     * Build the per-interface address map for netplan. For every interface we
-     * manage, the interface's existing static (non-dynamic) addresses are
-     * re-included so that netplan's same-key override does not drop the
-     * provider's primary address (DHCP/SLAAC addresses are excluded — they are
-     * supplied by the provider config under a different key).
-     *
      * @param  Collection<int, ServerIpAddress>  $managed
      * @return array<string, array<int, string>>
      */

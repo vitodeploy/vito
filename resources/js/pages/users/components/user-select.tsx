@@ -41,7 +41,7 @@ export default function UserSelect({ value, onValueChange }: { value: string; on
     if (open && query !== '') {
       const timeoutId = setTimeout(() => {
         refetch();
-      }, 300); // Debounce search
+      }, 300);
 
       return () => clearTimeout(timeoutId);
     }

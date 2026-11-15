@@ -63,7 +63,6 @@ function SelectContent({
           return React.cloneElement(child, {}, filteredGroupChildren);
         }
 
-        // Handle SelectItem
         if (child.type === SelectItem) {
           const typedChild = child as React.ReactElement<{ children?: React.ReactNode }>;
           const itemText = extractTextFromChildren(typedChild.props.children);

@@ -30,10 +30,6 @@ class ScriptExecutionResource extends JsonResource
         ];
     }
 
-    /**
-     * Executions are visible only to the script owner, who may have since lost
-     * access to the server. Socket events have no request user, so the owner is used.
-     */
     private function canViewServer(Request $request): bool
     {
         $viewer = $request->user() ?? $this->script->user;

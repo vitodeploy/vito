@@ -4,9 +4,6 @@ namespace App\Support;
 
 use Closure;
 
-/**
- * Reads repository files on demand, so detection only requests the files it needs.
- */
 final class RepositoryFiles
 {
     private const int MAX_BYTES = 1024 * 1024;
@@ -34,9 +31,6 @@ final class RepositoryFiles
         return $this->contents[$path];
     }
 
-    /**
-     * Reads single-line quoted hints from a TOML table, ignoring multiline string bodies.
-     */
     public function tomlString(string $path, string $table, string $key): ?string
     {
         $contents = preg_replace(

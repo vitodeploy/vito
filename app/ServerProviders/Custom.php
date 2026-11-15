@@ -97,6 +97,5 @@ class Custom extends AbstractProvider
 
     public function delete(): void
     {
-        //
     }
 }

@@ -152,7 +152,6 @@ test('deletes existing load balancer servers before creating new ones', function
         'type_data' => ['method' => LoadBalancerMethod::ROUND_ROBIN->value],
     ]);
 
-    // Create existing load balancer servers
     $site->loadBalancerServers()->create([
         'ip' => '192.168.1.1',
         'port' => 80,

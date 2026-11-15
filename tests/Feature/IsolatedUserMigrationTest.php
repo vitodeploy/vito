@@ -13,17 +13,14 @@ test('backfill creates iusers for isolated sites only', function () {
     $serverB = vitoPestFeatureIsolatedUserMigrationTestInsertServer('deploy');
     $serverC = vitoPestFeatureIsolatedUserMigrationTestInsertServer('');
 
-    // Server A — vito default
     vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverA, null, 'a-null.test');
     $vitoOnA = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverA, 'vito', 'vito-on-a.test');
     $alpha1 = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverA, 'alpha', 'alpha-1.test');
     $alpha2 = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverA, 'alpha', 'alpha-2.test');
 
-    // Server B — ssh_user 'deploy'; sites with user='vito' are treated as isolated.
     vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverB, 'deploy', 'b-deploy.test');
     $vitoOnB = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverB, 'vito', 'vito-on-b.test');
 
-    // Server C — empty ssh_user; falls back to config('core.ssh_user')='vito'.
     $vitoOnC = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverC, 'vito', 'vito-on-c.test');
     $betaOnC = vitoPestFeatureIsolatedUserMigrationTestInsertSite($serverC, 'beta', 'beta-1.test');
 
@@ -36,19 +33,16 @@ test('backfill creates iusers for isolated sites only', function () {
     expect($iuserByKey->has($serverB.':vito'))->toBeTrue();
     expect($iuserByKey->has($serverC.':beta'))->toBeTrue();
 
-    // No iuser for the null-user, vito-on-A or vito-on-C rows.
     expect($iuserByKey->has($serverA.':vito'))->toBeFalse();
     expect($iuserByKey->has($serverC.':vito'))->toBeFalse();
     expect(DB::table('sites')->where('id', $vitoOnA)->value('isolated_user_id'))->toBeNull();
     expect(DB::table('sites')->where('id', $vitoOnC)->value('isolated_user_id'))->toBeNull();
 
-    // FK assignment
     expect(DB::table('sites')->where('id', $alpha1)->value('isolated_user_id'))->toBe($iuserByKey[$serverA.':alpha']->id);
     expect(DB::table('sites')->where('id', $alpha2)->value('isolated_user_id'))->toBe($iuserByKey[$serverA.':alpha']->id);
     expect(DB::table('sites')->where('id', $vitoOnB)->value('isolated_user_id'))->toBe($iuserByKey[$serverB.':vito']->id);
     expect(DB::table('sites')->where('id', $betaOnC)->value('isolated_user_id'))->toBe($iuserByKey[$serverC.':beta']->id);
 
-    // ssh_key + installed_tooling left NULL for backfilled rows.
     expect($iuserByKey[$serverA.':alpha']->ssh_key)->toBeNull();
     expect($iuserByKey[$serverA.':alpha']->installed_tooling)->toBeNull();
 });

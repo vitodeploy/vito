@@ -56,18 +56,6 @@ import EnvironmentSheet from '@/pages/applications/components/environment-sheet'
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
-/**
- * Registry of all app-level dialogs that can be opened via `useDialog()`.
- *
- * Authorization contract: every registered consumer is responsible for
- * ensuring its props come from server-authorised sources (Inertia page
- * props, API resources, etc.), not from URL parameters or other
- * user-controlled input. The registry pattern itself carries no authz.
- *
- * To register a new dialog: add one entry here, mapping a typed key to the
- * component. Consumers immediately gain `dialog.<key>.open(props)` with
- * full IntelliSense for the prop shape.
- */
 export const dialogs = {
   logViewer: LogViewerDialog,
   confirm: ConfirmationDialog,
@@ -128,7 +116,6 @@ export const dialogs = {
 
 export type DialogRegistry = typeof dialogs;
 
-/** Dialogs whose owning page synchronizes their lifecycle with navigation. */
 export const routeDialogs: ReadonlyArray<keyof DialogRegistry> = ['environmentSheet'];
 
 export type ConsumerProps<C> = C extends ComponentType<infer P> ? Omit<P, keyof DialogControlProps> : never;

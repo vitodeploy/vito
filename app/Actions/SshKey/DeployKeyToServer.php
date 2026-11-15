@@ -18,7 +18,6 @@ class DeployKeyToServer
      */
     public function deploy(Server $server, SshKey $sshKey, array $input = []): void
     {
-        // Set default user for backward compatibility
         if (! isset($input['user'])) {
             $input['user'] = $server->getSshUser();
         }

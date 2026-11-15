@@ -81,10 +81,8 @@ test('scoped token cannot access servers in unscoped project', function () {
         'role' => UserRole::ADMIN,
     ]);
 
-    // Token scoped to project2 only
     $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$project2->id]);
 
-    // Try accessing servers in the default project (not scoped)
     $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
         ->json('GET', route('api.projects.servers', [
             'project' => $this->user->current_project_id,

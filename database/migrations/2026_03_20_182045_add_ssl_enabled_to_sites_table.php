@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('sites', function (Blueprint $table) {
@@ -18,7 +15,6 @@ return new class extends Migration
             $table->boolean('vhost_generation_enabled')->default(true)->after('vhost_template');
         });
 
-        // Backfill ssl_enabled for sites that already have an active SSL certificate
         DB::table('sites')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
@@ -30,7 +26,6 @@ return new class extends Migration
             })
             ->update(['ssl_enabled' => true]);
 
-        // Caddy manages TLS automatically, so enable ssl_enabled and force_ssl
         DB::table('sites')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
@@ -41,14 +36,9 @@ return new class extends Migration
             })
             ->update(['ssl_enabled' => true, 'force_ssl' => true]);
 
-        // Disable vhost generation for existing sites to support legacy sites
-        // that may have manually edited vhosts and need updating before enabling
         DB::table('sites')->update(['vhost_generation_enabled' => false]);
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('sites', function (Blueprint $table) {

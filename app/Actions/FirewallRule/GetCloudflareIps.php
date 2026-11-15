@@ -10,9 +10,6 @@ use Throwable;
 
 class GetCloudflareIps
 {
-    /**
-     * Cloudflare's published ranges, used when the live list can't be fetched.
-     */
     private const array FALLBACK = [
         '173.245.48.0/20',
         '103.21.244.0/22',

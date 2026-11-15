@@ -22,7 +22,7 @@ class ApplyRulesJob implements ShouldQueue
     use UniqueQueue;
 
     /**
-     * @param  array<int, int>  $ruleIds  rules whose pending status is settled after the apply; ids are carried instead of models so the job survives a rule being deleted while queued
+     * @param  array<int, int>  $ruleIds
      */
     public function __construct(protected Server $server, protected array $ruleIds) {}
 
