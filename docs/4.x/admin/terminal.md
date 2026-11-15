@@ -16,11 +16,16 @@ php artisan logs:clear
 
 ## Create User
 
-Create a new user for your Vito instance. The role defaults to `admin`.
+Create a new user for your Vito instance. The role defaults to `admin`. The command asks for the password
+with a hidden prompt. For automation, pipe it in with `--password-stdin` so it never shows up in the process list.
 
 ```bash
-php artisan user:create [name] [email] [password] [--role=admin]
+php artisan user:create [name] [email] [--role=admin]
+printf '%s' "$PASSWORD" | php artisan user:create [name] [email] --password-stdin
 ```
+
+Passing the password as a third argument still works but is deprecated, because other users on the machine can
+read process arguments.
 
 ## Delete older metrics
 

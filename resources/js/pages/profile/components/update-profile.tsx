@@ -19,10 +19,14 @@ export default function UpdateProfile() {
   const form = useForm<{
     name: string;
     email: string;
+    current_password: string;
   }>({
     name: page.props.auth.user.name,
     email: page.props.auth.user.email,
+    current_password: '',
   });
+
+  const emailChanged = form.data.email !== page.props.auth.user.email;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -30,6 +34,8 @@ export default function UpdateProfile() {
     form.put('/user/profile-information', {
       preserveScroll: true,
       errorBag: 'updateProfileInformation',
+      onSuccess: () => form.reset('current_password'),
+      onError: (errors) => errors.current_password && form.reset('current_password'),
     });
   };
   return (
@@ -64,6 +70,20 @@ export default function UpdateProfile() {
               />
               <InputError message={form.errors.email} />
             </div>
+            {emailChanged && (
+              <div className="grid gap-2">
+                <Label htmlFor="profile_current_password">Current password</Label>
+                <Input
+                  id="profile_current_password"
+                  type="password"
+                  value={form.data.current_password}
+                  onChange={(e) => form.setData('current_password', e.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Confirm your password to change the email"
+                />
+                <InputError message={form.errors.current_password} />
+              </div>
+            )}
             {page.props.must_verify_email && page.props.auth.user.email_verified_at === null && (
               <div>
                 <p className="text-muted-foreground -mt-4 text-sm">

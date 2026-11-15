@@ -550,3 +550,15 @@ function vitoPestFeatureGithubAppTestGeneratePrivateKey(): string
 
     return $pem;
 }
+
+test('remove github app is rejected in demo mode', function () {
+    config(['app.demo' => true]);
+    GithubApp::factory()->create();
+
+    $this->actingAs($this->admin)
+        ->from(route('github-app'))
+        ->delete(route('github-app.destroy'))
+        ->assertSessionHasErrors('github_app');
+
+    $this->assertDatabaseCount('github_app', 1);
+});

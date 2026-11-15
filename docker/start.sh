@@ -65,7 +65,7 @@ php /var/www/html/artisan migrate --force
 php /var/www/html/artisan optimize:clear
 php /var/www/html/artisan optimize
 
-php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
+printf '%s' "$PASSWORD" | php /var/www/html/artisan user:create "$NAME" "$EMAIL" --password-stdin
 
 cron
 

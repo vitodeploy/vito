@@ -23,9 +23,12 @@ MAIL_HOST={YOUR-SMTP-HOST}
 MAIL_PORT={YOUR-SMTP-PORT}
 MAIL_USERNAME={YOUR-SMTP-USERNAME}
 MAIL_PASSWORD={YOUR-SMTP-PASSWORD}
-MAIL_ENCRYPTION=null
+MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS={YOUR-SMTP-MAIL-ADDRESS}
 ```
+
+`MAIL_ENCRYPTION=tls` requires STARTTLS and `MAIL_ENCRYPTION=ssl` uses implicit TLS (usually port 465). With either one,
+Vito refuses to send if the encrypted connection can't be set up. Set it to `null` only for a trusted local relay.
 
 And then run the following commands inside the root directory of the project to apply the changes
 

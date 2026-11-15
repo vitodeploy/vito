@@ -4,24 +4,18 @@ import { FormEvent, ReactNode, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2Icon, LoaderCircleIcon, XCircleIcon } from 'lucide-react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import InputError from '@/components/ui/input-error';
 import axios from 'axios';
+import { toast } from 'sonner';
+import { useDialog } from '@/hooks/use-dialog';
+import { useConfirmPassword } from '@/hooks/use-confirm-password';
 
-function Enable({ show = true }: { show?: boolean }): ReactNode {
+function Enable({ show = true, onEnabled }: { show?: boolean; onEnabled: () => void }): ReactNode {
   const page = usePage<
     SharedData & {
       two_factor_must_confirm: boolean;
@@ -34,26 +28,35 @@ function Enable({ show = true }: { show?: boolean }): ReactNode {
   const [open, setOpen] = useState(false);
   const [qrCode, setQrCode] = useState<string>('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const confirmPassword = useConfirmPassword();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    enableForm.post('/user/two-factor-authentication', {
-      onSuccess: () => {
-        axios.get('/user/two-factor-qr-code').then((response) => {
-          setQrCode(response.data.svg);
-          setQrCodeUrl(response.data.url);
-        });
-        setOpen(true);
-      },
-      preserveScroll: true,
-      preserveState: true,
-    });
+    confirmPassword(() =>
+      enableForm.post('/user/two-factor-authentication', {
+        onSuccess: () => {
+          axios
+            .get('/user/two-factor-qr-code')
+            .then((response) => {
+              setQrCode(response.data.svg);
+              setQrCodeUrl(response.data.url);
+            })
+            .catch(() => toast.error('Could not load the QR code.'));
+          setOpen(true);
+        },
+        preserveScroll: true,
+        preserveState: true,
+      }),
+    );
   };
 
   const confirm = (e: FormEvent) => {
     e.preventDefault();
     confirmForm.post('/user/confirmed-two-factor-authentication', {
-      onSuccess: () => setOpen(false),
+      onSuccess: () => {
+        setOpen(false);
+        onEnabled();
+      },
       preserveScroll: true,
       errorBag: 'confirmTwoFactorAuthentication',
     });
@@ -119,87 +122,51 @@ function Enable({ show = true }: { show?: boolean }): ReactNode {
   );
 }
 
-function Disable(): ReactNode {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.delete('/user/two-factor-authentication', {
-      preserveScroll: true,
-      onSuccess: () => setOpen(false),
-    });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive">Disable Two Factor</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Disable two factor</DialogTitle>
-          <DialogDescription>Disable two factor</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">Are you sure you want to enable two factor authentication?</p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button onClick={submit} variant="destructive" disabled={form.processing}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Disable
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function Regenerate(): ReactNode {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.post('/user/two-factor-recovery-codes', {
-      preserveScroll: true,
-      onSuccess: () => setOpen(false),
-    });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Regenerate recovery codes</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Regenerate recovery codes</DialogTitle>
-          <DialogDescription>Regenerate recovery codes</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">Are you sure you want to regenerate the recovery codes?</p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button onClick={submit} disabled={form.processing}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Regenerate
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export default function TwoFactor() {
   const page = usePage<
     SharedData & {
       two_factor_enabled: boolean;
-      two_factor_recovery_codes: string[];
       two_factor_confirmed_at: string;
       two_factor_must_confirm: boolean;
     }
   >();
+  const dialog = useDialog();
+  const confirmPassword = useConfirmPassword();
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+
+  const loadRecoveryCodes = () => {
+    axios
+      .get<string[]>('/user/two-factor-recovery-codes')
+      .then((response) => setRecoveryCodes(response.data))
+      .catch(() => toast.error('Could not load the recovery codes.'));
+  };
+
+  const showRecoveryCodes = () => confirmPassword(loadRecoveryCodes);
+
+  const regenerate = () =>
+    confirmPassword(() =>
+      dialog.confirm.open({
+        title: 'Regenerate recovery codes',
+        description: 'Are you sure you want to regenerate the recovery codes? The current codes will stop working.',
+        confirmLabel: 'Regenerate',
+        method: 'post',
+        url: '/user/two-factor-recovery-codes',
+        onSuccess: loadRecoveryCodes,
+      }),
+    );
+
+  const disable = () =>
+    confirmPassword(() =>
+      dialog.confirm.open({
+        title: 'Disable two factor',
+        description: 'Are you sure you want to disable two factor authentication?',
+        variant: 'destructive',
+        confirmLabel: 'Disable',
+        method: 'delete',
+        url: '/user/two-factor-authentication',
+        onSuccess: () => setRecoveryCodes(null),
+      }),
+    );
 
   const isEnabled = (): boolean => {
     if (page.props.two_factor_must_confirm) {
@@ -226,11 +193,11 @@ export default function TwoFactor() {
                 </div>
               </AlertDescription>
             </Alert>
-            {page.props.two_factor_recovery_codes.length > 0 && (
+            {recoveryCodes !== null && recoveryCodes.length > 0 && (
               <div className="grid gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="recovery-codes">Recovery Codes</Label>
-                  <Textarea id="recovery-codes" value={page.props.two_factor_recovery_codes?.join('\n') || ''} disabled rows={5} />
+                  <Textarea id="recovery-codes" value={recoveryCodes.join('\n')} disabled rows={5} />
                 </div>
               </div>
             )}
@@ -247,11 +214,18 @@ export default function TwoFactor() {
         )}
       </CardContent>
       <CardFooter className="gap-2">
-        <Enable show={!isEnabled()} />
+        <Enable show={!isEnabled()} onEnabled={loadRecoveryCodes} />
         {isEnabled() && (
           <>
-            <Regenerate />
-            <Disable />
+            {recoveryCodes === null && (
+              <Button variant="outline" onClick={showRecoveryCodes}>
+                Show recovery codes
+              </Button>
+            )}
+            <Button onClick={regenerate}>Regenerate recovery codes</Button>
+            <Button variant="destructive" onClick={disable}>
+              Disable Two Factor
+            </Button>
           </>
         )}
       </CardFooter>

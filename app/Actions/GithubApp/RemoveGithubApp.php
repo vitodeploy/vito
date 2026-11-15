@@ -12,6 +12,12 @@ class RemoveGithubApp
 {
     public function remove(): void
     {
+        if (config('app.demo')) {
+            throw ValidationException::withMessages([
+                'github_app' => __('Cannot modify on Demo!'),
+            ]);
+        }
+
         $hasSites = SourceControl::query()
             ->withTrashed()
             ->where('provider', SourceControl::PROVIDER_GITHUB_APP)

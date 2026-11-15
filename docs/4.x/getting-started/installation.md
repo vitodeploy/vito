@@ -225,7 +225,7 @@ Run the migrations
 Create a new user
 
 ```sh
-./vendor/bin/sail artisan user:create {name} {email} {password}
+./vendor/bin/sail artisan user:create {name} {email}
 ```
 
 Vito by default will run on localhost:8000. You can change the port on your `.env` file.
