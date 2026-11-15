@@ -32,6 +32,7 @@ let reconnectAttempt = 0;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let generation = 0;
 let connectedUserId: number | null = null;
+let connecting = false;
 
 type SocketStore = {
   status: SocketStatus;
@@ -83,18 +84,20 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       get().disconnect();
     }
 
-    if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+    if (connecting || (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN))) {
       return;
     }
 
-    const connectGeneration = ++generation;
+    const connectGeneration = generation;
     connectedUserId = userId;
+    connecting = true;
     set({ status: 'connecting' });
 
     const tokenData = await requestEventsToken(csrfToken);
     if (connectGeneration !== generation) {
       return;
     }
+    connecting = false;
     if (!tokenData) {
       scheduleReconnect(csrfToken, userId);
       return;
@@ -149,6 +152,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   disconnect: () => {
     generation++;
     connectedUserId = null;
+    connecting = false;
     reconnectAttempt = 0;
     if (reconnectTimer) {
       clearTimeout(reconnectTimer);
@@ -161,7 +165,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       ws.close();
       ws = null;
     }
-    set({ status: 'disconnected' });
+    set({ status: 'disconnected', currentProjectId: null });
   },
 
   reconnect: (csrfToken: string, userId: number) => {

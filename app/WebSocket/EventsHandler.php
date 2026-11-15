@@ -10,6 +10,8 @@ use Psr\Http\Message\RequestInterface;
 
 class EventsHandler implements WebSocketHandler
 {
+    use RevokesConnections;
+
     protected const MAX_CONNECTIONS_PER_USER = 10;
 
     protected const SUBSCRIBE_RATE_LIMIT = 20;
@@ -320,14 +322,6 @@ class EventsHandler implements WebSocketHandler
             ->pluck('id')
             ->map(fn (mixed $id): int => (int) $id)
             ->all();
-    }
-
-    protected function revoke(string $connId): void
-    {
-        $connection = $this->connections[$connId]['connection'];
-        $connection->send(['type' => 'error', 'message' => 'Access revoked']);
-        $this->onClose($connId);
-        $connection->close();
     }
 
     protected function userConnectionCount(int $userId): int

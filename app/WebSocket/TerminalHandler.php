@@ -12,7 +12,11 @@ use React\EventLoop\LoopInterface;
 
 class TerminalHandler implements WebSocketHandler
 {
+    use RevokesConnections;
+
     protected const MAX_CONNECTIONS_PER_USER = 5;
+
+    protected const OUTPUT_RECHECK_INTERVAL = 1;
 
     /**
      * @var array<string, array{
@@ -23,6 +27,7 @@ class TerminalHandler implements WebSocketHandler
      *     ssh_user: string,
      *     initial_cols: int,
      *     initial_rows: int,
+     *     checked_at: float,
      * }>
      */
     protected array $connections = [];
@@ -103,6 +108,7 @@ class TerminalHandler implements WebSocketHandler
             'ssh_user' => $tokenData['ssh_user'],
             'initial_cols' => max(1, (int) ($queryParams['cols'] ?? 80)),
             'initial_rows' => max(1, (int) ($queryParams['rows'] ?? 24)),
+            'checked_at' => microtime(true),
         ];
 
         $this->connectSsh($connId, $server);
@@ -121,9 +127,7 @@ class TerminalHandler implements WebSocketHandler
                 return;
             }
 
-            if (! $this->isAuthorized($entry['user_id'], $entry['server_id'])) {
-                $this->revoke($connId);
-
+            if (! $this->recheck($connId)) {
                 return;
             }
 
@@ -156,9 +160,7 @@ class TerminalHandler implements WebSocketHandler
             return;
         }
 
-        if (! $this->isAuthorized($entry['user_id'], $entry['server_id'])) {
-            $this->revoke($connId);
-
+        if (! $this->recheck($connId)) {
             return;
         }
 
@@ -183,6 +185,10 @@ class TerminalHandler implements WebSocketHandler
                 sshUser: $entry['ssh_user'],
                 loop: $this->loop,
                 onOutput: function (string $data) use ($connId): void {
+                    if (! $this->recheck($connId, self::OUTPUT_RECHECK_INTERVAL)) {
+                        return;
+                    }
+
                     $this->connections[$connId]['connection']->send([
                         'type' => 'output',
                         'data' => $data,
@@ -220,23 +226,32 @@ class TerminalHandler implements WebSocketHandler
     }
 
     /**
-     * Checked again before every message and on every ping,
-     * so a removed member or a deleted user loses an open terminal.
+     * Access is checked again before every message, on every ping and, at most
+     * once per interval, before output, so a removed member or a deleted user
+     * loses an open terminal. Revokes the connection when access is gone.
      */
-    protected function isAuthorized(int $userId, int $serverId): bool
+    protected function recheck(string $connId, float $interval = 0): bool
     {
-        $server = Server::find($serverId);
-        $user = User::find($userId);
+        $entry = $this->connections[$connId] ?? null;
+        if (! $entry) {
+            return false;
+        }
 
-        return $server && $user && Gate::forUser($user)->allows('update', $server);
-    }
+        if (microtime(true) - $entry['checked_at'] < $interval) {
+            return true;
+        }
 
-    protected function revoke(string $connId): void
-    {
-        $connection = $this->connections[$connId]['connection'];
-        $connection->send(['type' => 'error', 'message' => 'Access revoked']);
-        $this->onClose($connId);
-        $connection->close();
+        $server = Server::find($entry['server_id']);
+        $user = User::find($entry['user_id']);
+        if (! $server || ! $user || ! Gate::forUser($user)->allows('update', $server)) {
+            $this->revoke($connId);
+
+            return false;
+        }
+
+        $this->connections[$connId]['checked_at'] = microtime(true);
+
+        return true;
     }
 
     protected function userConnectionCount(int $userId): int

@@ -88,3 +88,16 @@ test('execute job refuses to run once the script owner lost write access to the 
     'removed from the project' => [null],
     'downgraded to user' => [UserRole::USER],
 ]);
+
+test('execute job marks the execution failed when its server is gone', function () {
+    Event::fake([SocketEvent::class]);
+    $script = Script::factory()->create(['user_id' => $this->user->id]);
+    $job = vitoPestFeatureJobsScriptExecuteJobTestJob($script, $this->server);
+    ScriptExecution::query()->where('script_id', $script->id)->update(['server_id' => null]);
+
+    dispatch($job);
+
+    $this->assertDatabaseHas('script_executions', ['script_id' => $script->id, 'status' => ScriptExecutionStatus::FAILED]);
+    Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event): bool => $event->data->projectId === 0
+        && $event->data->userId === $this->user->id);
+});

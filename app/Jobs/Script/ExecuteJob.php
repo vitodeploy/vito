@@ -47,7 +47,9 @@ class ExecuteJob implements ShouldQueue
         $this->execution->status = ScriptExecutionStatus::FAILED;
         $this->execution->save();
         $this->broadcastExecutionUpdate();
-        ServerLog::log($this->execution->server, 'execute-script-failed', $e->getMessage());
+        if ($this->execution->server) {
+            ServerLog::log($this->execution->server, 'execute-script-failed', $e->getMessage());
+        }
     }
 
     private function broadcastExecutionUpdate(): void
@@ -55,7 +57,7 @@ class ExecuteJob implements ShouldQueue
         $this->execution->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $this->execution->server->project_id,
+            projectId: $this->execution->server->project_id ?? 0,
             type: 'script-execution.updated',
             data: new ScriptExecutionResource($this->execution),
             userId: $this->execution->script->user_id,

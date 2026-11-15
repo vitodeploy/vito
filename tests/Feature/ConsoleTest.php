@@ -493,6 +493,7 @@ function vitoPestFeatureConsoleTestOpenTerminal(Server $server, User $user): arr
             'ssh_user' => $server->getSshUser(),
             'initial_cols' => 80,
             'initial_rows' => 24,
+            'checked_at' => 0.0,
         ],
     ]);
 
@@ -528,4 +529,25 @@ test('terminal ping closes an idle session once the user is removed from the pro
     expect(end($connection->sent))->toBe(['type' => 'error', 'message' => 'Access revoked'])
         ->and($connection->closed)->toBeTrue()
         ->and($handler->getConnectionCount())->toBe(0);
+});
+
+test('terminal output is rechecked at most once per interval and cut off once access is gone', function () {
+    [$handler, $connection, $session] = vitoPestFeatureConsoleTestOpenTerminal($this->server, $this->user);
+    $session->shouldReceive('close')->once();
+    $recheck = new ReflectionMethod($handler, 'recheck');
+    $connections = new ReflectionProperty($handler, 'connections');
+
+    expect($recheck->invoke($handler, 'conn', 1))->toBeTrue();
+
+    $this->server->project->users()->where('user_id', $this->user->id)->delete();
+    expect($recheck->invoke($handler, 'conn', 1))->toBeTrue()
+        ->and($connection->sent)->toBe([]);
+
+    $state = $connections->getValue($handler);
+    $state['conn']['checked_at'] = microtime(true) - 2;
+    $connections->setValue($handler, $state);
+
+    expect($recheck->invoke($handler, 'conn', 1))->toBeFalse()
+        ->and($connection->sent)->toBe([['type' => 'error', 'message' => 'Access revoked']])
+        ->and($connection->closed)->toBeTrue();
 });
