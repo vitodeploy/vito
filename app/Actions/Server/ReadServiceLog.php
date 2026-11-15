@@ -60,7 +60,7 @@ class ReadServiceLog
         );
 
         return [
-            'content' => $content,
+            'content' => mb_scrub($content, 'UTF-8'),
             'display_target' => $log->displayTarget(),
             'source' => $log->source,
         ];

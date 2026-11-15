@@ -1615,6 +1615,26 @@ test('classic mode saves keep secret toggles made in variables mode', function (
     ])->assertSessionDoesntHaveErrors();
 
     expect($this->site->fresh()->env_variables)->toEqualCanonicalizing(['DB_PASSWORD', 'UPSTREAM']);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'env' => "export API_TOKEN=value\nAPP_NAME=TestApp",
+        'secret_keys' => ['export API_TOKEN'],
+    ])->assertSessionDoesntHaveErrors();
+    expect($this->site->fresh()->env_variables)->toContain('export API_TOKEN');
+});
+
+test('env saves are refused when the written file would exceed the read limit', function () {
+    SSH::fake('APP_NAME=TestApp');
+    $this->actingAs($this->user);
+
+    $this->put(route('application.update-env', ['server' => $this->server, 'site' => $this->site]), [
+        'variables' => [
+            ['key' => 'ONE', 'value' => str_repeat('a', 600000), 'is_secret' => false],
+            ['key' => 'TWO', 'value' => str_repeat('b', 600000), 'is_secret' => false],
+        ],
+    ])->assertSessionHasErrors('env');
+
+    expect(SSH::getUploadedContent())->toBe('');
 });
 
 test('site git hooks deploy only for pushes to the site branch', function (string $provider, array $payload, bool $deploys) {

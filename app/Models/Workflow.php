@@ -110,13 +110,14 @@ class Workflow extends Model
 
     /**
      * Action inputs can hold credentials (database or admin passwords, HTTP
-     * headers), so their values are blanked unless the user may reveal them.
+     * headers), so their values are blanked unless the caller may reveal them
+     * (`revealInputs`, checked once per response by the caller).
      *
      * @return array<array-key, mixed>
      */
-    public function visibleInputs(mixed $inputs, ?User $user): array
+    public static function visibleInputs(mixed $inputs, bool $reveal): array
     {
-        if ($user?->can('revealInputs', $this) === true) {
+        if ($reveal) {
             return is_array($inputs) ? $inputs : [];
         }
 

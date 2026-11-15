@@ -68,7 +68,9 @@ it('substitutes variables in one pass so inserted values stay literal', function
     expect(substitute_variables('${A}-${B}', ['A' => '${B}${B}', 'B' => 'x']))->toBe('${B}${B}-x')
         ->and(substitute_variables('${A}', ['A' => '', 'B' => '0']))->toBe('${A}')
         ->and(fn () => substitute_variables(str_repeat('${A}', 5000), ['A' => str_repeat('a', 255)]))
-        ->toThrow(ValidationException::class, 'too large');
+        ->toThrow(ValidationException::class, 'too large')
+        ->and(strlen(substitute_variables(str_repeat('${A}', 5000), ['A' => str_repeat('a', 206)])))->toBe(1030000)
+        ->and(substitute_variables('${LONG_NAME}', ['LONG_NAME' => 'x']))->toBe('x');
 });
 
 it('caps webserver config indentation so deep nesting stays linear', function (): void {

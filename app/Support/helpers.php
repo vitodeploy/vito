@@ -116,8 +116,9 @@ function tail(string $filepath, int $lines = 1, int $maxBytes = 1048576): string
         return '';
     }
 
-    fseek($f, -min(max(1, $maxBytes), (int) fstat($f)['size']), SEEK_END);
-    $content = (string) stream_get_contents($f);
+    $maxBytes = max(1, $maxBytes);
+    fseek($f, -min($maxBytes, (int) fstat($f)['size']), SEEK_END);
+    $content = (string) stream_get_contents($f, $maxBytes);
     fclose($f);
 
     return trim(implode("\n", array_slice(explode("\n", rtrim($content, "\n")), -max(1, $lines))));
@@ -140,7 +141,7 @@ function substitute_variables(string $content, array $variables, int $limit = 10
         if (is_string($value) && $value !== '' && $value !== '0') {
             $placeholder = '${'.$variable.'}';
             $replacements[$placeholder] = $value;
-            $length += substr_count($content, $placeholder) * strlen($value);
+            $length += substr_count($content, $placeholder) * max(0, strlen($value) - strlen($placeholder));
         }
     }
 

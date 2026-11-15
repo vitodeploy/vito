@@ -35,7 +35,7 @@ class ImportEnvironmentVariables
      */
     public function previewInput(array $input): array
     {
-        Validator::make($input, ['content' => ['required', 'string', 'max:'.self::MAX_CONTENT]])->validate();
+        Validator::make($input, ['content' => ['required', 'string']])->validate();
 
         return $this->preview($input['content']);
     }
@@ -45,7 +45,7 @@ class ImportEnvironmentVariables
      */
     public function import(Environment $environment, array $input): void
     {
-        Validator::make($input, ['content' => ['required', 'string', 'max:'.self::MAX_CONTENT], 'secret_keys' => ['present', 'array']])->validate();
+        Validator::make($input, ['content' => ['required', 'string'], 'secret_keys' => ['present', 'array']])->validate();
         $variables = $this->parse($input['content']);
         Validator::make($input, ['secret_keys.*' => ['required', 'string', 'distinct', Rule::in(array_keys($variables))]])->validate();
 
@@ -75,6 +75,10 @@ class ImportEnvironmentVariables
      */
     private function parse(string $content): array
     {
+        if (strlen($content) > self::MAX_CONTENT) {
+            throw ValidationException::withMessages(['content' => 'The env file can be at most '.self::MAX_CONTENT.' bytes.']);
+        }
+
         $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
         foreach ($lines as $index => $line) {
             if (str_contains($line, "\0")) {

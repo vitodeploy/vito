@@ -308,6 +308,7 @@ test('workflow saves reject nodes and edges with non string ids', function (arra
 })->with([
     'array node id' => [[['id' => ['x'], 'data' => ['action' => ['starting' => true]]]], []],
     'array edge target' => [[vitoPestFeatureWorkflowTestNode('a', true)], [['source' => 'a', 'target' => ['a']]]],
+    'duplicate node id' => [[vitoPestFeatureWorkflowTestNode('a', true), vitoPestFeatureWorkflowTestNode('a')], []],
 ]);
 
 test('queued workflow runs keep action inputs out of the plain job payload', function () {

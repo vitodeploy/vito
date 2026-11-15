@@ -17,22 +17,22 @@ class WorkflowResource extends JsonResource
     {
         /** @var WorkflowActionDTO|null $startingNode */
         $startingNode = $this->getStartingNode();
-        $user = $request->user();
+        $reveal = $request->user()?->can('revealInputs', $this->resource) === true;
 
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
             'user_id' => $this->user_id,
             'name' => $this->name,
-            'nodes' => array_map(function (mixed $node) use ($user): mixed {
+            'nodes' => array_map(function (mixed $node) use ($reveal): mixed {
                 if (is_array($node) && data_get($node, 'data.action') !== null) {
-                    data_set($node, 'data.action.inputs', $this->visibleInputs(data_get($node, 'data.action.inputs'), $user));
+                    data_set($node, 'data.action.inputs', Workflow::visibleInputs(data_get($node, 'data.action.inputs'), $reveal));
                 }
 
                 return $node;
             }, $this->payload['nodes'] ?? []),
             'edges' => $this->payload['edges'] ?? [],
-            'run_inputs' => $this->visibleInputs($startingNode->inputs ?? [], $user),
+            'run_inputs' => Workflow::visibleInputs($startingNode->inputs ?? [], $reveal),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

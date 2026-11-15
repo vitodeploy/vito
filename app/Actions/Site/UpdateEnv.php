@@ -26,7 +26,7 @@ class UpdateEnv
             'variables.*.value' => ['nullable', 'string', 'max:'.OS::READ_LIMIT],
             'variables.*.is_secret' => ['nullable', 'boolean'],
             'secret_keys' => ['nullable', 'array', 'max:1000'],
-            'secret_keys.*' => ['string', 'max:255', EnvParser::KEY_RULE],
+            'secret_keys.*' => ['string', 'max:255'],
             'path' => ['nullable', 'string'],
         ])->validate();
 
@@ -53,11 +53,14 @@ class UpdateEnv
 
         $variables = $this->resolveVariables($site, $input, $path, $hasVariables);
 
-        $site->server->os()->write(
-            $path,
-            $hasVariables ? EnvParser::stringify($variables) : trim((string) ($input['env'] ?? null)),
-            $site->user,
-        );
+        $content = $hasVariables ? EnvParser::stringify($variables) : trim((string) ($input['env'] ?? null));
+        if (strlen($content) > OS::READ_LIMIT) {
+            throw ValidationException::withMessages([
+                'env' => __('The .env file can be at most :bytes bytes.', ['bytes' => OS::READ_LIMIT]),
+            ]);
+        }
+
+        $site->server->os()->write($path, $content, $site->user);
 
         $site->env_variables = $this->secretKeys($variables);
         $site->jsonUpdate('type_data', 'env_path', $path, save: false);

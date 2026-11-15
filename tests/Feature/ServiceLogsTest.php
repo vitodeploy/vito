@@ -182,6 +182,16 @@ test('clear truncates file source', function () {
     SSH::assertExecutedContains('/var/log/nginx/error.log');
 });
 
+test('log content cut inside a multibyte character is returned as valid utf-8', function () {
+    $this->actingAs($this->user);
+    SSH::fake("\xA9 partial first line\nsecond line");
+
+    $response = $this->postJson(route('logs.services.read', $this->server), ['key' => 'php:8.2:user:vito'])->assertSuccessful();
+
+    expect(mb_check_encoding($response->json('content'), 'UTF-8'))->toBeTrue()
+        ->and($response->json('content'))->toEndWith("partial first line\nsecond line");
+});
+
 test('user owned log files are read and cleared as their owner', function () {
     $this->actingAs($this->user);
     SSH::fake('php-error-output');

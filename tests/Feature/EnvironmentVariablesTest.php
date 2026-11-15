@@ -231,6 +231,7 @@ test('import parses a long multiline value in one pass and bounds the content si
         ->and($this->environment->variables()->where('key', 'AFTER')->sole()->value)->toBe('ok');
 
     $this->postJson($this->url.'/preview', ['content' => 'A='.str_repeat('a', 262144)])->assertUnprocessable()->assertJsonValidationErrors('content');
+    $this->postJson($this->url.'/preview', ['content' => 'A='.str_repeat('é', 140000)])->assertUnprocessable()->assertJsonValidationErrors('content');
 });
 
 test('import validates secret selection without reflecting invalid selections', function () {

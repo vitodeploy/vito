@@ -13,7 +13,7 @@ class UpdateWorkflow
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'nodes' => ['nullable', 'array', 'max:500'],
-            'nodes.*.id' => ['required', 'string', 'max:255'],
+            'nodes.*.id' => ['required', 'string', 'max:255', 'distinct'],
             'edges' => ['nullable', 'array', 'max:2000'],
             'edges.*.source' => ['required', 'string', 'max:255'],
             'edges.*.target' => ['required', 'string', 'max:255'],
