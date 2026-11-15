@@ -6,7 +6,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import axios from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 export type ConfirmPasswordDialogProps = {
   open: boolean;
@@ -18,6 +18,14 @@ export default function ConfirmPasswordDialog({ open, onOpenChange, onConfirmed 
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
   const [processing, setProcessing] = useState(false);
+  const active = useRef(true);
+
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -29,6 +37,9 @@ export default function ConfirmPasswordDialog({ open, onOpenChange, onConfirmed 
     axios
       .post('/user/confirm-password', { password })
       .then(() => {
+        if (!active.current) {
+          return;
+        }
         onOpenChange(false);
         onConfirmed();
       })

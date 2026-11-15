@@ -1,6 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import type { SharedData } from '@/types';
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2Icon, LoaderCircleIcon, XCircleIcon } from 'lucide-react';
@@ -133,12 +133,19 @@ export default function TwoFactor() {
   const dialog = useDialog();
   const confirmPassword = useConfirmPassword();
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const codesRequest = useRef(0);
+
+  const resetRecoveryCodes = () => {
+    codesRequest.current++;
+    setRecoveryCodes(null);
+  };
 
   const loadRecoveryCodes = () => {
+    const request = ++codesRequest.current;
     axios
       .get<string[]>('/user/two-factor-recovery-codes')
-      .then((response) => setRecoveryCodes(response.data))
-      .catch(() => toast.error('Could not load the recovery codes.'));
+      .then((response) => request === codesRequest.current && setRecoveryCodes(response.data))
+      .catch(() => request === codesRequest.current && toast.error('Could not load the recovery codes.'));
   };
 
   const showRecoveryCodes = () => confirmPassword(loadRecoveryCodes);
@@ -151,7 +158,10 @@ export default function TwoFactor() {
         confirmLabel: 'Regenerate',
         method: 'post',
         url: '/user/two-factor-recovery-codes',
-        onSuccess: loadRecoveryCodes,
+        onSuccess: () => {
+          resetRecoveryCodes();
+          loadRecoveryCodes();
+        },
       }),
     );
 
@@ -164,7 +174,7 @@ export default function TwoFactor() {
         confirmLabel: 'Disable',
         method: 'delete',
         url: '/user/two-factor-authentication',
-        onSuccess: () => setRecoveryCodes(null),
+        onSuccess: resetRecoveryCodes,
       }),
     );
 

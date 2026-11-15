@@ -108,16 +108,11 @@ class VitoSettingController extends Controller
         }
 
         $extractPath = $this->makeWorkspace();
+        $umask = umask(0077);
 
         try {
             $zip->extractTo($extractPath);
             $zip->close();
-
-            foreach (['database.sqlite', '.env', 'ssh-private.pem'] as $secret) {
-                if (File::exists($extractPath.'/'.$secret)) {
-                    chmod($extractPath.'/'.$secret, 0600);
-                }
-            }
 
             File::move($extractPath.'/database.sqlite', storage_path('database.sqlite'));
             if (File::exists($extractPath.'/.env')) {
@@ -134,6 +129,7 @@ class VitoSettingController extends Controller
 
             $this->restrictSecretPermissions();
         } finally {
+            umask($umask);
             File::deleteDirectory($extractPath);
         }
 

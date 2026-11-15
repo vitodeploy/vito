@@ -53,6 +53,6 @@ class CreateUserCommand extends Command
             return (string) $this->argument('password');
         }
 
-        return (string) $this->secret('Password');
+        return (string) $this->secret('Password', false);
     }
 }

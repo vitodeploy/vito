@@ -58,6 +58,28 @@ test('changing the email requires the current password', function () {
     expect($this->user->refresh()->email)->toBe($email);
 });
 
+test('a malformed current password is a validation error', function () {
+    $this->actingAs($this->user);
+
+    $this->put(route('user-profile-information.update'), [
+        'name' => 'Test',
+        'email' => 'test@example.com',
+        'current_password' => ['password'],
+    ])->assertSessionHasErrorsIn('updateProfileInformation', 'current_password');
+});
+
+test('a stale current password is ignored when the email is unchanged', function () {
+    $this->actingAs($this->user);
+
+    $this->put(route('user-profile-information.update'), [
+        'name' => 'Test',
+        'email' => $this->user->email,
+        'current_password' => 'wrong-password',
+    ])->assertSessionHasNoErrors();
+
+    expect($this->user->refresh()->name)->toBe('Test');
+});
+
 test('email can be changed with the current password', function () {
     $this->actingAs($this->user);
 

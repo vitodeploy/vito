@@ -23,8 +23,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 Rule::unique('users')->ignore($user->id),
             ],
             'current_password' => [
-                Rule::requiredIf(($input['email'] ?? null) !== $user->email),
-                'nullable',
+                Rule::excludeIf(($input['email'] ?? null) === $user->email),
+                'bail',
+                'required',
                 'string',
                 'current_password:web',
             ],
