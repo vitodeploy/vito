@@ -89,6 +89,9 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "overrides": {
-        "dompurify": "^3.4.5"
+        "@typescript-eslint/typescript-estree": {
+            "minimatch": "^11.0.1"
+        },
+        "dompurify": "^3.4.18"
     }
 }
