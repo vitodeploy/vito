@@ -15,11 +15,16 @@ use App\Models\Workflow;
 use App\Models\WorkflowRun;
 use App\Traits\UniqueQueue;
 use Exception;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-class RunJob implements ShouldQueue
+/**
+ * Encrypted because the execution tree carries the saved action inputs, which
+ * can hold credentials.
+ */
+class RunJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
     use UniqueQueue;

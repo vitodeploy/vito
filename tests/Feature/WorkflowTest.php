@@ -3,6 +3,7 @@
 use App\Enums\UserRole;
 use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
+use App\Jobs\Workflow\RunJob;
 use App\Models\NotificationChannel;
 use App\Models\Project;
 use App\Models\User;
@@ -308,3 +309,18 @@ test('workflow saves reject nodes and edges with non string ids', function (arra
     'array node id' => [[['id' => ['x'], 'data' => ['action' => ['starting' => true]]]], []],
     'array edge target' => [[vitoPestFeatureWorkflowTestNode('a', true)], [['source' => 'a', 'target' => ['a']]]],
 ]);
+
+test('queued workflow runs keep action inputs out of the plain job payload', function () {
+    $workflow = Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'payload' => ['nodes' => [vitoPestFeatureWorkflowTestNode('a', true, ['password' => 'db-secret-value'])], 'edges' => []],
+    ]);
+    $run = WorkflowRun::factory()->create(['workflow_id' => $workflow->id, 'user_id' => $this->user->id, 'status' => WorkflowRunStatus::RUNNING]);
+    $job = new RunJob($run, $this->user, $workflow, $workflow->getExecutionTree(), []);
+
+    $payload = (fn () => $this->createPayload($job, 'ssh'))->call(app('queue')->connection('redis'));
+
+    expect($payload)->not->toContain('db-secret-value')
+        ->and(decrypt(json_decode($payload, true)['data']['command']))->toContain('db-secret-value');
+});
