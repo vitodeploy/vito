@@ -21,7 +21,7 @@ class RunBackup
             : $backup->database?->name;
 
         $name = Str::of($backupName)->slug().'-'.now()->format('YmdHis');
-        if ($backup->prefix) {
+        if ($backup->prefix !== null && $backup->prefix !== '') {
             $name = $backup->prefix.'-'.$name;
         }
 

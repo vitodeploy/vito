@@ -158,14 +158,18 @@ class ManageBackup
     {
         return [
             'nullable',
-            'alpha_dash',
+            'alpha_dash:ascii',
             'max:50',
         ];
     }
 
+    /**
+     * Prefixes are lowercased so two backups can't map to the same file on
+     * case-insensitive storage such as Dropbox.
+     */
     private function normalizePrefix(mixed $prefix): ?string
     {
-        $prefix = is_string($prefix) ? trim($prefix) : '';
+        $prefix = is_string($prefix) || is_int($prefix) ? strtolower(trim((string) $prefix)) : '';
 
         return $prefix === '' ? null : $prefix;
     }

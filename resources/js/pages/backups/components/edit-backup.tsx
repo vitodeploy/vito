@@ -51,7 +51,7 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
                 onChange={(e) => form.setData('prefix', e.target.value)}
                 placeholder="site-a"
               />
-              <div className="text-muted-foreground mt-1 text-sm">Added to new backup file names. Existing files keep their names.</div>
+              <div className="text-muted-foreground text-sm">Added to new backup file names. Existing files keep their names.</div>
               <InputError message={form.errors.prefix} />
             </FormField>
 

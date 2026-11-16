@@ -140,7 +140,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
                 onChange={(e) => form.setData('prefix', e.target.value)}
                 placeholder="site-a"
               />
-              <div className="text-muted-foreground mt-1 text-sm">Added to new backup file names, e.g. site-a-wordpress-20260101000000.</div>
+              <div className="text-muted-foreground text-sm">Added to new backup file names, e.g. site-a-wordpress-20260101000000.</div>
               <InputError message={form.errors.prefix} />
             </FormField>
 

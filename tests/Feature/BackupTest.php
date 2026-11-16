@@ -1240,11 +1240,11 @@ test('create backup with prefix adds it to the backup file name', function () {
 
     /** @var Backup $backup */
     $backup = Backup::query()->where('database_id', $database->id)->firstOrFail();
-    expect($backup->prefix)->toBe('Site_A');
+    expect($backup->prefix)->toBe('site_a');
 
     /** @var BackupFile $file */
     $file = $backup->files()->firstOrFail();
-    expect($file->name)->toMatch('/^Site_A-wordpress-\d{14}$/')
+    expect($file->name)->toMatch('/^site_a-wordpress-\d{14}$/')
         ->and($file->path())->toBe('/wordpress/'.$file->name.'.sql.gz');
 });
 
@@ -1307,6 +1307,8 @@ test('backup prefix must be a safe file name segment', function (string $prefix)
     'slash' => 'site/a',
     'space' => 'site a',
     'dot' => 'site.a',
+    'non-ascii' => 'Straße',
+    'non-latin' => '日本',
     'too long' => str_repeat('a', 51),
 ]);
 
@@ -1371,7 +1373,7 @@ test('update backup rejects an invalid prefix', function () {
     expect($this->backup->refresh()->prefix)->toBeNull();
 });
 
-test('backup prefix accepts unicode letters and keeps them as typed', function () {
+test('backup prefix keeps zero and numeric values', function (mixed $prefix) {
     Bus::fake();
 
     $this->actingAs($this->user);
@@ -1385,17 +1387,22 @@ test('backup prefix accepts unicode letters and keeps them as typed', function (
         'user_id' => $this->user->id,
     ]);
 
-    $this->post(route('backups.store', ['server' => $this->server]), [
+    $this->postJson(route('backups.store', ['server' => $this->server]), [
         'type' => 'database',
         'database' => $database->id,
         'storage' => $storage->id,
         'interval' => '0 * * * *',
-        'keep' => '10',
-        'prefix' => 'Straße',
+        'keep' => 10,
+        'prefix' => $prefix,
     ])
         ->assertSessionDoesntHaveErrors();
 
     /** @var Backup $backup */
     $backup = Backup::query()->where('database_id', $database->id)->firstOrFail();
-    expect($backup->files()->firstOrFail()->name)->toMatch('/^Straße-wordpress-\d{14}$/u');
-});
+    expect($backup->prefix)->toBe((string) $prefix)
+        ->and($backup->files()->firstOrFail()->name)->toMatch('/^'.$prefix.'-wordpress-\d{14}$/');
+})->with([
+    'zero string' => '0',
+    'zero integer' => 0,
+    'integer' => 2026,
+]);
