@@ -4,8 +4,11 @@ namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
 use App\Facades\SFTP as SFTPFacade;
+use App\Facades\SSH;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
+use GuzzleHttp\Psr7\UriResolver;
 
 class SFTP extends AbstractStorageProvider
 {
@@ -89,6 +92,22 @@ class SFTP extends AbstractStorageProvider
             $credentials['username'],
             $credentials['password']
         );
+    }
+
+    public function download(BackupFile $backupFile): array
+    {
+        $credentials = $this->storageProvider->credentials;
+        $ssh = SSH::connectToSftp(
+            $credentials['host'],
+            (int) $credentials['port'],
+            $credentials['username'],
+            $credentials['password'],
+        );
+
+        $path = rawurldecode(UriResolver::removeDotSegments('/'.$backupFile->path()));
+        $path = str_starts_with($path, '/~/') ? ltrim(substr($path, 3), '/') : '/'.ltrim($path, '/');
+
+        return $this->sftpDownload($ssh, $path);
     }
 
     public function ssh(Server $server): Storage

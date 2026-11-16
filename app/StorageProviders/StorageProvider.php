@@ -3,8 +3,10 @@
 namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
+use Closure;
 
 interface StorageProvider
 {
@@ -49,6 +51,11 @@ interface StorageProvider
     public function connect(array $credentials): bool;
 
     public function forgetCachedState(): void;
+
+    /**
+     * @return array{size: int, stream: Closure(): void}
+     */
+    public function download(BackupFile $backupFile): array;
 
     public function ssh(Server $server): Storage;
 }

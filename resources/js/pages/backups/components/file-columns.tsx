@@ -17,6 +17,16 @@ function Restore({ backup, file }: { backup: Backup; file: BackupFile }) {
   return <DropdownMenuItem onSelect={() => dialog.backupRestore.open({ backup, file })}>Restore</DropdownMenuItem>;
 }
 
+function Download({ file }: { file: BackupFile }) {
+  return (
+    <DropdownMenuItem
+      onSelect={() => window.open(`/servers/${file.server_id}/backups/${file.backup_id}/files/${file.id}/download`, '_blank', 'noopener,noreferrer')}
+    >
+      Download
+    </DropdownMenuItem>
+  );
+}
+
 function Delete({ file }: { file: BackupFile }) {
   const dialog = useDialog();
 
@@ -131,6 +141,7 @@ export const columns: ColumnDef<BackupFile>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {['created', 'restored', 'restore_failed'].includes(row.original.status) && <Download file={row.original} />}
               <Restore backup={row.original.backup} file={row.original} />
               <Delete file={row.original} />
             </DropdownMenuContent>

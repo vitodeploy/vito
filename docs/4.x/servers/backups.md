@@ -66,6 +66,22 @@ You can restore a database backup to another database.
 Database backups created in **v3.x are stored as `.zip` and cannot be restored in v4.x**. v4 stores database backups as compressed `.sql.gz` archives and can only restore backups created in v4. After upgrading, take a fresh database backup so you have a restorable v4 copy. See [Breaking Changes](../prologue/breaking-changes#database-backup-format) for details. (File/directory backups are unaffected.)
 :::
 
+## Download Backup Files
+
+To keep an offline copy of a backup, open the backup's **Files** page and select **Download** from the actions menu of a completed backup file.
+
+Downloading is supported for all built-in storage providers: **Local**, **FTP**, **SFTP**, **Amazon S3 / S3-compatible**, and **Dropbox**. Database backups are downloaded as `.sql.gz` files, and file/directory backups as `.tar.gz` archives. Downloads are available for files with status `created`, `restored`, or `restore_failed`.
+
+Vito streams the existing archive to your browser over an authenticated request, without staging a copy on the Vito controller or loading the entire archive into memory. Local archives are read from the managed server over SFTP; other archives are read directly from the configured storage provider. The Vito controller must be able to reach that server or provider. No restore takes place, and the original backup is left unchanged. Only members authorized to view backup files can download them.
+
+Missing archives return a not-found error. Downloads include the archive's size so browsers can detect interrupted transfers. Changing a storage provider's path does not move existing archives; keep the path pointing at the archives you want to download.
+
+Local and SFTP downloads use a 60-second read timeout to stop stalled transfers. Set `BACKUP_DOWNLOAD_READ_TIMEOUT` in your Vito instance's `.env` file to adjust it. This timeout applies to each SFTP packet, not the total download duration; values below one second are treated as one second.
+
+:::warning
+Keep downloaded archives secure: database dumps and site file backups may contain personal data, credentials, and other sensitive information. Consider encrypting your off-server copies.
+:::
+
 ## File/Directory Backups
 
 Navigate to the `Backups` section in the server's menu and click on the `Create Backup` button. Select `File Backup` as backup type and then enter the path on your server that you want to backup and storage provider and how many backups you want vito to keep and then backup interval and start the backup.
