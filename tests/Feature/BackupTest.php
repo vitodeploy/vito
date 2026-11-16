@@ -1406,3 +1406,39 @@ test('backup prefix keeps zero and numeric values', function (mixed $prefix) {
     'zero integer' => 0,
     'integer' => 2026,
 ]);
+
+test('backup file name stays within the filesystem name limit', function (?string $prefix, BackupType $type) {
+    Bus::fake();
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => str_repeat('d', 64),
+    ]);
+
+    $backup = Backup::factory()->create([
+        'type' => $type,
+        'server_id' => $this->server->id,
+        'storage_id' => $storage->id,
+        'database_id' => $type === BackupType::DATABASE ? $database->id : null,
+        'path' => '/home/vito/'.str_repeat('a', 250),
+        'prefix' => $prefix,
+    ]);
+
+    $file = app(RunBackup::class)->run($backup);
+
+    expect(strlen(basename($file->tempPath())))->toBeLessThanOrEqual(255)
+        ->and($file->name)->toMatch('/-\d{14}$/')
+        ->and($file->name)->not->toContain('--');
+
+    if ($prefix !== null) {
+        expect($file->name)->toStartWith($prefix.'-');
+    }
+})->with([
+    'file backup with prefix' => [str_repeat('p', 50), BackupType::FILE],
+    'file backup without prefix' => [null, BackupType::FILE],
+    'database backup with prefix' => [str_repeat('p', 50), BackupType::DATABASE],
+]);

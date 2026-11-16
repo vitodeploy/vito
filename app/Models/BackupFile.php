@@ -202,12 +202,13 @@ class BackupFile extends AbstractModel
         $this->delete();
     }
 
+    public static function extensionFor(BackupType $type): string
+    {
+        return $type === BackupType::DATABASE ? '.sql.gz' : '.tar.gz';
+    }
+
     private function getBackupExtension(): string
     {
-        if ($this->backup->type === BackupType::DATABASE) {
-            return '.sql.gz';
-        }
-
-        return '.tar.gz';
+        return static::extensionFor($this->backup->type);
     }
 }

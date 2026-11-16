@@ -14,20 +14,17 @@ use Illuminate\Support\Str;
 
 class RunBackup
 {
+    private const int MAX_FILE_NAME_BYTES = 255;
+
     public function run(Backup $backup): BackupFile
     {
         $backupName = $backup->type === BackupType::FILE
             ? basename($backup->path)
             : $backup->database?->name;
 
-        $name = Str::of($backupName)->slug().'-'.now()->format('YmdHis');
-        if ($backup->prefix !== null && $backup->prefix !== '') {
-            $name = $backup->prefix.'-'.$name;
-        }
-
         $file = new BackupFile([
             'backup_id' => $backup->id,
-            'name' => $name,
+            'name' => $this->fileName($backup, (string) $backupName),
             'status' => BackupFileStatus::CREATING,
         ]);
         $file->save();
@@ -44,6 +41,25 @@ class RunBackup
         dispatch(new RunJob($file, $backup))->onQueue('ssh');
 
         return $file;
+    }
+
+    /**
+     * Builds "[prefix-]source-YmdHis", shortening the source part so the
+     * file name plus its extension stays within the 255-byte limit of
+     * common filesystems.
+     */
+    private function fileName(Backup $backup, string $backupName): string
+    {
+        $prefix = $backup->prefix !== null && $backup->prefix !== '' ? $backup->prefix.'-' : '';
+        $suffix = '-'.now()->format('YmdHis');
+        $available = self::MAX_FILE_NAME_BYTES
+            - strlen(BackupFile::extensionFor($backup->type))
+            - strlen($prefix)
+            - strlen($suffix);
+
+        $source = rtrim(substr((string) Str::slug($backupName), 0, max($available, 0)), '-');
+
+        return $prefix.$source.$suffix;
     }
 
     public function compressAndUploadFile(BackupFile $file, Backup $backup): void
