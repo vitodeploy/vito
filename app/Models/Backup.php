@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $storage_id
  * @property int $database_id
  * @property string $path
+ * @property ?string $prefix
  * @property string $interval
  * @property int $keep_backups
  * @property ?BackupStatus $status
@@ -36,6 +37,7 @@ class Backup extends AbstractModel
         'storage_id',
         'database_id',
         'path',
+        'prefix',
         'interval',
         'keep_backups',
         'status',

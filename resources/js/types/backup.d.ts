@@ -10,6 +10,7 @@ export interface Backup {
   database_id: number | null;
   database: Database | null;
   path: string | null;
+  prefix: string | null;
   type: string;
   keep_backups: number;
   interval: string;

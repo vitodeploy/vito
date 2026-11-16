@@ -18,10 +18,12 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
     interval: string;
     custom_interval: string;
     keep: string;
+    prefix: string;
   }>({
     interval: configs.cronjob_intervals[backup.interval] ? backup.interval : 'custom',
     custom_interval: backup.interval,
     keep: backup.keep_backups.toString(),
+    prefix: backup.prefix ?? '',
   });
 
   const submit = (e: FormEvent) => {
@@ -40,6 +42,19 @@ export default function EditBackup({ open, onOpenChange, backup }: { open: boole
         </DialogHeader>
         <Form id="edit-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
+            <FormField>
+              <Label htmlFor="prefix">File Name Prefix (optional)</Label>
+              <Input
+                id="prefix"
+                name="prefix"
+                value={form.data.prefix}
+                onChange={(e) => form.setData('prefix', e.target.value)}
+                placeholder="site-a"
+              />
+              <div className="text-muted-foreground mt-1 text-sm">Added to new backup file names. Existing files keep their names.</div>
+              <InputError message={form.errors.prefix} />
+            </FormField>
+
             <FormField>
               <Label htmlFor="interval">Interval</Label>
               <Select value={form.data.interval} onValueChange={(value) => form.setData('interval', value)}>

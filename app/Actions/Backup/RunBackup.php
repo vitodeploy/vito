@@ -20,9 +20,14 @@ class RunBackup
             ? basename($backup->path)
             : $backup->database?->name;
 
+        $name = Str::of($backupName)->slug().'-'.now()->format('YmdHis');
+        if ($backup->prefix) {
+            $name = $backup->prefix.'-'.$name;
+        }
+
         $file = new BackupFile([
             'backup_id' => $backup->id,
-            'name' => Str::of($backupName)->slug().'-'.now()->format('YmdHis'),
+            'name' => $name,
             'status' => BackupFileStatus::CREATING,
         ]);
         $file->save();

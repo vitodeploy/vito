@@ -27,6 +27,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
     interval: string;
     custom_interval: string;
     keep: string;
+    prefix: string;
   }>({
     type: 'file',
     database: '',
@@ -35,6 +36,7 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
     interval: 'daily',
     custom_interval: '',
     keep: '10',
+    prefix: '',
   });
 
   const submit = (e: FormEvent) => {
@@ -127,6 +129,19 @@ export default function CreateBackup({ open, onOpenChange, server }: { open: boo
                 onValueChange={(value) => form.setData('storage', value)}
               />
               <InputError message={form.errors.storage} />
+            </FormField>
+
+            <FormField>
+              <Label htmlFor="prefix">File Name Prefix (optional)</Label>
+              <Input
+                id="prefix"
+                name="prefix"
+                value={form.data.prefix}
+                onChange={(e) => form.setData('prefix', e.target.value)}
+                placeholder="site-a"
+              />
+              <div className="text-muted-foreground mt-1 text-sm">Added to new backup file names, e.g. site-a-wordpress-20260101000000.</div>
+              <InputError message={form.errors.prefix} />
             </FormField>
 
             <FormField>
