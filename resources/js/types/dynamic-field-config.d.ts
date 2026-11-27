@@ -19,7 +19,9 @@ export interface DynamicFieldConfig {
     | 'guide'
     | 'tooling'
     | 'tooling-picker'
-    | 'tooling-selector';
+    | 'tooling-selector'
+    | 'tags'
+    | 'resource';
   name: string;
   options?: string[] | { [key: string]: string };
   optionLabels?: { [key: string]: string };
@@ -27,7 +29,7 @@ export interface DynamicFieldConfig {
   placeholder?: string;
   description?: string;
   label?: string;
-  default?: string | number | boolean;
+  default?: string | number | boolean | string[];
   link?: {
     label: string;
     url: string;

@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Server;
 
+use App\DTOs\DynamicField;
 use App\WorkflowActions\AbstractWorkflowAction;
 
 class CreateServer extends AbstractWorkflowAction
@@ -9,12 +10,15 @@ class CreateServer extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'name' => 'The name of the server',
-            'provider' => 'The server provider. example: hetzner, digitalocean, aws, vultr, linode',
-            'server_provider' => 'The server provider ID',
-            'plan' => 'The server plan',
-            'region' => 'The server region',
-            'os' => __('Operating System (:os)', ['os' => implode(', ', config('core.operating_systems'))]),
+            DynamicField::make('name')->text()->label('Name'),
+            DynamicField::make('provider')->select()->label('Provider')->options(array_keys(config('server-provider.providers')))->half(),
+            DynamicField::make('server_provider')->resource('server_provider')->label('Provider Profile')->half(),
+            DynamicField::make('region')->text()->label('Region')->description('The region ID on the provider')->half(),
+            DynamicField::make('plan')->text()->label('Plan')->description('The plan ID on the provider')->half(),
+            DynamicField::make('os')->select()->label('Operating System')->options(config('core.operating_systems')),
+            DynamicField::make('ip')->text()->label('IP Address')->description('Custom provider only')->half(),
+            DynamicField::make('port')->text()->label('SSH Port')->placeholder('22')->description('Custom provider only')->half(),
+            DynamicField::make('services_help')->alert()->description('To install services, switch to JSON mode and add a "services" list, e.g. [{"type": "webserver", "name": "nginx", "version": "latest"}, {"type": "php", "name": "php", "version": "8.4"}].'),
         ];
     }
 

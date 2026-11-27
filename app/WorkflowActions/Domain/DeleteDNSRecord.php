@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Domain;
 
+use App\DTOs\DynamicField;
 use App\Actions\Domain\DeleteDNSRecord as DeleteDNSRecordAction;
 use App\Models\DNSRecord;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -12,7 +13,7 @@ class DeleteDNSRecord extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'dns_record_id' => 'The ID of the DNS record to delete',
+            DynamicField::make('dns_record_id')->resource('dns_record')->label('DNS Record'),
         ];
     }
 

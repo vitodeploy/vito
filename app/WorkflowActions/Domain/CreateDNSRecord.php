@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Domain;
 
+use App\DTOs\DynamicField;
 use App\Actions\Domain\CreateDNSRecord as CreateDNSRecordAction;
 use App\Models\Domain;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -11,12 +12,12 @@ class CreateDNSRecord extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'domain_id' => 'The ID of the domain to create the DNS record for',
-            'type' => 'DNS record type (A, AAAA, CNAME, TXT, MX, SRV, NS, CAA, PTR, SOA)',
-            'name' => 'DNS record name (subdomain or @ for root)',
-            'content' => 'DNS record content/value',
-            'ttl' => 'Time to live in seconds (1-86400, default: 1)',
-            'proxied' => 'Whether the record is proxied through CDN (boolean, default: false)',
+            DynamicField::make('domain_id')->resource('domain')->label('Domain'),
+            DynamicField::make('type')->select()->label('Type')->options(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'NS', 'CAA', 'PTR', 'SOA'])->default('A')->half(),
+            DynamicField::make('ttl')->text()->label('TTL')->placeholder('1')->description('Seconds (1-86400), 1 means automatic')->half(),
+            DynamicField::make('name')->text()->label('Name')->placeholder('@')->description('Subdomain, or @ for the root domain'),
+            DynamicField::make('content')->text()->label('Content')->placeholder('{server_ip}'),
+            DynamicField::make('proxied')->checkbox()->label('Proxied through CDN')->default(false),
         ];
     }
 

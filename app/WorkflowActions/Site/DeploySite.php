@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\DTOs\DynamicField;
 use App\Actions\Site\Deploy;
 use App\Models\Site;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -12,7 +13,7 @@ class DeploySite extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'site_id' => 'The ID of the site',
+            DynamicField::make('site_id')->resource('site')->label('Site'),
         ];
     }
 

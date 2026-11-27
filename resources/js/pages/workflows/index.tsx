@@ -8,8 +8,7 @@ import { VitoTable } from '@/components/vito-table';
 import { Workflow } from '@/types/workflow';
 import Layout from '@/layouts/app/layout';
 import CreateWorkflow from './components/create-workflow';
-import Run from '@/pages/workflows/components/run';
-import DeleteWorkflow from '@/pages/workflows/components/delete-workflow';
+import { useDialog } from '@/hooks/use-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
 import { asRow } from '@/lib/inertia-table';
@@ -18,6 +17,7 @@ export default function Workflows() {
   const page = usePage<{
     workflows: InertiaTableData;
   }>();
+  const dialog = useDialog();
 
   return (
     <Layout>
@@ -45,7 +45,7 @@ export default function Workflows() {
         <VitoTable
           tableData={page.props.workflows}
           actions={(row: Row) => {
-            const workflow = asRow<Workflow>(row, ['id', 'name']);
+            const workflow = asRow<Workflow>(row, ['id', 'name', 'run_inputs', 'run_fields']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal>
@@ -56,17 +56,37 @@ export default function Workflows() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <Run workflow={workflow}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Run</DropdownMenuItem>
-                    </Run>
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        dialog.workflowRun.open({
+                          workflowId: workflow.id,
+                          workflowName: workflow.name,
+                          inputs: workflow.run_inputs ?? {},
+                          fields: workflow.run_fields,
+                        })
+                      }
+                    >
+                      Run
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.visit(`/workflows/${workflow.id}/runs`)}>History</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.visit(`/workflows/${workflow.id}`)}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.post(`/workflows/${workflow.id}/duplicate`)}>Duplicate</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DeleteWorkflow workflow={workflow}>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                        Delete
-                      </DropdownMenuItem>
-                    </DeleteWorkflow>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() =>
+                        dialog.confirm.open({
+                          title: `Delete ${workflow.name}`,
+                          description: 'Are you sure you want to delete this workflow?',
+                          variant: 'destructive',
+                          confirmLabel: 'Delete',
+                          method: 'delete',
+                          url: `/workflows/${workflow.id}`,
+                        })
+                      }
+                    >
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

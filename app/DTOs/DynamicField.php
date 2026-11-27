@@ -75,6 +75,21 @@ class DynamicField
         return $this;
     }
 
+    public function tags(): self
+    {
+        $this->type = 'tags';
+
+        return $this;
+    }
+
+    public function resource(string $resource, ?string $parent = null): self
+    {
+        $this->type = 'resource';
+        $this->componentProps = array_filter(['resource' => $resource, 'parent' => $parent]);
+
+        return $this;
+    }
+
     public function alert(): self
     {
         $this->type = 'alert';

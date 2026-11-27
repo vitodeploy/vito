@@ -53,6 +53,8 @@ import DeploymentScriptEditor from '@/pages/applications/components/deployment-s
 import DomainForm from '@/pages/applications/components/domain-form';
 import AttachResource from '@/pages/applications/components/attach-resource';
 import EnvironmentSheet from '@/pages/applications/components/environment-sheet';
+import WorkflowActionForm from '@/pages/workflows/components/action-form';
+import WorkflowRun from '@/pages/workflows/components/run';
 
 export type DialogControlProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -111,6 +113,8 @@ export const dialogs = {
   environmentDomainForm: DomainForm,
   attachResource: AttachResource,
   environmentSheet: EnvironmentSheet,
+  workflowActionForm: WorkflowActionForm,
+  workflowRun: WorkflowRun,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ComponentType<any>>;
 

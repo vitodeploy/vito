@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Database;
 
+use App\DTOs\DynamicField;
 use App\Models\Database;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -11,12 +12,12 @@ class CreateDatabase extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'server_id' => 'The ID of the server to create the database on',
-            'name' => 'The name of the database to create',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_general_ci',
-            'username' => 'The username of the database user (optional)',
-            'password' => 'The password of the database user (optional)',
+            DynamicField::make('server_id')->resource('server')->label('Server'),
+            DynamicField::make('name')->text()->label('Database Name'),
+            DynamicField::make('charset')->text()->label('Charset')->default('utf8mb4')->half(),
+            DynamicField::make('collation')->text()->label('Collation')->default('utf8mb4_general_ci')->half(),
+            DynamicField::make('username')->text()->label('Username')->description('Optional, creates a database user with access to this database'),
+            DynamicField::make('password')->passwordWithToggle()->label('Password'),
         ];
     }
 

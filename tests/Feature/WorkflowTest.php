@@ -4,8 +4,12 @@ use App\Enums\UserRole;
 use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
 use App\Jobs\Workflow\RunJob;
+use App\Models\DNSRecord;
+use App\Models\Domain;
 use App\Models\NotificationChannel;
 use App\Models\Project;
+use App\Models\Server;
+use App\Models\Site;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
@@ -324,4 +328,103 @@ test('queued workflow runs keep action inputs out of the plain job payload', fun
 
     expect($payload)->not->toContain('db-secret-value')
         ->and(decrypt(json_decode($payload, true)['data']['command']))->toContain('db-secret-value');
+});
+
+test('duplicate workflow copies its actions into the same project', function () {
+    $this->actingAs($this->user);
+    $payload = ['nodes' => [vitoPestFeatureWorkflowTestNode('a', true, ['message' => 'hi'])], 'edges' => []];
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id, 'name' => 'Deploy', 'payload' => $payload]);
+
+    $this->post(route('workflows.duplicate', $workflow))->assertRedirect();
+
+    $copy = Workflow::query()->where('name', 'Deploy (copy)')->firstOrFail();
+    expect($copy->id)->not->toBe($workflow->id)
+        ->and($copy->project_id)->toBe($workflow->project_id)
+        ->and($copy->payload)->toBe($payload);
+});
+
+test('duplicate workflow is rejected for foreign projects and read only members', function (string $scenario) {
+    $this->user->update(['is_admin' => false]);
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+    if ($scenario === 'foreign') {
+        $workflow = Workflow::factory()->create(['user_id' => User::factory(), 'project_id' => Project::factory()]);
+    } else {
+        $this->user->currentProject->users()->where('user_id', $this->user->id)->update(['role' => UserRole::USER]);
+    }
+
+    $this->actingAs($this->user)->post(route('workflows.duplicate', $workflow))->assertForbidden();
+
+    expect(Workflow::query()->count())->toBe($scenario === 'foreign' ? 2 : 1);
+})->with(['foreign', 'read-only']);
+
+test('workflow resources only list records of the current project', function () {
+    $this->actingAs($this->user);
+    $foreignServer = Server::factory()->create(['user_id' => User::factory(), 'project_id' => Project::factory()]);
+    Site::factory()->create(['server_id' => $foreignServer->id, 'domain' => 'foreign.test']);
+
+    $this->getJson(route('workflows.resources', 'server'))
+        ->assertSuccessful()
+        ->assertExactJson([['value' => (string) $this->server->id, 'label' => $this->server->name, 'description' => $this->server->ip]]);
+
+    $this->getJson(route('workflows.resources', ['resource' => 'site', 'selected' => Site::query()->where('domain', 'foreign.test')->value('id')]))
+        ->assertSuccessful()
+        ->assertJsonCount(1)
+        ->assertJsonPath('0.label', 'vito.test')
+        ->assertJsonPath('0.description', $this->server->name);
+});
+
+test('workflow resources support search, parent filter and selected item', function () {
+    $this->actingAs($this->user);
+    $other = Server::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id, 'name' => 'other-server']);
+    $otherSite = Site::factory()->create(['server_id' => $other->id, 'domain' => 'other.test']);
+    $domain = Domain::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+    $records = DNSRecord::factory()->count(2)->create(['domain_id' => $domain->id]);
+
+    $this->getJson(route('workflows.resources', ['resource' => 'server', 'query' => 'other-ser']))
+        ->assertJsonCount(1)
+        ->assertJsonPath('0.value', (string) $other->id);
+
+    $this->getJson(route('workflows.resources', ['resource' => 'site', 'parent' => $other->id]))
+        ->assertJsonCount(1)
+        ->assertJsonPath('0.value', (string) $otherSite->id);
+
+    $this->getJson(route('workflows.resources', ['resource' => 'site', 'query' => 'other', 'selected' => $this->site->id]))
+        ->assertJsonCount(2)
+        ->assertJsonPath('0.value', (string) $this->site->id);
+
+    $this->getJson(route('workflows.resources', ['resource' => 'dns_record', 'parent' => $domain->id]))
+        ->assertJsonCount(2)
+        ->assertJsonPath('0.label', $records[1]->type.' '.$records[1]->name);
+});
+
+test('workflow resources reject unknown resources and invalid parents', function () {
+    $this->actingAs($this->user);
+
+    $this->getJson(route('workflows.resources', 'secrets'))->assertNotFound();
+    $this->getJson(route('workflows.resources', ['resource' => 'site', 'parent' => '{server_id}']))->assertUnprocessable();
+});
+
+test('workflow actions expose typed fields and convert legacy inputs', function () {
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+
+    $fields = collect($workflow->getActions($this->user)['deploy-site']['fields']);
+
+    expect($fields->firstWhere('name', 'site_id'))->toMatchArray(['type' => 'resource', 'componentProps' => ['resource' => 'site']])
+        ->and(Workflow::inputFields(['server_id' => 'The server', 'aliases' => ['a']]))->sequence(
+            fn ($field) => $field->toMatchArray(['name' => 'server_id', 'type' => 'text', 'description' => 'The server']),
+            fn ($field) => $field->toMatchArray(['name' => 'aliases', 'type' => 'tags', 'default' => []]),
+        );
+});
+
+test('workflow list exposes the starting action fields for the run form', function () {
+    $this->actingAs($this->user);
+    Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+        'payload' => ['nodes' => [vitoPestFeatureWorkflowTestNode('a', true)], 'edges' => []],
+    ]);
+
+    $fields = $this->get(route('workflows'))->assertSuccessful()->inertiaProps('workflows.data.0.run_fields');
+
+    expect(array_column($fields, 'name'))->toBe(['notification_channel_id', 'message']);
 });

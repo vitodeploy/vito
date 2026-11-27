@@ -35,6 +35,11 @@ class WorkflowPolicy
         return $this->hasWriteAccess($user, $workflow->project);
     }
 
+    public function duplicate(User $user, Workflow $workflow): bool
+    {
+        return $this->view($user, $workflow) && $this->create($user, $workflow->project);
+    }
+
     public function revealInputs(User $user, Workflow $workflow): bool
     {
         /** @var PersonalAccessToken|TransientToken|null $token */

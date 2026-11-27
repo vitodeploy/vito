@@ -66,3 +66,25 @@ test('create site action succeeds with own server', function () {
     expect($result)->toHaveKey('site_id');
     expect($result['site_domain'])->toEqual('my-site.example.com');
 });
+
+test('create site action always creates its own site type', function () {
+    SSH::fake();
+
+    $workflow = Workflow::factory()->create([
+        'user_id' => $this->user->id,
+        'project_id' => $this->user->current_project_id,
+    ]);
+
+    $result = (new CreatePHPBlankSite($this->user, $workflow))->run([
+        'server_id' => $this->server->id,
+        'type' => 'laravel',
+        'domain' => 'forced-type.example.com',
+        'user' => 'forcedtype',
+        'php_version' => '8.2',
+    ]);
+
+    $this->assertDatabaseHas('sites', [
+        'id' => $result['site_id'],
+        'type' => 'php-blank',
+    ]);
+});

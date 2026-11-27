@@ -141,6 +141,73 @@ paths:
               schema:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
+  /api/projects/{project}/workflows/{workflow}/duplicate:
+    post:
+      summary: Duplicate workflow
+      description: Create a copy of a workflow, including all its actions and connections, in the same project
+      tags:
+        - Workflows
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Name of the copy. Defaults to the original name followed by "(copy)"
+                  example: Deploy production (copy)
+      responses:
+        '201':
+          description: Workflow duplicated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Workflow.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
   /api/projects/{project}/workflows/{workflow}/runs:
     get:
       summary: List workflow runs

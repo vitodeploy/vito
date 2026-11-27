@@ -1,47 +1,52 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import Layout from '@/layouts/app/layout';
-import { Workflow } from '@/types/workflow';
-import { useAppearance } from '@/hooks/use-appearance';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
-  ReactFlow,
   addEdge,
-  applyNodeChanges,
   applyEdgeChanges,
-  type Node,
+  applyNodeChanges,
+  Background,
+  BackgroundVariant,
+  type Connection,
+  Controls,
+  type DefaultEdgeOptions,
   type Edge,
   type FitViewOptions,
-  type OnNodesChange,
-  type OnEdgesChange,
-  type OnNodeDrag,
-  type DefaultEdgeOptions,
-  Position,
-  Background,
-  Controls,
-  BackgroundVariant,
   MarkerType,
-  Connection,
+  type Node,
+  type OnEdgesChange,
+  type OnNodesChange,
+  Position,
+  ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useEffect, useState } from 'react';
-import CustomNode from './components/custom-node';
+import { ClipboardPasteIcon, CopyPlusIcon, KeyboardIcon, LoaderCircleIcon, PlayIcon, SaveIcon, TrashIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { WorkflowAction } from '@/types/workflow-action';
+import Layout from '@/layouts/app/layout';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAppearance } from '@/hooks/use-appearance';
+import { useDialog } from '@/hooks/use-dialog';
+import { useDialogStore } from '@/stores/dialog-store';
+import { useInputFocus } from '@/stores/useInputFocus';
+import { useWorkflowClipboard } from '@/stores/workflow-clipboard';
+import { Workflow } from '@/types/workflow';
+import { WorkflowAction, WorkflowVariable } from '@/types/workflow-action';
+import { WorkflowNodeData } from '@/types/workflow-node-data';
+import CustomNode from './components/custom-node';
 import Actions from './components/actions';
-import { Button } from '@/components/ui/button';
-import { DotIcon, LoaderCircleIcon, SaveIcon, TrashIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import DeleteWorkflow from './components/delete-workflow';
+import ToolbarButton from './components/toolbar-button';
+import { WorkflowEditor, WorkflowEditorContext } from './components/editor-context';
+
+type WorkflowNode = Node<WorkflowNodeData>;
 
 type Page = {
   workflow: Workflow;
-  actions: {
-    [key: string]: WorkflowAction;
-  };
+  actions: Record<string, WorkflowAction>;
 };
 
-const fitViewOptions: FitViewOptions = {
-  padding: 0.2,
-};
+const fitViewOptions: FitViewOptions = { padding: 0.2 };
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
   animated: true,
@@ -50,165 +55,342 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
   markerEnd: MarkerType.ArrowClosed,
 };
 
-const onNodeDrag: OnNodeDrag = (_, node) => {
-  console.log('drag event', node.data);
-};
+const nodeTypes = { custom: CustomNode };
 
-export default function Show() {
-  const page = usePage<Page>();
-  const { getActualAppearance } = useAppearance();
-  const [nodes, setNodes] = useState<Node[]>(page.props.workflow.nodes);
-  const [edges, setEdges] = useState<Edge[]>(page.props.workflow.edges);
+const edgeColors = { success: 'oklch(51.1% 0.262 276.966)', failure: '' };
 
-  useEffect(() => {
-    form.setData('nodes', JSON.parse(JSON.stringify(nodes)));
-    form.setData('edges', JSON.parse(JSON.stringify(edges)));
-  }, [nodes, edges]);
+const PASTE_OFFSET = 50;
 
-  const form = useForm<{
-    name: string;
-    nodes: string;
-    edges: string;
-  }>({
-    name: page.props.workflow.name,
-    nodes: JSON.parse(JSON.stringify(page.props.workflow.nodes)),
-    edges: JSON.parse(JSON.stringify(page.props.workflow.edges)),
-  });
+const shortcuts = [
+  ['⌘/Ctrl + S', 'Save'],
+  ['⌘/Ctrl + C', 'Copy selected actions'],
+  ['⌘/Ctrl + V', 'Paste actions'],
+  ['⌘/Ctrl + D', 'Duplicate selected actions'],
+  ['Backspace', 'Delete selection'],
+  ['Shift + drag', 'Select multiple actions'],
+  ['Double-click', 'Edit action'],
+];
 
-  const onNodesChange: OnNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
-  const onEdgesChange: OnEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
-
-  const wouldCreateLoop = (edges: Edge[], source: string, target: string): boolean => {
-    if (source === target) return true;
-
-    const visited = new Set<string>();
-
-    const dfs = (nodeId: string): boolean => {
-      if (nodeId === source) return true;
-      visited.add(nodeId);
-
-      const outgoing = edges.filter((e) => e.source === nodeId);
-      for (const e of outgoing) {
-        if (!visited.has(e.target) && dfs(e.target)) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    return dfs(target);
+function wouldCreateLoop(edges: Edge[], source: string, target: string): boolean {
+  const visited = new Set<string>();
+  const reaches = (nodeId: string): boolean => {
+    if (nodeId === source) return true;
+    visited.add(nodeId);
+    return edges.some((e) => e.source === nodeId && !visited.has(e.target) && reaches(e.target));
   };
+  return reaches(target);
+}
+
+function edgesBetween(nodes: WorkflowNode[], edges: Edge[]): Edge[] {
+  const ids = new Set(nodes.map((n) => n.id));
+  return edges.filter((e) => ids.has(e.source) && ids.has(e.target));
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+}
+
+function Editor() {
+  const { workflow, actions } = usePage<Page>().props;
+  const dialog = useDialog();
+  const { getActualAppearance } = useAppearance();
+  const { screenToFlowPosition, getNodes, getEdges } = useReactFlow<WorkflowNode>();
+  const dialogActive = useDialogStore((state) => state.active !== null);
+  const clipboardSize = useWorkflowClipboard((state) => (state.projectId === workflow.project_id ? state.nodes.length : 0));
+  const [nodes, setNodes] = useState<WorkflowNode[]>(workflow.nodes as WorkflowNode[]);
+  const [edges, setEdges] = useState<Edge[]>(workflow.edges);
+  const [saving, setSaving] = useState(false);
+
+  const onNodesChange: OnNodesChange<WorkflowNode> = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onEdgesChange: OnEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+
+  const actionFor = useCallback((handler: string) => Object.values(actions).find((action) => action.handler === handler), [actions]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
 
-      if (wouldCreateLoop(edges, connection.source, connection.target)) {
+      const edges = getEdges();
+      if (connection.source === connection.target || wouldCreateLoop(edges, connection.source, connection.target)) {
         toast.error('Connection would create a loop.');
         return;
       }
 
-      const colors = {
-        success: 'oklch(51.1% 0.262 276.966)',
-        failure: '',
-      };
-
-      const outgoingEdges = edges.filter((edge) => edge.source === connection.source);
-      const hasSuccess = outgoingEdges.some((e) => e.style?.stroke === colors.success);
-      const hasFailure = outgoingEdges.some((e) => e.style?.stroke === colors.failure);
-
-      if (outgoingEdges.length >= 2) {
-        toast.error('This node already has 2 outgoing edges (1 success and 1 failure).');
-        return;
-      }
-
-      let color: 'success' | 'failure';
-      if (!hasSuccess) {
-        color = 'success';
-      } else if (!hasFailure) {
-        color = 'failure';
-      } else {
-        toast.error('This node already has 2 outgoing edges (1 success and 1 failure).');
+      const outgoing = edges.filter((edge) => edge.source === connection.source);
+      const status = !outgoing.some((e) => e.data?.status === 'success') ? 'success' : !outgoing.some((e) => e.data?.status === 'failure') ? 'failure' : null;
+      if (!status) {
+        toast.error('This action already has 2 outgoing connections (1 success and 1 failure).');
         return;
       }
 
       const newEdge: Edge = {
         ...connection,
-        id: `${connection.source}-${connection.target}-${colors[color]}`,
-        data: { status: color },
-        style: { stroke: colors[color], strokeWidth: 2 },
-        markerEnd: { type: 'arrowclosed', color: colors[color] },
+        id: `${connection.source}-${connection.target}-${status}`,
+        data: { status },
+        style: { stroke: edgeColors[status], strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: edgeColors[status] },
       };
-
-      setEdges((eds) => {
-        const updated = addEdge(newEdge, eds);
-        return [...updated].sort((a, b) => {
-          if (a.style?.stroke === colors.success && b.style?.stroke === colors.failure) return 1;
-          if (a.style?.stroke === colors.failure && b.style?.stroke === colors.success) return -1;
-          return 0;
-        });
-      });
+      setEdges((eds) => addEdge(newEdge, eds));
     },
-    [edges, setEdges],
+    [getEdges],
   );
 
-  const onActionAdded = (action: WorkflowAction) => {
-    const newNode: Node = {
-      id: action.id,
-      type: 'custom',
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      data: { label: action.label, action: action },
-      position: { x: 0, y: 0 },
-    };
-    console.log('New node added:', newNode);
-    setNodes((nds) => nds.concat(newNode));
+  const pasteNodes = useCallback(
+    (source: WorkflowNode[], sourceEdges: Edge[]) => {
+    const ids = new Map(source.map((n) => [n.id, crypto.randomUUID()]));
+    const isEmpty = getNodes().length === 0;
+    const pasted: WorkflowNode[] = source.map((n, index) => {
+      const id = ids.get(n.id)!;
+      return {
+        ...structuredClone(n),
+        id,
+        selected: true,
+        dragging: false,
+        position: { x: n.position.x + PASTE_OFFSET, y: n.position.y + PASTE_OFFSET },
+        data: { ...structuredClone(n.data), action: { ...structuredClone(n.data.action), id, starting: isEmpty && index === 0 } },
+      };
+    });
+    const pastedEdges: Edge[] = sourceEdges.map((e) => {
+      const sourceId = ids.get(e.source)!;
+      const targetId = ids.get(e.target)!;
+      return { ...structuredClone(e), id: `${sourceId}-${targetId}-${e.data?.status ?? 'success'}`, source: sourceId, target: targetId, selected: false };
+    });
+
+    setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), ...pasted]);
+    setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), ...pastedEdges]);
+
+    return { pasted, pastedEdges };
+    },
+    [getNodes],
+  );
+
+  const pick = useCallback((ids?: string[]) => getNodes().filter((n) => (ids ? ids.includes(n.id) : n.selected)), [getNodes]);
+
+  const copyNodes = useCallback(
+    (ids?: string[]) => {
+      const picked = pick(ids);
+      if (picked.length === 0) return false;
+      useWorkflowClipboard.getState().set(workflow.project_id, structuredClone(picked), structuredClone(edgesBetween(picked, getEdges())));
+      toast.success(`Copied ${picked.length} action${picked.length > 1 ? 's' : ''}`);
+      return true;
+    },
+    [pick, getEdges, workflow.project_id],
+  );
+
+  const paste = useCallback(() => {
+    const clipboard = useWorkflowClipboard.getState();
+    if (clipboard.projectId !== workflow.project_id || clipboard.nodes.length === 0) return false;
+    const { pasted, pastedEdges } = pasteNodes(clipboard.nodes as WorkflowNode[], clipboard.edges);
+    clipboard.set(workflow.project_id, structuredClone(pasted), structuredClone(pastedEdges));
+    return true;
+  }, [pasteNodes, workflow.project_id]);
+
+  const duplicateNodes = useCallback(
+    (ids?: string[]) => {
+      const picked = pick(ids);
+      if (picked.length === 0) return false;
+      pasteNodes(picked, edgesBetween(picked, getEdges()));
+      return true;
+    },
+    [pick, pasteNodes, getEdges],
+  );
+
+  const setStartingNode = useCallback(
+    (id: string) =>
+      setNodes((nds) => nds.map((n) => ({ ...n, data: { ...n.data, action: { ...n.data.action, starting: n.id === id } } }))),
+    [],
+  );
+
+  const editNode = useCallback(
+    (id: string) => {
+      const nodes = getNodes();
+      const node = nodes.find((n) => n.id === id);
+      if (!node) return;
+      const catalog = actionFor(node.data.action.handler);
+      const variables = new Map<string, WorkflowVariable>();
+      getEdges()
+        .filter((e) => e.target === id)
+        .forEach((e) => {
+          const outputs = nodes.find((n) => n.id === e.source)?.data.action.outputs ?? {};
+          Object.entries(outputs).forEach(([key, description]) => variables.set(key, { key, description }));
+        });
+
+      dialog.workflowActionForm.open({
+        action: { ...node.data.action, fields: catalog?.fields ?? [], description: catalog?.description },
+        variables: [...variables.values()],
+        mode: 'edit',
+        onSubmit: (action) => setNodes((nds) => nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, label: action.label, action } } : n))),
+      });
+    },
+    [getNodes, getEdges, actionFor, dialog],
+  );
+
+  const addAction = (action: WorkflowAction) => {
+    dialog.workflowActionForm.open({
+      action: { ...action, id: '', inputs: {} },
+      mode: 'add',
+      onSubmit: (added) => {
+        const position = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+        setNodes((nds) => [
+          ...nds.map((n) => ({ ...n, selected: false })),
+          {
+            id: added.id,
+            type: 'custom',
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left,
+            position,
+            selected: true,
+            data: { label: added.label, action: { ...added, starting: nds.length === 0 } },
+          },
+        ]);
+      },
+    });
   };
 
-  const saveWorkflow = () => {
-    form.put(`/workflows/${page.props.workflow.id}`);
+  const save = useCallback(() => {
+    setSaving(true);
+    router.put(`/workflows/${workflow.id}`, JSON.parse(JSON.stringify({ name: workflow.name, nodes: getNodes(), edges: getEdges() })), {
+      preserveState: true,
+      preserveScroll: true,
+      onFinish: () => setSaving(false),
+    });
+  }, [workflow.id, workflow.name, getNodes, getEdges]);
+
+  const run = () => {
+    const starting = (workflow.nodes as WorkflowNode[]).find((n) => n.data.action?.starting);
+    if (!starting) {
+      toast.error('Save the workflow with a starting action before running it.');
+      return;
+    }
+    dialog.workflowRun.open({
+      workflowId: workflow.id,
+      workflowName: workflow.name,
+      inputs: workflow.run_inputs,
+      fields: actionFor(starting.data.action.handler)?.fields,
+    });
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || isEditableTarget(e.target)) return;
+      if (useDialogStore.getState().active || useInputFocus.getState().isFocused) return;
+
+      if (e.code === 'KeyS') {
+        e.preventDefault();
+        if (!e.repeat) save();
+      } else if (e.code === 'KeyC' && !window.getSelection()?.toString()) {
+        if (copyNodes()) e.preventDefault();
+      } else if (e.code === 'KeyV' && !e.repeat) {
+        if (paste()) e.preventDefault();
+      } else if (e.code === 'KeyD') {
+        e.preventDefault();
+        if (!e.repeat) duplicateNodes();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [save, copyNodes, paste, duplicateNodes]);
+
+  const editor = useMemo<WorkflowEditor>(
+    () => ({ actionFor, editNode, copyNodes, duplicateNodes, setStartingNode }),
+    [actionFor, editNode, copyNodes, duplicateNodes, setStartingNode],
+  );
 
   return (
-    <Layout>
-      <Head title={`Workflow - ${page.props.workflow.name}`} />
+    <WorkflowEditorContext.Provider value={editor}>
+      <Head title={`Workflow - ${workflow.name}`} />
       <div className="bg-accent relative h-full w-full border-none">
-        <div className="bg-background absolute top-0 left-0 z-10 m-2 flex items-center justify-between gap-2 rounded-lg border p-3">
-          <h2 className="text-lg font-semibold tracking-tight">{`Workflow - ${page.props.workflow.name}`}</h2>
-          <DotIcon />
-          <Button variant="ghost" className="size-7" onClick={saveWorkflow} disabled={form.processing}>
-            {form.processing ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
-          </Button>
-          <DeleteWorkflow workflow={page.props.workflow}>
-            <Button variant="ghost" className="size-7">
-              <TrashIcon />
-            </Button>
-          </DeleteWorkflow>
-          <DotIcon />
-          <Badge variant="default">Beta</Badge>
+        <div className="bg-background absolute top-0 left-0 z-10 m-2 flex items-center gap-1 rounded-lg border p-2">
+          <h2 className="px-1 text-lg font-semibold tracking-tight">{workflow.name}</h2>
+          <Separator orientation="vertical" className="mx-1 data-[orientation=vertical]:h-5" />
+          <ToolbarButton label="Save (⌘S)" onClick={save} disabled={saving}>
+            {saving ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
+          </ToolbarButton>
+          <ToolbarButton label="Run" onClick={run}>
+            <PlayIcon />
+          </ToolbarButton>
+          <ToolbarButton label="Paste actions (⌘V)" onClick={() => paste()} disabled={clipboardSize === 0}>
+            <ClipboardPasteIcon />
+          </ToolbarButton>
+          <ToolbarButton
+            label="Duplicate workflow"
+            onClick={() =>
+              dialog.confirm.open({
+                title: `Duplicate ${workflow.name}`,
+                description: 'Creates a copy of the saved workflow. Unsaved changes are not included.',
+                confirmLabel: 'Duplicate',
+                method: 'post',
+                url: `/workflows/${workflow.id}/duplicate`,
+              })
+            }
+          >
+            <CopyPlusIcon />
+          </ToolbarButton>
+          <ToolbarButton
+            label="Delete workflow"
+            className="hover:text-destructive"
+            onClick={() =>
+              dialog.confirm.open({
+                title: `Delete ${workflow.name}`,
+                description: 'Are you sure you want to delete this workflow?',
+                variant: 'destructive',
+                confirmLabel: 'Delete',
+                method: 'delete',
+                url: `/workflows/${workflow.id}`,
+              })
+            }
+          >
+            <TrashIcon />
+          </ToolbarButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button" className="text-muted-foreground hover:text-foreground flex size-7 items-center justify-center" aria-label="Keyboard shortcuts">
+                <KeyboardIcon className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="flex flex-col gap-1">
+              {shortcuts.map(([keys, description]) => (
+                <div key={keys} className="flex justify-between gap-4">
+                  <span className="font-mono">{keys}</span>
+                  <span>{description}</span>
+                </div>
+              ))}
+            </TooltipContent>
+          </Tooltip>
         </div>
-        <Actions actions={page.props.actions} onActionAdded={onActionAdded} />
+        <Actions actions={actions} onSelect={addAction} />
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeDrag={onNodeDrag}
-          snapToGrid={true}
+          onNodeDoubleClick={(_, node) => editNode(node.id)}
+          zoomOnDoubleClick={false}
+          deleteKeyCode={dialogActive ? null : 'Backspace'}
+          snapToGrid
           snapGrid={[50, 50]}
           fitView
           fitViewOptions={fitViewOptions}
           defaultEdgeOptions={defaultEdgeOptions}
           colorMode={getActualAppearance()}
-          nodeTypes={{
-            custom: CustomNode,
-          }}
+          nodeTypes={nodeTypes}
         >
           <Background variant={BackgroundVariant.Dots} />
           <Controls position="bottom-right" />
         </ReactFlow>
       </div>
+    </WorkflowEditorContext.Provider>
+  );
+}
+
+export default function Show() {
+  return (
+    <Layout>
+      <ReactFlowProvider>
+        <Editor />
+      </ReactFlowProvider>
     </Layout>
   );
 }
