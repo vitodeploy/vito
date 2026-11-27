@@ -45,10 +45,11 @@ export default function InputsForm({
   const [mode, setMode] = useState<'form' | 'json'>(fields.length > 0 ? 'form' : 'json');
   const [json, setJson] = useState(() => JSON.stringify(inputs, null, 2));
   const { copy } = useClipboard();
+  const parentValue = (name: string) => scalar(inputs[name] ?? fields.find((field) => field.name === name)?.default);
 
   const setField = (name: string, value: DynamicFieldValue) =>
     onChange((current) => {
-      const dependents = fields.filter((field) => field.componentProps?.parent === name && current[field.name] !== undefined);
+      const dependents = fields.filter((field) => field.componentProps?.parent === name);
       if (current[name] === value || dependents.length === 0) {
         return { ...current, [name]: value };
       }
@@ -101,7 +102,7 @@ export default function InputsForm({
           <ResourceSelect
             id={fieldId}
             resource={scalar(field.componentProps?.resource)}
-            parent={field.componentProps?.parent ? scalar(inputs[scalar(field.componentProps.parent)]) : undefined}
+            parent={field.componentProps?.parent ? parentValue(scalar(field.componentProps.parent)) : undefined}
             value={scalar(value)}
             label={label}
             variables={variables}
