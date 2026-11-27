@@ -22,6 +22,8 @@ class SSHFake extends SSH
 
     protected bool $execWillFail = false;
 
+    protected bool $remoteFileMissing = false;
+
     protected string $uploadedLocalPath;
 
     protected string $uploadedRemotePath;
@@ -100,6 +102,33 @@ class SSHFake extends SSH
     }
 
     public function download(string $local, string $remote, ?string $log = null, ?int $siteId = null): void {}
+
+    public function remoteFileWillBeMissing(): void
+    {
+        $this->remoteFileMissing = true;
+    }
+
+    public function connectToSftp(string $host, int $port, string $username, string $password): self
+    {
+        $this->connect(true);
+        $this->commands[] = 'sftp:connect '.$host.':'.$port.' '.$username;
+
+        return $this;
+    }
+
+    public function fileSize(string $remote): ?int
+    {
+        $this->connect(true);
+        $this->commands[] = 'sftp:size '.$remote;
+
+        return $this->remoteFileMissing ? null : strlen($this->output ?? 'fake output');
+    }
+
+    public function streamDownload(string $remote, callable $onChunk, int $expectedSize): void
+    {
+        $this->commands[] = 'sftp:stream '.$remote;
+        $onChunk($this->output ?? 'fake output');
+    }
 
     /**
      * @param  array<string>|string  $commands

@@ -3,6 +3,7 @@
 namespace App\StorageProviders;
 
 use App\DTOs\DynamicField;
+use App\Models\BackupFile;
 use App\Models\Server;
 use App\SSH\Storage\Storage;
 use Illuminate\Support\Facades\Cache;
@@ -136,6 +137,22 @@ class Dropbox extends AbstractStorageProvider
         }
 
         return $accessToken;
+    }
+
+    public function download(BackupFile $backupFile): array
+    {
+        $response = Http::withToken($this->accessToken())
+            ->withHeaders(['Dropbox-API-Arg' => json_encode(['path' => $backupFile->path()], JSON_THROW_ON_ERROR)])
+            ->withOptions(['stream' => true])
+            ->timeout(0)
+            ->withBody('', 'application/octet-stream')
+            ->post('https://content.dropboxapi.com/2/files/download');
+
+        abort_if($response->status() === 409 && ($response->json('error.path')['.tag'] ?? null) === 'not_found', 404, 'The backup file does not exist.');
+        $response->throw();
+        $metadata = json_decode($response->header('Dropbox-API-Result'), true, flags: JSON_THROW_ON_ERROR);
+
+        return $this->httpDownload($response->toPsrResponse()->getBody(), (int) $metadata['size']);
     }
 
     public function ssh(Server $server): Storage

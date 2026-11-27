@@ -298,6 +298,51 @@ class SSH
         $sftp->get($remote, $local);
     }
 
+    public function connectToSftp(string $host, int $port, string $username, string $password): self
+    {
+        $this->connection = new SFTP(str_contains($host, ':') ? '['.trim($host, '[]').']' : $host, $port);
+        if (! $this->connection->login($username, $password)) {
+            throw new SSHAuthenticationError('Unable to authenticate with SFTP storage.');
+        }
+
+        return $this;
+    }
+
+    public function fileSize(string $remote): ?int
+    {
+        $sftp = $this->ensureSftp();
+        $sftp->clearStatCache();
+        if (! $sftp->is_file($remote)) {
+            return null;
+        }
+        $size = $sftp->filesize($remote);
+
+        return $size === false ? null : (int) $size;
+    }
+
+    /**
+     * Stream an SFTP file in chunks without creating a temporary copy or
+     * holding the complete archive in PHP memory.
+     *
+     * @param  callable(string): void  $onChunk
+     *
+     * @throws SSHError
+     */
+    public function streamDownload(string $remote, callable $onChunk, int $expectedSize): void
+    {
+        $sftp = $this->ensureSftp();
+        $sftp->setTimeout(max(1, (int) config('core.backup_download_read_timeout', 60)));
+        $bytes = 0;
+        $downloaded = $sftp->get($remote, static function (string $chunk) use ($onChunk, &$bytes): void {
+            $bytes += strlen($chunk);
+            $onChunk($chunk);
+        });
+
+        if ($downloaded === false || $bytes !== $expectedSize) {
+            throw new SSHError('Failed to stream the complete backup file.');
+        }
+    }
+
     /**
      * @throws SSHError
      */
