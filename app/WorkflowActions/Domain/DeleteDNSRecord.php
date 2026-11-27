@@ -2,8 +2,8 @@
 
 namespace App\WorkflowActions\Domain;
 
-use App\DTOs\DynamicField;
 use App\Actions\Domain\DeleteDNSRecord as DeleteDNSRecordAction;
+use App\DTOs\DynamicField;
 use App\Models\DNSRecord;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Validator;

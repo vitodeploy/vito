@@ -2,8 +2,8 @@
 
 namespace App\WorkflowActions\Domain;
 
-use App\DTOs\DynamicField;
 use App\Actions\Domain\CreateDNSRecord as CreateDNSRecordAction;
+use App\DTOs\DynamicField;
 use App\Models\Domain;
 use App\WorkflowActions\AbstractWorkflowAction;
 
