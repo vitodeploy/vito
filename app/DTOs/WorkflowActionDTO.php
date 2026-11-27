@@ -27,11 +27,19 @@ class WorkflowActionDTO
     {
         $handlerClass = $this->handler;
 
-        if (! class_exists($handlerClass)) {
-            throw new AppError("Handler class {$handlerClass} does not exist.");
+        if (! in_array($handlerClass, self::registeredHandlers(), true)) {
+            throw new AppError("Handler class {$handlerClass} is not a registered workflow action.");
         }
 
         return new $handlerClass($user, $workflow);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function registeredHandlers(): array
+    {
+        return array_values(array_filter(array_column(config('workflow.actions', []), 'handler')));
     }
 
     /**

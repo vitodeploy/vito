@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\General;
 
+use App\ValidationRules\PublicUrlRule;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -33,8 +34,10 @@ class HttpCall extends AbstractWorkflowAction
 
     public function run(array $input): array
     {
+        $publicUrl = config('workflow.http_call_allow_private_networks') ? null : new PublicUrlRule;
+
         Validator::make($input, [
-            'url' => ['required', 'url'],
+            'url' => array_filter(['required', 'url:http,https', $publicUrl]),
             'method' => [
                 'required',
                 'string',
@@ -68,7 +71,9 @@ class HttpCall extends AbstractWorkflowAction
         }
 
         try {
-            $httpClient = Http::timeout($timeout);
+            $httpClient = Http::timeout($timeout)
+                ->withoutRedirecting()
+                ->withOptions($publicUrl?->options() ?? []);
 
             if (! empty($headers)) {
                 $httpClient = $httpClient->withHeaders($headers);

@@ -223,7 +223,7 @@ test('workflow jobs recheck current token scope between actions and failure bran
         'user' => null,
     ], 'failure');
     $tree = new WorkflowActionDTO('HTTP request', HttpCall::class, [], [
-        'url' => 'https://example.com/workflow',
+        'url' => 'https://1.1.1.1/workflow',
         'method' => 'GET',
     ], 'http', success: $command, failure: $hasFailureBranch ? $failure : null);
     Http::fake(function () use ($token, $project, $change) {
@@ -289,7 +289,7 @@ test('nested workflows inherit token scope without changing the outer execution 
         'status' => WorkflowRunStatus::RUNNING,
     ]);
     $tree = new WorkflowActionDTO('HTTP request', HttpCall::class, [], [
-        'url' => 'https://example.com/workflow',
+        'url' => 'https://1.1.1.1/workflow',
         'method' => 'GET',
     ], 'http');
     $job = unserialize(serialize(new RunJob($run, $this->user, $workflow, $tree, [])));

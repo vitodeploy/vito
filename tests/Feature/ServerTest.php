@@ -28,6 +28,7 @@ use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
+use App\ValidationRules\RestrictedIPAddressesRule;
 use Aws\CommandInterface;
 use Aws\Ec2\Ec2Client;
 use Aws\MockHandler;
@@ -316,6 +317,41 @@ test('create ubuntu server keeps its base system steps', function () {
     SSH::assertNotExecutedContains('install -y sudo psmisc openssl');
     SSH::assertNotExecutedContains('--no-install-recommends cron');
     SSH::assertNotExecutedContains('/etc/environment');
+});
+
+test('create custom server rejects restricted ip addresses', function (string $ip, bool $restricted) {
+    $this->actingAs($this->user);
+    Storage::fake();
+    SSH::fake('user_not_found');
+
+    $response = $this->post(route('servers.store'), [
+        'provider' => Custom::id(),
+        'name' => 'restricted',
+        'ip' => $ip,
+        'port' => '22',
+        'os' => OperatingSystem::UBUNTU22->value,
+    ]);
+
+    $restricted ? $response->assertSessionHasErrors('ip') : $response->assertSessionDoesntHaveErrors('ip');
+})->with([
+    'loopback' => ['127.0.0.1', true],
+    'other loopback' => ['127.0.0.2', true],
+    'unspecified' => ['0.0.0.0', true],
+    'link local metadata' => ['169.254.169.254', true],
+    'ipv6 loopback' => ['::1', true],
+    'expanded ipv6 loopback' => ['0:0:0:0:0:0:0:1', true],
+    'ipv4 mapped loopback' => ['::ffff:127.0.0.1', true],
+    'ipv6 link local' => ['fe80::1', true],
+    'private lan' => ['192.168.1.10', false],
+    'public' => ['1.1.1.1', false],
+]);
+
+test('restricted ip addresses accept custom ranges from config', function () {
+    config()->set('core.restricted_ip_addresses', ['10.20.0.0/16', '192.168.1.77']);
+
+    expect(RestrictedIPAddressesRule::isRestricted('10.20.5.5'))->toBeTrue()
+        ->and(RestrictedIPAddressesRule::isRestricted('192.168.1.77'))->toBeTrue()
+        ->and(RestrictedIPAddressesRule::isRestricted('10.21.0.1'))->toBeFalse();
 });
 
 test('create server rejects a wildcard provider', function () {

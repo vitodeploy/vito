@@ -45,10 +45,10 @@ return [
         OperatingSystem::DEBIAN13->value,
     ],
 
-    'restricted_ip_addresses' => array_merge(
-        ['127.0.0.1', 'localhost', '0.0.0.0'],
+    'restricted_ip_addresses' => array_values(array_filter(array_map('trim', array_merge(
+        ['localhost', '127.0.0.0/8', '0.0.0.0/8', '169.254.0.0/16', '::/128', '::1/128', '::ffff:0:0/96', 'fe80::/10'],
         explode(',', (string) env('RESTRICTED_IP_ADDRESSES', ''))
-    ),
+    )))),
 
     'ssl_types' => [
         SslType::CSR->value,
