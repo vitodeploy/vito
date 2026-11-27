@@ -13,7 +13,7 @@ class InstallService extends AbstractWorkflowAction
     {
         return [
             DynamicField::make('server_id')->resource('server')->label('Server'),
-            DynamicField::make('name')->select()->label('Service')->options(array_keys(config('service.services')))->half(),
+            DynamicField::make('name')->select()->label('Service')->options(array_keys(array_filter(config('service.services'), fn (array $service): bool => ($service['type'] ?? null) !== 'vpn')))->half(),
             DynamicField::make('version')->text()->label('Version')->placeholder('latest')->half(),
         ];
     }

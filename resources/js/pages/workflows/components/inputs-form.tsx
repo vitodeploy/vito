@@ -18,8 +18,14 @@ function scalar(value: unknown): string {
   return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 }
 
-export function cleanInputs(inputs: WorkflowInputs): WorkflowInputs {
-  return Object.fromEntries(Object.entries(inputs).filter(([, value]) => value !== '' && value !== null && value !== undefined));
+export function cleanInputs(inputs: WorkflowInputs, fields: DynamicFieldConfig[] = []): WorkflowInputs {
+  const merged: WorkflowInputs = { ...inputs };
+  fields.forEach((field) => {
+    if (merged[field.name] === undefined && field.default !== undefined && field.default !== null) {
+      merged[field.name] = field.default;
+    }
+  });
+  return Object.fromEntries(Object.entries(merged).filter(([, value]) => value !== '' && value !== null && value !== undefined));
 }
 
 export default function InputsForm({

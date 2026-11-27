@@ -44,7 +44,7 @@ export default function Run({
       toast.error('Inputs contain invalid JSON.');
       return;
     }
-    form.transform((data) => ({ ...data, inputs: cleanInputs(runInputs) }));
+    form.transform((data) => ({ ...data, inputs: cleanInputs(runInputs, fields) }));
     form.post(`/workflows/${workflowId}/runs`, { onSuccess: () => onOpenChange(false) });
   };
 

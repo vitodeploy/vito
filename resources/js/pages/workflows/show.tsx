@@ -117,7 +117,8 @@ function Editor() {
       }
 
       const outgoing = edges.filter((edge) => edge.source === connection.source);
-      const status = !outgoing.some((e) => e.data?.status === 'success') ? 'success' : !outgoing.some((e) => e.data?.status === 'failure') ? 'failure' : null;
+      const statusOf = (e: Edge) => e.data?.status ?? 'success';
+      const status = !outgoing.some((e) => statusOf(e) === 'success') ? 'success' : !outgoing.some((e) => statusOf(e) === 'failure') ? 'failure' : null;
       if (!status) {
         toast.error('This action already has 2 outgoing connections (1 success and 1 failure).');
         return;
@@ -138,8 +139,11 @@ function Editor() {
   const pasteNodes = useCallback(
     (source: WorkflowNode[], sourceEdges: Edge[]) => {
     const ids = new Map(source.map((n) => [n.id, crypto.randomUUID()]));
-    const isEmpty = getNodes().length === 0;
-    const pasted: WorkflowNode[] = source.map((n, index) => {
+    const startId =
+      getNodes().length === 0
+        ? (source.find((n) => n.data.action.starting) ?? source.find((n) => !sourceEdges.some((e) => e.target === n.id)) ?? source[0])?.id
+        : undefined;
+    const pasted: WorkflowNode[] = source.map((n) => {
       const id = ids.get(n.id)!;
       return {
         ...structuredClone(n),
@@ -147,7 +151,7 @@ function Editor() {
         selected: true,
         dragging: false,
         position: { x: n.position.x + PASTE_OFFSET, y: n.position.y + PASTE_OFFSET },
-        data: { ...structuredClone(n.data), action: { ...structuredClone(n.data.action), id, starting: isEmpty && index === 0 } },
+        data: { ...structuredClone(n.data), action: { ...structuredClone(n.data.action), id, starting: n.id === startId } },
       };
     });
     const pastedEdges: Edge[] = sourceEdges.map((e) => {

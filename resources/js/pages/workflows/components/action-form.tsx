@@ -46,7 +46,7 @@ export default function ActionForm({
       handler: action.handler,
       starting: action.starting ?? false,
       outputs: action.outputs,
-      inputs: cleanInputs(inputs),
+      inputs: cleanInputs(inputs, action.fields),
     });
     onOpenChange(false);
   };
