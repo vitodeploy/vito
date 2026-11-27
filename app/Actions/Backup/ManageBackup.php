@@ -38,6 +38,7 @@ class ManageBackup
             'server_id' => $server->id,
             'database_id' => $backupType === BackupType::DATABASE ? $input['database'] : null,
             'path' => $backupType === BackupType::FILE ? $input['path'] : null,
+            'prefix' => $this->normalizePrefix($input['prefix'] ?? null),
             'storage_id' => $input['storage'],
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
@@ -50,8 +51,18 @@ class ManageBackup
         return $backup;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function update(Backup $backup, array $input): void
     {
+        Validator::make($input, ['prefix' => self::prefixRules()])->validate();
+
+        if (array_key_exists('prefix', $input)) {
+            $backup->prefix = $this->normalizePrefix($input['prefix']);
+        }
         $backup->interval = $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'];
         $backup->keep_backups = $input['keep'];
         $backup->save();
@@ -112,6 +123,7 @@ class ManageBackup
                 'required',
                 Rule::in(array_keys(config('core.cronjob_intervals'))),
             ],
+            'prefix' => self::prefixRules(),
         ];
 
         if ($backupType === BackupType::DATABASE) {
@@ -137,5 +149,28 @@ class ManageBackup
         }
 
         Validator::make($input, $rules)->validate();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function prefixRules(): array
+    {
+        return [
+            'nullable',
+            'alpha_dash:ascii',
+            'max:50',
+        ];
+    }
+
+    /**
+     * Prefixes are lowercased so two backups can't map to the same file on
+     * case-insensitive storage such as Dropbox.
+     */
+    private function normalizePrefix(mixed $prefix): ?string
+    {
+        $prefix = is_string($prefix) || is_int($prefix) ? strtolower(trim((string) $prefix)) : '';
+
+        return $prefix === '' ? null : $prefix;
     }
 }

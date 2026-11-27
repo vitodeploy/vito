@@ -22,6 +22,7 @@ class BackupResource extends JsonResource
             'database_id' => $this->database_id,
             'database' => DatabaseResource::make($this->database),
             'path' => $this->path,
+            'prefix' => $this->prefix,
             'type' => $this->type,
             'keep_backups' => $this->keep_backups,
             'interval' => $this->interval,

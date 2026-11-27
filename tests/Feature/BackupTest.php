@@ -1213,3 +1213,232 @@ test('delete backup file is claimed once when called with a stale model', functi
     expect($staleFile->status)->toBe(BackupFileStatus::CREATED);
     Bus::assertDispatchedTimes(DeleteFileJob::class, 1);
 });
+
+test('create backup with prefix adds it to the backup file name', function () {
+    Bus::fake();
+
+    $this->actingAs($this->user);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => 'wordpress',
+    ]);
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->post(route('backups.store', ['server' => $this->server]), [
+        'type' => 'database',
+        'database' => $database->id,
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => '10',
+        'prefix' => 'Site_A',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    /** @var Backup $backup */
+    $backup = Backup::query()->where('database_id', $database->id)->firstOrFail();
+    expect($backup->prefix)->toBe('site_a');
+
+    /** @var BackupFile $file */
+    $file = $backup->files()->firstOrFail();
+    expect($file->name)->toMatch('/^site_a-wordpress-\d{14}$/')
+        ->and($file->path())->toBe('/wordpress/'.$file->name.'.sql.gz');
+});
+
+test('create backup without prefix keeps the default file name', function () {
+    Bus::fake();
+
+    $this->actingAs($this->user);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => 'wordpress',
+    ]);
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->post(route('backups.store', ['server' => $this->server]), [
+        'type' => 'database',
+        'database' => $database->id,
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => '10',
+        'prefix' => '  ',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    /** @var Backup $backup */
+    $backup = Backup::query()->where('database_id', $database->id)->firstOrFail();
+    expect($backup->prefix)->toBeNull()
+        ->and($backup->files()->firstOrFail()->name)->toMatch('/^wordpress-\d{14}$/');
+});
+
+test('backup prefix must be a safe file name segment', function (string $prefix) {
+    Bus::fake();
+
+    $this->actingAs($this->user);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+    ]);
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->post(route('backups.store', ['server' => $this->server]), [
+        'type' => 'database',
+        'database' => $database->id,
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => '10',
+        'prefix' => $prefix,
+    ])
+        ->assertSessionHasErrors('prefix');
+
+    $this->assertDatabaseMissing('backups', ['database_id' => $database->id]);
+})->with([
+    'path traversal' => '../etc',
+    'slash' => 'site/a',
+    'space' => 'site a',
+    'dot' => 'site.a',
+    'non-ascii' => 'Straße',
+    'non-latin' => '日本',
+    'too long' => str_repeat('a', 51),
+]);
+
+test('update backup prefix only affects new backup files', function () {
+    Bus::fake();
+
+    $this->actingAs($this->user);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => 'wordpress',
+    ]);
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $backup = Backup::factory()->create([
+        'server_id' => $this->server->id,
+        'database_id' => $database->id,
+        'storage_id' => $storage->id,
+    ]);
+
+    $existing = BackupFile::factory()->create([
+        'backup_id' => $backup->id,
+        'name' => 'wordpress-20260101000000',
+    ]);
+
+    $this->patch(route('backups.update', ['server' => $this->server, 'backup' => $backup]), [
+        'interval' => '0 * * * *',
+        'keep' => 10,
+        'prefix' => 'site-b',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($backup->refresh()->prefix)->toBe('site-b')
+        ->and($existing->refresh()->path())->toBe('/wordpress/wordpress-20260101000000.sql.gz');
+
+    $new = app(RunBackup::class)->run($backup);
+    expect($new->name)->toStartWith('site-b-wordpress-');
+
+    $this->patch(route('backups.update', ['server' => $this->server, 'backup' => $backup]), [
+        'interval' => '0 * * * *',
+        'keep' => 10,
+        'prefix' => '',
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($backup->refresh()->prefix)->toBeNull();
+});
+
+test('update backup rejects an invalid prefix', function () {
+    $this->actingAs($this->user);
+
+    $this->patch(route('backups.update', ['server' => $this->server, 'backup' => $this->backup]), [
+        'interval' => '0 * * * *',
+        'keep' => 10,
+        'prefix' => '../x',
+    ])
+        ->assertSessionHasErrors('prefix');
+
+    expect($this->backup->refresh()->prefix)->toBeNull();
+});
+
+test('backup prefix keeps zero and numeric values', function (mixed $prefix) {
+    Bus::fake();
+
+    $this->actingAs($this->user);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => 'wordpress',
+    ]);
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $this->postJson(route('backups.store', ['server' => $this->server]), [
+        'type' => 'database',
+        'database' => $database->id,
+        'storage' => $storage->id,
+        'interval' => '0 * * * *',
+        'keep' => 10,
+        'prefix' => $prefix,
+    ])
+        ->assertSessionDoesntHaveErrors();
+
+    /** @var Backup $backup */
+    $backup = Backup::query()->where('database_id', $database->id)->firstOrFail();
+    expect($backup->prefix)->toBe((string) $prefix)
+        ->and($backup->files()->firstOrFail()->name)->toMatch('/^'.$prefix.'-wordpress-\d{14}$/');
+})->with([
+    'zero string' => '0',
+    'zero integer' => 0,
+    'integer' => 2026,
+]);
+
+test('backup file name stays within the filesystem name limit', function (?string $prefix, BackupType $type) {
+    Bus::fake();
+
+    $storage = StorageProvider::factory()->dropbox()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $database = Database::factory()->create([
+        'server_id' => $this->server,
+        'name' => str_repeat('d', 64),
+    ]);
+
+    $backup = Backup::factory()->create([
+        'type' => $type,
+        'server_id' => $this->server->id,
+        'storage_id' => $storage->id,
+        'database_id' => $type === BackupType::DATABASE ? $database->id : null,
+        'path' => '/home/vito/'.str_repeat('a', 250),
+        'prefix' => $prefix,
+    ]);
+
+    $file = app(RunBackup::class)->run($backup);
+
+    expect(strlen(basename($file->tempPath())))->toBeLessThanOrEqual(255)
+        ->and($file->name)->toMatch('/-\d{14}$/')
+        ->and($file->name)->not->toContain('--');
+
+    if ($prefix !== null) {
+        expect($file->name)->toStartWith($prefix.'-');
+    }
+})->with([
+    'file backup with prefix' => [str_repeat('p', 50), BackupType::FILE],
+    'file backup without prefix' => [null, BackupType::FILE],
+    'database backup with prefix' => [str_repeat('p', 50), BackupType::DATABASE],
+]);
