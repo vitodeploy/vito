@@ -1,8 +1,10 @@
 <?php
 
+use App\DTOs\WorkflowActionDTO;
 use App\Enums\UserRole;
 use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\AppError;
 use App\Jobs\Workflow\RunJob;
 use App\Models\Database;
 use App\Models\DatabaseUser;
@@ -317,7 +319,18 @@ test('workflow saves reject nodes and edges with non string ids', function (arra
     'array node id' => [[['id' => ['x'], 'data' => ['action' => ['starting' => true]]]], []],
     'array edge target' => [[vitoPestFeatureWorkflowTestNode('a', true)], [['source' => 'a', 'target' => ['a']]]],
     'duplicate node id' => [[vitoPestFeatureWorkflowTestNode('a', true), vitoPestFeatureWorkflowTestNode('a')], []],
+    'unregistered handler' => [[['id' => 'a', 'data' => ['action' => ['label' => 'a', 'handler' => Workflow::class, 'starting' => true]]]], []],
+    'missing handler' => [[['id' => 'a', 'data' => ['action' => ['label' => 'a', 'starting' => true]]]], []],
 ]);
+
+test('workflow actions only instantiate registered handlers', function () {
+    $workflow = Workflow::factory()->create(['user_id' => $this->user->id, 'project_id' => $this->user->current_project_id]);
+
+    expect(fn () => (new WorkflowActionDTO('a', Workflow::class, [], [], 'a'))->handler($this->user, $workflow))
+        ->toThrow(AppError::class, 'is not a registered workflow action')
+        ->and((new WorkflowActionDTO('a', Notify::class, [], [], 'a'))->handler($this->user, $workflow))
+        ->toBeInstanceOf(Notify::class);
+});
 
 test('queued workflow runs keep action inputs out of the plain job payload', function () {
     $workflow = Workflow::factory()->create([

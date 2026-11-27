@@ -54,7 +54,8 @@ change these.
 | `SSH_USER` | `vito` | The Linux user Vito creates and uses to connect to managed servers. |
 | `APP_PORT` | `8000` | The port the application listens on (Docker / local installs). |
 | `APP_DEMO` | `false` | Enables demo mode, which disables destructive and instance-level actions (server creation, plugins, import/export). |
-| `RESTRICTED_IP_ADDRESSES` | _(empty)_ | Comma-separated list of IP addresses that are not allowed as server IPs. |
+| `RESTRICTED_IP_ADDRESSES` | _(empty)_ | Comma-separated list of IP addresses or CIDR ranges that are not allowed as server IPs, in addition to the built-in loopback, unspecified and link-local ranges. |
+| `WORKFLOW_HTTP_ALLOW_PRIVATE_NETWORKS` | `false` | Lets the workflow HTTP Call action reach loopback, private and link-local addresses (including cloud metadata endpoints). Only enable this when every user of the instance is trusted. |
 | `KEY_PAIRS_DISK` | `key-pairs` | Filesystem disk used to store server SSH key pairs. |
 | `SERVER_LOGS_DISK` | `server-logs` | Filesystem disk used to store server logs. |
 | `SSH_PUBLIC_KEY_NAME` | `ssh-public.key` | Filename of the instance's SSH public key. |

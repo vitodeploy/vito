@@ -2,8 +2,10 @@
 
 namespace App\Actions\Workflow;
 
+use App\DTOs\WorkflowActionDTO;
 use App\Models\Workflow;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UpdateWorkflow
@@ -14,6 +16,7 @@ class UpdateWorkflow
             'name' => ['required', 'string', 'max:255'],
             'nodes' => ['nullable', 'array', 'max:500'],
             'nodes.*.id' => ['required', 'string', 'max:255', 'distinct'],
+            'nodes.*.data.action.handler' => ['required', 'string', Rule::in(WorkflowActionDTO::registeredHandlers())],
             'edges' => ['nullable', 'array', 'max:2000'],
             'edges.*.source' => ['required', 'string', 'max:255'],
             'edges.*.target' => ['required', 'string', 'max:255'],

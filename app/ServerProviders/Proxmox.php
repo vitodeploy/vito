@@ -501,7 +501,7 @@ class Proxmox extends AbstractProvider implements HasEditableCredentials
 
                 if (($address['ip-address-type'] ?? null) === 'ipv4'
                     && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_RES_RANGE) !== false
-                    && ! in_array($ip, config('core.restricted_ip_addresses'), true)) {
+                    && ! RestrictedIPAddressesRule::isRestricted($ip)) {
                     return $ip;
                 }
             }
