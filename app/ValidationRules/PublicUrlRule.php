@@ -67,17 +67,17 @@ class PublicUrlRule implements ValidationRule
     }
 
     /**
-     * @return array{curl: array<int, string|list<string>>}
+     * @return array{proxy: array{no: list<string>}, curl?: array<int, list<string>>}
      */
     public function options(): array
     {
-        $curl = [CURLOPT_PROXY => ''];
+        $options = ['proxy' => ['no' => ['*']]];
 
         if ($this->pin !== null) {
-            $curl[CURLOPT_RESOLVE] = [$this->pin];
+            $options['curl'] = [CURLOPT_RESOLVE => [$this->pin]];
         }
 
-        return ['curl' => $curl];
+        return $options;
     }
 
     /**

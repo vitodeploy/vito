@@ -77,9 +77,9 @@ test('public url rule pins resolved host names and rejects mixed answers', funct
 
     $rule->resolved = ['1.1.1.1', '2606:4700::1111'];
     expect(Validator::make(['url' => 'https://hooks.example.com/x'], ['url' => [$rule]])->passes())->toBeTrue()
-        ->and($rule->options())->toBe(['curl' => [CURLOPT_PROXY => '', CURLOPT_RESOLVE => ['hooks.example.com:443:1.1.1.1']]]);
+        ->and($rule->options())->toBe(['proxy' => ['no' => ['*']], 'curl' => [CURLOPT_RESOLVE => ['hooks.example.com:443:1.1.1.1']]]);
 
     $rule->resolved = ['1.1.1.1', '10.0.0.1'];
     expect(Validator::make(['url' => 'http://rebind.example.com:8080/'], ['url' => [$rule]])->passes())->toBeFalse()
-        ->and($rule->options())->toBe(['curl' => [CURLOPT_PROXY => '']]);
+        ->and($rule->options())->toBe(['proxy' => ['no' => ['*']]]);
 });
