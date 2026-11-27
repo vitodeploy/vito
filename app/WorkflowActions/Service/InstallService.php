@@ -3,6 +3,7 @@
 namespace App\WorkflowActions\Service;
 
 use App\Actions\Service\Install;
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
 
@@ -11,9 +12,9 @@ class InstallService extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'server_id' => 'The ID of the server to install the service on',
-            'name' => 'The name of the service to install',
-            'version' => 'The version of the service to install',
+            DynamicField::make('server_id')->resource('server')->label('Server'),
+            DynamicField::make('name')->select()->label('Service')->options(array_keys(array_filter(config('service.services'), fn (array $service): bool => ($service['type'] ?? null) !== 'vpn')))->half(),
+            DynamicField::make('version')->text()->label('Version')->placeholder('latest')->half(),
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\WorkflowActions\Site;
 
 use App\Actions\Site\Deploy;
+use App\DTOs\DynamicField;
 use App\Models\Site;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Validator;
@@ -12,7 +13,7 @@ class DeploySite extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'site_id' => 'The ID of the site',
+            DynamicField::make('site_id')->resource('site')->label('Site'),
         ];
     }
 

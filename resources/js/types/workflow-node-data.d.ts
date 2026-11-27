@@ -1,6 +1,6 @@
 import { WorkflowAction } from './workflow-action';
 
-export interface WorkflowNodeData {
+export type WorkflowNodeData = {
   label: string;
   action: WorkflowAction;
-}
+};

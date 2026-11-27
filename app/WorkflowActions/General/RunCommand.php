@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\General;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Validator;
@@ -12,9 +13,9 @@ class RunCommand extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'server_id' => 'The ID of the server to run the command on',
-            'command' => 'The command to run on the server',
-            'user' => 'The user to run the command as',
+            DynamicField::make('server_id')->resource('server')->label('Server'),
+            DynamicField::make('command')->textarea()->label('Command')->className('font-mono'),
+            DynamicField::make('user')->text()->label('User')->placeholder('vito')->description('Leave empty to run as the server\'s default user'),
         ];
     }
 
@@ -39,7 +40,7 @@ class RunCommand extends AbstractWorkflowAction
             ],
         ])->validate();
 
-        $server->ssh($input['user'])->exec($input['command']);
+        $server->ssh(($input['user'] ?? null) ?: null)->exec($input['command']);
 
         return [];
     }

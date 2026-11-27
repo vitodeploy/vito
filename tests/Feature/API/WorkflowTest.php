@@ -197,3 +197,29 @@ test('pagination works correctly', function () {
 
     expect($response->json('links.next'))->not->toBeNull();
 });
+
+test('can duplicate workflow', function () {
+    Sanctum::actingAs($this->user, ['read', 'write']);
+    $this->workflow->update(['payload' => ['nodes' => [['id' => 'a', 'data' => ['action' => ['label' => 'a', 'starting' => true]]]], 'edges' => []]]);
+
+    $response = $this->postJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/duplicate", ['name' => 'Copied']);
+
+    $response->assertCreated()
+        ->assertJsonPath('name', 'Copied')
+        ->assertJsonPath('project_id', $this->project->id)
+        ->assertJsonPath('nodes.0.id', 'a');
+    expect($response->json('id'))->not->toEqual($this->workflow->id);
+});
+
+test('duplicate workflow requires write ability and a matching project', function (string $scenario) {
+    Sanctum::actingAs($this->user, $scenario === 'read-token' ? ['read'] : ['read', 'write']);
+    $project = $scenario === 'foreign-project' ? Project::factory()->create() : $this->project;
+    if ($scenario === 'foreign-project') {
+        $project->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    }
+
+    $response = $this->postJson("/api/projects/{$project->id}/workflows/{$this->workflow->id}/duplicate");
+
+    $scenario === 'read-token' ? $response->assertForbidden() : $response->assertNotFound();
+    expect(Workflow::query()->count())->toBe(1);
+})->with(['read-token', 'foreign-project']);

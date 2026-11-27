@@ -1,4 +1,6 @@
 import { Edge, Node } from '@xyflow/react';
+import { DynamicFieldConfig } from './dynamic-field-config';
+import { WorkflowInputs } from './workflow-action';
 
 export interface Workflow {
   id: number;
@@ -7,9 +9,8 @@ export interface Workflow {
   name: string;
   nodes: Node[];
   edges: Edge[];
-  run_inputs: {
-    [key: string]: string;
-  };
+  run_inputs: WorkflowInputs;
+  run_fields?: DynamicFieldConfig[];
   created_at: string;
   updated_at: string;
   [key: string]: unknown;

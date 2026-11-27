@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DTOs\DynamicField;
 use App\DTOs\WorkflowActionDTO;
 use App\WorkflowActions\WorkflowActionInterface;
 use Database\Factories\WorkflowFactory;
@@ -66,21 +67,58 @@ class Workflow extends Model
     /**
      * @return array<string, mixed>
      */
-    public function getActions(): array
+    public function getActions(User $user): array
     {
         $actions = config('workflow.actions', []);
         foreach ($actions as $actionKey => $action) {
             $handlerClass = $action['handler'] ?? null;
             if ($handlerClass && class_exists($handlerClass)) {
                 /** @var WorkflowActionInterface $handler */
-                $handler = new $handlerClass($this->user, $this);
-                $action['inputs'] = $handler->inputs();
+                $handler = new $handlerClass($user, $this);
+                $action['fields'] = self::inputFields($handler->inputs());
                 $action['outputs'] = $handler->outputs();
                 $actions[$actionKey] = $action;
             }
         }
 
         return $actions;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getStartingFields(User $user): array
+    {
+        $handlerClass = collect(config('workflow.actions', []))->firstWhere('handler', $this->getStartingNode()?->handler)['handler'] ?? null;
+
+        if (! $handlerClass || ! class_exists($handlerClass)) {
+            return [];
+        }
+
+        /** @var WorkflowActionInterface $handler */
+        $handler = new $handlerClass($user, $this);
+
+        return self::inputFields($handler->inputs());
+    }
+
+    /**
+     * Normalizes an action's inputs into dynamic fields, converting the legacy `name => description` format.
+     *
+     * @param  array<int|string, mixed>  $inputs
+     * @return list<array<string, mixed>>
+     */
+    public static function inputFields(array $inputs): array
+    {
+        $fields = [];
+        foreach ($inputs as $name => $input) {
+            $fields[] = match (true) {
+                $input instanceof DynamicField => $input->toArray(),
+                is_array($input) => DynamicField::make((string) $name)->tags()->default([])->toArray(),
+                default => DynamicField::make((string) $name)->text()->description(is_scalar($input) ? (string) $input : null)->toArray(),
+            };
+        }
+
+        return $fields;
     }
 
     public function getStartingNode(): ?WorkflowActionDTO
