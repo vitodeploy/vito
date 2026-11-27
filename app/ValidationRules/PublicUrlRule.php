@@ -27,6 +27,7 @@ class PublicUrlRule implements ValidationRule
         '64:ff9b:1::/48',
         '2001::/32',
         '2002::/16',
+        'fec0::/10',
     ];
 
     private ?string $pin = null;

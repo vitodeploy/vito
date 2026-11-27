@@ -21,7 +21,7 @@ Vito provides a variety of built-in actions that you can use to create your work
 - HTTP Call: Make an HTTP request to a specified URL.
 
 :::info
-HTTP Call only reaches public addresses. Requests to loopback, private, link-local or reserved addresses are rejected, redirects are returned as-is instead of followed, and proxies configured through environment variables are bypassed. Admins can allow private addresses with `WORKFLOW_HTTP_ALLOW_PRIVATE_NETWORKS` (see [Configuration](./getting-started/configuration)).
+HTTP Call only reaches public addresses. Requests to loopback, private, link-local or reserved addresses are rejected, redirects are returned as-is instead of followed, and proxies configured through environment variables are bypassed. Admins can allow private addresses with `WORKFLOW_HTTP_ALLOW_PRIVATE_NETWORKS` (see [Configuration](./getting-started/configuration)). With that option enabled, redirects are still returned as-is, but the address checks and the proxy bypass are skipped, so requests may go through a proxy configured in the environment.
 :::
 
 :::tip

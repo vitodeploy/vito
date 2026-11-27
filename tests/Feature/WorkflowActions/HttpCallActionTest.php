@@ -39,6 +39,7 @@ test('http call rejects internal destinations', function (string $url) {
     '6to4 loopback' => 'http://[2002:7f00:1::]/',
     'teredo' => 'http://[2001:0:4136:e378:8000:63bf:3fff:fdd2]/',
     'ipv4 compatible loopback' => 'http://[::7f00:1]/',
+    'ipv6 site local' => 'http://[fec0::1]/',
     'decimal loopback' => 'http://2130706433/',
     'unresolvable host' => 'http://vito-ssrf-test.invalid/',
     'non http scheme' => 'file:///etc/passwd',
@@ -78,6 +79,9 @@ test('public url rule pins resolved host names and rejects mixed answers', funct
     $rule->resolved = ['1.1.1.1', '2606:4700::1111'];
     expect(Validator::make(['url' => 'https://hooks.example.com/x'], ['url' => [$rule]])->passes())->toBeTrue()
         ->and($rule->options())->toBe(['proxy' => ['no' => ['*']], 'curl' => [CURLOPT_RESOLVE => ['hooks.example.com:443:1.1.1.1']]]);
+
+    $rule->resolved = ['2606:4700::1111', 'fec0::1'];
+    expect(Validator::make(['url' => 'https://site-local.example.com/'], ['url' => [$rule]])->passes())->toBeFalse();
 
     $rule->resolved = ['1.1.1.1', '10.0.0.1'];
     expect(Validator::make(['url' => 'http://rebind.example.com:8080/'], ['url' => [$rule]])->passes())->toBeFalse()
