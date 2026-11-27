@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Workflow;
+use App\ValidationRules\PublicUrlRule;
 use App\WorkflowActions\General\HttpCall;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
@@ -35,6 +37,8 @@ test('http call rejects internal destinations', function (string $url) {
     'ipv4 mapped ipv6' => 'http://[::ffff:127.0.0.1]/',
     'nat64 loopback' => 'http://[64:ff9b::7f00:1]/',
     '6to4 loopback' => 'http://[2002:7f00:1::]/',
+    'teredo' => 'http://[2001:0:4136:e378:8000:63bf:3fff:fdd2]/',
+    'ipv4 compatible loopback' => 'http://[::7f00:1]/',
     'decimal loopback' => 'http://2130706433/',
     'unresolvable host' => 'http://vito-ssrf-test.invalid/',
     'non http scheme' => 'file:///etc/passwd',
@@ -57,4 +61,25 @@ test('http call allows private destinations when enabled in config', function ()
     $output = $this->action->run(['url' => 'http://127.0.0.1:9999/health', 'method' => 'GET']);
 
     expect($output['response_body_raw'])->toBe('internal');
+});
+
+test('public url rule pins resolved host names and rejects mixed answers', function () {
+    $rule = new class extends PublicUrlRule
+    {
+        /** @var list<string> */
+        public array $resolved = [];
+
+        protected function addresses(string $host): array
+        {
+            return $this->resolved;
+        }
+    };
+
+    $rule->resolved = ['1.1.1.1', '2606:4700::1111'];
+    expect(Validator::make(['url' => 'https://hooks.example.com/x'], ['url' => [$rule]])->passes())->toBeTrue()
+        ->and($rule->options())->toBe(['curl' => [CURLOPT_PROXY => '', CURLOPT_RESOLVE => ['hooks.example.com:443:1.1.1.1']]]);
+
+    $rule->resolved = ['1.1.1.1', '10.0.0.1'];
+    expect(Validator::make(['url' => 'http://rebind.example.com:8080/'], ['url' => [$rule]])->passes())->toBeFalse()
+        ->and($rule->options())->toBe(['curl' => [CURLOPT_PROXY => '']]);
 });

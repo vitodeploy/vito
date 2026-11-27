@@ -20,6 +20,10 @@ Vito provides a variety of built-in actions that you can use to create your work
 - Notify: Send a notification to a specified channel (e.g., Slack, Discord, Telegram, Email).
 - HTTP Call: Make an HTTP request to a specified URL.
 
+:::info
+HTTP Call only reaches public addresses. Requests to loopback, private, link-local or reserved addresses are rejected, redirects are returned as-is instead of followed, and proxies configured through environment variables are bypassed. Admins can allow private addresses with `WORKFLOW_HTTP_ALLOW_PRIVATE_NETWORKS` (see [Configuration](./getting-started/configuration)).
+:::
+
 :::tip
 You can write your own custom action using Vito's plugin system. See the [Plugins documentation](./plugins) for more information.
 :::

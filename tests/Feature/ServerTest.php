@@ -342,6 +342,9 @@ test('create custom server rejects restricted ip addresses', function (string $i
     'expanded ipv6 loopback' => ['0:0:0:0:0:0:0:1', true],
     'ipv4 mapped loopback' => ['::ffff:127.0.0.1', true],
     'ipv6 link local' => ['fe80::1', true],
+    'nat64 loopback' => ['64:ff9b::7f00:1', true],
+    '6to4 loopback' => ['2002:7f00:1::', true],
+    'public ipv6' => ['2606:4700::1111', false],
     'private lan' => ['192.168.1.10', false],
     'public' => ['1.1.1.1', false],
 ]);

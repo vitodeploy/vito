@@ -8,23 +8,32 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
  * Rejects URLs whose host resolves to a loopback, private, link-local or reserved address.
- * After validation, `options()` pins the request to the checked address so a second DNS
- * lookup cannot redirect it to an internal host.
+ * After validation, `options()` pins the request to the checked address and bypasses any
+ * configured proxy, so neither a second DNS lookup nor a proxy can reach an internal host.
  */
 class PublicUrlRule implements ValidationRule
 {
     private const NON_PUBLIC_BLOCKS = [
         '100.64.0.0/10',
         '192.0.0.0/24',
+        '192.0.2.0/24',
         '198.18.0.0/15',
-        '2002::/16',
+        '198.51.100.0/24',
+        '203.0.113.0/24',
+        '::/96',
+        '::ffff:0:0/96',
+        '::ffff:0:0:0/96',
         '64:ff9b::/96',
+        '64:ff9b:1::/48',
+        '2001::/32',
+        '2002::/16',
     ];
 
     private ?string $pin = null;
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        $this->pin = null;
         $parts = is_string($value) ? parse_url($value) : false;
         $host = is_array($parts) ? trim($parts['host'] ?? '', '[]') : '';
         $addresses = $this->addresses($host);
@@ -58,17 +67,23 @@ class PublicUrlRule implements ValidationRule
     }
 
     /**
-     * @return array{curl?: array<int, list<string>>}
+     * @return array{curl: array<int, string|list<string>>}
      */
     public function options(): array
     {
-        return $this->pin === null ? [] : ['curl' => [CURLOPT_RESOLVE => [$this->pin]]];
+        $curl = [CURLOPT_PROXY => ''];
+
+        if ($this->pin !== null) {
+            $curl[CURLOPT_RESOLVE] = [$this->pin];
+        }
+
+        return ['curl' => $curl];
     }
 
     /**
      * @return list<string>
      */
-    private function addresses(string $host): array
+    protected function addresses(string $host): array
     {
         if ($host === '') {
             return [];
