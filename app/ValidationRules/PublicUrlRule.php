@@ -26,6 +26,7 @@ class PublicUrlRule implements ValidationRule
         '64:ff9b::/96',
         '64:ff9b:1::/48',
         '2001::/32',
+        '2001:db8::/32',
         '2002::/16',
         'fec0::/10',
     ];
@@ -48,7 +49,7 @@ class PublicUrlRule implements ValidationRule
 
         if (! Cidr::isValidAddress($host)) {
             $port = $parts['port'] ?? (strtolower($parts['scheme'] ?? '') === 'https' ? 443 : 80);
-            $this->pin = $host.':'.$port.':'.$addresses[0];
+            $this->pin = $host.':'.$port.':'.implode(',', array_map(fn (string $ip): string => Cidr::isV6($ip) ? '['.$ip.']' : $ip, $addresses));
         }
     }
 
