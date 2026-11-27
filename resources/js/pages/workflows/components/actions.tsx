@@ -1,46 +1,31 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { WorkflowAction } from '@/types/workflow-action';
-import { MessageCircleQuestionIcon } from 'lucide-react';
-import ActionForm from './action-form';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { WorkflowAction } from '@/types/workflow-action';
 
-interface Props {
-  actions: {
-    [key: string]: WorkflowAction;
-  };
-  onActionAdded: (action: WorkflowAction) => void;
-}
+export default function Actions({ actions, onSelect }: { actions: Record<string, WorkflowAction>; onSelect: (action: WorkflowAction) => void }) {
+  const categories = Object.entries(actions).reduce<Record<string, [string, WorkflowAction][]>>((groups, entry) => {
+    const category = entry[1].category || 'other';
+    (groups[category] ??= []).push(entry);
+    return groups;
+  }, {});
 
-export default function Actions({ actions, onActionAdded }: Props) {
   return (
-    <div className="absolute top-0 right-0 z-10 m-2 w-[200px] overflow-y-auto rounded-lg border p-0">
+    <div className="absolute top-0 right-0 z-10 m-2 w-[220px] overflow-hidden rounded-lg border">
       <Command className="bg-background">
-        <CommandInput
-          right={
-            <Tooltip>
-              <TooltipTrigger>
-                <MessageCircleQuestionIcon className="text-muted-foreground size-4" />
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="mt-2 mr-3 w-[190px]">
-                <div>Click on each action to add them to the workflow</div>
-              </TooltipContent>
-            </Tooltip>
-          }
-        />
-        <CommandList className="bg-transparent p-0">
+        <CommandInput placeholder="Add an action..." />
+        <CommandList className="max-h-[calc(100vh-12rem)] p-0">
           <CommandEmpty>No results</CommandEmpty>
-          <CommandGroup>
-            {Object.entries(actions).map(([key, action]) => (
-              <CommandItem key={`cmd-item-${key}`} value={key} className="p-0">
-                <ActionForm action={action} onActionChanged={onActionAdded} type="add">
-                  <div key={`action-${key}`} className="w-full p-2">
-                    <p className="font-normal">{action.label}</p>
-                    {action.description && <p className="text-muted-foreground text-sm">{action.description}</p>}
+          {Object.entries(categories).map(([category, items]) => (
+            <CommandGroup key={`category-${category}`} heading={category} className="capitalize">
+              {items.map(([key, action]) => (
+                <CommandItem key={`action-${key}`} value={`${key} ${action.label}`} onSelect={() => onSelect(action)} className="normal-case">
+                  <div className="flex flex-col">
+                    <span>{action.label}</span>
+                    {action.description && <span className="text-muted-foreground text-xs">{action.description}</span>}
                   </div>
-                </ActionForm>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </Command>
     </div>

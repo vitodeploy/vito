@@ -2,13 +2,21 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\DTOs\DynamicField;
+use App\SiteTypes\LoadBalancer;
+
 class CreateLoadBalancerSite extends CreateSite
 {
+    protected function siteType(): string
+    {
+        return LoadBalancer::id();
+    }
+
     public function inputs(): array
     {
-        return array_merge(parent::inputs(), [
-            'type' => 'load-balancer',
-            'method' => 'Load balancing method in (round-robin/least-connections/ip-hash)',
-        ]);
+        return [
+            ...parent::inputs(),
+            DynamicField::make('method')->select()->label('Method')->options(['round-robin', 'least-connections', 'ip-hash'])->default('round-robin'),
+        ];
     }
 }

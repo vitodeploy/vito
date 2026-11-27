@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\DTOs\DynamicField;
 use App\Models\Server;
 use App\Models\Site;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -9,17 +10,18 @@ use Illuminate\Support\Facades\Validator;
 
 abstract class CreateSite extends AbstractWorkflowAction
 {
+    protected function siteType(): ?string
+    {
+        return null;
+    }
+
     public function inputs(): array
     {
         return [
-            'server_id' => 'The ID of the server to create the site on',
-            'domain' => 'The domain of the site (example.com)',
-            'aliases' => [
-                'alias-1',
-                'alias-2',
-                'send this field empty [] if you do not want to set any aliases',
-            ],
-            'user' => 'Isolated user, remove this field to use the default user (vito)',
+            DynamicField::make('server_id')->resource('server')->label('Server'),
+            DynamicField::make('domain')->text()->label('Domain')->placeholder('example.com'),
+            DynamicField::make('aliases')->tags()->label('Aliases')->default([])->placeholder('www.example.com'),
+            DynamicField::make('user')->text()->label('Isolated User')->placeholder('example')->description('Linux user the site runs as (lowercase, 3-32 characters)'),
         ];
     }
 
@@ -46,7 +48,7 @@ abstract class CreateSite extends AbstractWorkflowAction
 
         $site = app(\App\Actions\Site\CreateSite::class)->create(
             $server,
-            $input,
+            [...$input, 'type' => $this->siteType() ?? ($input['type'] ?? null)],
             $this->user,
         );
 
@@ -55,6 +57,28 @@ abstract class CreateSite extends AbstractWorkflowAction
             'site_domain' => $site->domain,
             'site_path' => $site->path,
             'site_status' => $site->status->value,
+        ];
+    }
+
+    protected function phpVersionField(): DynamicField
+    {
+        return DynamicField::make('php_version')->text()->label('PHP Version')->placeholder('8.4');
+    }
+
+    protected function webDirectoryField(): DynamicField
+    {
+        return DynamicField::make('web_directory')->text()->label('Web Directory')->placeholder('public')->description('Leave empty for the site root');
+    }
+
+    /**
+     * @return array<int, DynamicField>
+     */
+    protected function repositoryFields(): array
+    {
+        return [
+            DynamicField::make('source_control')->resource('source_control')->label('Source Control'),
+            DynamicField::make('repository')->text()->label('Repository')->placeholder('organization/repository'),
+            DynamicField::make('branch')->text()->label('Branch')->placeholder('main'),
         ];
     }
 }

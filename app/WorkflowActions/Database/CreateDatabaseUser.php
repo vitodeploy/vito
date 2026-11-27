@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Database;
 
+use App\DTOs\DynamicField;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -11,17 +12,13 @@ class CreateDatabaseUser extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'server_id' => 'The ID of the server to create the database on',
-            'username' => 'The username of the database user (optional)',
-            'password' => 'The password of the database user (optional)',
-            'remote' => 'If true, you must provide the host, if false remove host field.',
-            'host' => 'The host the user can connect from, default is % which allows connection from any host',
-            'databases' => [
-                'database-1',
-                'database-2',
-                'send this field empty [] if you do not want to assign any databases yet',
-            ],
-            'permission' => 'The permission level for the user. (read, write, admin)',
+            DynamicField::make('server_id')->resource('server')->label('Server'),
+            DynamicField::make('username')->text()->label('Username'),
+            DynamicField::make('password')->passwordWithToggle()->label('Password'),
+            DynamicField::make('remote')->checkbox()->label('Allow remote access')->default(false),
+            DynamicField::make('host')->text()->label('Host')->placeholder('%')->description('Required for remote access, % allows any host'),
+            DynamicField::make('databases')->tags()->label('Databases')->default([])->placeholder('Database name')->description('Names of the databases to link'),
+            DynamicField::make('permission')->select()->label('Permission')->options(['read', 'write', 'admin'])->default('admin'),
         ];
     }
 

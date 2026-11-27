@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Workflow;
 
 use App\Actions\Workflow\CreateWorkflow;
+use App\Actions\Workflow\DuplicateWorkflow;
+use App\Actions\Workflow\GetResourceOptions;
 use App\Actions\Workflow\UpdateWorkflow;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
 use App\Tables\WorkflowTable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -48,6 +51,26 @@ class WorkflowController extends Controller
         return redirect()->route('workflows.show', $workflow->id);
     }
 
+    #[Get('/resources/{resource}', name: 'workflows.resources')]
+    public function resources(Request $request, string $resource): JsonResponse
+    {
+        $user = user();
+
+        $this->authorize('viewAny', [Workflow::class, $user->currentProject]);
+
+        return response()->json(app(GetResourceOptions::class)->get($user, $user->currentProject, $resource, $request->only(['query', 'parent', 'selected'])));
+    }
+
+    #[Post('/{workflow}/duplicate', name: 'workflows.duplicate')]
+    public function duplicate(Request $request, Workflow $workflow): RedirectResponse
+    {
+        $this->authorize('duplicate', $workflow);
+
+        $copy = app(DuplicateWorkflow::class)->duplicate(user(), $workflow, $request->all());
+
+        return redirect()->route('workflows.show', $copy->id)->with('success', 'Workflow duplicated!');
+    }
+
     #[Get('/{workflow}', name: 'workflows.show')]
     public function show(Workflow $workflow): Response
     {
@@ -55,7 +78,7 @@ class WorkflowController extends Controller
 
         return Inertia::render('workflows/show', [
             'workflow' => new WorkflowResource($workflow),
-            'actions' => $workflow->getActions(),
+            'actions' => $workflow->getActions(user()),
         ]);
     }
 

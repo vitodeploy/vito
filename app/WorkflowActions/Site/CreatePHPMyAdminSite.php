@@ -2,13 +2,20 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\SiteTypes\PHPMyAdmin;
+
 class CreatePHPMyAdminSite extends CreateSite
 {
+    protected function siteType(): string
+    {
+        return PHPMyAdmin::id();
+    }
+
     public function inputs(): array
     {
-        return array_merge(parent::inputs(), [
-            'type' => 'phpmyadmin',
-            'php_version' => 'PHP version, example: 8.1, 8.2',
-        ]);
+        return [
+            ...parent::inputs(),
+            $this->phpVersionField(),
+        ];
     }
 }

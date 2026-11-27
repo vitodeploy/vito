@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\General;
 
+use App\DTOs\DynamicField;
 use App\Models\NotificationChannel;
 use App\Notifications\GenericNotification;
 use App\WorkflowActions\AbstractWorkflowAction;
@@ -12,8 +13,8 @@ class Notify extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'notification_channel_id' => 'The ID of the notification channel to send the notification to',
-            'message' => 'The message to send',
+            DynamicField::make('notification_channel_id')->resource('notification_channel')->label('Notification Channel'),
+            DynamicField::make('message')->textarea()->label('Message'),
         ];
     }
 

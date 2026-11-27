@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\General;
 
+use App\DTOs\DynamicField;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -12,11 +13,11 @@ class HttpCall extends AbstractWorkflowAction
     public function inputs(): array
     {
         return [
-            'url' => 'The URL to make the HTTP request to',
-            'method' => 'HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)',
-            'headers' => 'Optional headers as key-value pairs (JSON object)',
-            'body' => 'Optional request body/payload (JSON string or object)',
-            'timeout' => 'Request timeout in seconds (default: 30)',
+            DynamicField::make('method')->select()->label('Method')->options(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'])->default('GET')->third(),
+            DynamicField::make('url')->text()->label('URL')->placeholder('https://example.com/webhook'),
+            DynamicField::make('headers')->textarea()->label('Headers')->placeholder('{"Authorization": "Bearer token"}')->description('Optional JSON object'),
+            DynamicField::make('body')->textarea()->label('Body')->placeholder('{"key": "value"}')->description('Optional JSON or text payload'),
+            DynamicField::make('timeout')->text()->label('Timeout')->placeholder('30')->description('Seconds (1-300)'),
         ];
     }
 

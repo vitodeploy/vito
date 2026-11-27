@@ -2,18 +2,24 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\DTOs\DynamicField;
+use App\SiteTypes\Laravel;
+
 class CreateLaravelSite extends CreateSite
 {
+    protected function siteType(): string
+    {
+        return Laravel::id();
+    }
+
     public function inputs(): array
     {
-        return array_merge(parent::inputs(), [
-            'type' => 'laravel',
-            'php_version' => 'PHP version, example: 8.1, 8.2',
-            'source_control' => 'Source control ID',
-            'repository' => 'organization/repository',
-            'branch' => 'Branch to deploy, example: main',
-            'web_directory' => 'public',
-            'composer' => 'whether to run composer install (true/false, optional)',
-        ]);
+        return [
+            ...parent::inputs(),
+            $this->phpVersionField(),
+            ...$this->repositoryFields(),
+            $this->webDirectoryField()->default('public'),
+            DynamicField::make('composer')->checkbox()->label('Run composer install')->default(true),
+        ];
     }
 }

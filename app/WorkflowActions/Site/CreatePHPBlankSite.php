@@ -2,14 +2,21 @@
 
 namespace App\WorkflowActions\Site;
 
+use App\SiteTypes\PHPBlank;
+
 class CreatePHPBlankSite extends CreateSite
 {
+    protected function siteType(): string
+    {
+        return PHPBlank::id();
+    }
+
     public function inputs(): array
     {
-        return array_merge(parent::inputs(), [
-            'type' => 'php-blank',
-            'php_version' => 'PHP version, example: 8.1, 8.2',
-            'web_directory' => 'Web directory, example: public (optional)',
-        ]);
+        return [
+            ...parent::inputs(),
+            $this->phpVersionField(),
+            $this->webDirectoryField(),
+        ];
     }
 }
