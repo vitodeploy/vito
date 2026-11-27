@@ -4,12 +4,16 @@ use App\Enums\UserRole;
 use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
 use App\Jobs\Workflow\RunJob;
+use App\Models\Database;
+use App\Models\DatabaseUser;
 use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\NotificationChannel;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\ServerProvider;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
@@ -428,3 +432,38 @@ test('workflow list exposes the starting action fields for the run form', functi
 
     expect(array_column($fields, 'name'))->toBe(['notification_channel_id', 'message']);
 });
+
+test('workflow resources never expose records outside the current project', function (string $resource) {
+    $this->actingAs($this->user);
+    $otherUser = User::factory()->create();
+    $otherProject = Project::factory()->create();
+    $otherProject->users()->create(['user_id' => $this->user->id, 'role' => UserRole::OWNER]);
+    $server = Server::factory()->create(['user_id' => $otherUser->id, 'project_id' => $otherProject->id]);
+    $domain = Domain::factory()->create(['user_id' => $otherUser->id, 'project_id' => $otherProject->id]);
+    $foreign = [
+        'server' => [$server->id, null],
+        'site' => [Site::factory()->create(['server_id' => $server->id, 'domain' => 'foreign.test'])->id, $server->id],
+        'database' => [Database::factory()->create(['server_id' => $server->id])->id, $server->id],
+        'database_user' => [DatabaseUser::factory()->create(['server_id' => $server->id])->id, $server->id],
+        'domain' => [$domain->id, null],
+        'dns_record' => [DNSRecord::factory()->create(['domain_id' => $domain->id])->id, $domain->id],
+        'notification_channel' => [NotificationChannel::factory()->create(['user_id' => $this->user->id, 'project_id' => $otherProject->id])->id, null],
+        'source_control' => [SourceControl::factory()->create(['user_id' => $otherUser->id, 'project_id' => null])->id, null],
+        'server_provider' => [ServerProvider::factory()->create(['user_id' => $this->user->id, 'project_id' => $otherProject->id])->id, null],
+    ][$resource];
+
+    $values = collect($this->getJson(route('workflows.resources', array_filter(['resource' => $resource, 'selected' => $foreign[0], 'parent' => $foreign[1]])))->assertSuccessful()->json())->pluck('value');
+
+    expect($values)->not->toContain((string) $foreign[0]);
+})->with(['server', 'site', 'database', 'database_user', 'domain', 'dns_record', 'notification_channel', 'source_control', 'server_provider']);
+
+test('workflow resources only list a project to its members', function (?UserRole $role, bool $visible) {
+    $member = User::factory()->create(['is_admin' => false, 'current_project_id' => $this->user->current_project_id]);
+    if ($role !== null) {
+        $this->user->currentProject->users()->create(['user_id' => $member->id, 'role' => $role]);
+    }
+
+    $values = collect($this->actingAs($member)->getJson(route('workflows.resources', 'server'))->assertSuccessful()->json())->pluck('value');
+
+    expect($values->contains((string) $this->server->id))->toBe($visible);
+})->with([[null, false], [UserRole::USER, true]]);
